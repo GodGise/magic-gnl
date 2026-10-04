@@ -23,13 +23,16 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 - **Unity 6.3 LTS, versione 6000.3.25f1 (C#)**, deciso. Tutti e tre devono usare esattamente questa versione. Il supporto della 6.3 LTS finisce a dicembre 2027: prima del lancio va pianificato il passaggio a un LTS più nuovo. Serializzazione degli asset su "Force Text", controllo versione "Visible Meta Files".
 
 ## Decisioni ancora aperte
-- Nome del gioco, ruolo di Lorenzo.
+- Nome del gioco.
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
 - Nazar: arte 3D in Blender (cartella `Art/`), con l'aiuto di Giuseppe.
-- Lorenzo: da assegnare.
+- Lorenzo: **level design e bilanciamento**. Possiede la scena `Assets/Scenes/ZonaProva.unity` e regola i numeri del combattimento dall'Inspector.
 Ogni persona modifica solo la propria area; per toccare quella di un altro, chiedere prima.
+- La zona di prova è di Lorenzo: nessuno usa più il menu "Crea zona di prova" (cancellerebbe il suo lavoro). Claude non modifica quella scena: consegna nemici e oggetti come **prefab** e Lorenzo li mette nella scena.
+- Ogni sera chi ha lavorato carica il suo ramo e lo scrive nel gruppo; Giuseppe prova e unisce a `main`.
+- Compiti della settimana: documento "Compiti del team".
 
 ## Convenzioni
 - Messaggi di commit in italiano, imperativi, con una riga di riepilogo.
