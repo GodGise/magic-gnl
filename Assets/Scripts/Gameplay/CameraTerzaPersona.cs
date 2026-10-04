@@ -28,8 +28,10 @@ public class CameraTerzaPersona : MonoBehaviour
     [SerializeField] float velocitaRitorno = 6f;
     [Tooltip("Sotto questa distanza dal personaggio la camera inizia ad alzarsi sopra la sua testa.")]
     [SerializeField] float distanzaSollevamento = 2f;
-    [Tooltip("Di quanto si alza la camera quando è schiacciata contro un muro (in metri).")]
-    [SerializeField] float altezzaSollevamento = 1.6f;
+    [Tooltip("Di quanto si alza al massimo la camera quando è schiacciata contro un muro (in metri).")]
+    [SerializeField] float sollevamentoMassimo = 0.8f;
+    [Tooltip("Vicino a un muro la camera guarda un punto davanti al personaggio, a questa distanza, invece della sua testa: così si vede sempre dove si va.")]
+    [SerializeField] float distanzaSguardoAvanti = 3f;
     [Tooltip("Quali strati contano come ostacoli per la camera (di base tutti).")]
     [SerializeField] LayerMask stratiOstacoli = ~0;
     [Header("Vista")]
@@ -124,8 +126,10 @@ public class CameraTerzaPersona : MonoBehaviour
 
         // Due controlli: quello "duro" dice dove si trova davvero il muro (limite assoluto),
         // quello "di anticipo" è più largo e vede il muro prima, così l'avvicinamento parte in anticipo.
-        float distanzaDura = DistanzaLibera(fuoco, indietro, raggioCollisione);
-        float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, raggioAnticipo));
+        // Il controllo largo non conta i muri che tocca già alla partenza (per esempio un muro di lato
+        // quando si cammina rasente): conta solo quelli che incontra andando davvero verso la camera.
+        float distanzaDura = DistanzaLibera(fuoco, indietro, raggioCollisione, true);
+        float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, raggioAnticipo, false));
 
         // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
         float velocita = distanzaObiettivo < distanzaAttuale ? velocitaAvvicinamento : velocitaRitorno;
@@ -138,16 +142,20 @@ public class CameraTerzaPersona : MonoBehaviour
 
         Vector3 posizione = fuoco + indietro * distanzaAttuale;
 
-        // Più la camera è vicina al personaggio (muro alle spalle), più si alza sopra la sua testa,
+        // Più la camera è vicina al personaggio (muro alle spalle), più si alza un poco sopra la sua testa,
         // invece di finirgli dentro. Prima controlla che sopra non ci sia un soffitto.
         float vicinanza = 1f - Mathf.InverseLerp(distanzaMinima, distanzaSollevamento, distanzaAttuale);
         if (vicinanza > 0f)
         {
-            posizione += Vector3.up * PrimoOstacolo(posizione, Vector3.up, altezzaSollevamento * vicinanza, raggioCollisione);
+            posizione += Vector3.up * PrimoOstacolo(posizione, Vector3.up, sollevamentoMassimo * vicinanza, raggioCollisione, false);
         }
 
-        // La camera guarda sempre il personaggio (quando non è alzata è la stessa rotazione di prima).
-        transform.SetPositionAndRotation(posizione, Quaternion.LookRotation(fuoco - posizione));
+        // Lontano dai muri la camera guarda la testa del personaggio (come prima). Più si avvicina a un
+        // muro, più guarda un punto davanti a lui, così non punta mai dritta in giù e si vede dove si va.
+        Vector3 avanti = rotazione * Vector3.forward;
+        avanti.y = 0f;
+        Vector3 puntoGuardato = fuoco + avanti.normalized * (distanzaSguardoAvanti * Mathf.Max(0f, vicinanza));
+        transform.SetPositionAndRotation(posizione, Quaternion.LookRotation(puntoGuardato - posizione));
 
         // Se nonostante tutto la camera finisce addosso al personaggio, lo nasconde invece di
         // mostrare l'interno del suo corpo.
@@ -156,14 +164,16 @@ public class CameraTerzaPersona : MonoBehaviour
 
     // Quanto può allontanarsi la camera dal personaggio, in linea retta all'indietro, senza toccare ostacoli.
     // "raggio" è lo spessore della camera nel controllo.
-    float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio)
+    float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio, bool contaGiaToccati)
     {
-        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio), distanzaMinima);
+        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, contaGiaToccati), distanzaMinima);
     }
 
     // Distanza dal primo ostacolo partendo da "da" verso "direzione" (o distanzaMassima se non c'è niente).
     // Muri, pavimento, strutture e nemici fermano la camera; il personaggio stesso no.
-    float PrimoOstacolo(Vector3 da, Vector3 direzione, float distanzaMassima, float raggio)
+    // contaGiaToccati: se falso, ignora gli oggetti che la sfera tocca già alla partenza
+    // (Unity li segnala a distanza zero, anche se non stanno nella direzione del controllo).
+    float PrimoOstacolo(Vector3 da, Vector3 direzione, float distanzaMassima, float raggio, bool contaGiaToccati)
     {
         if (distanzaMassima <= 0f) return 0f;
 
@@ -172,6 +182,7 @@ public class CameraTerzaPersona : MonoBehaviour
         foreach (RaycastHit colpo in colpi)
         {
             if (colpo.collider.transform.IsChildOf(bersaglio)) continue;
+            if (!contaGiaToccati && colpo.distance <= 0f) continue;
             libera = Mathf.Min(libera, colpo.distance);
         }
         return libera;
