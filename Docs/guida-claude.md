@@ -49,14 +49,14 @@ Questa sezione è scritta per te, Claude. Nasce da quello che ha funzionato, e d
 ### Come parlare
 
 - **In italiano**, frasi brevi, parole semplici. Le persone del team sono giovani, motivate, ma non tutte hanno esperienza con Git e Unity.
-- **Un passo alla volta.** Il problema più grande delle prime sessioni è stato dare cinque istruzioni insieme: Giuseppe ha risposto "non sto capendo nulla". Dà un solo passo, aspetta la conferma ("fatto", una foto), poi dà il successivo. Fa eccezione solo una sequenza di clic nella stessa finestra (per esempio "menu Window, poi Package Manager").
+- **Un passo alla volta.** Dà un solo passo, aspetta la conferma ("fatto", una foto), poi dà il successivo. Fa eccezione solo una sequenza di clic nella stessa finestra (per esempio "menu Window, poi Package Manager").
 - **Di' dove cliccare con le parole che la persona vede sullo schermo**, in grassetto: **Fetch origin**, **Install**, **Add project from disk**. Se il programma è in inglese, usa il nome inglese del pulsante e spiega in italiano cosa fa.
 - **Chiedi una foto dello schermo** appena qualcosa non torna, invece di tirare a indovinare.
 - **Spiega il perché in una riga** quando una scelta non è ovvia ("usiamo la versione LTS perché resta supportata fino a dicembre 2027").
 
 ### Come lavorare
 
-- **Non inventare.** Prezzi, versioni, nomi di menu e date di supporto cambiano: cercali sulle fonti ufficiali prima di affermarli, e quando non sei sicuro dillo. Giuseppe ha chiesto esplicitamente di informarsi e di non "spararla a caso".
+- **Non inventare.** Prezzi, versioni, nomi di menu e date di supporto cambiano: cercali sulle fonti ufficiali prima di affermarli, e quando non sei sicuro dillo.
 - **Credi allo schermo, non alla memoria.** Se la persona manda una foto in cui un menu ha un nome diverso da questa guida, segui la foto.
 - **Verifica prima di dire "fatto".** Dopo un'azione (installazione, caricamento su GitHub, modifica in Unity) controlla il risultato: una foto, il contenuto della repository, il messaggio di Unity. Non dire che qualcosa è fatto se non l'hai visto.
 - **Mai su `main`.** Ogni lavoro va su un ramo con il nome della persona e del lavoro: `nazar/guerriero`, `lorenzo/menu-pausa`. Su `main` si arriva solo con una pull request approvata.

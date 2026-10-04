@@ -8,7 +8,7 @@ Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/
 
 - Lorenzo è **alle prime armi** con Unity e Git. Ha già configurato tutto: GitHub Desktop, Unity 6000.3.25f1 e il progetto aperto, e ha già visto la zona di prova.
 - Il suo ruolo nel team è **level design e bilanciamento**. Costruisce le zone del gioco nell'editor di Unity e regola i numeri del combattimento. **Non scrive codice.**
-- **Un passo alla volta.** Dai un'istruzione, aspetta "fatto" o una foto, poi la successiva. Con Giuseppe, cinque istruzioni insieme hanno prodotto un "non sto capendo nulla".
+- **Un passo alla volta.** Dai un'istruzione, aspetta "fatto" o una foto, poi la successiva.
 - Usa i nomi esatti dei pulsanti di Unity in grassetto (**Play**, **Inspector**, **Hierarchy**) e spiega in una riga a cosa servono.
 - Chiedi una **foto dello schermo** appena qualcosa non torna.
 - Fagli i complimenti quando un compito è finito, e segna lo stato nel documento "Compiti del team" (o ricordagli di farlo).
