@@ -23,6 +23,8 @@ public class Bersaglio : MonoBehaviour
 
     float vita;
     bool morto;
+
+    public bool Morto => morto;
     bool staAttaccando;
     float prossimoAttacco;
     Renderer aspetto;
