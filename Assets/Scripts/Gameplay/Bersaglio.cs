@@ -29,6 +29,13 @@ public class Bersaglio : MonoBehaviour
 
     public bool Morto => morto;
     bool staAttaccando;
+    float inizioAttacco;
+
+    // Letti da AnimazioneUmanoide: durante il preavviso il nemico carica il colpo, poi colpisce.
+    public bool StaAttaccando => staAttaccando;
+    public float TempoAttacco => Time.time - inizioAttacco;
+    public float DurataPreavviso => preavviso;
+    public int NumeroAttacco { get; private set; } // cresce a ogni attacco: serve a cambiare movimento
     float prossimoAttacco;
     // Tutte le parti visibili del nemico, ognuna con il suo colore di partenza.
     Renderer[] aspetto;
@@ -38,7 +45,7 @@ public class Bersaglio : MonoBehaviour
 
     void Awake()
     {
-        AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f));
+        AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f), AspettoUmanoide.Arma.Mazza);
 
         // Solo le parti accese: la forma originale nascosta dalla figura umana resta spenta.
         var parti = new List<Renderer>();
@@ -75,6 +82,8 @@ public class Bersaglio : MonoBehaviour
     IEnumerator Attacca()
     {
         staAttaccando = true;
+        inizioAttacco = Time.time;
+        NumeroAttacco++;
 
         Vector3 verso = giocatore.transform.position - transform.position;
         verso.y = 0f;

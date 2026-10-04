@@ -84,6 +84,15 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float durataBarcollamento = 0.3f;
 
     public Stato StatoAttuale => stato;
+
+    // Letti da AnimazioneUmanoide per muovere la figura nel momento giusto.
+    public float TempoNelloStato => tempoNelloStato;
+    public int ColpoCombo => colpoCombo;               // 0, 1, 2: quale colpo della combo sta facendo
+    public float DurataPreparazioneAttacco => preparazioneAttacco;
+    public float DurataColpoAttivo => colpoAttivo;
+    public float DurataRecuperoAttacco => recuperoAttacco;
+    public float DurataSchivata => durataSchivata;
+    public Vector3 DirezioneSchivata => direzioneSchivata;
     public float Vita { get; private set; }
     public float VitaMassima => vitaMassima;
 
@@ -104,6 +113,7 @@ public class GiocatoreControllo : MonoBehaviour
     float durataStordimento;
     float velocitaVerticale;
     Vector3 direzioneSchivata;
+    int colpoCombo;
     float schivataPrenotataFino = -1f;
     float attaccoPrenotatoFino = -1f;
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
@@ -115,7 +125,7 @@ public class GiocatoreControllo : MonoBehaviour
     void Awake()
     {
         // Aspetto provvisorio da figura umana al posto della capsula (vedi AspettoUmanoide).
-        AspettoUmanoide.Prepara(gameObject, new Color(0.05f, 0.05f, 0.06f));
+        AspettoUmanoide.Prepara(gameObject, new Color(0.05f, 0.05f, 0.06f), AspettoUmanoide.Arma.Spada);
 
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
@@ -301,7 +311,7 @@ public class GiocatoreControllo : MonoBehaviour
         if (AttaccoRichiesto && resistenza.HaResistenza && tempoNelloStato >= fineColpo + recuperoAttacco * 0.4f)
         {
             if (!SonoAgganciato && direzioneInput.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(direzioneInput);
-            IniziaAttacco();
+            IniziaAttacco(true);
             return Vector3.zero;
         }
         if (tempoNelloStato >= fineAttacco) CambiaStato(Stato.Libero);
@@ -327,8 +337,10 @@ public class GiocatoreControllo : MonoBehaviour
         CambiaStato(Stato.Schivata);
     }
 
-    void IniziaAttacco()
+    // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
+    void IniziaAttacco(bool concatenato = false)
     {
+        colpoCombo = concatenato ? (colpoCombo + 1) % 3 : 0;
         resistenza.Spendi(costoAttacco);
         attaccoPrenotatoFino = -1f;
         colpitiInQuestoAttacco.Clear();

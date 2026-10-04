@@ -13,9 +13,12 @@ public static class AspettoUmanoide
 {
     const string NomeFigura = "Aspetto umanoide";
 
+    // Arma provvisoria tenuta nella mano destra: fa capire meglio i movimenti d'attacco.
+    public enum Arma { Nessuna, Spada, Mazza }
+
     // Crea la figura come figlia di "chi" e nasconde la forma originale.
     // coloreViso: colore della fascia sul viso (scura per il giocatore, rosso cupo per i nemici).
-    public static void Prepara(GameObject chi, Color coloreViso)
+    public static void Prepara(GameObject chi, Color coloreViso, Arma arma = Arma.Nessuna)
     {
         if (chi.transform.Find(NomeFigura) != null) return; // già fatta
 
@@ -50,6 +53,8 @@ public static class AspettoUmanoide
         Parte(figura, "Testa", PrimitiveType.Sphere, new Vector3(0f, 0.82f, 0f), new Vector3(0.32f, 0.34f, 0.32f), corpo);
         Parte(figura, "Viso", PrimitiveType.Cube, new Vector3(0f, 0.84f, 0.14f), new Vector3(0.24f, 0.07f, 0.06f), viso);
 
+        if (arma != Arma.Nessuna) CreaArma(spallaDestra, arma, corpo);
+
         // La forma originale e il blocchetto "Direzione" del giocatore non servono più: il viso mostra dove guarda.
         originale.enabled = false;
         Transform direzione = chi.transform.Find("Direzione");
@@ -57,6 +62,28 @@ public static class AspettoUmanoide
 
         // Camminata: gambe e braccia oscillano mentre il personaggio si muove (vedi AnimazioneUmanoide).
         chi.AddComponent<AnimazioneUmanoide>().Imposta(figura, ancaSinistra, ancaDestra, spallaSinistra, spallaDestra);
+    }
+
+    // L'arma prosegue la linea del braccio oltre la mano, un po' inclinata in avanti:
+    // a braccio giù punta verso terra davanti ai piedi, a braccio alzato punta in avanti.
+    static void CreaArma(Transform spalla, Arma arma, Material materialeBase)
+    {
+        Transform mano = Perno(spalla, "Mano destra", new Vector3(0f, -0.72f, 0f));
+        mano.localRotation = Quaternion.Euler(-35f, 0f, 0f);
+
+        if (arma == Arma.Spada)
+        {
+            Material ferro = new Material(materialeBase) { color = new Color(0.6f, 0.62f, 0.66f) };
+            Material cuoio = new Material(materialeBase) { color = new Color(0.25f, 0.15f, 0.08f) };
+            Parte(mano, "Elsa", PrimitiveType.Cube, new Vector3(0f, -0.04f, 0f), new Vector3(0.22f, 0.04f, 0.06f), cuoio);
+            Parte(mano, "Lama", PrimitiveType.Cube, new Vector3(0f, -0.46f, 0f), new Vector3(0.06f, 0.8f, 0.03f), ferro);
+        }
+        else
+        {
+            Material legno = new Material(materialeBase) { color = new Color(0.3f, 0.2f, 0.12f) };
+            Parte(mano, "Manico mazza", PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.07f, 0.6f, 0.07f), legno);
+            Parte(mano, "Testa mazza", PrimitiveType.Cube, new Vector3(0f, -0.64f, 0f), new Vector3(0.2f, 0.22f, 0.2f), legno);
+        }
     }
 
     static Transform Perno(Transform genitore, string nome, Vector3 posizione)
