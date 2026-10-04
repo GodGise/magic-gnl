@@ -13,8 +13,11 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
 
+## Motore
+- **Unity (C#)**, deciso. Serializzazione degli asset su "Force Text", controllo versione "Visible Meta Files".
+
 ## Decisioni ancora aperte
-- Motore (proposta: Unity, C#), nome del gioco, prospettiva, numero di giocatori in co-op (2 o 4).
+- Nome del gioco, prospettiva, numero di giocatori in co-op (2 o 4).
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
@@ -26,3 +29,15 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - Messaggi di commit in italiano, imperativi, con una riga di riepilogo.
 - Modelli 3D: nomi in minuscolo con trattini, scala 1 unità = 1 metro, pochi poligoni.
 - Nessun token, chiave o password nel repository.
+
+## Come lavora Claude su questo progetto
+- Claude scrive il codice C# e gli script Python per Blender, e li carica su un **ramo a parte** (`claude/nome-funzione`), mai direttamente su `main`.
+- Dopo ogni caricamento Claude scrive cosa controllare. Chi lo prova in Unity dice se va bene; solo allora il ramo si unisce a `main`.
+- Claude non può aprire Unity né vedere il gioco in esecuzione: i test nel motore si fanno sul PC di chi lavora.
+- Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
+
+## Cartelle
+- `Art/` modelli, texture, animazioni (Nazar)
+- `Gameplay/` personaggio, combattimento, nemici
+- `Rete/` co-op e integrazione Steam
+- `Docs/` documenti di design
