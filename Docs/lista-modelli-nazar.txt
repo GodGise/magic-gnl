@@ -1,0 +1,79 @@
+LISTA MODELLI PER NAZAR - magic-GNL
+====================================
+
+LA PRIMA REGIONE
+Il gioco inizia sotto terra: il personaggio è rinchiuso in una prigione buia
+(la "gattabuia") e deve scappare. Si passa dalle celle ai sotterranei, poi
+alle grotte, fino all'uscita in superficie.
+Quindi i primi modelli sono pietra, ferro, legno marcio e roccia.
+Per l'uscita servono anche alberi e pietre.
+
+REGOLE PER TUTTI I MODELLI
+- Stile PS2: pochi poligoni, texture piccole (256 o 512 px).
+- Scala: 1 unità di Blender = 1 metro. Una porta è alta circa 2 metri.
+- Il punto di origine (pivot) va alla base del modello, al centro.
+- Nomi in minuscolo con trattini e numero di variante: roccia-01, roccia-02.
+- Esportazione in FBX, nella cartella Assets/Art/Modelli/ del progetto.
+- Non copiare mai modelli o texture da altri giochi o siti: solo cose fatte
+  da te o con licenza libera CC0.
+- Nella prima settimana proponi tu il limite di poligoni per oggetto
+  piccolo, medio e grande, e lo decidiamo insieme.
+
+COME SI LAVORA
+1. Prima di iniziare scrivi nel canale Discord #darkfantasyaggiornamenti
+   cosa fai, per esempio: "Nazar: oggi rocce e stalattiti".
+2. Lavora sul ramo nazar/kit-prigione (in GitHub Desktop: Current branch,
+   New branch, poi Publish branch).
+3. A fine giornata: Commit, Push, e scrivi nel canale cosa hai caricato.
+4. Carica anche i file .meta che Unity crea accanto ai tuoi FBX.
+5. Non caricare render, video o versioni di prova: occupano lo spazio
+   condiviso di GitHub.
+
+-------------------------------------------------------------
+LISTA IN ORDINE (dal più facile al più difficile)
+-------------------------------------------------------------
+
+PARTE 1 - PIETRE E ROCCE (per prendere la mano)
+[ ] 1. sasso-01/02/03: sassi piccoli da sparpagliare a terra
+[ ] 2. roccia-01/02/03: rocce medie, alte più o meno quanto una persona
+[ ] 3. masso-01/02: massi grandi che bloccano un passaggio
+[ ] 4. stalattite-01/02: punte che scendono dal soffitto della grotta
+[ ] 5. stalagmite-01/02: punte che salgono da terra
+
+PARTE 2 - LA PRIGIONE (la prima cosa che vede il giocatore)
+[ ] 6. muro-pietra-01: pezzo di muro dritto, largo 2 metri, si ripete
+[ ] 7. muro-pietra-angolo-01: angolo dello stesso muro
+[ ] 8. pavimento-pietra-01: pezzo di pavimento 2x2 metri
+[ ] 9. sbarre-cella-01: parete di sbarre di ferro
+[ ] 10. porta-cella-01: porta di sbarre che si apre (cerniera su un lato)
+[ ] 11. catene-muro-01: catene con manette appese al muro
+[ ] 12. torcia-muro-01: torcia con supporto di ferro da muro
+[ ] 13. paglia-01: mucchio di paglia per terra (il letto del prigioniero)
+[ ] 14. secchio-01: secchio di legno
+[ ] 15. tavolo-carceriere-01 e sgabello-01
+[ ] 16. botte-01 e cassa-01: botte e cassa di legno
+[ ] 17. chiave-cella-01: grossa chiave di ferro (oggetto da raccogliere)
+[ ] 18. scala-pietra-01: rampa di scale che sale
+
+PARTE 3 - LE GROTTE (fra la prigione e l'uscita)
+[ ] 19. parete-grotta-01/02: pezzi di parete di roccia irregolare
+[ ] 20. radici-soffitto-01: radici che pendono dal soffitto
+[ ] 21. funghi-01: gruppo di funghi (si possono far brillare nel gioco)
+[ ] 22. ossa-01 e teschio-01: resti di chi non è riuscito a scappare
+[ ] 23. ponte-legno-01: passerella di legno marcio sopra un crepaccio
+[ ] 24. ragnatela-01: un piano semplice con texture trasparente
+
+PARTE 4 - L'USCITA IN SUPERFICIE: ALBERI E PIETRE
+[ ] 25. albero-morto-01/02/03: alberi secchi senza foglie
+[ ] 26. albero-01/02: alberi con chioma, foglie fatte con pochi piani
+[ ] 27. ceppo-01: ceppo tagliato
+[ ] 28. tronco-caduto-01: tronco a terra
+[ ] 29. cespuglio-01/02
+[ ] 30. uscita-grotta-01: l'apertura nella roccia da cui si esce alla luce
+
+DOPO
+- Il Guerriero (il personaggio) arriva quando la storia del protagonista
+  è decisa. Te lo diciamo noi.
+
+Se non sai come fare qualcosa (esportazione, scala, texture, GitHub),
+chiedilo al tuo Claude: ha la guida del progetto.

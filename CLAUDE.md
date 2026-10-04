@@ -14,6 +14,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
+- **Prima regione: sotto terra.** Il gioco inizia con la fuga dalla prigione buia dove è rinchiuso il protagonista: celle, sotterranei, grotte, poi l'uscita in superficie. Lista dei modelli per Nazar: `Docs/lista-modelli-nazar.txt`.
 - Ciclo giorno e notte: **45 minuti reali di luce** (dalle 6 alle 18 del gioco) e **50 minuti di notte** (dalle 18 alle 6), per l'atmosfera.
 - Prospettiva: **terza persona**.
 - Co-op: **da 1 a 3 giocatori** (si gioca anche da soli).
