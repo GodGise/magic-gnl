@@ -28,7 +28,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
 - Nazar: arte 3D in Blender (cartella `Art/`), con l'aiuto di Giuseppe.
-- Lorenzo: **level design e bilanciamento**. Possiede la scena `Assets/Scenes/ZonaProva.unity` e regola i numeri del combattimento dall'Inspector.
+- Lorenzo: **level design e bilanciamento**. Possiede la scena `Assets/Scenes/ZonaProva.unity` e regola i numeri del combattimento dall'Inspector. Può scrivere codice con il suo Claude nella cartella `Assets/Scripts/Livelli/` (porte, leve, trappole, checkpoint, punti di comparsa dei nemici). Gli script già esistenti in `Gameplay/` e `Ambiente/` li modifica solo dopo averlo detto a Giuseppe, per non lavorare in due sullo stesso file.
 Ogni persona modifica solo la propria area; per toccare quella di un altro, chiedere prima.
 - La zona di prova è di Lorenzo: nessuno usa più il menu "Crea zona di prova" (cancellerebbe il suo lavoro). Claude non modifica quella scena: consegna nemici e oggetti come **prefab** e Lorenzo li mette nella scena.
 - Ogni sera chi ha lavorato carica il suo ramo e lo scrive nel gruppo; Giuseppe prova e unisce a `main`.
@@ -52,6 +52,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - `Assets/Scripts/Gameplay/` personaggio, combattimento, nemici
 - `Assets/Scripts/Rete/` co-op e integrazione Steam
 - `Assets/Scripts/Ambiente/` ciclo giorno e notte, torce, effetto retro PS2
+- `Assets/Scripts/Livelli/` script degli elementi delle zone (Lorenzo)
 - `Assets/Segnaposto/` materiali e forme provvisorie della zona di prova, da sostituire con l'arte vera
 - Menu dell'editor **magic-gnl**: "Crea scena di prova" (combattimento) e "Crea zona di prova (villaggio in rovina)" (prima zona giocabile)
 - `Docs/` documenti di design
