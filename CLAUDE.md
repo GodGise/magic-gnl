@@ -2,6 +2,8 @@
 
 Questo file è il punto di partenza di ogni sessione di Claude su questo progetto. Va aggiornato quando si prende una decisione.
 
+La guida completa per il Claude di ogni membro del team (configurazione, flusso di lavoro, regole, problemi comuni) è in `Docs/guida-claude.md`. Se le due fonti non coincidono, vale questo file.
+
 ## Il gioco
 Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il protagonista deve riprendersi l'anima rubata. Single player e co-op. Uscita su Steam, Accesso Anticipato.
 
