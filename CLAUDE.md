@@ -14,6 +14,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
+- Ciclo giorno e notte: un giorno completo dura **45 minuti reali**, con la notte 10 minuti più lunga del giorno (17,5 di giorno, 27,5 di notte), per l'atmosfera.
 - Prospettiva: **terza persona**.
 - Co-op: **da 1 a 3 giocatori** (si gioca anche da soli).
 - Aggancio del bersaglio (lock-on): la camera resta puntata sul nemico; **con la rotellina del mouse si cambia bersaglio**.
@@ -39,7 +40,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - Claude si occupa del **codice C#** (gameplay, combattimento, rete co-op). Blender e i modelli sono di Giuseppe e Nazar.
 - Claude carica il codice su un **ramo a parte** (`claude/nome-funzione`), mai direttamente su `main`.
 - Dopo ogni caricamento Claude scrive cosa controllare. Chi lo prova in Unity dice se va bene; solo allora il ramo si unisce a `main`.
-- Claude non può aprire Unity né vedere il gioco in esecuzione: i test nel motore si fanno sul PC di chi lavora.
+- Le prove in Unity e la ricerca dei problemi le fa Giuseppe (o chi lavora), per non consumare crediti: Claude non usa il controllo dello schermo per provare, salvo richiesta esplicita. Dopo ogni caricamento Claude scrive esattamente cosa provare.
 - Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
 - Claude crea gli script senza file `.meta` (li genera Unity). La prima volta che un ramo di Claude si apre in Unity, i `.meta` nuovi vanno salvati e caricati sullo stesso ramo prima dell'unione, altrimenti ogni PC ne genera di diversi e i collegamenti nelle scene si rompono.
 
