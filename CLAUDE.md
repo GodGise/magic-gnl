@@ -5,12 +5,13 @@ Questo file è il punto di partenza di ogni sessione di Claude su questo progett
 La guida completa per il Claude di ogni membro del team (configurazione, flusso di lavoro, regole, problemi comuni) è in `Docs/guida-claude.md`. Se le due fonti non coincidono, vale questo file.
 
 ## Il gioco
-Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il protagonista deve riprendersi l'anima rubata. Single player e co-op. Uscita su Steam, Accesso Anticipato.
+Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), con un'atmosfera alla Signore degli Anelli (nomi, luoghi e personaggi tutti inventati da noi). Gli orchi razziano di notte Villaggio Lago Nero in cerca di una reliquia antica; il protagonista perde la famiglia, si sveglia nella tana degli orchi, scappa e parte alla ricerca del figlio, fino alla scelta fra recuperare la reliquia o vendicarsi del druido che comanda gli orchi. Storia completa e note di design: `Docs/storia.md`. Single player e co-op. Uscita su Steam, Accesso Anticipato.
 
 ## Decisioni prese
 - Combattimento d'azione ispirato a Elden Ring ma accessibile. Tre mosse fondamentali: **parata, schivata, attacco**. Niente d20.
 - Molte scelte per il giocatore (build, approccio, storia).
-- Tre personaggi giocabili: Guerriero, Ladro, Stregone. Prima versione giocabile (vertical slice): solo il Guerriero (proposta).
+- Tre personaggi giocabili: Guerriero, Ladro, Stregone. Prima versione giocabile (vertical slice): solo il Guerriero (proposta). La classe si sceglie all'inizio; l'arma si trova durante la fuga dalla prigione: Guerriero spada e scudo, Ladro arco e pugnale, Stregone bastone incantato e libro.
+- Scelta finale: se il giocatore va direttamente dal druido senza recuperare la reliquia, il druido la usa e ha il triplo della vita e attacchi più forti.
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
