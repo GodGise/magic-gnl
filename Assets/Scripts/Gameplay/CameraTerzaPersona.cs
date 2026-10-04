@@ -7,8 +7,8 @@ using UnityEngine.InputSystem;
 // Con l'aggancio del bersaglio attivo la camera si gira da sola verso il nemico agganciato
 // e il mouse non la ruota (la rotellina serve a cambiare nemico).
 // Collisione: la camera non attraversa muri, strutture e pavimento. Se qualcosa si mette tra il
-// personaggio e la camera, questa si avvicina al personaggio; quando lo spazio torna libero
-// si allontana piano piano fino alla distanza normale.
+// personaggio e la camera, questa si avvicina al personaggio in modo graduale (parte un po' prima
+// del muro); quando lo spazio torna libero si allontana piano piano fino alla distanza normale.
 // Come montarlo: sulla Main Camera, trascinando il personaggio nel campo "Bersaglio".
 public class CameraTerzaPersona : MonoBehaviour
 {
@@ -19,6 +19,10 @@ public class CameraTerzaPersona : MonoBehaviour
     [SerializeField] float raggioCollisione = 0.3f;
     [Tooltip("Distanza minima dal personaggio, anche con un muro subito dietro di lui.")]
     [SerializeField] float distanzaMinima = 0.4f;
+    [Tooltip("Controllo più largo che fa partire l'avvicinamento un po' prima del muro, così la camera scivola invece di scattare. Più è grande, prima inizia ad avvicinarsi (ma negli spazi stretti resta più vicina al personaggio).")]
+    [SerializeField] float raggioAnticipo = 0.7f;
+    [Tooltip("Quanto velocemente la camera si avvicina al personaggio quando trova un ostacolo. Più è basso, più l'avvicinamento è dolce.")]
+    [SerializeField] float velocitaAvvicinamento = 8f;
     [Tooltip("Quanto velocemente la camera torna indietro quando lo spazio si libera.")]
     [SerializeField] float velocitaRitorno = 6f;
     [Tooltip("Quali strati contano come ostacoli per la camera (di base tutti).")]
@@ -109,27 +113,29 @@ public class CameraTerzaPersona : MonoBehaviour
         Vector3 fuoco = bersaglio.position + Vector3.up * altezzaFuoco;
         Vector3 indietro = rotazione * Vector3.back;
 
-        // Se c'è un ostacolo la camera si avvicina subito (così non lo attraversa mai);
-        // se lo spazio è libero torna alla distanza normale con un movimento morbido.
-        float distanzaLibera = DistanzaLibera(fuoco, indietro);
-        if (distanzaLibera < distanzaAttuale)
-        {
-            distanzaAttuale = distanzaLibera;
-        }
-        else
-        {
-            float morbidezza = 1f - Mathf.Exp(-velocitaRitorno * Time.deltaTime);
-            distanzaAttuale = Mathf.Lerp(distanzaAttuale, distanzaLibera, morbidezza);
-        }
+        // Due controlli: quello "duro" dice dove si trova davvero il muro (limite assoluto),
+        // quello "di anticipo" è più largo e vede il muro prima, così l'avvicinamento parte in anticipo.
+        float distanzaDura = DistanzaLibera(fuoco, indietro, raggioCollisione);
+        float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, raggioAnticipo));
+
+        // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
+        float velocita = distanzaObiettivo < distanzaAttuale ? velocitaAvvicinamento : velocitaRitorno;
+        float morbidezza = 1f - Mathf.Exp(-velocita * Time.deltaTime);
+        distanzaAttuale = Mathf.Lerp(distanzaAttuale, distanzaObiettivo, morbidezza);
+
+        // Se l'avvicinamento è troppo lento per un ostacolo improvviso, il limite duro vince:
+        // la camera non attraversa mai il muro.
+        distanzaAttuale = Mathf.Min(distanzaAttuale, distanzaDura);
 
         transform.SetPositionAndRotation(fuoco + indietro * distanzaAttuale, rotazione);
     }
 
     // Quanto può allontanarsi la camera dal personaggio, in linea retta all'indietro, senza toccare ostacoli.
-    float DistanzaLibera(Vector3 fuoco, Vector3 indietro)
+    // "raggio" è lo spessore della camera nel controllo.
+    float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio)
     {
         float libera = distanza;
-        RaycastHit[] colpi = Physics.SphereCastAll(fuoco, raggioCollisione, indietro, distanza, stratiOstacoli, QueryTriggerInteraction.Ignore);
+        RaycastHit[] colpi = Physics.SphereCastAll(fuoco, raggio, indietro, distanza, stratiOstacoli, QueryTriggerInteraction.Ignore);
         foreach (RaycastHit colpo in colpi)
         {
             // Il personaggio stesso e i nemici non spingono la camera.
