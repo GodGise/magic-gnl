@@ -135,6 +135,7 @@ public class Bersaglio : MonoBehaviour
     {
         morto = true;
         Suoni.Suona(Suono.MorteNemico, transform.position);
+        if (giocatore != null) giocatore.NemicoSconfitto(); // con il bastone ridà un po' di mana
         StopAllCoroutines();
         staAttaccando = false;
         MostraAspetto(false);

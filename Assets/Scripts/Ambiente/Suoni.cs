@@ -6,7 +6,8 @@ public enum Suono
 {
     PassoErba, PassoTerra, PassoPietra, PassoLegno,
     Fendente, Schivata, ImpattoColpo, Parata, GuardiaRotta, Colpito, Morte, Rinascita,
-    ColpoMuro, CrolloMuro, Leva, PortaPietra, FuocoAcceso, ScattoTrappola, Spuntoni, MorteNemico
+    ColpoMuro, CrolloMuro, Leva, PortaPietra, FuocoAcceso, ScattoTrappola, Spuntoni, MorteNemico,
+    Raccolta, Serratura, BauleAperto, CambioArma, SferaLancio, SferaImpatto, Negato
 }
 
 // Suoni provvisori creati direttamente dal codice, senza file audio.
@@ -131,6 +132,13 @@ public static class Suoni
             case Suono.ScattoTrappola: return Scatto(caso);
             case Suono.Spuntoni: return Spuntoni(caso);
             case Suono.MorteNemico: return MorteNemico(caso);
+            case Suono.Raccolta: return Raccolta();
+            case Suono.Serratura: return Serratura(caso);
+            case Suono.BauleAperto: return BauleAperto(caso);
+            case Suono.CambioArma: return CambioArma(caso);
+            case Suono.SferaLancio: return SferaLancio(caso);
+            case Suono.SferaImpatto: return SferaImpatto(caso);
+            case Suono.Negato: return Negato();
         }
         return Vuoto(0.1f);
     }
@@ -457,6 +465,110 @@ public static class Suoni
             float dente = 2f * (fase - Mathf.Floor(fase)) - 1f;
             filtrato += 0.1f * (dente - filtrato);
             d[i] = Seno(65f, t) * Busta(t, 0.003f, 9f) + filtrato * Busta(t, 0.03f, 4f) * 0.5f;
+        }
+        return d;
+    }
+
+    // Oggetto raccolto: due note brillanti veloci.
+    static float[] Raccolta()
+    {
+        float[] d = Vuoto(0.7f);
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            d[i] = (Seno(880f, t) + Seno(1760f, t) * 0.3f) * Busta(t, 0.005f, 6f) * 0.5f
+                 + (Seno(1318f, t) + Seno(2636f, t) * 0.3f) * Busta(t - 0.09f, 0.005f, 5f) * 0.5f;
+        }
+        return d;
+    }
+
+    // Chiave che gira nella serratura: due scatti metallici e un clac.
+    static float[] Serratura(System.Random caso)
+    {
+        float[] d = Vuoto(0.45f);
+        float[] scatti = { 0f, 0.12f, 0.25f };
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            float somma = 0f;
+            foreach (float s in scatti) somma += Rumore(caso) * Busta(t - s, 0f, 350f) * 0.5f + Seno(1900f, t) * Busta(t - s, 0f, 300f) * 0.4f;
+            somma += Seno(420f, t) * Busta(t - 0.25f, 0.001f, 25f) * 0.6f;
+            d[i] = somma;
+        }
+        return d;
+    }
+
+    // Baule che si apre: cigolio del legno e un luccichio.
+    static float[] BauleAperto(System.Random caso)
+    {
+        float durata = 1.2f;
+        float[] d = Vuoto(durata);
+        float fase = 0f, basso = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            float cigolio = 300f + 200f * Mathf.Sin(2f * Mathf.PI * 3f * t);
+            fase += cigolio / Frequenza;
+            float dente = 2f * (fase - Mathf.Floor(fase)) - 1f;
+            basso += 0.2f * (dente * (0.5f + 0.5f * Rumore(caso)) - basso);
+            float legno = basso * Mathf.Clamp01(t / 0.05f) * Mathf.Clamp01((0.6f - t) / 0.2f);
+            float luccichio = (Seno(1568f, t) + Seno(2093f, t) * 0.7f + Seno(2637f, t) * 0.5f) * Busta(t - 0.55f, 0.01f, 3f) * 0.3f;
+            d[i] = legno * 0.8f + luccichio;
+        }
+        return d;
+    }
+
+    // Cambio arma: fruscio corto e un tintinnio.
+    static float[] CambioArma(System.Random caso)
+    {
+        float[] d = Sibilo(caso, 0.18f, 0.03f, 0.25f, 0.6f);
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            d[i] += (Seno(2400f, t) + Seno(3600f, t) * 0.5f) * Busta(t - 0.12f, 0.001f, 40f) * 0.3f;
+        }
+        return d;
+    }
+
+    // Lancio della sfera magica: soffio con un tono che sale.
+    static float[] SferaLancio(System.Random caso)
+    {
+        float durata = 0.45f;
+        float[] d = Sibilo(caso, durata, 0.05f, 0.3f, 0.5f);
+        float fase = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            fase += Mathf.Lerp(300f, 900f, t / durata) / Frequenza;
+            d[i] += Mathf.Sin(2f * Mathf.PI * fase) * Mathf.Sin(Mathf.PI * t / durata) * 0.4f;
+        }
+        return d;
+    }
+
+    // Impatto della sfera: scoppio con un tono che scende.
+    static float[] SferaImpatto(System.Random caso)
+    {
+        float durata = 0.5f;
+        float[] d = Vuoto(durata);
+        float fase = 0f, basso = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            fase += Mathf.Lerp(700f, 150f, t / durata) / Frequenza;
+            basso += 0.4f * (Rumore(caso) - basso);
+            d[i] = Mathf.Sin(2f * Mathf.PI * fase) * Busta(t, 0.002f, 9f) * 0.6f + basso * Busta(t, 0.001f, 18f) * 0.6f;
+        }
+        return d;
+    }
+
+    // "Non si può": due note basse e corte (porta chiusa, mana finito).
+    static float[] Negato()
+    {
+        float[] d = Vuoto(0.35f);
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            d[i] = Seno(196f, t) * Busta(t, 0.005f, 18f) * 0.5f + Seno(147f, t) * Busta(t - 0.12f, 0.005f, 14f) * 0.5f;
         }
         return d;
     }

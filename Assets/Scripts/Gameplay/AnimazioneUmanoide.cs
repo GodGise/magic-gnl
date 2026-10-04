@@ -85,6 +85,21 @@ public class AnimazioneUmanoide : MonoBehaviour
         new Posa { braccioDestro = new Vector3(-25f, 0f, 0f), braccioSinistro = new Vector3(-20f, 0f, 0f), corpo = new Vector3(22f, 0f, 0f), gambaDestra = new Vector3(30f, 0f, 0f), gambaSinistra = new Vector3(-35f, 0f, 0f), abbassamento = 0.2f }
     };
 
+    // Lancio con il bastone: lo alza in alto dietro la testa, poi lo spinge in avanti verso il nemico.
+    static readonly Posa CaricaIncantesimo = new Posa
+    {
+        braccioDestro = new Vector3(-150f, 0f, 15f), braccioSinistro = new Vector3(-60f, 0f, -20f),
+        gambaDestra = new Vector3(12f, 0f, 0f), gambaSinistra = new Vector3(-10f, 0f, 0f),
+        corpo = new Vector3(-8f, 15f, 0f), abbassamento = 0.03f
+    };
+
+    static readonly Posa ColpoIncantesimo = new Posa
+    {
+        braccioDestro = new Vector3(-75f, 0f, 0f), braccioSinistro = new Vector3(-40f, 0f, -15f),
+        gambaDestra = new Vector3(20f, 0f, 0f), gambaSinistra = new Vector3(-25f, 0f, 0f),
+        corpo = new Vector3(12f, -5f, 0f), abbassamento = 0.1f
+    };
+
     static readonly Posa PosaParata = new Posa
     {
         braccioDestro = new Vector3(-80f, 0f, -30f), braccioSinistro = new Vector3(-80f, 0f, 30f),
@@ -193,6 +208,8 @@ public class AnimazioneUmanoide : MonoBehaviour
         switch (giocatore.StatoAttuale)
         {
             case GiocatoreControllo.Stato.Attacco:
+                if (giocatore.AttaccoMagico)
+                    return PosaTempi(CaricaIncantesimo, ColpoIncantesimo, t, giocatore.DurataPreparazioneIncantesimo, 0.1f, giocatore.DurataRecuperoIncantesimo);
                 return PosaColpo(giocatore.ColpoCombo, t, giocatore.DurataPreparazioneAttacco, giocatore.DurataColpoAttivo, giocatore.DurataRecuperoAttacco);
 
             case GiocatoreControllo.Stato.Schivata:
@@ -250,9 +267,12 @@ public class AnimazioneUmanoide : MonoBehaviour
     // Un colpo della combo: carica durante la preparazione, colpo durante la fase attiva, ritorno nel recupero.
     static Posa PosaColpo(int indice, float t, float preparazione, float attivo, float recupero)
     {
-        Posa carica = Cariche[indice % 3];
-        Posa colpo = Colpi[indice % 3];
+        return PosaTempi(Cariche[indice % 3], Colpi[indice % 3], t, preparazione, attivo, recupero);
+    }
 
+    // Carica, colpo e ritorno in posizione, in base al tempo passato dall'inizio dell'azione.
+    static Posa PosaTempi(Posa carica, Posa colpo, float t, float preparazione, float attivo, float recupero)
+    {
         if (t < preparazione) return Posa.Mescola(Neutra, carica, Mathf.SmoothStep(0f, 1f, t / Mathf.Max(0.01f, preparazione)));
         t -= preparazione;
         if (t < attivo) return Posa.Mescola(carica, colpo, t / Mathf.Max(0.01f, attivo));

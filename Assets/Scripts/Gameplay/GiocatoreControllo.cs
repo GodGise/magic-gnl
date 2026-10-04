@@ -15,6 +15,9 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
+// spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
+// costa mana (terza barra), che si recupera sconfiggendo i nemici.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
@@ -78,6 +81,21 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float arcoAttacco = 120f;
     [SerializeField] float velocitaAffondo = 3f;
 
+    [Header("Bastone magico (si trova nel baule della chiesetta)")]
+    [SerializeField] float manaMassimo = 100f;
+    [Tooltip("Mana speso per ogni sfera.")]
+    [SerializeField] float costoSfera = 20f;
+    [Tooltip("Mana recuperato per ogni nemico sconfitto, in percentuale del massimo (15 = 15%).")]
+    [SerializeField] float manaPerUccisionePercento = 15f;
+    [SerializeField] float dannoSfera = 20f;
+    [SerializeField] float velocitaSfera = 14f;
+    [Tooltip("Se non c'è un nemico agganciato, la sfera va verso il nemico più vicino entro questa distanza.")]
+    [SerializeField] float portataSfera = 20f;
+    [Tooltip("Secondi di carica prima che parta la sfera.")]
+    [SerializeField] float preparazioneIncantesimo = 0.3f;
+    [Tooltip("Secondi dopo il lancio prima di poter rifare un'azione (la schivata si può fare subito).")]
+    [SerializeField] float recuperoIncantesimo = 0.45f;
+
     [Header("Altro")]
     [Tooltip("Per quanti secondi un tasto premuto in anticipo resta valido.")]
     [SerializeField] float memoriaComandi = 0.2f;
@@ -96,11 +114,28 @@ public class GiocatoreControllo : MonoBehaviour
     public float Vita { get; private set; }
     public float VitaMassima => vitaMassima;
 
+    // Armi: la spada c'è sempre, il bastone magico si trova nel baule. Tasto 1 spada, tasto 2 bastone.
+    public enum ArmaImpugnata { Spada, Bastone }
+    public ArmaImpugnata Arma => arma;
+    public bool HaBastone => haBastone;
+    public float Mana { get; private set; }
+    public float ManaMassimo => manaMassimo;
+    public bool AttaccoMagico => attaccoMagico;
+    public float DurataPreparazioneIncantesimo => preparazioneIncantesimo;
+    public float DurataRecuperoIncantesimo => recuperoIncantesimo;
+
     CharacterController controller;
     Resistenza resistenza;
     AggancioBersaglio aggancio;
-    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint;
+    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2;
     bool staSprintando;
+
+    ArmaImpugnata arma = ArmaImpugnata.Spada;
+    bool haBastone;
+    bool attaccoMagico;      // l'attacco in corso è un lancio di sfera (bastone), non un colpo di spada
+    bool sferaLanciata;
+    Bersaglio bersaglioSfera;
+    float prossimoAvvisoMana;
 
     // Dove rinasce il personaggio: all'inizio è il punto di partenza, poi l'ultimo checkpoint toccato.
     Vector3 puntoRinascita;
@@ -148,6 +183,8 @@ public class GiocatoreControllo : MonoBehaviour
         comandoAttacca.Enable();
         comandoPara.Enable();
         comandoSprint.Enable();
+        comandoArma1.Enable();
+        comandoArma2.Enable();
     }
 
     void OnDisable()
@@ -157,6 +194,8 @@ public class GiocatoreControllo : MonoBehaviour
         comandoAttacca.Disable();
         comandoPara.Disable();
         comandoSprint.Disable();
+        comandoArma1.Disable();
+        comandoArma2.Disable();
     }
 
     void OnDestroy()
@@ -166,6 +205,8 @@ public class GiocatoreControllo : MonoBehaviour
         comandoAttacca.Dispose();
         comandoPara.Dispose();
         comandoSprint.Dispose();
+        comandoArma1.Dispose();
+        comandoArma2.Dispose();
     }
 
     void CreaComandi()
@@ -194,6 +235,14 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSprint = new InputAction("Sprint", InputActionType.Button);
         comandoSprint.AddBinding("<Keyboard>/shift");
         comandoSprint.AddBinding("<Gamepad>/leftStickPress");
+
+        // Cambio arma: 1 spada, 2 bastone (sul pad: croce direzionale sinistra e destra).
+        comandoArma1 = new InputAction("ImpugnaSpada", InputActionType.Button);
+        comandoArma1.AddBinding("<Keyboard>/1");
+        comandoArma1.AddBinding("<Gamepad>/dpad/left");
+        comandoArma2 = new InputAction("ImpugnaBastone", InputActionType.Button);
+        comandoArma2.AddBinding("<Keyboard>/2");
+        comandoArma2.AddBinding("<Gamepad>/dpad/right");
     }
 
     void Update()
@@ -206,6 +255,13 @@ public class GiocatoreControllo : MonoBehaviour
 
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
+
+        // Cambio arma, non durante un attacco e non da morti.
+        if (stato != Stato.Morto && stato != Stato.Attacco)
+        {
+            if (comandoArma1.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Spada);
+            if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
+        }
 
         Vector3 direzioneInput = DirezioneDaInput(comandoMuovi.ReadValue<Vector2>());
         Vector3 movimento = Vector3.zero;
@@ -250,7 +306,7 @@ public class GiocatoreControllo : MonoBehaviour
             IniziaSchivata(direzioneInput);
             return Vector3.zero;
         }
-        if (AttaccoRichiesto && resistenza.HaResistenza)
+        if (AttaccoRichiesto && PuoAttaccare())
         {
             IniziaAttacco();
             return Vector3.zero;
@@ -296,6 +352,8 @@ public class GiocatoreControllo : MonoBehaviour
 
     Vector3 AggiornaAttacco(Vector3 direzioneInput)
     {
+        if (attaccoMagico) return AggiornaIncantesimo(direzioneInput);
+
         float fineColpo = preparazioneAttacco + colpoAttivo;
         float fineAttacco = fineColpo + recuperoAttacco;
 
@@ -348,9 +406,44 @@ public class GiocatoreControllo : MonoBehaviour
         CambiaStato(Stato.Schivata);
     }
 
+    // Con la spada serve resistenza; con il bastone serve abbastanza mana (altrimenti avvisa).
+    bool PuoAttaccare()
+    {
+        if (arma == ArmaImpugnata.Spada) return resistenza.HaResistenza;
+        if (Mana >= costoSfera) return true;
+
+        attaccoPrenotatoFino = -1f;
+        if (Time.time >= prossimoAvvisoMana)
+        {
+            prossimoAvvisoMana = Time.time + 1f;
+            MessaggiSchermo.Mostra("Mana insufficiente", 1.5f);
+            Suoni.Suona(Suono.Negato, transform.position + Vector3.up, 0.7f);
+        }
+        return false;
+    }
+
     // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
     void IniziaAttacco(bool concatenato = false)
     {
+        attaccoMagico = arma == ArmaImpugnata.Bastone;
+        if (attaccoMagico)
+        {
+            // Bastone: la sfera parte alla fine della carica, verso il nemico scelto adesso.
+            colpoCombo = 0;
+            sferaLanciata = false;
+            Mana -= costoSfera;
+            bersaglioSfera = ScegliBersaglioSfera();
+            if (bersaglioSfera != null)
+            {
+                Vector3 verso = bersaglioSfera.transform.position - transform.position;
+                verso.y = 0f;
+                if (verso.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(verso);
+            }
+            attaccoPrenotatoFino = -1f;
+            CambiaStato(Stato.Attacco);
+            return;
+        }
+
         colpoCombo = concatenato ? (colpoCombo + 1) % 3 : 0;
         fendenteSuonato = false;
         resistenza.Spendi(costoAttacco);
@@ -358,6 +451,87 @@ public class GiocatoreControllo : MonoBehaviour
         colpitiInQuestoAttacco.Clear();
         if (DirezioneVersoBersaglio(out Vector3 versoBersaglio)) transform.rotation = Quaternion.LookRotation(versoBersaglio);
         CambiaStato(Stato.Attacco);
+    }
+
+    // ---------- Bastone magico ----------
+
+    // Lancio con il bastone: carica, la sfera parte, poi un breve recupero (annullabile con una schivata).
+    Vector3 AggiornaIncantesimo(Vector3 direzioneInput)
+    {
+        if (tempoNelloStato < preparazioneIncantesimo) return Vector3.zero;
+
+        if (!sferaLanciata)
+        {
+            sferaLanciata = true;
+            LanciaSfera();
+        }
+
+        if (SchivataRichiesta && resistenza.HaResistenza)
+        {
+            IniziaSchivata(direzioneInput);
+            return Vector3.zero;
+        }
+        if (tempoNelloStato >= preparazioneIncantesimo + recuperoIncantesimo) CambiaStato(Stato.Libero);
+        return Vector3.zero;
+    }
+
+    void LanciaSfera()
+    {
+        Bersaglio obiettivo = bersaglioSfera != null && !bersaglioSfera.Morto ? bersaglioSfera : ScegliBersaglioSfera();
+        Vector3 partenza = transform.position + Vector3.up * 0.5f + transform.forward * 0.7f;
+        Vector3 direzione = obiettivo != null
+            ? (obiettivo.transform.position + Vector3.up * 0.3f - partenza).normalized
+            : transform.forward;
+
+        SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, dannoSfera, transform);
+        Suoni.Suona(Suono.SferaLancio, partenza, 0.9f);
+    }
+
+    // Il nemico agganciato; se non c'è, il nemico vivo più vicino entro la portata (o nessuno).
+    Bersaglio ScegliBersaglioSfera()
+    {
+        if (SonoAgganciato) return aggancio.Attuale;
+
+        Bersaglio migliore = null;
+        float minima = portataSfera;
+        foreach (Bersaglio b in FindObjectsByType<Bersaglio>(FindObjectsSortMode.None))
+        {
+            if (b == null || b.Morto || !b.isActiveAndEnabled) continue;
+            float d = Vector3.Distance(transform.position, b.transform.position);
+            if (d < minima)
+            {
+                minima = d;
+                migliore = b;
+            }
+        }
+        return migliore;
+    }
+
+    void ImpugnaArma(ArmaImpugnata nuova)
+    {
+        if (nuova == arma) return;
+        if (nuova == ArmaImpugnata.Bastone && !haBastone) return;
+
+        arma = nuova;
+        AspettoUmanoide.MostraArma(gameObject, arma == ArmaImpugnata.Bastone ? AspettoUmanoide.Arma.Bastone : AspettoUmanoide.Arma.Spada);
+        Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.7f);
+    }
+
+    // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
+    public void SbloccaBastone()
+    {
+        if (haBastone) return;
+        haBastone = true;
+        Mana = manaMassimo;
+        AspettoUmanoide.AggiungiBastone(gameObject);
+        ImpugnaArma(ArmaImpugnata.Bastone);
+    }
+
+    // Chiamato da un nemico quando muore: con il bastone si recupera un po' di mana.
+    public void NemicoSconfitto()
+    {
+        if (!haBastone) return;
+        Mana = Mathf.Min(manaMassimo, Mana + manaMassimo * manaPerUccisionePercento / 100f);
     }
 
     bool SonoAgganciato => aggancio != null && aggancio.Agganciato;
@@ -540,13 +714,21 @@ public class GiocatoreControllo : MonoBehaviour
     // Pannello di prova in alto a sinistra: stato, vita, resistenza e comandi.
     void OnGUI()
     {
-        GUI.Box(new Rect(10, 10, 540, 112), GUIContent.none);
-        GUI.Label(new Rect(20, 14, 450, 20), "Stato: " + stato + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
+        // Con il bastone in mano il pannello si allunga per la terza barra, quella del mana.
+        bool conBastone = arma == ArmaImpugnata.Bastone;
+        GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
+        string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
+        GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
         GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
         DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
         GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
+        if (conBastone)
+        {
+            GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
+            DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+        }
 
         if (stato == Stato.Morto)
         {

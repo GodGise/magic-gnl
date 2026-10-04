@@ -14,7 +14,7 @@ public static class AspettoUmanoide
     const string NomeFigura = "Aspetto umanoide";
 
     // Arma provvisoria tenuta nella mano destra: fa capire meglio i movimenti d'attacco.
-    public enum Arma { Nessuna, Spada, Mazza }
+    public enum Arma { Nessuna, Spada, Mazza, Bastone }
 
     // Crea la figura come figlia di "chi" e nasconde la forma originale.
     // coloreViso: colore della fascia sul viso (scura per il giocatore, rosso cupo per i nemici).
@@ -66,24 +66,83 @@ public static class AspettoUmanoide
 
     // L'arma prosegue la linea del braccio oltre la mano, un po' inclinata in avanti:
     // a braccio giù punta verso terra davanti ai piedi, a braccio alzato punta in avanti.
+    // Ogni arma sta in un oggetto con il suo nome ("Spada", "Mazza", "Bastone") sotto la mano destra,
+    // così MostraArma può accenderne una e spegnere le altre.
     static void CreaArma(Transform spalla, Arma arma, Material materialeBase)
     {
         Transform mano = Perno(spalla, "Mano destra", new Vector3(0f, -0.72f, 0f));
         mano.localRotation = Quaternion.Euler(-35f, 0f, 0f);
+        Transform gruppo = Perno(mano, arma.ToString(), Vector3.zero);
 
         if (arma == Arma.Spada)
         {
             Material ferro = new Material(materialeBase) { color = new Color(0.6f, 0.62f, 0.66f) };
             Material cuoio = new Material(materialeBase) { color = new Color(0.25f, 0.15f, 0.08f) };
-            Parte(mano, "Elsa", PrimitiveType.Cube, new Vector3(0f, -0.04f, 0f), new Vector3(0.22f, 0.04f, 0.06f), cuoio);
-            Parte(mano, "Lama", PrimitiveType.Cube, new Vector3(0f, -0.46f, 0f), new Vector3(0.06f, 0.8f, 0.03f), ferro);
+            Parte(gruppo, "Elsa", PrimitiveType.Cube, new Vector3(0f, -0.04f, 0f), new Vector3(0.22f, 0.04f, 0.06f), cuoio);
+            Parte(gruppo, "Lama", PrimitiveType.Cube, new Vector3(0f, -0.46f, 0f), new Vector3(0.06f, 0.8f, 0.03f), ferro);
         }
-        else
+        else if (arma == Arma.Mazza)
         {
             Material legno = new Material(materialeBase) { color = new Color(0.3f, 0.2f, 0.12f) };
-            Parte(mano, "Manico mazza", PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.07f, 0.6f, 0.07f), legno);
-            Parte(mano, "Testa mazza", PrimitiveType.Cube, new Vector3(0f, -0.64f, 0f), new Vector3(0.2f, 0.22f, 0.2f), legno);
+            Parte(gruppo, "Manico mazza", PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.07f, 0.6f, 0.07f), legno);
+            Parte(gruppo, "Testa mazza", PrimitiveType.Cube, new Vector3(0f, -0.64f, 0f), new Vector3(0.2f, 0.22f, 0.2f), legno);
         }
+        else if (arma == Arma.Bastone)
+        {
+            CreaBastone(gruppo, materialeBase);
+        }
+    }
+
+    // Bastone magico: manico di legno con una gemma azzurra luminosa in punta. Come la spada, prosegue
+    // il braccio oltre la mano: a riposo la gemma è bassa davanti ai piedi, quando lancia punta verso il nemico.
+    static void CreaBastone(Transform gruppo, Material materialeBase)
+    {
+        Material legno = new Material(materialeBase) { color = new Color(0.22f, 0.14f, 0.08f) };
+        Material gemma = new Material(materialeBase) { color = new Color(0.4f, 0.8f, 1f) };
+        gemma.EnableKeyword("_EMISSION");
+        gemma.SetColor("_EmissionColor", new Color(0.4f, 0.8f, 1f) * 1.5f);
+
+        Parte(gruppo, "Manico bastone", PrimitiveType.Cube, new Vector3(0f, -0.25f, 0f), new Vector3(0.05f, 1f, 0.05f), legno);
+        Parte(gruppo, "Anello gemma", PrimitiveType.Cube, new Vector3(0f, -0.74f, 0f), new Vector3(0.12f, 0.04f, 0.12f), legno);
+        Parte(gruppo, "Gemma", PrimitiveType.Sphere, new Vector3(0f, -0.83f, 0f), Vector3.one * 0.14f, gemma);
+    }
+
+    // Aggiunge il bastone (spento) nella mano destra della figura di "chi", se non c'è già.
+    public static void AggiungiBastone(GameObject chi)
+    {
+        Transform mano = TrovaFiglio(chi.transform, "Mano destra");
+        if (mano == null || mano.Find(Arma.Bastone.ToString()) != null) return;
+
+        Renderer qualsiasi = mano.GetComponentInChildren<Renderer>(true);
+        Material materialeBase = qualsiasi != null ? qualsiasi.sharedMaterial : null;
+        if (materialeBase == null) return;
+
+        Transform gruppo = Perno(mano, Arma.Bastone.ToString(), Vector3.zero);
+        CreaBastone(gruppo, materialeBase);
+        gruppo.gameObject.SetActive(false);
+    }
+
+    // Accende l'arma indicata nella mano destra e spegne le altre.
+    public static void MostraArma(GameObject chi, Arma arma)
+    {
+        Transform mano = TrovaFiglio(chi.transform, "Mano destra");
+        if (mano == null) return;
+        foreach (Transform gruppo in mano)
+        {
+            gruppo.gameObject.SetActive(gruppo.name == arma.ToString());
+        }
+    }
+
+    // Cerca un figlio con quel nome a qualsiasi profondità.
+    static Transform TrovaFiglio(Transform da, string nome)
+    {
+        foreach (Transform figlio in da)
+        {
+            if (figlio.name == nome) return figlio;
+            Transform trovato = TrovaFiglio(figlio, nome);
+            if (trovato != null) return trovato;
+        }
+        return null;
     }
 
     static Transform Perno(Transform genitore, string nome, Vector3 posizione)
