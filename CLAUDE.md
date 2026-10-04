@@ -47,5 +47,8 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - `Assets/Art/` modelli, texture, animazioni (Nazar e Giuseppe)
 - `Assets/Scripts/Gameplay/` personaggio, combattimento, nemici
 - `Assets/Scripts/Rete/` co-op e integrazione Steam
+- `Assets/Scripts/Ambiente/` ciclo giorno e notte, torce, effetto retro PS2
+- `Assets/Segnaposto/` materiali e forme provvisorie della zona di prova, da sostituire con l'arte vera
+- Menu dell'editor **magic-gnl**: "Crea scena di prova" (combattimento) e "Crea zona di prova (villaggio in rovina)" (prima zona giocabile)
 - `Docs/` documenti di design
 - Il progetto Unity sta nella radice della repository. Non committare `Library/`, `Temp/`, `Logs/`.
