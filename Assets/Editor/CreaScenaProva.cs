@@ -4,7 +4,7 @@ using UnityEngine;
 
 // Strumento dell'editor: crea in un clic una scena per provare il combattimento.
 // Come si usa: menu in alto "magic-gnl > Crea scena di prova". Crea e salva
-// Assets/Scenes/ScenaProva.unity con pavimento, giocatore (capsula), camera e un nemico di prova.
+// Assets/Scenes/ScenaProva.unity con pavimento, giocatore (capsula), camera e tre nemici di prova.
 // Poi basta premere Play.
 public static class CreaScenaProva
 {
@@ -50,15 +50,24 @@ public static class CreaScenaProva
             camera.transform.LookAt(giocatore.transform);
         }
 
-        // Nemico di prova davanti al giocatore.
-        var nemico = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        nemico.name = "NemicoProva";
-        nemico.transform.position = new Vector3(0f, 1f, 5f);
-        nemico.transform.rotation = Quaternion.LookRotation(Vector3.back);
-        nemico.AddComponent<Bersaglio>();
+        // Tre nemici di prova davanti al giocatore: attacca solo quello al centro,
+        // gli altri due servono a provare il cambio di bersaglio con la rotellina.
+        CreaNemico("NemicoProva", new Vector3(0f, 1f, 5f), true);
+        CreaNemico("NemicoSinistra", new Vector3(-4f, 1f, 7f), false);
+        CreaNemico("NemicoDestra", new Vector3(4f, 1f, 7f), false);
 
         if (!AssetDatabase.IsValidFolder("Assets/Scenes")) AssetDatabase.CreateFolder("Assets", "Scenes");
         EditorSceneManager.SaveScene(scena, Percorso);
         Debug.Log("Scena di prova creata in " + Percorso + ". Premi Play per provarla.");
+    }
+
+    static void CreaNemico(string nome, Vector3 posizione, bool attacca)
+    {
+        var nemico = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        nemico.name = nome;
+        nemico.transform.position = posizione;
+        nemico.transform.rotation = Quaternion.LookRotation(Vector3.back);
+        var bersaglio = nemico.AddComponent<Bersaglio>();
+        bersaglio.attaccaIlGiocatore = attacca;
     }
 }

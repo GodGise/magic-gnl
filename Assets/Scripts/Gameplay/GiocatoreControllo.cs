@@ -9,10 +9,13 @@ using UnityEngine.InputSystem;
 //               dei colpi frontali ma consuma resistenza; a resistenza zero la guardia si rompe.
 //   - Attacco:  tasto sinistro del mouse / X (Xbox) o Quadrato (PS). Preparazione, colpo, recupero;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
+// Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
+// A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
 // Il modo più rapido è il menu "magic-gnl > Crea scena di prova", che prepara tutto da solo.
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Resistenza))]
+[RequireComponent(typeof(AggancioBersaglio))]
 public class GiocatoreControllo : MonoBehaviour
 {
     public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto }
@@ -69,6 +72,7 @@ public class GiocatoreControllo : MonoBehaviour
 
     CharacterController controller;
     Resistenza resistenza;
+    AggancioBersaglio aggancio;
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara;
 
     Stato stato = Stato.Libero;
@@ -87,6 +91,7 @@ public class GiocatoreControllo : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
+        aggancio = GetComponent<AggancioBersaglio>();
         Vita = vitaMassima;
         CreaComandi();
     }
@@ -199,9 +204,12 @@ public class GiocatoreControllo : MonoBehaviour
         if (vuoleParare && stato == Stato.Libero) CambiaStato(Stato.Parata);
         else if (!vuoleParare && stato == Stato.Parata) CambiaStato(Stato.Libero);
 
+        // Agganciato: lo sguardo resta sul nemico e ci si muove di lato o indietro.
+        if (DirezioneVersoBersaglio(out Vector3 versoBersaglio)) RuotaVerso(versoBersaglio, dt);
+
         if (direzioneInput.sqrMagnitude < 0.0001f) return Vector3.zero;
 
-        RuotaVerso(direzioneInput, dt);
+        if (!SonoAgganciato) RuotaVerso(direzioneInput, dt);
         float velocita = stato == Stato.Parata ? velocitaInParata : velocitaCorsa;
         return direzioneInput * velocita;
     }
@@ -227,7 +235,7 @@ public class GiocatoreControllo : MonoBehaviour
         }
         if (AttaccoRichiesto && resistenza.HaResistenza && tempoNelloStato >= fineColpo + recuperoAttacco * 0.4f)
         {
-            if (direzioneInput.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(direzioneInput);
+            if (!SonoAgganciato && direzioneInput.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(direzioneInput);
             IniziaAttacco();
             return Vector3.zero;
         }
@@ -243,7 +251,8 @@ public class GiocatoreControllo : MonoBehaviour
         if (direzioneInput.sqrMagnitude > 0.0001f)
         {
             direzioneSchivata = direzioneInput.normalized;
-            transform.rotation = Quaternion.LookRotation(direzioneSchivata);
+            // Da agganciati la schivata non gira il personaggio: resta rivolto al nemico.
+            if (!SonoAgganciato) transform.rotation = Quaternion.LookRotation(direzioneSchivata);
         }
         else
         {
@@ -258,7 +267,21 @@ public class GiocatoreControllo : MonoBehaviour
         resistenza.Spendi(costoAttacco);
         attaccoPrenotatoFino = -1f;
         colpitiInQuestoAttacco.Clear();
+        if (DirezioneVersoBersaglio(out Vector3 versoBersaglio)) transform.rotation = Quaternion.LookRotation(versoBersaglio);
         CambiaStato(Stato.Attacco);
+    }
+
+    bool SonoAgganciato => aggancio != null && aggancio.Agganciato;
+
+    bool DirezioneVersoBersaglio(out Vector3 direzione)
+    {
+        direzione = Vector3.zero;
+        if (!SonoAgganciato) return false;
+        direzione = aggancio.Attuale.transform.position - transform.position;
+        direzione.y = 0f;
+        if (direzione.sqrMagnitude < 0.0001f) return false;
+        direzione.Normalize();
+        return true;
     }
 
     void ControllaColpi()
@@ -372,13 +395,13 @@ public class GiocatoreControllo : MonoBehaviour
     // Pannello di prova in alto a sinistra: stato, vita, resistenza e comandi.
     void OnGUI()
     {
-        GUI.Box(new Rect(10, 10, 380, 112), GUIContent.none);
-        GUI.Label(new Rect(20, 14, 280, 20), "Stato: " + stato);
+        GUI.Box(new Rect(10, 10, 470, 112), GUIContent.none);
+        GUI.Label(new Rect(20, 14, 450, 20), "Stato: " + stato + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
         GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
-        DisegnaBarra(new Rect(20, 52, 360, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
+        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
-        DisegnaBarra(new Rect(20, 86, 360, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
-        GUI.Label(new Rect(20, 98, 370, 20), "WASD muovi, Spazio schiva, Sx attacca, Dx para, Esc mouse");
+        DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
+        GUI.Label(new Rect(20, 98, 460, 20), "WASD muovi, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
     }
 
     static void DisegnaBarra(Rect area, float frazione, Color colore)

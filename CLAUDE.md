@@ -41,6 +41,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - Dopo ogni caricamento Claude scrive cosa controllare. Chi lo prova in Unity dice se va bene; solo allora il ramo si unisce a `main`.
 - Claude non può aprire Unity né vedere il gioco in esecuzione: i test nel motore si fanno sul PC di chi lavora.
 - Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
+- Claude crea gli script senza file `.meta` (li genera Unity). La prima volta che un ramo di Claude si apre in Unity, i `.meta` nuovi vanno salvati e caricati sullo stesso ramo prima dell'unione, altrimenti ogni PC ne genera di diversi e i collegamenti nelle scene si rompono.
 
 ## Cartelle
 - `Assets/Art/` modelli, texture, animazioni (Nazar e Giuseppe)
