@@ -1,18 +1,20 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // Checkpoint (per esempio un altare o un falò): il punto in cui si rinasce dopo la morte.
-// A cosa serve: quando il giocatore gli passa vicino, il checkpoint si accende (cambia colore e fa
-// luce) e diventa il nuovo punto di rinascita. Se il giocatore muore, rinasce davanti all'ultimo
+// A cosa serve: quando il giocatore è vicino compare la scritta "E  Accendi il checkpoint";
+// premendo E (oppure A / Croce sul pad) il checkpoint si accende (cambia colore e fa luce) e
+// diventa il nuovo punto di rinascita. Se il giocatore muore, rinasce davanti all'ultimo
 // checkpoint acceso. Accendendone un altro, quello di prima si spegne.
 // Come montarlo:
 //   1. Crea l'oggetto che fa da altare, per esempio GameObject > 3D Object > Cylinder, schiacciato
 //      (Scale Y piccola), e mettilo sul terreno.
 //   2. Nell'Inspector clicca Add Component e scegli Checkpoint.
-//   3. Nella vista Scene una sfera verde a fil di ferro mostra fin dove si accende, e una pallina azzurra mostra
+//   3. Nella vista Scene una sfera verde a fil di ferro mostra da quanto vicino si può accendere, e una pallina azzurra mostra
 //      dove ricompare il giocatore: tienila sul terreno libero, non dentro un muro.
 public class Checkpoint : MonoBehaviour
 {
-    [Tooltip("Distanza dal centro del checkpoint entro cui il giocatore lo accende.")]
+    [Tooltip("Distanza (in orizzontale) dal centro del checkpoint entro cui il giocatore può accenderlo con E.")]
     [SerializeField] float raggioAttivazione = 2f;
     [Tooltip("Dove ricompare il giocatore rispetto al checkpoint: di base 1,5 m davanti e 1 m più in alto (il centro del personaggio).")]
     [SerializeField] Vector3 spostamentoRinascita = new Vector3(0f, 1f, 1.5f);
@@ -22,9 +24,22 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] float raggioLuce = 7f;
 
     GiocatoreControllo giocatore;
+    InputAction comandoInteragisci;
     Renderer aspetto;
     Color coloreSpento;
     Light luce;
+
+    // Stesso tasto della leva: E sulla tastiera, A (Xbox) o Croce (PS) sul pad.
+    void Awake()
+    {
+        comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
+        comandoInteragisci.AddBinding("<Keyboard>/e");
+        comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
+    }
+
+    void OnEnable() => comandoInteragisci.Enable();
+    void OnDisable() => comandoInteragisci.Disable();
+    void OnDestroy() => comandoInteragisci.Dispose();
 
     void Start()
     {
@@ -46,11 +61,26 @@ public class Checkpoint : MonoBehaviour
 
     void Update()
     {
-        if (giocatore == null || giocatore.UltimoCheckpoint == this) return;
-        if (giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return;
+        if (PuoAccendere() && comandoInteragisci.WasPressedThisFrame()) Accendi();
+    }
 
-        if (Vector3.Distance(giocatore.transform.position, transform.position) <= raggioAttivazione)
-            Accendi();
+    // Vero se il giocatore è vivo, abbastanza vicino e questo checkpoint non è già quello acceso.
+    bool PuoAccendere()
+    {
+        if (giocatore == null || giocatore.UltimoCheckpoint == this) return false;
+        if (giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+
+        Vector3 distanza = giocatore.transform.position - transform.position;
+        distanza.y = 0f;
+        return distanza.magnitude <= raggioAttivazione;
+    }
+
+    // Scritta in basso al centro quando il giocatore può accendere il checkpoint.
+    void OnGUI()
+    {
+        if (!PuoAccendere()) return;
+        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
+        GUI.Box(new Rect(Screen.width * 0.5f - 150f, Screen.height * 0.75f, 300f, 40f), "E   Accendi il checkpoint", stile);
     }
 
     void Accendi()
