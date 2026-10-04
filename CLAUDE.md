@@ -28,10 +28,17 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
 - Nazar: arte 3D in Blender (cartella `Art/`), con l'aiuto di Giuseppe.
-- Lorenzo: **level design e bilanciamento**. Possiede la scena `Assets/Scenes/ZonaProva.unity` e regola i numeri del combattimento dall'Inspector. Può scrivere codice con il suo Claude nella cartella `Assets/Scripts/Livelli/` (porte, leve, trappole, checkpoint, punti di comparsa dei nemici). Gli script già esistenti in `Gameplay/` e `Ambiente/` li modifica solo dopo averlo detto a Giuseppe, per non lavorare in due sullo stesso file.
+- Lorenzo: **level design e bilanciamento**. Possiede la scena `Assets/Scenes/ZonaProva.unity`, regola i numeri del combattimento dall'Inspector e scrive codice con il suo Claude (gli script nuovi delle zone vanno in `Assets/Scripts/Livelli/`).
 Ogni persona modifica solo la propria area; per toccare quella di un altro, chiedere prima.
 - La zona di prova è di Lorenzo: nessuno usa più il menu "Crea zona di prova" (cancellerebbe il suo lavoro). Claude non modifica quella scena: consegna nemici e oggetti come **prefab** e Lorenzo li mette nella scena.
 - Ogni sera chi ha lavorato carica il suo ramo e lo scrive nel gruppo; Giuseppe prova e unisce a `main`.
+
+## Chi lavora su cosa (per non sovrapporsi)
+- **Prima di iniziare** un lavoro, la persona lo annuncia nel canale Discord del team dedicato ai lavori in corso: cosa fa e quali file o aree tocca. Esempio: "Lorenzo: oggi porta della cripta, tocco ZonaProva e Assets/Scripts/Livelli/PortaCripta.cs".
+- **Prima di annunciare**, si legge il canale: se qualcun altro sta già lavorando sugli stessi file o sulla stessa area, ci si accorda prima di iniziare.
+- **Ogni Claude, all'inizio di una sessione di lavoro**: chiede alla persona su cosa lavora e quali file toccherà; le ricorda di leggere il canale e di annunciare; crea subito il ramo con un nome che descrive il lavoro (`persona/lavoro`) e lo pubblica su GitHub (**Publish branch**). GitHub è collegato al canale, quindi la creazione del ramo arriva come notifica automatica.
+- **Alla fine**: si carica il ramo, si apre la pull request e si scrive "finito" nel canale. I caricamenti e le pull request arrivano anche loro come notifica.
+- Il Claude di Giuseppe non scrive su Discord: i suoi lavori si vedono dalle notifiche dei rami `claude/...`.
 - Compiti della settimana: documento "Compiti del team". Istruzioni dettagliate per il Claude di Lorenzo: `Docs/compiti-lorenzo.md`.
 
 ## Convenzioni
@@ -52,7 +59,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - `Assets/Scripts/Gameplay/` personaggio, combattimento, nemici
 - `Assets/Scripts/Rete/` co-op e integrazione Steam
 - `Assets/Scripts/Ambiente/` ciclo giorno e notte, torce, effetto retro PS2
-- `Assets/Scripts/Livelli/` script degli elementi delle zone (Lorenzo)
+- `Assets/Scripts/Livelli/` script degli elementi delle zone (porte, leve, trappole, checkpoint)
 - `Assets/Segnaposto/` materiali e forme provvisorie della zona di prova, da sostituire con l'arte vera
 - Menu dell'editor **magic-gnl**: "Crea scena di prova" (combattimento) e "Crea zona di prova (villaggio in rovina)" (prima zona giocabile)
 - `Docs/` documenti di design

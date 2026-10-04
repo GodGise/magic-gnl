@@ -12,8 +12,13 @@ Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/
 - Usa i nomi esatti dei pulsanti di Unity in grassetto (**Play**, **Inspector**, **Hierarchy**) e spiega in una riga a cosa servono.
 - Chiedi una **foto dello schermo** appena qualcosa non torna.
 - Fagli i complimenti quando un compito è finito, e segna lo stato nel documento "Compiti del team" (o ricordagli di farlo).
-- **Codice: sì, ma nella sua cartella.** Gli script nuovi per la sua zona (porte che si aprono, leve, trappole, checkpoint, punti in cui compaiono i nemici) li scrivete insieme in `Assets/Scripts/Livelli/`, sul suo ramo. Segui le regole del `CLAUDE.md`: commento iniziale in italiano su cosa fa e come montarlo, nomi in italiano, comandi con il pacchetto Input System, valori regolabili dall'Inspector.
-- **Gli script che esistono già** (`Assets/Scripts/Gameplay/`, `Assets/Scripts/Ambiente/`, `Assets/Editor/`) li scrive il Claude di Giuseppe. Se a Lorenzo serve cambiarne uno, prima lo dice a Giuseppe: così non lavorate in due sullo stesso file e non nascono conflitti.
+- **Codice: sì.** Lorenzo può scrivere codice con te, anche modificando script che esistono già. Gli script nuovi per la sua zona (porte, leve, trappole, checkpoint, punti in cui compaiono i nemici) vanno in `Assets/Scripts/Livelli/`. Segui le regole del `CLAUDE.md`: commento iniziale in italiano su cosa fa e come montarlo, nomi in italiano, comandi con il pacchetto Input System, valori regolabili dall'Inspector.
+- **Prima di iniziare, si annuncia.** All'inizio di ogni sessione di lavoro:
+    1. chiedi a Lorenzo su cosa lavora oggi e quali file toccherà;
+    2. fagli leggere il canale Discord dei lavori in corso: se Giuseppe (o il suo Claude, rami `claude/...`) sta già lavorando sugli stessi file, prima si accordano;
+    3. fagli scrivere nel canale cosa fa e quali file tocca, per esempio "Lorenzo: oggi porta della cripta, tocco ZonaProva e Assets/Scripts/Livelli/PortaCripta.cs";
+    4. crea subito il ramo `lorenzo/nome-del-lavoro` e pubblicalo (**Publish branch**): GitHub manda la notifica al canale da solo.
+  Alla fine del lavoro: carica il ramo, apri la pull request, e Lorenzo scrive "finito" nel canale.
 - Dato che Lorenzo è alle prime armi, **spiegagli il codice** che scrivete: cosa fa ogni parte, in parole semplici. E dopo ogni script fagli provare subito in Unity che funzioni, prima di andare avanti.
 - **Dopo il primo Play** con uno script nuovo, Unity crea il suo file `.meta`: va salvato e caricato sullo stesso ramo insieme allo script.
 
@@ -22,7 +27,7 @@ Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/
 1. **La scena è sua.** `Assets/Scenes/ZonaProva.unity` appartiene a Lorenzo: è l'unico che la modifica.
 2. **Mai usare il menu *magic-gnl → Crea zona di prova (villaggio in rovina)*.** Ricrea la scena da zero e cancella tutto il suo lavoro. Se Unity mostra la domanda "Ricrearla da capo?", la risposta è **Annulla**.
 3. **Mai lavorare su `main`.** Tutto il suo lavoro va sul ramo `lorenzo/zona-1`.
-4. **Non toccare** `Assets/Art` (è di Nazar) e gli script già esistenti fuori da `Assets/Scripts/Livelli/` senza averlo detto a Giuseppe.
+4. **Non toccare** `Assets/Art` (è di Nazar), e non iniziare a lavorare su file che qualcun altro ha annunciato nel canale.
 5. **Salvare spesso** in Unity con **Ctrl+S**.
 6. **Ogni sera** salva e carica il ramo da GitHub Desktop (sezione 4) e scrive nel gruppo cosa ha fatto.
 
@@ -56,7 +61,7 @@ Comandi di gioco: **WASD** movimento, **mouse** camera, **Spazio** schivata, **t
 
 **Ogni sera:**
 1. In Unity **Ctrl+S**.
-2. In GitHub Desktop controlla l'elenco dei file cambiati. Devono essere `ZonaProva.unity`, i suoi script in `Assets/Scripts/Livelli/` con i loro `.meta`, e qualche materiale. Se compaiono altri file in `Assets/Scripts` o `Assets/Editor`, fermati e chiedi a Giuseppe.
+2. In GitHub Desktop controlla l'elenco dei file cambiati. Devono essere solo i file annunciati nel canale (per esempio `ZonaProva.unity` e i suoi script, con i loro `.meta`). Se compaiono file che non c'entrano, fermati e chiedi a Giuseppe.
 3. Nel campo **Summary** in basso a sinistra scrive cosa ha fatto (per esempio "Sposta le case della piazza"), poi **Commit to lorenzo/zona-1**.
 4. **Publish branch** la prima volta, **Push origin** le volte dopo.
 5. Scrive nel gruppo: "Ho caricato lorenzo/zona-1: ho fatto ...".
@@ -160,5 +165,5 @@ Domande per guidarlo: "Quanti colpi servono per battere un nemico? Ti sembrano t
 | Ha cancellato qualcosa per sbaglio | **Ctrl+Z**. Se è passato tanto tempo, in GitHub Desktop clic destro sul file e *Discard changes* riporta la scena all'ultimo salvataggio caricato (si perde il lavoro non caricato: chiedi conferma prima) |
 | Il giocatore cade nel vuoto | Un oggetto ha coperto o spostato il suolo, o è stato toccato un Confine: controllare *Suolo* e *Confini* |
 | Errori rossi in Console | Foto del messaggio; probabilmente non dipende da lui: mandarla a Giuseppe |
-| GitHub Desktop mostra script fuori da `Assets/Scripts/Livelli/` tra le modifiche | Non caricarli; chiedere a Giuseppe |
+| GitHub Desktop mostra file che Lorenzo non ha annunciato | Non caricarli; chiedere a Giuseppe |
 | Unity chiede "Ricrearla da capo?" | **Annulla**: qualcuno ha cliccato il menu della zona di prova |
