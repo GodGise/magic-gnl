@@ -120,8 +120,8 @@ public class CameraTerzaPersona : MonoBehaviour
 
         // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
         float velocita = distanzaObiettivo < distanzaAttuale ? velocitaAvvicinamento : velocitaRitorno;
-        float morbidezza = 1f - Mathf.Exp(-velocita * Time.deltaTime);
-        distanzaAttuale = Mathf.Lerp(distanzaAttuale, distanzaObiettivo, morbidezza);
+        float fattoreDistanza = 1f - Mathf.Exp(-velocita * Time.deltaTime);
+        distanzaAttuale = Mathf.Lerp(distanzaAttuale, distanzaObiettivo, fattoreDistanza);
 
         // Se l'avvicinamento è troppo lento per un ostacolo improvviso, il limite duro vince:
         // la camera non attraversa mai il muro.
