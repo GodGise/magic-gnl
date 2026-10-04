@@ -648,6 +648,23 @@ Tutti questi numeri sono campi regolabili dall'Inspector di Unity, senza toccare
 - Il nemico di prova non si muove: è un manichino per allenarsi.
 - Il codice non è ancora pensato per il co-op in rete: andrà adattato quando si sceglierà come gestire la rete.
 
+### 14.5 Aggiunte del 4 ottobre 2026 (sera)
+
+Tutto su `main`, provato da Giuseppe in Unity.
+
+| File | Cosa fa |
+| --- | --- |
+| `Assets/Scripts/Gameplay/AggancioBersaglio.cs` | Aggancio del bersaglio (lock-on): clic della rotellina o pressione della levetta destra per agganciare e sganciare; rotellina o levetta destra per cambiare nemico. Da agganciato il personaggio guarda sempre il nemico e la camera lo segue. Quadratino rosso sopra il bersaglio |
+| `Assets/Scripts/Ambiente/CicloGiornoNotte.cs` | Sole, luna, luce, nebbia e cielo che cambiano con l'ora. 45 minuti reali di luce e 50 di notte; si parte alle 21; tenendo premuto T il tempo accelera |
+| `Assets/Scripts/Ambiente/Torcia.cs` | Luce che tremola come una fiamma, più forte di notte |
+| `Assets/Scripts/Ambiente/EffettoRetro.cs` | Immagine a bassa risoluzione in stile PS2; F2 la accende e la spegne |
+| `Assets/Editor/CreaZonaProva.cs` | Menu **magic-gnl → Crea zona di prova (villaggio in rovina)**: crea `Assets/Scenes/ZonaProva.unity` con sentiero, torce, piazza con pozzo, case distrutte, cimitero, cripta, bosco, rocce, confini e tre nemici |
+| `Assets/Segnaposto/Materiali/` | Materiali provvisori della zona, da sostituire con l'arte vera |
+
+La scena `ZonaProva.unity` è salvata nella repository ed è la base della prima zona: si modifica a mano, il menu serve solo a ricrearla da zero. La scena `ScenaProva.unity` invece è esclusa da Git e si ricrea dal menu quando serve.
+
+Regola nata oggi: Claude crea gli script senza file `.meta`. La prima volta che un ramo si apre in Unity, i `.meta` nuovi vanno salvati sullo stesso ramo prima dell'unione. E le prove in Unity le fanno le persone: Claude non prende il controllo del PC per provare, salvo richiesta esplicita.
+
 ## 15. Compiti e roadmap
 
 Il documento "Compiti dei prossimi 3 giorni" è la versione aggiornata e modificabile dal team: se la persona te lo dà, quello ha la precedenza su questa sezione. Qui c'è la versione del 4 ottobre 2026, per darti il quadro.
