@@ -163,7 +163,12 @@ public static class CreaZonaProva
 
     static void PreparaLuciECielo()
     {
-        var sole = Object.FindFirstObjectByType<Light>();
+        // La luce direzionale creata con la scena diventa il sole (le torce sono luci Point e vanno escluse).
+        Light sole = null;
+        foreach (var luce in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
+        {
+            if (luce.type == LightType.Directional) { sole = luce; break; }
+        }
         if (sole == null)
         {
             sole = new GameObject("Sole").AddComponent<Light>();
