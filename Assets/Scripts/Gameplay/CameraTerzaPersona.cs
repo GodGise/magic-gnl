@@ -25,6 +25,10 @@ public class CameraTerzaPersona : MonoBehaviour
     [SerializeField] float velocitaAvvicinamento = 8f;
     [Tooltip("Quanto velocemente la camera torna indietro quando lo spazio si libera.")]
     [SerializeField] float velocitaRitorno = 6f;
+    [Tooltip("Sotto questa distanza dal personaggio la camera inizia ad alzarsi sopra la sua testa.")]
+    [SerializeField] float distanzaSollevamento = 2f;
+    [Tooltip("Di quanto si alza la camera quando è schiacciata contro un muro (in metri).")]
+    [SerializeField] float altezzaSollevamento = 1.6f;
     [Tooltip("Quali strati contano come ostacoli per la camera (di base tutti).")]
     [SerializeField] LayerMask stratiOstacoli = ~0;
     [Header("Vista")]
@@ -43,6 +47,9 @@ public class CameraTerzaPersona : MonoBehaviour
     float inclinazione = 20f;
     float distanzaAttuale;
     AggancioBersaglio aggancio;
+    Collider corpoPersonaggio;
+    Renderer[] partiPersonaggio;
+    bool personaggioNascosto;
 
     void Awake()
     {
@@ -57,6 +64,8 @@ public class CameraTerzaPersona : MonoBehaviour
         {
             rotazioneOrizzontale = bersaglio.eulerAngles.y;
             aggancio = bersaglio.GetComponent<AggancioBersaglio>();
+            corpoPersonaggio = bersaglio.GetComponent<Collider>();
+            partiPersonaggio = bersaglio.GetComponentsInChildren<Renderer>();
         }
     }
 
@@ -127,23 +136,64 @@ public class CameraTerzaPersona : MonoBehaviour
         // la camera non attraversa mai il muro.
         distanzaAttuale = Mathf.Min(distanzaAttuale, distanzaDura);
 
-        transform.SetPositionAndRotation(fuoco + indietro * distanzaAttuale, rotazione);
+        Vector3 posizione = fuoco + indietro * distanzaAttuale;
+
+        // Più la camera è vicina al personaggio (muro alle spalle), più si alza sopra la sua testa,
+        // invece di finirgli dentro. Prima controlla che sopra non ci sia un soffitto.
+        float vicinanza = 1f - Mathf.InverseLerp(distanzaMinima, distanzaSollevamento, distanzaAttuale);
+        if (vicinanza > 0f)
+        {
+            posizione += Vector3.up * PrimoOstacolo(posizione, Vector3.up, altezzaSollevamento * vicinanza, raggioCollisione);
+        }
+
+        // La camera guarda sempre il personaggio (quando non è alzata è la stessa rotazione di prima).
+        transform.SetPositionAndRotation(posizione, Quaternion.LookRotation(fuoco - posizione));
+
+        // Se nonostante tutto la camera finisce addosso al personaggio, lo nasconde invece di
+        // mostrare l'interno del suo corpo.
+        NascondiPersonaggio(DentroIlPersonaggio(posizione));
     }
 
     // Quanto può allontanarsi la camera dal personaggio, in linea retta all'indietro, senza toccare ostacoli.
     // "raggio" è lo spessore della camera nel controllo.
     float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio)
     {
-        float libera = distanza;
-        RaycastHit[] colpi = Physics.SphereCastAll(fuoco, raggio, indietro, distanza, stratiOstacoli, QueryTriggerInteraction.Ignore);
+        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio), distanzaMinima);
+    }
+
+    // Distanza dal primo ostacolo partendo da "da" verso "direzione" (o distanzaMassima se non c'è niente).
+    // Muri, pavimento, strutture e nemici fermano la camera; il personaggio stesso no.
+    float PrimoOstacolo(Vector3 da, Vector3 direzione, float distanzaMassima, float raggio)
+    {
+        if (distanzaMassima <= 0f) return 0f;
+
+        float libera = distanzaMassima;
+        RaycastHit[] colpi = Physics.SphereCastAll(da, raggio, direzione, distanzaMassima, stratiOstacoli, QueryTriggerInteraction.Ignore);
         foreach (RaycastHit colpo in colpi)
         {
-            // Il personaggio stesso e i nemici non spingono la camera.
             if (colpo.collider.transform.IsChildOf(bersaglio)) continue;
-            if (colpo.collider.GetComponentInParent<Bersaglio>() != null) continue;
             libera = Mathf.Min(libera, colpo.distance);
         }
-        return Mathf.Max(libera, distanzaMinima);
+        return libera;
+    }
+
+    // Vero se la camera è dentro (o quasi) il corpo del personaggio.
+    bool DentroIlPersonaggio(Vector3 posizione)
+    {
+        if (corpoPersonaggio == null) return false;
+        Bounds corpo = corpoPersonaggio.bounds;
+        corpo.Expand(0.6f); // margine: anche a pochi centimetri dal corpo si vedrebbe l'interno
+        return corpo.Contains(posizione);
+    }
+
+    void NascondiPersonaggio(bool nascondi)
+    {
+        if (nascondi == personaggioNascosto || partiPersonaggio == null) return;
+        personaggioNascosto = nascondi;
+        foreach (Renderer parte in partiPersonaggio)
+        {
+            if (parte != null) parte.enabled = !nascondi;
+        }
     }
 
     static void BloccaCursore(bool blocca)
