@@ -395,13 +395,13 @@ public class GiocatoreControllo : MonoBehaviour
     // Pannello di prova in alto a sinistra: stato, vita, resistenza e comandi.
     void OnGUI()
     {
-        GUI.Box(new Rect(10, 10, 380, 112), GUIContent.none);
-        GUI.Label(new Rect(20, 14, 360, 20), "Stato: " + stato + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
+        GUI.Box(new Rect(10, 10, 470, 112), GUIContent.none);
+        GUI.Label(new Rect(20, 14, 450, 20), "Stato: " + stato + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
         GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
-        DisegnaBarra(new Rect(20, 52, 360, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
+        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
-        DisegnaBarra(new Rect(20, 86, 360, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
-        GUI.Label(new Rect(20, 98, 370, 20), "WASD muovi, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
+        DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
+        GUI.Label(new Rect(20, 98, 460, 20), "WASD muovi, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
     }
 
     static void DisegnaBarra(Rect area, float frazione, Color colore)
