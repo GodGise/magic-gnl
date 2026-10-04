@@ -21,7 +21,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
-- Nazar: arte 3D in Blender (cartella `Art/`).
+- Nazar: arte 3D in Blender (cartella `Art/`), con l'aiuto di Giuseppe.
 - Lorenzo: da assegnare.
 Ogni persona modifica solo la propria area; per toccare quella di un altro, chiedere prima.
 
@@ -31,7 +31,8 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - Nessun token, chiave o password nel repository.
 
 ## Come lavora Claude su questo progetto
-- Claude scrive il codice C# e gli script Python per Blender, e li carica su un **ramo a parte** (`claude/nome-funzione`), mai direttamente su `main`.
+- Claude si occupa del **codice C#** (gameplay, combattimento, rete co-op). Blender e i modelli sono di Giuseppe e Nazar.
+- Claude carica il codice su un **ramo a parte** (`claude/nome-funzione`), mai direttamente su `main`.
 - Dopo ogni caricamento Claude scrive cosa controllare. Chi lo prova in Unity dice se va bene; solo allora il ramo si unisce a `main`.
 - Claude non può aprire Unity né vedere il gioco in esecuzione: i test nel motore si fanno sul PC di chi lavora.
 - Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
