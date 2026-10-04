@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Resistenza (stamina) del personaggio.
-// A cosa serve: schivata, attacco e colpi parati consumano resistenza; si ricarica da sola
+// A cosa serve: schivata, attacco, sprint e colpi parati consumano resistenza; si ricarica da sola
 // dopo una breve pausa, ma non mentre si tiene la parata.
 // Come montarlo: aggiungilo allo stesso oggetto del GiocatoreControllo (lo richiede da solo).
 public class Resistenza : MonoBehaviour

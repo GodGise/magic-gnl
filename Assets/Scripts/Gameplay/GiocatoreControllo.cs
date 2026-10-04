@@ -2,8 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Controllo del personaggio giocante: movimento, schivata, parata e attacco.
-// A cosa serve: è il cuore del combattimento. Le tre mosse fondamentali sono
+// Controllo del personaggio giocante: movimento, sprint, schivata, parata e attacco.
+// A cosa serve: è il cuore del combattimento. Oltre alle tre mosse fondamentali c'è lo sprint:
+//   - Sprint:   tieni premuto Shift (o la pressione della levetta sinistra del pad) mentre ti muovi.
+//               Si corre più veloci ma la resistenza scende ogni secondo; a resistenza zero lo sprint
+//               si ferma e ricomincia solo quando ne è tornata un po'.
+// Le tre mosse fondamentali sono
 //   - Schivata: Spazio / tasto B (Xbox) o Cerchio (PS). Breve invulnerabilità all'inizio.
 //   - Parata:   tieni premuto il tasto destro del mouse / LB (Xbox) o L1 (PS). Riduce il danno
 //               dei colpi frontali ma consuma resistenza; a resistenza zero la guardia si rompe.
@@ -31,6 +35,15 @@ public class GiocatoreControllo : MonoBehaviour
     [Header("Movimento")]
     [SerializeField] float velocitaCorsa = 5f;
     [SerializeField] float velocitaInParata = 2f;
+
+    [Header("Sprint")]
+    [SerializeField] float velocitaSprint = 8f;
+    [Tooltip("Resistenza consumata ogni secondo mentre si fa lo sprint.")]
+    [SerializeField] float costoSprintAlSecondo = 15f;
+    [Tooltip("Resistenza minima per iniziare uno sprint (evita che parta e si fermi di continuo a barra quasi vuota).")]
+    [SerializeField] float resistenzaMinimaSprint = 10f;
+
+    [Header("Movimento (altro)")]
     [SerializeField] float velocitaRotazione = 720f;
     [SerializeField] float gravita = -20f;
 
@@ -73,7 +86,8 @@ public class GiocatoreControllo : MonoBehaviour
     CharacterController controller;
     Resistenza resistenza;
     AggancioBersaglio aggancio;
-    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara;
+    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint;
+    bool staSprintando;
 
     Stato stato = Stato.Libero;
     float tempoNelloStato;
@@ -102,6 +116,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSchiva.Enable();
         comandoAttacca.Enable();
         comandoPara.Enable();
+        comandoSprint.Enable();
     }
 
     void OnDisable()
@@ -110,6 +125,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSchiva.Disable();
         comandoAttacca.Disable();
         comandoPara.Disable();
+        comandoSprint.Disable();
     }
 
     void OnDestroy()
@@ -118,6 +134,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSchiva.Dispose();
         comandoAttacca.Dispose();
         comandoPara.Dispose();
+        comandoSprint.Dispose();
     }
 
     void CreaComandi()
@@ -141,6 +158,11 @@ public class GiocatoreControllo : MonoBehaviour
         comandoPara = new InputAction("Para", InputActionType.Button);
         comandoPara.AddBinding("<Mouse>/rightButton");
         comandoPara.AddBinding("<Gamepad>/leftShoulder");
+
+        // "<Keyboard>/shift" vale sia per Shift sinistro sia per quello destro.
+        comandoSprint = new InputAction("Sprint", InputActionType.Button);
+        comandoSprint.AddBinding("<Keyboard>/shift");
+        comandoSprint.AddBinding("<Gamepad>/leftStickPress");
     }
 
     void Update()
@@ -207,11 +229,35 @@ public class GiocatoreControllo : MonoBehaviour
         // Agganciato: lo sguardo resta sul nemico e ci si muove di lato o indietro.
         if (DirezioneVersoBersaglio(out Vector3 versoBersaglio)) RuotaVerso(versoBersaglio, dt);
 
-        if (direzioneInput.sqrMagnitude < 0.0001f) return Vector3.zero;
+        bool inMovimento = direzioneInput.sqrMagnitude > 0.0001f;
+        AggiornaSprint(inMovimento);
+        if (!inMovimento) return Vector3.zero;
 
         if (!SonoAgganciato) RuotaVerso(direzioneInput, dt);
-        float velocita = stato == Stato.Parata ? velocitaInParata : velocitaCorsa;
+
+        float velocita = velocitaCorsa;
+        if (stato == Stato.Parata)
+        {
+            velocita = velocitaInParata;
+        }
+        else if (staSprintando)
+        {
+            velocita = velocitaSprint;
+            // Spendere resistenza ogni frame ferma anche la ricarica, come per le altre azioni.
+            resistenza.Spendi(costoSprintAlSecondo * dt);
+        }
         return direzioneInput * velocita;
+    }
+
+    // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
+    // Parte solo con un po' di resistenza e si ferma quando la barra è vuota.
+    void AggiornaSprint(bool inMovimento)
+    {
+        bool vuoleSprint = comandoSprint.IsPressed() && inMovimento && stato == Stato.Libero;
+
+        if (!vuoleSprint) staSprintando = false;
+        else if (!staSprintando && resistenza.Attuale >= resistenzaMinimaSprint) staSprintando = true;
+        else if (staSprintando && !resistenza.HaResistenza) staSprintando = false;
     }
 
     Vector3 AggiornaAttacco(Vector3 direzioneInput)
@@ -359,6 +405,7 @@ public class GiocatoreControllo : MonoBehaviour
     {
         stato = nuovo;
         tempoNelloStato = 0f;
+        staSprintando = false;
     }
 
     bool NellArcoFrontale(Vector3 punto, float arcoInGradi)
@@ -395,13 +442,13 @@ public class GiocatoreControllo : MonoBehaviour
     // Pannello di prova in alto a sinistra: stato, vita, resistenza e comandi.
     void OnGUI()
     {
-        GUI.Box(new Rect(10, 10, 470, 112), GUIContent.none);
+        GUI.Box(new Rect(10, 10, 540, 112), GUIContent.none);
         GUI.Label(new Rect(20, 14, 450, 20), "Stato: " + stato + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
         GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
         DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
-        GUI.Label(new Rect(20, 98, 460, 20), "WASD muovi, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
+        GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
     }
 
     static void DisegnaBarra(Rect area, float frazione, Color colore)
