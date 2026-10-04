@@ -32,7 +32,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 Ogni persona modifica solo la propria area; per toccare quella di un altro, chiedere prima.
 - La zona di prova è di Lorenzo: nessuno usa più il menu "Crea zona di prova" (cancellerebbe il suo lavoro). Claude non modifica quella scena: consegna nemici e oggetti come **prefab** e Lorenzo li mette nella scena.
 - Ogni sera chi ha lavorato carica il suo ramo e lo scrive nel gruppo; Giuseppe prova e unisce a `main`.
-- Compiti della settimana: documento "Compiti del team".
+- Compiti della settimana: documento "Compiti del team". Istruzioni dettagliate per il Claude di Lorenzo: `Docs/compiti-lorenzo.md`.
 
 ## Convenzioni
 - Messaggi di commit in italiano, imperativi, con una riga di riepilogo.
