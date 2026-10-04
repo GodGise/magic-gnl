@@ -106,7 +106,8 @@ public class GiocatoreControllo : MonoBehaviour
     Vector3 direzioneSchivata;
     float schivataPrenotataFino = -1f;
     float attaccoPrenotatoFino = -1f;
-    readonly HashSet<Bersaglio> colpitiInQuestoAttacco = new HashSet<Bersaglio>();
+    // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
+    readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
 
     bool SchivataRichiesta => Time.time <= schivataPrenotataFino;
     bool AttaccoRichiesto => Time.time <= attaccoPrenotatoFino;
@@ -355,11 +356,23 @@ public class GiocatoreControllo : MonoBehaviour
         foreach (Collider c in trovati)
         {
             Bersaglio bersaglio = c.GetComponentInParent<Bersaglio>();
-            if (bersaglio == null || colpitiInQuestoAttacco.Contains(bersaglio)) continue;
-            if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
+            if (bersaglio != null)
+            {
+                if (colpitiInQuestoAttacco.Contains(bersaglio)) continue;
+                if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
 
-            colpitiInQuestoAttacco.Add(bersaglio);
-            bersaglio.RiceviColpo(dannoAttacco, transform.position);
+                colpitiInQuestoAttacco.Add(bersaglio);
+                bersaglio.RiceviColpo(dannoAttacco, transform.position);
+                continue;
+            }
+
+            // Muri crepati (vedi MuroFragile): un muro è largo, quindi per l'arco conta il suo punto più vicino.
+            MuroFragile muro = c.GetComponentInParent<MuroFragile>();
+            if (muro == null || colpitiInQuestoAttacco.Contains(muro)) continue;
+            if (!NellArcoFrontale(c.ClosestPoint(transform.position), arcoAttacco)) continue;
+
+            colpitiInQuestoAttacco.Add(muro);
+            muro.RiceviColpo(transform.position);
         }
     }
 
