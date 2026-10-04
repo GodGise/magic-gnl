@@ -103,6 +103,9 @@ public class GiocatoreControllo : MonoBehaviour
 
     void Awake()
     {
+        // Aspetto provvisorio da figura umana al posto della capsula (vedi AspettoUmanoide).
+        AspettoUmanoide.Prepara(gameObject, new Color(0.05f, 0.05f, 0.06f));
+
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();

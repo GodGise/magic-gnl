@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -48,7 +49,7 @@ public class CameraTerzaPersona : MonoBehaviour
     float distanzaAttuale;
     AggancioBersaglio aggancio;
     Collider corpoPersonaggio;
-    Renderer[] partiPersonaggio;
+    readonly List<Renderer> partiNascoste = new List<Renderer>();
     bool personaggioNascosto;
 
     void Awake()
@@ -65,7 +66,6 @@ public class CameraTerzaPersona : MonoBehaviour
             rotazioneOrizzontale = bersaglio.eulerAngles.y;
             aggancio = bersaglio.GetComponent<AggancioBersaglio>();
             corpoPersonaggio = bersaglio.GetComponent<Collider>();
-            partiPersonaggio = bersaglio.GetComponentsInChildren<Renderer>();
         }
     }
 
@@ -186,13 +186,30 @@ public class CameraTerzaPersona : MonoBehaviour
         return corpo.Contains(posizione);
     }
 
+    // Nasconde le parti visibili del personaggio e, quando la camera si allontana, riaccende solo
+    // quelle che aveva spento (le parti già spente, come la capsula sotto la figura umana, restano spente).
     void NascondiPersonaggio(bool nascondi)
     {
-        if (nascondi == personaggioNascosto || partiPersonaggio == null) return;
+        if (nascondi == personaggioNascosto) return;
         personaggioNascosto = nascondi;
-        foreach (Renderer parte in partiPersonaggio)
+
+        if (nascondi)
         {
-            if (parte != null) parte.enabled = !nascondi;
+            partiNascoste.Clear();
+            foreach (Renderer parte in bersaglio.GetComponentsInChildren<Renderer>())
+            {
+                if (!parte.enabled) continue;
+                parte.enabled = false;
+                partiNascoste.Add(parte);
+            }
+        }
+        else
+        {
+            foreach (Renderer parte in partiNascoste)
+            {
+                if (parte != null) parte.enabled = true;
+            }
+            partiNascoste.Clear();
         }
     }
 
