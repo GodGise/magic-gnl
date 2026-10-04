@@ -596,7 +596,7 @@ Prima versione low-poly senza animazioni, texture 512 px.
 
 ## 14. Il codice che esiste già
 
-Il primo prototipo del combattimento è sul ramo **`claude/personaggio-base`**, scritto dal Claude di Giuseppe il 4 ottobre 2026. Al momento di scrivere questa guida **non è ancora stato provato in Unity né unito a `main`**: è il primo compito di Giuseppe (sezione 15). Prima di lavorarci, controlla nella repository se è già stato unito e se ci sono correzioni.
+Il primo prototipo del combattimento è su **`main`**: scritto dal Claude di Giuseppe il 4 ottobre 2026, provato in Unity sul PC di Giuseppe lo stesso giorno (compila senza errori, movimento, attacco e attacco del nemico funzionano) e unito con la pull request numero 1. Prima di lavorarci, fai **Fetch origin** e **Pull origin** su `main`.
 
 ### 14.1 I file
 
