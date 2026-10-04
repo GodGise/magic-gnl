@@ -13,6 +13,8 @@ using UnityEngine.InputSystem;
 //               dei colpi frontali ma consuma resistenza; a resistenza zero la guardia si rompe.
 //   - Attacco:  tasto sinistro del mouse / X (Xbox) o Quadrato (PS). Preparazione, colpo, recupero;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
+// Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
+// qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
@@ -31,6 +33,8 @@ public class GiocatoreControllo : MonoBehaviour
     [Header("Vita")]
     [SerializeField] float vitaMassima = 100f;
     [SerializeField] float secondiPerRinascere = 2f;
+    [Tooltip("Se il personaggio scende sotto questa altezza (è caduto nel vuoto) muore e rinasce al checkpoint.")]
+    [SerializeField] float quotaVuoto = -30f;
 
     [Header("Movimento")]
     [SerializeField] float velocitaCorsa = 5f;
@@ -89,6 +93,12 @@ public class GiocatoreControllo : MonoBehaviour
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint;
     bool staSprintando;
 
+    // Dove rinasce il personaggio: all'inizio è il punto di partenza, poi l'ultimo checkpoint toccato.
+    Vector3 puntoRinascita;
+    Quaternion rotazioneRinascita;
+    Checkpoint ultimoCheckpoint;
+    public Checkpoint UltimoCheckpoint => ultimoCheckpoint;
+
     Stato stato = Stato.Libero;
     float tempoNelloStato;
     float durataStordimento;
@@ -110,6 +120,8 @@ public class GiocatoreControllo : MonoBehaviour
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
         Vita = vitaMassima;
+        puntoRinascita = transform.position;
+        rotazioneRinascita = transform.rotation;
         CreaComandi();
     }
 
@@ -172,6 +184,9 @@ public class GiocatoreControllo : MonoBehaviour
     {
         float dt = Time.deltaTime;
         tempoNelloStato += dt;
+
+        // Caduto nel vuoto: muore subito (e rinasce al checkpoint).
+        if (stato != Stato.Morto && transform.position.y < quotaVuoto) PerdiVita(Vita);
 
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
@@ -393,9 +408,39 @@ public class GiocatoreControllo : MonoBehaviour
 
     void Rinasci()
     {
+        // Il CharacterController va spento per un attimo, altrimenti non lascia spostare il personaggio di colpo.
+        controller.enabled = false;
+        transform.SetPositionAndRotation(puntoRinascita, rotazioneRinascita);
+        controller.enabled = true;
+
+        velocitaVerticale = 0f;
         Vita = vitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
+    }
+
+    // Chiamato da un Checkpoint quando il giocatore lo raggiunge: da ora si rinasce lì.
+    // Il checkpoint di prima si spegne.
+    public void RaggiungiCheckpoint(Checkpoint nuovo, Vector3 posizione, Quaternion rotazione)
+    {
+        if (ultimoCheckpoint != null && ultimoCheckpoint != nuovo) ultimoCheckpoint.Spegni();
+        ultimoCheckpoint = nuovo;
+        puntoRinascita = posizione;
+        rotazioneRinascita = rotazione;
+    }
+
+    // Danno dall'ambiente (trappole, fuoco...): non si può parare, ma la schivata fatta al momento giusto lo evita.
+    public void RiceviDannoAmbiente(float danno)
+    {
+        if (stato == Stato.Morto) return;
+        if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
+        {
+            Debug.Log("Schivato!");
+            return;
+        }
+
+        PerdiVita(danno);
+        if (stato != Stato.Morto) Stordisci(durataBarcollamento);
     }
 
     void Stordisci(float durata)
@@ -452,6 +497,15 @@ public class GiocatoreControllo : MonoBehaviour
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
         GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
+
+        if (stato == Stato.Morto)
+        {
+            var stileMorte = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            Color primaMorte = GUI.color;
+            GUI.color = new Color(0.75f, 0.1f, 0.1f);
+            GUI.Label(new Rect(0f, Screen.height * 0.5f - 40f, Screen.width, 80f), "SEI MORTO", stileMorte);
+            GUI.color = primaMorte;
+        }
     }
 
     static void DisegnaBarra(Rect area, float frazione, Color colore)
