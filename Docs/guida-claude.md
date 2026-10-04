@@ -435,7 +435,7 @@ La configurazione è finita solo quando ogni riga che riguarda la persona è ver
 | --- | --- | --- | --- |
 | 1 | Account GitHub attivo, verifica in due passaggi salvata | Tutti | La persona entra su github.com |
 | 2 | Collaboratore della repository | Tutti | `github.com/GodGise/magic-gnl` mostra i file, non "404" |
-| 3 | GitHub Desktop con accesso fatto | Tutti | In alto a destra in GitHub Desktop si vede il proprio account |
+| 3 | GitHub Desktop con accesso fatto | Tutti | In GitHub Desktop, File → Options → Accounts mostra il proprio account |
 | 4 | Repository clonata fuori da OneDrive | Tutti | GitHub Desktop: Current repository **magic-gnl**, Current branch **main** |
 | 5 | Git LFS inizializzato | Tutti | Non compare più la finestra "Initialize Git LFS" |
 | 6 | Unity Hub con licenza Personal | Tutti | Unity Hub si apre senza chiedere la licenza |
@@ -700,7 +700,7 @@ Per ogni problema: prima chiedi una foto, poi proponi un passo alla volta. Le so
 | Sintomo | Causa probabile | Cosa fare |
 | --- | --- | --- |
 | La repository su github.com dà "404" | Invito non accettato o non inviato | Controllare l'email di invito o le notifiche su github.com; se non c'è, chiedere a Giuseppe di inviarlo (sezione 5.1) |
-| `GodGise/magic-gnl` non compare in *Clone repository* | Come sopra, oppure account sbagliato in GitHub Desktop | Verificare l'account in alto a destra in GitHub Desktop |
+| `GodGise/magic-gnl` non compare in *Clone repository* | Come sopra, oppure account sbagliato in GitHub Desktop | Verificare l'account in GitHub Desktop da File → Options → Accounts |
 | Compare "Initialize Git LFS" | Normale al primo download | Cliccare **Initialize Git LFS** (sezione 6.3) |
 | Il caricamento è rifiutato ("rejected", "permission") | Non collaboratore, oppure ramo protetto, oppure si sta caricando su `main` | Verificare il ramo attuale; non caricare su `main`; controllare l'invito |
 | "Your branch is behind" o pulsante **Pull origin** | Altri hanno caricato modifiche | Cliccare **Pull origin** prima di continuare |
