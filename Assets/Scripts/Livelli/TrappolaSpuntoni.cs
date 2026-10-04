@@ -64,7 +64,9 @@ public class TrappolaSpuntoni : MonoBehaviour
         // 1. Il giocatore ha messo il piede sulla trappola: breve attesa, con le punte appena visibili.
         float inizio = avvisoPunte ? 0.12f : 0f;
         PosizionaSpuntoni(inizio);
+        Suoni.Suona(Suono.ScattoTrappola, transform.position, 0.7f);
         yield return new WaitForSeconds(ritardo);
+        Suoni.Suona(Suono.Spuntoni, transform.position);
 
         // 2. Gli spuntoni escono di scatto.
         for (float t = 0f; t < tempoSalita; t += Time.deltaTime)

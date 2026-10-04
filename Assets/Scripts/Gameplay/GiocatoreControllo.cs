@@ -114,6 +114,9 @@ public class GiocatoreControllo : MonoBehaviour
     float velocitaVerticale;
     Vector3 direzioneSchivata;
     int colpoCombo;
+    bool fendenteSuonato;
+    // Tono del sibilo per ogni colpo della combo, così i tre colpi suonano diversi.
+    static readonly float[] TonoColpi = { 1f, 1.12f, 0.85f };
     float schivataPrenotataFino = -1f;
     float attaccoPrenotatoFino = -1f;
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
@@ -126,6 +129,8 @@ public class GiocatoreControllo : MonoBehaviour
     {
         // Aspetto provvisorio da figura umana al posto della capsula (vedi AspettoUmanoide).
         AspettoUmanoide.Prepara(gameObject, new Color(0.05f, 0.05f, 0.06f), AspettoUmanoide.Arma.Spada);
+        // Suono dei passi in base al pavimento (vedi PassiSonori).
+        if (GetComponent<PassiSonori>() == null) gameObject.AddComponent<PassiSonori>();
 
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
@@ -298,6 +303,11 @@ public class GiocatoreControllo : MonoBehaviour
 
         if (tempoNelloStato < fineColpo)
         {
+            if (!fendenteSuonato)
+            {
+                fendenteSuonato = true;
+                Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, TonoColpi[colpoCombo % TonoColpi.Length]);
+            }
             ControllaColpi();
             return transform.forward * velocitaAffondo;
         }
@@ -321,6 +331,7 @@ public class GiocatoreControllo : MonoBehaviour
     void IniziaSchivata(Vector3 direzioneInput)
     {
         resistenza.Spendi(costoSchivata);
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.7f);
         schivataPrenotataFino = -1f;
 
         if (direzioneInput.sqrMagnitude > 0.0001f)
@@ -341,6 +352,7 @@ public class GiocatoreControllo : MonoBehaviour
     void IniziaAttacco(bool concatenato = false)
     {
         colpoCombo = concatenato ? (colpoCombo + 1) % 3 : 0;
+        fendenteSuonato = false;
         resistenza.Spendi(costoAttacco);
         attaccoPrenotatoFino = -1f;
         colpitiInQuestoAttacco.Clear();
@@ -375,6 +387,7 @@ public class GiocatoreControllo : MonoBehaviour
 
                 colpitiInQuestoAttacco.Add(bersaglio);
                 bersaglio.RiceviColpo(dannoAttacco, transform.position);
+                Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, 0.9f);
                 continue;
             }
 
@@ -408,17 +421,23 @@ public class GiocatoreControllo : MonoBehaviour
             if (!resistenza.HaResistenza)
             {
                 Debug.Log("Guardia rotta!");
+                Suoni.Suona(Suono.GuardiaRotta, transform.position + Vector3.up);
                 Stordisci(durataGuardiaRotta);
             }
             else
             {
                 Debug.Log("Parato!");
+                Suoni.Suona(Suono.Parata, transform.position + Vector3.up);
             }
             return;
         }
 
         PerdiVita(danno);
-        if (stato != Stato.Morto) Stordisci(durataBarcollamento);
+        if (stato != Stato.Morto)
+        {
+            Stordisci(durataBarcollamento);
+            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up);
+        }
     }
 
     void PerdiVita(float quantita)
@@ -427,6 +446,7 @@ public class GiocatoreControllo : MonoBehaviour
         if (Vita > 0f) return;
 
         Debug.Log("Sei morto.");
+        Suoni.Suona(Suono.Morte, transform.position + Vector3.up);
         CambiaStato(Stato.Morto);
         Invoke(nameof(Rinasci), secondiPerRinascere);
     }
@@ -442,6 +462,7 @@ public class GiocatoreControllo : MonoBehaviour
         Vita = vitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
+        Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f);
     }
 
     // Chiamato da un Checkpoint quando il giocatore lo raggiunge: da ora si rinasce lì.
@@ -465,7 +486,11 @@ public class GiocatoreControllo : MonoBehaviour
         }
 
         PerdiVita(danno);
-        if (stato != Stato.Morto) Stordisci(durataBarcollamento);
+        if (stato != Stato.Morto)
+        {
+            Stordisci(durataBarcollamento);
+            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up);
+        }
     }
 
     void Stordisci(float durata)

@@ -63,6 +63,7 @@ public class MuroFragile : MonoBehaviour
 
         colpiRicevuti++;
         Debug.Log(name + " colpito: " + colpiRicevuti + " / " + colpiNecessari);
+        Suoni.Suona(Suono.ColpoMuro, posizioneBase);
 
         if (colpiRicevuti >= colpiNecessari)
         {
@@ -175,6 +176,7 @@ public class MuroFragile : MonoBehaviour
     void Crolla(Vector3 origineColpo)
     {
         crollato = true;
+        Suoni.Suona(Suono.CrolloMuro, posizioneBase);
         if (tremore != null) StopCoroutine(tremore);
         transform.position = posizioneBase;
         Destroy(crepe.gameObject);

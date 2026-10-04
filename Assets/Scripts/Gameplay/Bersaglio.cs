@@ -95,6 +95,7 @@ public class Bersaglio : MonoBehaviour
         if (!morto)
         {
             RipristinaColori();
+            Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, 0.75f);
             if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
                 giocatore.RiceviColpo(dannoAttacco, transform.position);
         }
@@ -133,6 +134,7 @@ public class Bersaglio : MonoBehaviour
     void Muori()
     {
         morto = true;
+        Suoni.Suona(Suono.MorteNemico, transform.position);
         StopAllCoroutines();
         staAttaccando = false;
         MostraAspetto(false);

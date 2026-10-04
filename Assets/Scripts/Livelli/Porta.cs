@@ -53,6 +53,7 @@ public class Porta : MonoBehaviour
     {
         if (aperta) return;
         aperta = true;
+        Suoni.Suona(Suono.PortaPietra, transform.position);
         Debug.Log(name + " si apre");
     }
 
@@ -60,6 +61,7 @@ public class Porta : MonoBehaviour
     {
         if (!aperta) return;
         aperta = false;
+        Suoni.Suona(Suono.PortaPietra, transform.position, 1f, 0.9f);
         Debug.Log(name + " si chiude");
     }
 

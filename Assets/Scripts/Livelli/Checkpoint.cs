@@ -94,6 +94,7 @@ public class Checkpoint : MonoBehaviour
             aspetto.material.SetColor("_EmissionColor", coloreAcceso * 0.8f);
         }
         if (luce != null) luce.enabled = true;
+        Suoni.Suona(Suono.FuocoAcceso, transform.position + Vector3.up);
         Debug.Log("Checkpoint raggiunto: " + name);
     }
 

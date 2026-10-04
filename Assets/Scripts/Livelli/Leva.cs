@@ -83,6 +83,7 @@ public class Leva : MonoBehaviour
     void Usa()
     {
         abbassata = !abbassata;
+        Suoni.Suona(Suono.Leva, transform.position + Vector3.up * 0.6f);
         foreach (Porta porta in porte)
         {
             if (porta == null) continue;
