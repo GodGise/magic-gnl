@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 // A cosa serve: fa girare sole e luna, e in base all'ora cambia luce, colore dell'ambiente,
 // nebbia e cielo. Di notte il mondo diventa blu scuro e nebbioso; di giorno resta grigio e smorto.
 // Le torce (script Torcia) leggono il valore "Buio" per accendersi di più quando fa notte.
-// Un giorno completo dura 45 minuti reali: 17,5 di giorno e 27,5 di notte.
+// Un giorno completo dura 95 minuti reali: 45 di luce e 50 di notte.
 // Per le prove: tieni premuto T per far scorrere il tempo molto più veloce.
 // In alto a destra compare l'ora del gioco.
 // Come montarlo: su un oggetto vuoto della scena (per esempio "Cielo"), trascinando nei campi
@@ -21,9 +21,9 @@ public class CicloGiornoNotte : MonoBehaviour
     [Tooltip("Ora del gioco, da 0 a 24. Il valore impostato qui è l'ora di partenza.")]
     [Range(0f, 24f)] public float ora = 21f;
     [Tooltip("Minuti reali per il giorno (dalle 6 alle 18 del gioco).")]
-    [SerializeField] float minutiDiGiorno = 17.5f;
+    [SerializeField] float minutiDiGiorno = 45f;
     [Tooltip("Minuti reali per la notte (dalle 18 alle 6 del gioco). Più lunga del giorno per l'atmosfera.")]
-    [SerializeField] float minutiDiNotte = 27.5f;
+    [SerializeField] float minutiDiNotte = 50f;
     [Tooltip("Quante volte più veloce scorre il tempo tenendo premuto T.")]
     [SerializeField] float accelerazioneProva = 40f;
     [Tooltip("Direzione da cui sorge il sole, in gradi.")]
