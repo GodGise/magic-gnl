@@ -112,13 +112,14 @@ Ogni idea nuova deve servire almeno uno di questi. Se non ne serve nessuno, va n
 | Contenuti | Solo creati dal team o con licenza libera. Mai copiare da altri giochi |
 | Codice | Su GitHub, repository privata `GodGise/magic-gnl` |
 | Comandi | Pacchetto Input System 1.20.0 installato; tastiera, mouse e pad |
+| Prospettiva | Terza persona |
+| Co-op | Da 1 a 3 giocatori (si gioca anche da soli) |
+| Aggancio del bersaglio | La camera resta puntata sul nemico; con la rotellina del mouse si cambia bersaglio |
 | Impostazioni Git di Unity | Asset Serialization su Force Text, Version Control su Visible Meta Files |
 
 ### Decisioni ancora aperte
 
 - Nome del gioco.
-- Prospettiva: terza persona (probabile, la camera di prova è già in terza persona), prima persona o dall'alto.
-- Numero di giocatori in co-op: 2 oppure fino a 4.
 - Ruolo di Lorenzo.
 - Se serve una terza persona in aiuto (profilo più utile: un programmatore, poi suoni e musica).
 

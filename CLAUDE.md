@@ -14,12 +14,15 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere). Il 
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
+- Prospettiva: **terza persona**.
+- Co-op: **da 1 a 3 giocatori** (si gioca anche da soli).
+- Aggancio del bersaglio (lock-on): la camera resta puntata sul nemico; **con la rotellina del mouse si cambia bersaglio**.
 
 ## Motore
 - **Unity 6.3 LTS, versione 6000.3.25f1 (C#)**, deciso. Tutti e tre devono usare esattamente questa versione. Il supporto della 6.3 LTS finisce a dicembre 2027: prima del lancio va pianificato il passaggio a un LTS più nuovo. Serializzazione degli asset su "Force Text", controllo versione "Visible Meta Files".
 
 ## Decisioni ancora aperte
-- Nome del gioco, prospettiva, numero di giocatori in co-op (2 o 4).
+- Nome del gioco, ruolo di Lorenzo.
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
