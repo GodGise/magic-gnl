@@ -38,7 +38,8 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
 
 ## Cartelle
-- `Art/` modelli, texture, animazioni (Nazar)
-- `Gameplay/` personaggio, combattimento, nemici
-- `Rete/` co-op e integrazione Steam
+- `Assets/Art/` modelli, texture, animazioni (Nazar e Giuseppe)
+- `Assets/Scripts/Gameplay/` personaggio, combattimento, nemici
+- `Assets/Scripts/Rete/` co-op e integrazione Steam
 - `Docs/` documenti di design
+- Il progetto Unity sta nella radice della repository. Non committare `Library/`, `Temp/`, `Logs/`.
