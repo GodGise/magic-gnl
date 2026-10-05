@@ -54,7 +54,7 @@ Dalla piazzetta all'ingresso degli orchi: 145 m, 29 s di corsa.
 
 ## Da sapere
 
-- L'acqua del lago per ora si può attraversare a piedi (è solo più bassa): andrà bloccata o resa profonda.
+- Lago: si entra in acqua solo per 5,5 m dalla riva, con l'acqua fino alle ginocchia (gradino di 20 cm, poi fondale a mezzo metro sotto la superficie); oltre c'è un limite invisibile. Il molo resta percorribile fino in fondo. I limiti sono nello strato "Ignore Raycast" e la telecamera li ignora.
 - Strade e alberi sono tanti oggetti separati: per il blockout va bene, con i modelli veri si potranno unire per le prestazioni.
 - Il molo inizia 3 metri prima della riva, come nella mappa.
 - `ZonaProva` non è stata toccata.
