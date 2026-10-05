@@ -28,6 +28,8 @@ public class Bersaglio : MonoBehaviour
     bool morto;
 
     public bool Morto => morto;
+    // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
+    public event System.Action Colpito;
     bool staAttaccando;
     float inizioAttacco;
 
@@ -111,6 +113,7 @@ public class Bersaglio : MonoBehaviour
 
         vita -= danno;
         Debug.Log(name + " colpito: vita " + Mathf.Max(0f, vita));
+        Colpito?.Invoke();
 
         Vector3 spinta = transform.position - origineColpo;
         spinta.y = 0f;

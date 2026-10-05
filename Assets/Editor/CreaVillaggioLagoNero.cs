@@ -16,7 +16,7 @@ using UnityEngine.Rendering;
 //   - Cimitero con recinto e lapidi, orti, bosco ai bordi (cilindri e sfere), torce, confini invisibili;
 //   - MappaGuida: l'immagine della mappa stesa sul terreno, spenta. Accendendola (casella accanto al nome
 //     nell'Inspector) si confronta la scena con la mappa;
-//   - Giocatore davanti alla porta della casa dell'eroe, un manichino che non attacca in piazzetta,
+//   - Giocatore davanti alla porta della casa dell'eroe, un orco di prova in piazzetta che insegue solo dopo averti visto,
 //     due segnalini colorati (proposte da confermare con Giuseppe): rosso dove arrivano gli orchi, viola per lo scontro.
 // I dati delle posizioni sono in DatiVillaggioLagoNero.cs. Materiali, prefab e mappa stanno in Assets/Segnaposto/Villaggio.
 // Tutto è segnaposto: i modelli di Nazar sostituiranno i cubi senza cambiare la pianta.
@@ -72,8 +72,8 @@ public static class CreaVillaggioLagoNero
         CreaScenaProva.PreparaCamera(giocatore.transform, true);
         if (Camera.main != null) Camera.main.farClipPlane = 330f; // il villaggio è largo più di 300 metri
 
-        // Un manichino che non attacca, per provare se le strade sono larghe abbastanza per combattere.
-        CreaScenaProva.CreaNemico("Manichino di prova", CentroPiazza + new Vector3(0f, 1f, -7f), false);
+        // Orco di prova in piazza: sta fermo e si guarda intorno; insegue e attacca solo dopo aver visto il giocatore.
+        CreaOrco("Orco della piazza", CentroPiazza + new Vector3(0f, 0f, -9f));
 
         CreaSegnalini(Gruppo("Segnalini (proposte)", null));
 
@@ -319,6 +319,21 @@ public static class CreaVillaggioLagoNero
         quad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         Object.DestroyImmediate(quad.GetComponent<Collider>());
         quad.SetActive(false);
+    }
+
+    // Un nemico di prova (Bersaglio) un po' più grosso e verdastro, con vista e inseguimento (InseguimentoNemico).
+    // Guarda verso sud, cioè verso la strada da cui arriva il giocatore partendo dalla casa dell'eroe.
+    static void CreaOrco(string nome, Vector3 piedi)
+    {
+        const float grandezza = 1.15f;
+        var orco = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        orco.name = nome;
+        orco.transform.SetPositionAndRotation(piedi + Vector3.up * grandezza, Quaternion.LookRotation(Vector3.back));
+        orco.transform.localScale = Vector3.one * grandezza;
+        orco.GetComponent<Renderer>().sharedMaterial = Materiale("PelleOrco", new Color(0.28f, 0.36f, 0.2f));
+        var bersaglio = orco.AddComponent<Bersaglio>();
+        bersaglio.attaccaIlGiocatore = false;
+        orco.AddComponent<InseguimentoNemico>();
     }
 
     static void CreaSegnalini(Transform gruppo)
