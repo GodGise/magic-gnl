@@ -20,6 +20,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), con
 - Ciclo giorno e notte: **45 minuti reali di luce** (dalle 6 alle 18 del gioco) e **50 minuti di notte** (dalle 18 alle 6), per l'atmosfera.
 - Prospettiva: **terza persona**.
 - Co-op: **da 1 a 3 giocatori** (si gioca anche da soli).
+- **Lingue**: il gioco esce in 8 lingue, scelte dalle opzioni del menu: italiano, inglese, spagnolo, francese, tedesco, portoghese (Brasile), russo, cinese semplificato. Ogni testo che vede il giocatore passa da `Lingua.T("chiave")` (`Assets/Scripts/Interfaccia/Lingua.cs`), con le 8 traduzioni; niente frasi scritte direttamente nel codice.
 - Aggancio del bersaglio (lock-on): la camera resta puntata sul nemico; **con la rotellina del mouse si cambia bersaglio**.
 
 ## Motore
@@ -52,6 +53,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 
 ## Convenzioni
 - Messaggi di commit in italiano, imperativi, con una riga di riepilogo.
+- Nei commit e nelle pull request **niente righe di firma** ("Co-Authored-By", link alla sessione, "Generated with ..."). L'unico segno del lavoro fatto con Claude è la **c** nel nome del ramo.
 - Modelli 3D: nomi in minuscolo con trattini, scala 1 unità = 1 metro, pochi poligoni.
 - Nessun token, chiave o password nel repository.
 
