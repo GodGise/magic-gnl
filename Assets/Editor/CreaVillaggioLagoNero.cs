@@ -9,7 +9,8 @@ using UnityEngine.Rendering;
 // Se la scena esiste già chiede conferma, perché ricrearla cancella le modifiche fatte a mano.
 //
 // Cosa costruisce, seguendo la mappa vista dall'alto di Giuseppe allargata del 50% (DatiVillaggioLagoNero.Scala):
-//   - Terreno di 315 x 255 metri, con il Lago Nero a est (più basso di 30 cm), la riva e il molo con tre barche;
+//   - Terreno di 315 x 255 metri, con il Lago Nero a est, la riva e il molo con tre barche. Nel lago si entra
+//     solo per 5,5 metri, con l'acqua fino alle ginocchia; oltre c'è un limite invisibile (il molo resta percorribile);
 //   - Strade (principali 4,4 m, vicoli 2,9 m) e la piazzetta di 48 m con il pozzo al centro;
 //   - Edifici speciali (Mercante, Taverna, Fabbro, Erborista, Tempio, Casa dell'eroe) e 71 case, molte più grandi
 //     della mappa e alcune come sulla mappa, tutte copie del prefab "casa-blocco" con un cubetto scuro dove sta la porta;
@@ -70,7 +71,18 @@ public static class CreaVillaggioLagoNero
         Vector3 verso = partenza - casaEroe; verso.y = 0f;
         var giocatore = CreaScenaProva.CreaGiocatore(partenza, Quaternion.LookRotation(verso).eulerAngles.y);
         CreaScenaProva.PreparaCamera(giocatore.transform, true);
-        if (Camera.main != null) Camera.main.farClipPlane = 330f; // il villaggio è largo più di 300 metri
+        if (Camera.main != null)
+        {
+            Camera.main.farClipPlane = 330f; // il villaggio è largo più di 300 metri
+            // La telecamera non urta i limiti invisibili del lago (strato "Ignore Raycast").
+            var segui = Camera.main.GetComponent<CameraTerzaPersona>();
+            if (segui != null)
+            {
+                var impostazioni = new SerializedObject(segui);
+                impostazioni.FindProperty("stratiOstacoli").intValue = ~(1 << 2);
+                impostazioni.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
 
         // Orco di prova in piazza: sta fermo e si guarda intorno; insegue e attacca solo dopo aver visto il giocatore.
         CreaOrco("Orco della piazza", CentroPiazza + new Vector3(0f, 0f, -9f));
@@ -105,8 +117,18 @@ public static class CreaVillaggioLagoNero
                 new Vector3(xSabbia - inizioStrisce, 1f, zLungo), terreno);
             Blocco("Riva", gruppoLago, new Vector3((xSabbia + xRiva) / 2f, -0.55f, zCentro),
                 new Vector3(xRiva - xSabbia, 1f, zLungo), sabbia);
-            Blocco("Acqua", gruppoLago, new Vector3((xRiva + Larghezza) / 2f, -0.8f, zCentro),
-                new Vector3(Larghezza - xRiva, 1f, zLungo), acqua);
+            // Acqua bassa: un gradino di 20 cm, poi il fondale a mezzo metro sotto la superficie (l'acqua arriva alle ginocchia).
+            // I gradini sono più bassi di 30 cm, così il giocatore può sempre risalire a riva.
+            Blocco("Gradino", gruppoLago, new Vector3(xRiva + LargoGradino / 2f, -0.75f, zCentro),
+                new Vector3(LargoGradino, 1f, zLungo), sabbia);
+            Blocco("Fondale", gruppoLago, new Vector3((xRiva + LargoGradino + Larghezza) / 2f, -1f, zCentro),
+                new Vector3(Larghezza - xRiva - LargoGradino, 1f, zLungo), acqua);
+            // Superficie dell'acqua: scura e senza collider, nasconde le gambe sott'acqua.
+            Forma(PrimitiveType.Cube, "Superficie dell'acqua", gruppoLago, new Vector3((xRiva + Larghezza) / 2f, -0.03f, zCentro),
+                new Vector3(Larghezza - xRiva, 0.02f, zLungo), acqua).GetComponent<Collider>().enabled = false;
+
+            // Oltre l'acqua bassa non si va: blocco invisibile fino al bordo est, interrotto solo dove passa il molo.
+            LimiteLago(gruppoLago, xRiva + DistanzaLimite, z0 - 0.05f, z1 + 0.05f);
         }
 
         // Molo: assi di legno sull'acqua, con i pali ai lati, e tre barche.
@@ -121,6 +143,41 @@ public static class CreaVillaggioLagoNero
         Barca(molo, m[0] + 10f, m[1] - 4.2f, 3f, 5f);
         Barca(molo, m[0] + 20f, m[1] + 4.4f, -4f, 5f);
         Barca(molo, m[0] + 27f, m[1] - 4.6f, 8f, 4.4f);
+    }
+
+    // Acqua bassa: larghezza del gradino e distanza dalla riva a cui inizia il limite invisibile, in metri.
+    const float LargoGradino = 1.5f;
+    const float DistanzaLimite = 5.5f;
+
+    // Blocco invisibile sul lago da xInizio fino al bordo est, fra zMin e zMax. Lascia libero il molo (assi e fine del molo
+    // chiusa da un altro blocco). Sta nello strato "Ignore Raycast", che la telecamera ignora: così non la spinge via.
+    static void LimiteLago(Transform gruppo, float xInizio, float zMin, float zMax)
+    {
+        float[] m = DatiVillaggioLagoNero.Molo;
+        float moloMin = m[1] - m[3] / 2f, moloMax = m[1] + m[3] / 2f, fineMolo = m[0] + m[2];
+        float xFine = Larghezza + 1f;
+
+        if (zMax <= moloMin || zMin >= moloMax)
+        {
+            BloccoInvisibile(gruppo, xInizio, xFine, zMin, zMax);
+            return;
+        }
+        if (zMin < moloMin) BloccoInvisibile(gruppo, xInizio, xFine, zMin, moloMin);
+        if (zMax > moloMax) BloccoInvisibile(gruppo, xInizio, xFine, moloMax, zMax);
+        BloccoInvisibile(gruppo, fineMolo, xFine, Mathf.Max(zMin, moloMin), Mathf.Min(zMax, moloMax));   // oltre la punta del molo
+    }
+
+    static void BloccoInvisibile(Transform gruppo, float x0, float x1, float z0, float z1)
+    {
+        if (x1 - x0 < 0.01f || z1 - z0 < 0.01f) return;
+        var blocco = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        blocco.name = "Limite del lago";
+        blocco.transform.SetParent(gruppo, false);
+        blocco.transform.localPosition = new Vector3((x0 + x1) / 2f, 1.5f, (z0 + z1) / 2f);
+        blocco.transform.localScale = new Vector3(x1 - x0, 5f, z1 - z0);
+        Object.DestroyImmediate(blocco.GetComponent<MeshRenderer>());
+        blocco.layer = 2; // Ignore Raycast
+        blocco.isStatic = true;
     }
 
     static void Barca(Transform genitore, float x, float z, float rotazione, float lunghezza)
