@@ -15,9 +15,9 @@ Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/
 - **Codice: sì.** Lorenzo può scrivere codice con te, anche modificando script che esistono già. Gli script nuovi per la sua zona (porte, leve, trappole, checkpoint, punti in cui compaiono i nemici) vanno in `Assets/Scripts/Livelli/`. Segui le regole del `CLAUDE.md`: commento iniziale in italiano su cosa fa e come montarlo, nomi in italiano, comandi con il pacchetto Input System, valori regolabili dall'Inspector.
 - **Prima di iniziare, si annuncia.** All'inizio di ogni sessione di lavoro:
     1. chiedi a Lorenzo su cosa lavora oggi e quali file toccherà;
-    2. fagli leggere il canale Discord dei lavori in corso: se Giuseppe (o il suo Claude, rami `claude/...`) sta già lavorando sugli stessi file, prima si accordano;
+    2. fagli leggere il canale Discord dei lavori in corso: se Giuseppe (o il suo Claude, rami `giuseppec/...`) sta già lavorando sugli stessi file, prima si accordano;
     3. fagli scrivere nel canale cosa fa e quali file tocca, per esempio "Lorenzo: oggi porta della cripta, tocco ZonaProva e Assets/Scripts/Livelli/PortaCripta.cs";
-    4. crea subito il ramo `lorenzo/nome-del-lavoro` e pubblicalo (**Publish branch**): GitHub manda la notifica al canale da solo.
+    4. crea subito il ramo `lorenzoc/nome-del-lavoro` (la c finale = fatto con Claude, regola in `CLAUDE.md`) e pubblicalo (**Publish branch**): GitHub manda la notifica al canale da solo.
   Alla fine del lavoro: carica il ramo, apri la pull request, e Lorenzo scrive "finito" nel canale.
 - Dato che Lorenzo è alle prime armi, **spiegagli il codice** che scrivete: cosa fa ogni parte, in parole semplici. E dopo ogni script fagli provare subito in Unity che funzioni, prima di andare avanti.
 - **Dopo il primo Play** con uno script nuovo, Unity crea il suo file `.meta`: va salvato e caricato sullo stesso ramo insieme allo script.
@@ -26,7 +26,7 @@ Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/
 
 1. **La scena è sua.** `Assets/Scenes/ZonaProva.unity` appartiene a Lorenzo: è l'unico che la modifica.
 2. **Mai usare il menu *magic-gnl → Crea zona di prova (villaggio in rovina)*.** Ricrea la scena da zero e cancella tutto il suo lavoro. Se Unity mostra la domanda "Ricrearla da capo?", la risposta è **Annulla**.
-3. **Mai lavorare su `main`.** Tutto il suo lavoro va sul ramo `lorenzo/zona-1`.
+3. **Mai lavorare su `main`.** Tutto il suo lavoro va su un ramo `lorenzoc/...`, mai su `main`.
 4. **Non toccare** `Assets/Art` (è di Nazar), e non iniziare a lavorare su file che qualcun altro ha annunciato nel canale.
 5. **Salvare spesso** in Unity con **Ctrl+S**.
 6. **Ogni sera** salva e carica il ramo da GitHub Desktop (sezione 4) e scrive nel gruppo cosa ha fatto.
@@ -57,14 +57,14 @@ Comandi di gioco: **WASD** movimento, **mouse** camera, **Spazio** schivata, **t
 
 **Una volta sola, il primo giorno di modifiche (mercoledì):**
 1. In GitHub Desktop, **Current branch** deve essere **main**. Clic su **Fetch origin**, poi su **Pull origin** se compare.
-2. **Current branch → New branch**, nome `lorenzo/zona-1`, clic su **Create branch**.
+2. **Current branch → New branch**, nome `lorenzoc/nome-del-lavoro` (per esempio `lorenzoc/villaggio-blockout`), clic su **Create branch**.
 
 **Ogni sera:**
 1. In Unity **Ctrl+S**.
 2. In GitHub Desktop controlla l'elenco dei file cambiati. Devono essere solo i file annunciati nel canale (per esempio `ZonaProva.unity` e i suoi script, con i loro `.meta`). Se compaiono file che non c'entrano, fermati e chiedi a Giuseppe.
-3. Nel campo **Summary** in basso a sinistra scrive cosa ha fatto (per esempio "Sposta le case della piazza"), poi **Commit to lorenzo/zona-1**.
+3. Nel campo **Summary** in basso a sinistra scrive cosa ha fatto (per esempio "Sposta le case della piazza"), poi **Commit to lorenzoc/nome-del-lavoro**.
 4. **Publish branch** la prima volta, **Push origin** le volte dopo.
-5. Scrive nel gruppo: "Ho caricato lorenzo/zona-1: ho fatto ...".
+5. Scrive nel gruppo: "Ho caricato lorenzoc/nome-del-lavoro: ho fatto ...".
 
 Se GitHub Desktop segnala un **conflitto**, fermatevi e chiedete a Giuseppe. Non scegliere a caso "usa la mia versione".
 
@@ -103,7 +103,7 @@ Consigli di level design da dargli, uno o due alla volta:
 
 Obiettivo: la zona come sulla mappa.
 
-1. Creare il ramo `lorenzo/zona-1` (sezione 4).
+1. Creare il ramo `lorenzoc/...` del lavoro del giorno (sezione 4).
 2. Seguendo la mappa: spostare **case**, **torce**, **alberi**, **rocce** e **nemici** con lo strumento sposta (**W**). Si può duplicare (**Ctrl+D**) e cancellare (**Canc**).
 3. Per nuovi muri o rovine: duplicare un muro esistente di una casa, oppure *GameObject → 3D Object → Cube* e trascinarci sopra un materiale da `Assets/Segnaposto/Materiali` (Pietra, PietraScura, Legno...).
 4. Per una nuova torcia: duplicare una torcia esistente (ha già luce e fiamma).

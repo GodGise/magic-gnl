@@ -26,7 +26,7 @@ Domani si costruisce **una sola versione** del villaggio, quella intatta. La ver
 2. **Fetch origin**, poi **Pull origin**. Così arrivano il lavoro unito ieri e la mappa.
 3. Leggere il canale Discord **#darkfantasyaggiornamenti** e scrivere l'annuncio, per esempio:
    > Lorenzo: oggi blockout di Villaggio Lago Nero, scena nuova Assets/Scenes/VillaggioLagoNero.unity e cartella Assets/Segnaposto/Villaggio
-4. **Current branch → New branch**, nome `lorenzo/villaggio-blockout`, creato da `main`.
+4. **Current branch → New branch**, nome `lorenzoc/villaggio-blockout`, creato da `main`. La **c** finale vuol dire "fatto con Claude": è la regola dei nomi dei rami in `CLAUDE.md`.
 5. **Publish branch**. La notifica arriva da sola nel canale.
 
 ### Passo 1. Scena nuova
@@ -102,7 +102,7 @@ Scrivere le risposte in `Docs/lavoro-lorenzo-6-ottobre.md`, con le foto dalla vi
 
 1. Unity: **Ctrl+S** per salvare la scena.
 2. GitHub Desktop: controllare che fra le modifiche ci siano la scena, i materiali, il prefab e i loro file `.meta`.
-3. Riepilogo in basso a sinistra, per esempio "Aggiungi il blockout di Villaggio Lago Nero", poi **Commit to lorenzo/villaggio-blockout**.
+3. Riepilogo in basso a sinistra, per esempio "Aggiungi il blockout di Villaggio Lago Nero", poi **Commit to lorenzoc/villaggio-blockout**.
 4. **Push origin**.
 5. **Create Pull Request** (si apre GitHub nel browser), poi **Create pull request**.
 6. Scrivere **"finito"** nel canale Discord con il numero della pull request.
@@ -116,5 +116,5 @@ Scrivere le risposte in `Docs/lavoro-lorenzo-6-ottobre.md`, con le foto dalla vi
 
 - Non modificare `ZonaProva` e non usare il menu "Crea zona di prova".
 - Non toccare `Assets/Art` (è di Nazar).
-- Non lavorare su `main`: tutto sul ramo `lorenzo/villaggio-blockout`.
+- Non lavorare su `main`: tutto sul ramo `lorenzoc/villaggio-blockout`.
 - Non costruire ancora la versione distrutta né la gattabuia.

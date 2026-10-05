@@ -59,7 +59,7 @@ Questa sezione è scritta per te, Claude. Nasce da quello che ha funzionato, e d
 - **Non inventare.** Prezzi, versioni, nomi di menu e date di supporto cambiano: cercali sulle fonti ufficiali prima di affermarli, e quando non sei sicuro dillo.
 - **Credi allo schermo, non alla memoria.** Se la persona manda una foto in cui un menu ha un nome diverso da questa guida, segui la foto.
 - **Verifica prima di dire "fatto".** Dopo un'azione (installazione, caricamento su GitHub, modifica in Unity) controlla il risultato: una foto, il contenuto della repository, il messaggio di Unity. Non dire che qualcosa è fatto se non l'hai visto.
-- **Mai su `main`.** Ogni lavoro va su un ramo con il nome della persona e del lavoro: `nazar/guerriero`, `lorenzo/menu-pausa`. Su `main` si arriva solo con una pull request approvata.
+- **Mai su `main`.** Ogni lavoro va su un ramo con il nome della persona e del lavoro. Se il lavoro si fa con Claude, al nome si aggiunge una c: `lorenzoc/menu-pausa`, `nazarc/esportazione-fbx`; senza Claude solo il nome: `nazar/guerriero`. Su `main` si arriva solo con una pull request approvata.
 - **Una scena alla volta.** In Unity due persone non devono modificare la stessa scena nello stesso periodo. Prima di toccare una scena condivisa chiedi alla persona se qualcuno ci sta lavorando.
 - **Nessun segreto nei file.** Token, password e chiavi non vanno mai nella repository, né in questo documento.
 - **Rispetta le aree.** Nazar lavora in `Assets/Art`, il codice sta in `Assets/Scripts`. Se un lavoro tocca l'area di un altro, prima si chiede.
@@ -134,7 +134,7 @@ Il team è di tre persone, più Claude come aiuto per il codice. Ognuno possiede
 | Giuseppe | Team leader: direzione e design del gioco, coordinamento, repository e build, rete co-op, Steam e marketing | Tutto, in coordinamento | Sì, piano Pro |
 | Nazar | Arte 3D in Blender: personaggi, ambienti, oggetti, animazioni di base. Giuseppe lo aiuta | `Assets/Art` | Facoltativo: il piano gratuito basta per fare domande |
 | Lorenzo | Ruolo da assegnare nella riunione del team. Proposta: gameplay e combattimento | Da decidere | Solo se programma: serve il piano Pro |
-| Claude di Giuseppe | Codice C#: gameplay, combattimento, rete co-op. Carica su rami `claude/...` | `Assets/Scripts` | — |
+| Claude di Giuseppe | Codice C#: gameplay, combattimento, rete co-op. Carica su rami `giuseppec/...` | `Assets/Scripts` | — |
 
 ### Chi decide cosa
 
@@ -462,10 +462,10 @@ Ogni lavoro, anche piccolo, segue lo stesso giro: si parte aggiornati da `main`,
 ### 11.1 Il giro completo
 
 1. **Aggiornarsi.** Con **Current branch: main**, cliccare **Fetch origin**. Se il pulsante diventa **Pull origin**, cliccarlo: scarica il lavoro degli altri.
-2. **Creare il ramo.** **Current branch → New branch**. Nome: `persona/lavoro`, in minuscolo con trattini, per esempio `nazar/guerriero` o `lorenzo/menu-pausa`. Basato su **main**. Clic su **Create branch**.
+2. **Creare il ramo.** **Current branch → New branch**. Nome: `personac/lavoro` se lo fai con Claude (per esempio `lorenzoc/menu-pausa`), `persona/lavoro` se lo fai da solo (per esempio `nazar/guerriero`). In minuscolo con trattini. Basato su **main**. Clic su **Create branch**.
 3. **Lavorare** in Unity o Blender, solo nella propria area (sezioni 12 e 13). Salvare spesso in Unity (*File → Save*, Ctrl+S).
 4. **Controllare le modifiche.** In GitHub Desktop, a sinistra, compare l'elenco dei file cambiati. Ogni file deve avere un motivo per esserci. Se compaiono file inattesi (scene di altri, impostazioni del progetto), togli la spunta e chiedi.
-5. **Salvare (commit).** In basso a sinistra, nel campo **Summary**, un messaggio in italiano all'imperativo: "Aggiungi modello del Guerriero", "Correggi scala della lapide". Clic su **Commit to persona/lavoro**.
+5. **Salvare (commit).** In basso a sinistra, nel campo **Summary**, un messaggio in italiano all'imperativo: "Aggiungi modello del Guerriero", "Correggi scala della lapide". Clic su **Commit to** seguito dal nome del ramo.
 6. **Caricare (push).** La prima volta il pulsante in alto si chiama **Publish branch**, le volte dopo **Push origin**.
 7. **Chiedere l'unione (pull request).** GitHub Desktop propone **Create Pull Request**: si apre GitHub nel browser. Titolo chiaro, due righe su cosa provare, clic su **Create pull request**. Si avvisa Giuseppe nel gruppo.
 8. **Dopo l'unione.** Quando Giuseppe ha unito il ramo, si torna su **main** (Current branch → main), poi **Fetch origin** e **Pull origin**. Il ramo vecchio si può cancellare.
@@ -483,7 +483,7 @@ Ogni lavoro, anche piccolo, segue lo stesso giro: si parte aggiornati da `main`,
 Così Giuseppe prova i rami del suo Claude, e così chiunque prova un ramo prima dell'unione:
 
 1. **Fetch origin**.
-2. **Current branch** e scegliere il ramo, per esempio `claude/personaggio-base`.
+2. **Current branch** e scegliere il ramo, per esempio `giuseppec/menu-iniziale`.
 3. Tornare su Unity: ricarica i file e ricompila da solo in qualche secondo.
 4. Provare quello che descrive la pull request.
 5. Tornare su **main** prima di riprendere il proprio lavoro.
@@ -492,7 +492,7 @@ Così Giuseppe prova i rami del suo Claude, e così chiunque prova un ramo prima
 
 Se la persona ha il piano Pro e hai la repository collegata (sezione 9.3), puoi fare tu i passi 2, 5 e 6 dal tuo spazio di lavoro: crei il ramo, salvi e carichi. Poi la persona fa **Fetch origin** e passa al ramo per provare in Unity. Regole per te:
 
-- I tuoi rami si chiamano `persona/lavoro` (per esempio `lorenzo/lock-on`), non `claude/...`, così non si confondono con quelli del Claude di Giuseppe.
+- I rami che crei tu si chiamano con il nome della persona più una c, per esempio `lorenzoc/lock-on` o `nazarc/esportazione-fbx`. La c vuol dire "fatto con Claude". Non usare mai `claude/...`.
 - Prima di caricare, recupera l'ultima versione di `main` e parti da quella.
 - Messaggi di commit in italiano, all'imperativo, con una riga di riepilogo e due righe di contesto se la modifica non è ovvia.
 - Dopo il caricamento scrivi alla persona: nome del ramo, cosa provare in Unity e cosa dovrebbe vedere.
@@ -565,10 +565,10 @@ magic-gnl/
 | Ramo | Di chi | Esempio |
 | --- | --- | --- |
 | `main` | Di tutti, ma ci si arriva solo con pull request approvata da Giuseppe | — |
-| `claude/...` | Claude di Giuseppe | `claude/personaggio-base` |
+| `giuseppec/...` | Giuseppe con il suo Claude | `giuseppec/menu-iniziale` |
 | `giuseppe/...` | Giuseppe | `giuseppe/pacchetto-audio` |
-| `nazar/...` | Nazar (e il suo Claude) | `nazar/guerriero` |
-| `lorenzo/...` | Lorenzo (e il suo Claude) | `lorenzo/menu-pausa` |
+| `nazar/...` o `nazarc/...` | Nazar, da solo o con il suo Claude | `nazar/guerriero` |
+| `lorenzo/...` o `lorenzoc/...` | Lorenzo, da solo o con il suo Claude | `lorenzoc/menu-pausa` |
 
 ### Nomi dei file
 
@@ -611,7 +611,7 @@ Il primo prototipo del combattimento è su **`main`**: scritto dal Claude di Giu
 
 ### 14.2 Come provarlo
 
-1. In GitHub Desktop: **Fetch origin**, poi **Current branch → claude/personaggio-base** (oppure resta su `main` se è già stato unito).
+1. In GitHub Desktop: **Fetch origin**, poi **Current branch →** il ramo da provare (per esempio `giuseppec/menu-iniziale`) (oppure resta su `main` se è già stato unito).
 2. In Unity aspettare la compilazione, poi menu in alto **magic-gnl → Crea scena di prova**.
 3. **Play** (il triangolo in alto al centro).
 4. In alto a sinistra compare un pannello con stato, vita e resistenza.
