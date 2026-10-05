@@ -1,10 +1,13 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // Nemico di prova per allenare le tre mosse.
 // A cosa serve: incassa i colpi del giocatore (lampeggia di bianco e indietreggia) e, se
 // "Attacca Il Giocatore" è attivo, ogni pochi secondi si gira verso di lui, diventa rosso
 // (preavviso) e poi colpisce. Il momento giusto per schivare o parare è la fine del rosso.
+// Se è un cilindro di Unity, all'avvio prende un aspetto provvisorio da figura umana (vedi AspettoUmanoide):
+// rosso, lampo bianco e scomparsa alla morte valgono per tutta la figura.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
 // Il menu "magic-gnl > Crea scena di prova" ne mette uno già pronto.
 public class Bersaglio : MonoBehaviour
@@ -26,17 +29,35 @@ public class Bersaglio : MonoBehaviour
 
     public bool Morto => morto;
     bool staAttaccando;
+    float inizioAttacco;
+
+    // Letti da AnimazioneUmanoide: durante il preavviso il nemico carica il colpo, poi colpisce.
+    public bool StaAttaccando => staAttaccando;
+    public float TempoAttacco => Time.time - inizioAttacco;
+    public float DurataPreavviso => preavviso;
+    public int NumeroAttacco { get; private set; } // cresce a ogni attacco: serve a cambiare movimento
     float prossimoAttacco;
-    Renderer aspetto;
+    // Tutte le parti visibili del nemico, ognuna con il suo colore di partenza.
+    Renderer[] aspetto;
+    Color[] coloriBase;
     Collider corpo;
-    Color coloreBase;
     GiocatoreControllo giocatore;
 
     void Awake()
     {
-        aspetto = GetComponentInChildren<Renderer>();
+        AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f), AspettoUmanoide.Arma.Mazza);
+
+        // Solo le parti accese: la forma originale nascosta dalla figura umana resta spenta.
+        var parti = new List<Renderer>();
+        foreach (Renderer parte in GetComponentsInChildren<Renderer>())
+        {
+            if (parte.enabled) parti.Add(parte);
+        }
+        aspetto = parti.ToArray();
+        coloriBase = new Color[aspetto.Length];
+        for (int i = 0; i < aspetto.Length; i++) coloriBase[i] = aspetto[i].material.color;
+
         corpo = GetComponent<Collider>();
-        if (aspetto != null) coloreBase = aspetto.material.color;
         vita = vitaMassima;
     }
 
@@ -61,6 +82,8 @@ public class Bersaglio : MonoBehaviour
     IEnumerator Attacca()
     {
         staAttaccando = true;
+        inizioAttacco = Time.time;
+        NumeroAttacco++;
 
         Vector3 verso = giocatore.transform.position - transform.position;
         verso.y = 0f;
@@ -71,7 +94,8 @@ public class Bersaglio : MonoBehaviour
 
         if (!morto)
         {
-            ImpostaColore(coloreBase);
+            RipristinaColori();
+            Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, 0.75f);
             if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
                 giocatore.RiceviColpo(dannoAttacco, transform.position);
         }
@@ -104,15 +128,17 @@ public class Bersaglio : MonoBehaviour
     {
         ImpostaColore(Color.white);
         yield return new WaitForSeconds(0.1f);
-        if (!staAttaccando) ImpostaColore(coloreBase);
+        if (!staAttaccando) RipristinaColori();
     }
 
     void Muori()
     {
         morto = true;
+        Suoni.Suona(Suono.MorteNemico, transform.position);
+        if (giocatore != null) giocatore.NemicoSconfitto(); // con il bastone ridà un po' di mana
         StopAllCoroutines();
         staAttaccando = false;
-        if (aspetto != null) aspetto.enabled = false;
+        MostraAspetto(false);
         if (corpo != null) corpo.enabled = false;
         Invoke(nameof(Rinasci), secondiPerRinascere);
     }
@@ -121,14 +147,26 @@ public class Bersaglio : MonoBehaviour
     {
         vita = vitaMassima;
         morto = false;
-        ImpostaColore(coloreBase);
-        if (aspetto != null) aspetto.enabled = true;
+        RipristinaColori();
+        MostraAspetto(true);
         if (corpo != null) corpo.enabled = true;
         prossimoAttacco = Time.time + intervalloAttacchi;
     }
 
+    // Colora tutte le parti dello stesso colore (rosso del preavviso, bianco quando è colpito).
     void ImpostaColore(Color colore)
     {
-        if (aspetto != null) aspetto.material.color = colore;
+        foreach (Renderer parte in aspetto) parte.material.color = colore;
+    }
+
+    // Rimette a ogni parte il suo colore di partenza.
+    void RipristinaColori()
+    {
+        for (int i = 0; i < aspetto.Length; i++) aspetto[i].material.color = coloriBase[i];
+    }
+
+    void MostraAspetto(bool mostra)
+    {
+        foreach (Renderer parte in aspetto) parte.enabled = mostra;
     }
 }
