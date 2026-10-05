@@ -22,7 +22,7 @@ La pianta resta quella della mappa di Giuseppe: cambiano solo le misure. MappaGu
 - Materiali in `Assets/Segnaposto/Villaggio/`. I nomi contengono Terreno, Sentiero, Pietra e Legno, così i passi cambiano suono su erba, strade, piazzetta e molo.
 - **Giocatore** davanti alla porta della casa dell'eroe. Si parte alle 16 per vedere bene gli spazi; con T si accelera fino alla notte.
 - **Manichino di prova** in piazzetta (non attacca), per provare il combattimento in mezzo alle case.
-- **Segnalini (proposte da confermare con Giuseppe)**: cubo rosso dove arrivano gli orchi (strada ovest, dal bosco) e cubo viola in piazzetta per lo scontro con l'orco enorme. Non hanno collider.
+- **Segnalini (proposte da confermare con Giuseppe)**: cubo rosso dove arrivano gli orchi (strada ovest, dal bosco) e cubo viola in piazzetta per lo scontro con l'orco enorme. Non hanno collider. Lorenzo li ha provati e gli sembrano nel posto giusto; resta la conferma di Giuseppe.
 
 ## Lo strumento che l'ha creata
 
