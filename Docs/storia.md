@@ -49,8 +49,11 @@ Due strade, due destini diversi. E a scegliere, questa volta, sarai tu.
 - **Strada A, intercettare gli orchi.** Si va alla tana principale e si recupera la reliquia. Il druido diventa una missione secondaria (side quest) e si affronta in versione normale.
 - **Strada B, la vendetta.** Si va direttamente dal druido. Il druido ottiene la reliquia prima dello scontro: ha **il triplo della vita** e attacchi più forti.
 
+### Decisioni sulla storia (5 ottobre)
+- **Il figlio è morto.** Il protagonista lo scopre in una delle due tane degli orchi: la speranza data dai sopravvissuti era falsa.
+- **Il potere della reliquia è forza e potenza.** Chi la possiede ha più vita e attacchi più forti. È per questo che il druido, se la ottiene (strada B), ha il triplo della vita e colpisce più forte.
+
 ### Ancora da decidere
-- Che potere ha la reliquia.
-- La verità sul figlio: vivo o morto.
+- Nella strada A, il protagonista che recupera la reliquia ne ottiene il potere (più vita e attacchi più forti)?
 - Nella strada A, se il druido è una missione secondaria, come finisce la storia principale.
 - Il nome del protagonista (o se lo sceglie il giocatore).

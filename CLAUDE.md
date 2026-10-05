@@ -11,6 +11,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), con
 - Combattimento d'azione ispirato a Elden Ring ma accessibile. Tre mosse fondamentali: **parata, schivata, attacco**. Niente d20.
 - Molte scelte per il giocatore (build, approccio, storia).
 - Tre personaggi giocabili: Guerriero, Ladro, Stregone. Prima versione giocabile (vertical slice): solo il Guerriero (proposta). La classe si sceglie all'inizio; l'arma si trova durante la fuga dalla prigione: Guerriero spada e scudo, Ladro arco e pugnale, Stregone bastone incantato e libro.
+- Storia: il figlio del protagonista è morto (lo si scopre in una tana degli orchi). La reliquia dà forza e potenza: più vita e attacchi più forti.
 - Scelta finale: se il giocatore va direttamente dal druido senza recuperare la reliquia, il druido la usa e ha il triplo della vita e attacchi più forti.
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
