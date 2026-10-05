@@ -15,6 +15,9 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// Esecuzione furtiva: alle spalle di un nemico che non ti ha visto (vedi InseguimentoNemico), l'attacco con la
+// spada diventa un'esecuzione: il personaggio si mette dietro di lui, lo afferra e gli taglia la gola. Il nemico
+// muore sul colpo; durante l'esecuzione il giocatore non subisce danni. In basso compare l'avviso quando è possibile.
 // Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
 // spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
 // costa mana (terza barra), che si recupera sconfiggendo i nemici.
@@ -27,7 +30,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(AggancioBersaglio))]
 public class GiocatoreControllo : MonoBehaviour
 {
-    public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto }
+    public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto, Esecuzione }
 
     [Header("Riferimenti")]
     [Tooltip("Se vuoto usa la camera principale.")]
@@ -81,6 +84,16 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float arcoAttacco = 120f;
     [SerializeField] float velocitaAffondo = 3f;
 
+    [Header("Esecuzione furtiva (alle spalle di un nemico che non ti ha visto)")]
+    [Tooltip("Distanza massima dal nemico per l'esecuzione, in metri.")]
+    [SerializeField] float distanzaEsecuzione = 2f;
+    [Tooltip("Quanto bisogna essere dietro al nemico: ampiezza dell'arco alle sue spalle, in gradi.")]
+    [SerializeField] float arcoAlleSpalle = 120f;
+    [Tooltip("Durata di tutta l'esecuzione, in secondi.")]
+    [SerializeField] float durataEsecuzione = 1.4f;
+    [Tooltip("Dopo quanti secondi parte il taglio (e il nemico muore).")]
+    [SerializeField] float momentoTaglio = 0.7f;
+
     [Header("Bastone magico (si trova nel baule della chiesetta)")]
     [SerializeField] float manaMassimo = 100f;
     [Tooltip("Mana speso per ogni sfera.")]
@@ -113,6 +126,8 @@ public class GiocatoreControllo : MonoBehaviour
     public Vector3 DirezioneSchivata => direzioneSchivata;
     public float Vita { get; private set; }
     public float VitaMassima => vitaMassima;
+    public float DurataEsecuzione => durataEsecuzione;
+    public float MomentoTaglio => momentoTaglio;
 
     // Armi: la spada c'è sempre, il bastone magico si trova nel baule. Tasto 1 spada, tasto 2 bastone.
     public enum ArmaImpugnata { Spada, Bastone }
@@ -136,6 +151,11 @@ public class GiocatoreControllo : MonoBehaviour
     bool sferaLanciata;
     Bersaglio bersaglioSfera;
     float prossimoAvvisoMana;
+
+    // Esecuzione furtiva: il nemico che si può giustiziare adesso (per l'avviso) e quello che si sta giustiziando.
+    InseguimentoNemico vittimaPossibile;
+    InseguimentoNemico vittima;
+    bool taglioFatto;
 
     // Dove rinasce il personaggio: all'inizio è il punto di partenza, poi l'ultimo checkpoint toccato.
     Vector3 puntoRinascita;
@@ -286,9 +306,16 @@ public class GiocatoreControllo : MonoBehaviour
                 if (tempoNelloStato >= durataStordimento) CambiaStato(Stato.Libero);
                 break;
 
+            case Stato.Esecuzione:
+                AggiornaEsecuzione();
+                break;
+
             case Stato.Morto:
                 break;
         }
+
+        // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
+        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
 
@@ -444,6 +471,13 @@ public class GiocatoreControllo : MonoBehaviour
             return;
         }
 
+        // Alle spalle di un nemico ignaro il primo colpo diventa un'esecuzione furtiva.
+        if (!concatenato && CercaVittima() is InseguimentoNemico bersaglioFurtivo)
+        {
+            IniziaEsecuzione(bersaglioFurtivo);
+            return;
+        }
+
         colpoCombo = concatenato ? (colpoCombo + 1) % 3 : 0;
         fendenteSuonato = false;
         resistenza.Spendi(costoAttacco);
@@ -547,6 +581,73 @@ public class GiocatoreControllo : MonoBehaviour
         return true;
     }
 
+    // ---------- Esecuzione furtiva ----------
+
+    // Il nemico più vicino che si può giustiziare: vicino, ignaro, con il giocatore alle sue spalle e girato verso di lui.
+    InseguimentoNemico CercaVittima()
+    {
+        if (arma != ArmaImpugnata.Spada) return null;
+        InseguimentoNemico migliore = null;
+        float distanzaMigliore = float.MaxValue;
+        foreach (Collider c in Physics.OverlapSphere(transform.position, distanzaEsecuzione, ~0, QueryTriggerInteraction.Ignore))
+        {
+            InseguimentoNemico nemico = c.GetComponentInParent<InseguimentoNemico>();
+            if (nemico == null || !nemico.Ignaro) continue;
+
+            Vector3 dalNemico = transform.position - nemico.transform.position;
+            dalNemico.y = 0f;
+            float distanza = dalNemico.magnitude;
+            if (distanza < 0.01f || distanza > distanzaEsecuzione) continue;
+            // Dietro di lui: lontano dal suo sguardo.
+            if (Vector3.Angle(nemico.transform.forward, dalNemico) < 180f - arcoAlleSpalle * 0.5f) continue;
+            // Il giocatore deve guardare più o meno verso il nemico.
+            if (Vector3.Angle(transform.forward, -dalNemico) > 80f) continue;
+
+            if (distanza < distanzaMigliore)
+            {
+                distanzaMigliore = distanza;
+                migliore = nemico;
+            }
+        }
+        return migliore;
+    }
+
+    void IniziaEsecuzione(InseguimentoNemico bersaglioFurtivo)
+    {
+        vittima = bersaglioFurtivo;
+        taglioFatto = false;
+        attaccoPrenotatoFino = -1f;
+        vittima.IniziaEsecuzione();
+
+        // Si mette subito dietro al nemico, guardando nella sua stessa direzione.
+        Vector3 avanti = vittima.transform.forward;
+        avanti.y = 0f;
+        avanti.Normalize();
+        Vector3 posto = vittima.transform.position - avanti * 0.85f;
+        posto.y = transform.position.y;
+        controller.enabled = false;
+        transform.SetPositionAndRotation(posto, Quaternion.LookRotation(avanti));
+        controller.enabled = true;
+
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.5f, 0.7f);
+        CambiaStato(Stato.Esecuzione);
+    }
+
+    void AggiornaEsecuzione()
+    {
+        if (!taglioFatto && tempoNelloStato >= momentoTaglio)
+        {
+            taglioFatto = true;
+            Suoni.Suona(Suono.Fendente, transform.position + Vector3.up * 1.4f, 0.9f, 0.7f);
+            if (vittima != null) vittima.Giustizia(transform.position);
+        }
+        if (tempoNelloStato >= durataEsecuzione)
+        {
+            vittima = null;
+            CambiaStato(Stato.Libero);
+        }
+    }
+
     void ControllaColpi()
     {
         Vector3 centro = transform.position + transform.forward * (portataColpo * 0.5f);
@@ -578,7 +679,7 @@ public class GiocatoreControllo : MonoBehaviour
     // Chiamato dai nemici quando un loro colpo arriva.
     public void RiceviColpo(float danno, Vector3 origineColpo)
     {
-        if (stato == Stato.Morto) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
@@ -652,7 +753,7 @@ public class GiocatoreControllo : MonoBehaviour
     // Danno dall'ambiente (trappole, fuoco...): non si può parare, ma la schivata fatta al momento giusto lo evita.
     public void RiceviDannoAmbiente(float danno)
     {
-        if (stato == Stato.Morto) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
             Debug.Log("Schivato!");
@@ -728,6 +829,12 @@ public class GiocatoreControllo : MonoBehaviour
         {
             GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
             DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+        }
+
+        if (vittimaPossibile != null)
+        {
+            var stileAvviso = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            GUI.Label(new Rect(0f, Screen.height - 90f, Screen.width, 30f), "Tasto sinistro: esecuzione furtiva", stileAvviso);
         }
 
         if (stato == Stato.Morto)

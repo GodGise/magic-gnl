@@ -8,6 +8,8 @@ using UnityEngine;
 //     dall'alto). Ogni colpo ha tre momenti: carica, colpo, ritorno, legati ai tempi dell'attacco.
 //   - Schivata: uno scatto, con il corpo basso e inclinato nella direzione in cui si schiva.
 //   - Parata: braccia alzate davanti. Colpito: barcolla all'indietro. Morto: cade a terra.
+//   - Esecuzione furtiva: il giocatore afferra il nemico da dietro con il braccio sinistro e con la spada gli
+//     taglia la gola con un fendente orizzontale; il nemico si inarca all'indietro con le braccia aperte.
 //   - Nemici: durante il preavviso rosso caricano il colpo, poi colpiscono; ogni attacco usa
 //     uno dei tre movimenti, a turno.
 // Come montarlo: non serve montarlo. Lo aggiunge da solo AspettoUmanoide quando crea la figura.
@@ -120,11 +122,36 @@ public class AnimazioneUmanoide : MonoBehaviour
         corpo = new Vector3(-85f, 0f, 0f), abbassamento = 0.85f
     };
 
+    // Esecuzione furtiva, giocatore: presa (braccio sinistro attorno al nemico, spada portata a destra
+    // all'altezza della gola), poi il taglio da destra a sinistra con il busto che ruota.
+    static readonly Posa PosaPresa = new Posa
+    {
+        braccioSinistro = new Vector3(-95f, 0f, 20f), braccioDestro = new Vector3(-95f, 0f, 60f),
+        gambaDestra = new Vector3(15f, 0f, 0f), gambaSinistra = new Vector3(-12f, 0f, 0f),
+        corpo = new Vector3(10f, 20f, 0f), abbassamento = 0.06f
+    };
+
+    static readonly Posa PosaTaglio = new Posa
+    {
+        braccioSinistro = new Vector3(-80f, 0f, 10f), braccioDestro = new Vector3(-95f, 0f, -55f),
+        gambaDestra = new Vector3(18f, 0f, 0f), gambaSinistra = new Vector3(-15f, 0f, 0f),
+        corpo = new Vector3(12f, -25f, 0f), abbassamento = 0.1f
+    };
+
+    // Esecuzione furtiva, nemico: preso alle spalle, si inarca all'indietro con le braccia aperte.
+    static readonly Posa PosaGiustiziato = new Posa
+    {
+        braccioDestro = new Vector3(-35f, 0f, 40f), braccioSinistro = new Vector3(-35f, 0f, -40f),
+        gambaDestra = new Vector3(-8f, 0f, 0f), gambaSinistra = new Vector3(8f, 0f, 0f),
+        corpo = new Vector3(-22f, 0f, 0f), abbassamento = 0.12f
+    };
+
     // ---------- Stato ----------
 
     Transform figura, gambaSinistra, gambaDestra, braccioSinistro, braccioDestro;
     GiocatoreControllo giocatore;
     Bersaglio nemico;
+    InseguimentoNemico inseguimento;   // solo per i nemici con la vista: serve a sapere se sta subendo un'esecuzione
     Vector3 posizioneFigura;
     Vector3 ultimaPosizione;
     float fase;
@@ -226,6 +253,9 @@ public class AnimazioneUmanoide : MonoBehaviour
 
             case GiocatoreControllo.Stato.Morto:
                 return PosaCaduto;
+
+            case GiocatoreControllo.Stato.Esecuzione:
+                return PosaEsecuzione(t, giocatore.MomentoTaglio, giocatore.DurataEsecuzione);
         }
         peso = 0f;
         return Neutra;
@@ -234,6 +264,9 @@ public class AnimazioneUmanoide : MonoBehaviour
     Posa PosaNemico(out float peso)
     {
         peso = 1f;
+        if (inseguimento == null) inseguimento = GetComponent<InseguimentoNemico>();
+        if (inseguimento != null && inseguimento.InEsecuzione) return PosaGiustiziato;
+
         int indice = Mathf.Max(0, nemico.NumeroAttacco - 1) % 3;
 
         // Durante il preavviso rosso: carica il colpo piano piano.
@@ -262,6 +295,18 @@ public class AnimazioneUmanoide : MonoBehaviour
 
         peso = 0f;
         return Neutra;
+    }
+
+    // Esecuzione: si porta nella presa, la tiene fino al taglio, taglia in un attimo, poi torna dritto.
+    static Posa PosaEsecuzione(float t, float momentoTaglio, float durata)
+    {
+        float presa = Mathf.Max(0.05f, momentoTaglio * 0.45f);
+        const float durataTaglio = 0.12f;
+        if (t < presa) return Posa.Mescola(Neutra, PosaPresa, Mathf.SmoothStep(0f, 1f, t / presa));
+        if (t < momentoTaglio) return PosaPresa;
+        if (t < momentoTaglio + durataTaglio) return Posa.Mescola(PosaPresa, PosaTaglio, (t - momentoTaglio) / durataTaglio);
+        float ritorno = Mathf.Max(0.05f, durata - momentoTaglio - durataTaglio);
+        return Posa.Mescola(PosaTaglio, Neutra, Mathf.SmoothStep(0f, 1f, (t - momentoTaglio - durataTaglio) / ritorno));
     }
 
     // Un colpo della combo: carica durante la preparazione, colpo durante la fase attiva, ritorno nel recupero.

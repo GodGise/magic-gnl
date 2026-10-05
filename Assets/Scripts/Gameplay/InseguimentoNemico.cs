@@ -6,6 +6,8 @@ using UnityEngine;
 // ("Distanza Vista") e senza muri in mezzo. Allora gli compare un "!" sopra la testa, insegue il giocatore
 // e lo attacca (gli attacchi sono quelli di Bersaglio). Se lo perde di vista per qualche secondo, o se
 // il giocatore scappa troppo lontano, torna al suo posto. Se viene colpito alle spalle si accorge lo stesso.
+// Finché è ignaro (non ha visto il giocatore) può subire l'esecuzione furtiva alle spalle (vedi GiocatoreControllo):
+// resta immobile, si inarca all'indietro e muore al taglio.
 // Come montarlo: sullo stesso oggetto di un Bersaglio (per esempio un cilindro con Bersaglio).
 // Selezionando il nemico, nella vista Scene si vede il cono giallo del suo campo visivo.
 [RequireComponent(typeof(Bersaglio))]
@@ -45,6 +47,12 @@ public class InseguimentoNemico : MonoBehaviour
     float tempoSguardo;
     TextMesh esclamativo;
     float esclamativoFino;
+    bool inEsecuzione;
+
+    // Ignaro: vivo, non sta inseguendo il giocatore e non sta già subendo un'esecuzione. Solo così si può giustiziare.
+    public bool Ignaro => !bersaglio.Morto && stato != Stato.Insegue && !inEsecuzione;
+    // Letto da AnimazioneUmanoide: durante l'esecuzione il nemico si inarca all'indietro.
+    public bool InEsecuzione => inEsecuzione;
 
     void Awake()
     {
@@ -71,11 +79,12 @@ public class InseguimentoNemico : MonoBehaviour
     {
         float dt = Time.deltaTime;
         AggiornaEsclamativo();
+        if (inEsecuzione) return;   // immobile mentre viene giustiziato
 
-        // Da morto non fa niente; quando rinasce ricomincia tranquillo al suo posto.
+        // Da morto non fa niente; quando rinasce torna tranquillo al suo posto.
         if (bersaglio.Morto)
         {
-            stato = Stato.Fermo;
+            stato = Stato.Torna;   // quando rinasce torna al suo posto
             bersaglio.attaccaIlGiocatore = false;
             return;
         }
@@ -142,7 +151,7 @@ public class InseguimentoNemico : MonoBehaviour
     // Si accorge del giocatore: "!" sopra la testa, inizia a inseguire e può attaccare.
     void SiAccorge()
     {
-        if (bersaglio.Morto) return;
+        if (bersaglio.Morto || inEsecuzione) return;
         if (stato != Stato.Insegue)
         {
             esclamativoFino = Time.time + 1.2f;
@@ -151,6 +160,23 @@ public class InseguimentoNemico : MonoBehaviour
         stato = Stato.Insegue;
         ultimaVolta = Time.time;
         bersaglio.attaccaIlGiocatore = true;
+    }
+
+    // ---------- Esecuzione furtiva ----------
+
+    // Chiamato da GiocatoreControllo quando inizia l'esecuzione: il nemico resta fermo e non attacca.
+    public void IniziaEsecuzione()
+    {
+        inEsecuzione = true;
+        bersaglio.attaccaIlGiocatore = false;
+    }
+
+    // Il taglio: il nemico muore sul colpo, poi rinasce tranquillo al suo posto come dopo una morte normale.
+    public void Giustizia(Vector3 daDove)
+    {
+        bersaglio.RiceviColpo(bersaglio.VitaMassima * 10f, daDove);
+        inEsecuzione = false;
+        stato = Stato.Torna;
     }
 
     void Rinuncia()

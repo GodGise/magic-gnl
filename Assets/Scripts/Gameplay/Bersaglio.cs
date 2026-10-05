@@ -28,6 +28,7 @@ public class Bersaglio : MonoBehaviour
     bool morto;
 
     public bool Morto => morto;
+    public float VitaMassima => vitaMassima;
     // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
     public event System.Action Colpito;
     bool staAttaccando;
