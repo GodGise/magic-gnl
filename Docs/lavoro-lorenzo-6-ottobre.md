@@ -48,8 +48,8 @@ Dalla piazzetta all'ingresso degli orchi: 145 m, 29 s di corsa.
 ## Da provare in Play (impressioni di Lorenzo)
 
 - Le strade sono larghe abbastanza per combattere, con sprint e camera? *(da scrivere)*
-- La piazzetta è troppo grande o troppo piccola? *(da scrivere)*
-- I tempi a piedi sembrano giusti? *(da scrivere)*
+- La piazzetta è troppo grande o troppo piccola? Nella prima versione (32 m) era troppo piccola e tutto sembrava concentrato; dopo l'allargamento del 50% Lorenzo dice che la mappa va bene e gli spazi sono giusti.
+- I tempi a piedi sembrano giusti? Sì, con la versione allargata.
 
 ## Da sapere
 
