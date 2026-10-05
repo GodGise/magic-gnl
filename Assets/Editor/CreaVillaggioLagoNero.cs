@@ -8,11 +8,11 @@ using UnityEngine.Rendering;
 // Assets/Scenes/VillaggioLagoNero.unity. Si usa UNA volta: dopo, la scena si modifica a mano come ZonaProva.
 // Se la scena esiste già chiede conferma, perché ricrearla cancella le modifiche fatte a mano.
 //
-// Cosa costruisce, seguendo la mappa vista dall'alto di Giuseppe (un quadrato della griglia = 10 metri):
-//   - Terreno di 210 x 170 metri, con il Lago Nero a est (più basso di 30 cm), la riva e il molo con tre barche;
-//   - Strade (principali 3,4 m, vicoli 2,2 m) e la piazzetta con il pozzo al centro;
-//   - Edifici speciali (Mercante, Taverna, Fabbro, Erborista, Tempio, Casa dell'eroe) e 71 case,
-//     tutte copie del prefab "casa-blocco" con un cubetto scuro dove sta la porta;
+// Cosa costruisce, seguendo la mappa vista dall'alto di Giuseppe allargata del 50% (DatiVillaggioLagoNero.Scala):
+//   - Terreno di 315 x 255 metri, con il Lago Nero a est (più basso di 30 cm), la riva e il molo con tre barche;
+//   - Strade (principali 4,4 m, vicoli 2,9 m) e la piazzetta di 48 m con il pozzo al centro;
+//   - Edifici speciali (Mercante, Taverna, Fabbro, Erborista, Tempio, Casa dell'eroe) e 71 case, molte più grandi
+//     della mappa e alcune come sulla mappa, tutte copie del prefab "casa-blocco" con un cubetto scuro dove sta la porta;
 //   - Cimitero con recinto e lapidi, orti, bosco ai bordi (cilindri e sfere), torce, confini invisibili;
 //   - MappaGuida: l'immagine della mappa stesa sul terreno, spenta. Accendendola (casella accanto al nome
 //     nell'Inspector) si confronta la scena con la mappa;
@@ -26,9 +26,11 @@ public static class CreaVillaggioLagoNero
     const string Cartella = "Assets/Segnaposto/Villaggio";
     const string PercorsoPrefab = Cartella + "/casa-blocco.prefab";
     const string PercorsoMappa = Cartella + "/villaggio-lago-nero.png";
-    const float Larghezza = 210f;  // est-ovest
-    const float Profondita = 170f; // nord-sud
-    static readonly Vector3 CentroPiazza = new Vector3(96f, 0f, 84f);
+    // Le misure fisse prese dalla mappa (cimitero, abside, segnalini...) vanno moltiplicate per la stessa scala dei dati.
+    const float S = DatiVillaggioLagoNero.Scala;
+    const float Larghezza = 210f * S;  // est-ovest
+    const float Profondita = 170f * S; // nord-sud
+    static readonly Vector3 CentroPiazza = new Vector3(96f * S, 0f, 84f * S);
 
     static Material terreno, strada, piazza, pietra, pietraScura, casa, speciale, porta, legno, foglie, acqua, sabbia, orto, lapide, fuoco;
     static System.Random caso;
@@ -68,6 +70,7 @@ public static class CreaVillaggioLagoNero
         Vector3 verso = partenza - casaEroe; verso.y = 0f;
         var giocatore = CreaScenaProva.CreaGiocatore(partenza, Quaternion.LookRotation(verso).eulerAngles.y);
         CreaScenaProva.PreparaCamera(giocatore.transform, true);
+        if (Camera.main != null) Camera.main.farClipPlane = 330f; // il villaggio è largo più di 300 metri
 
         // Un manichino che non attacca, per provare se le strade sono larghe abbastanza per combattere.
         CreaScenaProva.CreaNemico("Manichino di prova", CentroPiazza + new Vector3(0f, 1f, -7f), false);
@@ -159,8 +162,8 @@ public static class CreaVillaggioLagoNero
     static void CreaPiazza(Transform gruppo)
     {
         // La piazzetta della mappa è un cerchio di circa 32 m, un po' schiacciato da nord a sud.
-        var lastricato = Cilindro("Lastricato", gruppo, CentroPiazza + Vector3.up * 0.0f, 32f, 0.08f, piazza, true);
-        lastricato.transform.localScale = new Vector3(32f, 0.04f, 27.2f);
+        var lastricato = Cilindro("Lastricato", gruppo, CentroPiazza, 32f * S, 0.08f, piazza, true);
+        lastricato.transform.localScale = new Vector3(32f * S, 0.04f, 27.2f * S);
 
         Cilindro("Pozzo", gruppo, CentroPiazza + Vector3.up * 0.5f, 3.6f, 1f, pietra, true);
         Cilindro("Acqua del pozzo", gruppo, CentroPiazza + Vector3.up * 1.01f, 2f, 0.02f, acqua, false);
@@ -168,7 +171,7 @@ public static class CreaVillaggioLagoNero
         foreach (float angolo in new[] { 45f, 135f, 225f, 315f })
         {
             float r = angolo * Mathf.Deg2Rad;
-            Torcia(gruppo, CentroPiazza + new Vector3(Mathf.Sin(r), 0f, Mathf.Cos(r)) * 9f);
+            Torcia(gruppo, CentroPiazza + new Vector3(Mathf.Sin(r), 0f, Mathf.Cos(r)) * 9f * S);
         }
     }
 
@@ -179,15 +182,10 @@ public static class CreaVillaggioLagoNero
         int numeroCasa = 0;
         for (int i = 0; i < nomi.Length; i++)
         {
-            int k = i * 8;
+            int k = i * DatiVillaggioLagoNero.CampiEdificio;
             string nome = nomi[i];
             bool eSpeciale = nome.Length > 0;
-            float altezza;
-            if (nome == "Tempio") altezza = 8f;
-            else if (nome == "Taverna") altezza = 7.5f;
-            else if (nome == "Casa dell'eroe") altezza = 5.5f;
-            else if (eSpeciale) altezza = 6f;
-            else altezza = Tra(4.5f, 5.5f);
+            float altezza = e[k + 8];
 
             var edificio = (GameObject)PrefabUtility.InstantiatePrefab(prefabCasa);
             edificio.name = eSpeciale ? nome : "casa-blocco " + (++numeroCasa);
@@ -214,21 +212,21 @@ public static class CreaVillaggioLagoNero
         }
 
         // Il tempio ha un'abside rotonda sul lato ovest (il cerchio accanto al rettangolo sulla mappa).
-        Cilindro("Abside del tempio", speciali, new Vector3(51.75f, 4f, 140.5f), 6.5f, 8f, speciale, true)
-            .transform.localScale = new Vector3(6.5f, 4f, 7f);
+        Cilindro("Abside del tempio", speciali, new Vector3(51.75f * S, 4.5f, 140.5f * S), 8f, 9f, speciale, true)
+            .transform.localScale = new Vector3(8f, 4.5f, 8.75f);
 
         // Torce davanti alla casa dell'eroe e al tempio.
         Vector3 eroe = TrovaEdificio("Casa dell'eroe");
         var partenza = new Vector3(DatiVillaggioLagoNero.Partenza[0], 0f, DatiVillaggioLagoNero.Partenza[1]);
         Vector3 lato = Vector3.Cross(Vector3.up, (partenza - eroe).normalized);
         Torcia(speciali, partenza + lato * 2.5f);
-        Torcia(speciali, new Vector3(68f, 0f, 136f));
+        Torcia(speciali, new Vector3(68f * S, 0f, 136f * S));
     }
 
     static void CreaCimitero(Transform gruppo)
     {
         // Recinto basso da X 20 a 42 e da Z 138 a 158, con il cancello a est, verso il tempio.
-        const float x0 = 20f, x1 = 42f, z0 = 138f, z1 = 158f, h = 1.2f;
+        const float x0 = 20f * S, x1 = 42f * S, z0 = 138f * S, z1 = 158f * S, h = 1.2f;
         Blocco("Recinto nord", gruppo, new Vector3((x0 + x1) / 2f, h / 2f, z1), new Vector3(x1 - x0, h, 0.4f), pietraScura);
         Blocco("Recinto sud", gruppo, new Vector3((x0 + x1) / 2f, h / 2f, z0), new Vector3(x1 - x0, h, 0.4f), pietraScura);
         Blocco("Recinto ovest", gruppo, new Vector3(x0, h / 2f, (z0 + z1) / 2f), new Vector3(0.4f, h, z1 - z0), pietraScura);
@@ -240,8 +238,8 @@ public static class CreaVillaggioLagoNero
         {
             for (int j = 0; j < 3; j++)
             {
-                float x = 23.5f + i * 5f + 0.7f;
-                float z = Profondita - (16f + j * 6f) - 0.3f;   // la lapide in testa alla tomba
+                float x = (23.5f + i * 5f + 0.7f) * S;
+                float z = Profondita - (16f + j * 6f) * S - 0.3f;   // la lapide in testa alla tomba
                 var l = Blocco("Lapide", gruppo, new Vector3(x, 0.55f, z), new Vector3(0.9f, 1.1f, 0.2f), lapide);
                 l.transform.localRotation = Quaternion.Euler(Tra(-6f, 6f), Tra(-10f, 10f), Tra(-6f, 6f));
                 Blocco("Tomba", gruppo, new Vector3(x, 0.05f, z - 0.9f), new Vector3(1.2f, 0.1f, 2.2f), pietraScura).GetComponent<Collider>().enabled = false;
@@ -325,7 +323,7 @@ public static class CreaVillaggioLagoNero
 
     static void CreaSegnalini(Transform gruppo)
     {
-        Segnalino(gruppo, "Segnalino: arrivo degli orchi (proposta)", new Vector3(4f, 1.5f, 58.5f), new Color(0.9f, 0.1f, 0.1f));
+        Segnalino(gruppo, "Segnalino: arrivo degli orchi (proposta)", new Vector3(4f, 1.5f, 58.5f * S), new Color(0.9f, 0.1f, 0.1f));
         Segnalino(gruppo, "Segnalino: scontro con l'orco enorme (proposta)", CentroPiazza + new Vector3(0f, 1.5f, 8f), new Color(0.6f, 0.15f, 0.9f));
     }
 
@@ -482,7 +480,8 @@ public static class CreaVillaggioLagoNero
         string[] nomi = DatiVillaggioLagoNero.NomiEdifici;
         for (int i = 0; i < nomi.Length; i++)
         {
-            if (nomi[i] == nome) return new Vector3(DatiVillaggioLagoNero.Edifici[i * 8], 0f, DatiVillaggioLagoNero.Edifici[i * 8 + 1]);
+            int k = i * DatiVillaggioLagoNero.CampiEdificio;
+            if (nomi[i] == nome) return new Vector3(DatiVillaggioLagoNero.Edifici[k], 0f, DatiVillaggioLagoNero.Edifici[k + 1]);
         }
         return CentroPiazza;
     }
