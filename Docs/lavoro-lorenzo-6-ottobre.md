@@ -2,11 +2,21 @@
 
 Riepilogo per Giuseppe e Nazar. Fatto il 5 ottobre sera (in anticipo sul compito del 6), sul ramo `lorenzo/villaggio-blockout`.
 
+## Aggiornamento: villaggio allargato
+
+Dopo la prima prova in Play il villaggio sembrava troppo piccolo e concentrato. Lorenzo ha chiesto di allargarlo:
+- tutte le distanze sono **più larghe del 50%** (terreno 315 x 255 m invece di 210 x 170);
+- la **piazzetta** passa da 32 a **48 m**; le case attorno restano attaccate e chiudono il giro, ma sono più larghe;
+- **strade** più larghe: principali 4,4 m, vicoli 2,9 m;
+- molte **case** sono più grandi (fino al 35% in più) e più alte, **alcune sono rimaste come sulla mappa**; tutte sono più distanziate;
+- edifici speciali più grandi del 25%; il **bosco** è stato infittito (1672 alberi), perché allargandolo era diventato rado.
+La pianta resta quella della mappa di Giuseppe: cambiano solo le misure. MappaGuida è allargata della stessa quantità.
+
 ## Cosa c'è
 
 - Scena nuova **`Assets/Scenes/VillaggioLagoNero.unity`**, versione intatta del villaggio, costruita con forme grigie (blockout) nei punti esatti della mappa di Giuseppe. Le posizioni sono state prese direttamente dallo script `Docs/mappe/genera-mappa-villaggio.py`, non ricalcate a mano.
-- Conversione usata: X di Unity = x della mappa, Z = 170 − y, 1 unità = 1 metro. Nord = +Z, il lago è a est (+X).
-- Nella Hierarchy, sotto **Villaggio**: `Terreno`, `Lago` (acqua 30 cm più bassa, riva, molo con 3 barche), `Strade` (principali 3,4 m, vicoli 2,2 m), `Piazza` (lastricato di 32 m, pozzo, 4 torce), `Edifici speciali` (Mercante, Taverna, Fabbro, Erborista, Tempio con abside, Casa dell'eroe), `Case` (71), `Cimitero` (recinto con cancello verso il tempio, 12 lapidi), `Orti`, `Bosco` (882 alberi: cilindro e sfera), `Confini` (muri invisibili sul bordo), `MappaGuida`.
+- Conversione usata: X di Unity = x della mappa × 1,5, Z = (170 − y) × 1,5, 1 unità = 1 metro. Nord = +Z, il lago è a est (+X).
+- Nella Hierarchy, sotto **Villaggio**: `Terreno`, `Lago` (acqua 30 cm più bassa, riva, molo con 3 barche), `Strade` (principali 4,4 m, vicoli 2,9 m), `Piazza` (lastricato di 48 m, pozzo, 4 torce), `Edifici speciali` (Mercante, Taverna, Fabbro, Erborista, Tempio con abside, Casa dell'eroe), `Case` (71), `Cimitero` (recinto con cancello verso il tempio, 12 lapidi), `Orti`, `Bosco` (1672 alberi: cilindro e sfera), `Confini` (muri invisibili sul bordo), `MappaGuida`.
 - **`MappaGuida`** è l'immagine della mappa stesa sul terreno, spenta. Si accende con la casella accanto al nome nell'Inspector, per confrontare la scena con la mappa.
 - **Prefab `casa-blocco`** (`Assets/Segnaposto/Villaggio/`): tutte le case e gli edifici speciali sono sue copie, con un cubetto scuro "Porta" sul lato della porta. Le porte seguono le regole di Giuseppe: verso il centro della piazzetta nell'anello, verso la strada lungo le strade. Quando Nazar farà il modello, basterà cambiare il prefab.
 - Materiali in `Assets/Segnaposto/Villaggio/`. I nomi contengono Terreno, Sentiero, Pietra e Legno, così i passi cambiano suono su erba, strade, piazzetta e molo.
@@ -26,14 +36,14 @@ Corsa 5 m/s, sprint 8 m/s.
 
 | Dalla casa dell'eroe a | Distanza | Corsa | Sprint |
 | --- | --- | --- | --- |
-| Bordo della piazzetta | 38 m | 8 s | 5 s |
-| Pozzo (centro della piazzetta) | 54 m | 11 s | 7 s |
-| Inizio del molo | 26 m | 5 s | 3 s |
-| Primi alberi del bosco | 10 m | 2 s | 1 s |
-| Tempio | 121 m | 24 s | 15 s |
-| Ingresso degli orchi (bosco a ovest) | 137 m | 28 s | 17 s |
+| Bordo della piazzetta | 59 m | 12 s | 7 s |
+| Pozzo (centro della piazzetta) | 83 m | 17 s | 10 s |
+| Inizio del molo | 44 m | 9 s | 5 s |
+| Primi alberi del bosco | 14 m | 3 s | 2 s |
+| Tempio | 184 m | 37 s | 23 s |
+| Ingresso degli orchi (bosco a ovest) | 208 m | 42 s | 26 s |
 
-Dalla piazzetta all'ingresso degli orchi: 95 m, 19 s di corsa.
+Dalla piazzetta all'ingresso degli orchi: 145 m, 29 s di corsa.
 
 ## Da provare in Play (impressioni di Lorenzo)
 
