@@ -4,7 +4,8 @@ using UnityEngine.InputSystem;
 // Effetto retro in stile PS2: il gioco viene disegnato a bassa risoluzione e poi ingrandito
 // senza sfumare i pixel, così l'immagine diventa ruvida come nei giochi di quegli anni.
 // Le scritte del pannello di prova restano nitide perché vengono disegnate dopo.
-// Per confrontare: F2 accende e spegne l'effetto mentre giochi.
+// Per confrontare: F2 accende e spegne l'effetto mentre giochi. La scelta resta salvata
+// (è la stessa dell'opzione "Effetto retro PS2" nel menu iniziale).
 // Come montarlo: sulla Main Camera (funziona con la pipeline grafica di base di Unity).
 [RequireComponent(typeof(Camera))]
 public class EffettoRetro : MonoBehaviour
@@ -13,9 +14,20 @@ public class EffettoRetro : MonoBehaviour
     [SerializeField] int righeVerticali = 360;
     public bool attivo = true;
 
+    const string ChiaveRetro = "EffettoRetro";
+
+    void Awake()
+    {
+        attivo = PlayerPrefs.GetInt(ChiaveRetro, attivo ? 1 : 0) == 1;
+    }
+
     void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame) attivo = !attivo;
+        if (Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
+        {
+            attivo = !attivo;
+            PlayerPrefs.SetInt(ChiaveRetro, attivo ? 1 : 0);
+        }
     }
 
     void OnRenderImage(RenderTexture sorgente, RenderTexture destinazione)
