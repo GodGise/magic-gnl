@@ -40,6 +40,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 ## Chi lavora su cosa (per non sovrapporsi)
 - **Prima di iniziare** un lavoro, la persona lo annuncia nel canale Discord del team dedicato ai lavori in corso: cosa fa e quali file o aree tocca. Esempio: "Lorenzo: oggi porta della cripta, tocco ZonaProva e Assets/Scripts/Livelli/PortaCripta.cs".
 - **Prima di annunciare**, si legge il canale: se qualcun altro sta già lavorando sugli stessi file o sulla stessa area, ci si accorda prima di iniziare.
+- **Ogni Claude, prima di fare qualsiasi cosa in una sessione**: fa fare Pull di `main` e aggiorna il ramo di lavoro da `main` (GitHub Desktop: **Branch → Update from main**), poi **rilegge questo file da capo**, perché possono esserci regole e decisioni nuove.
 - **Ogni Claude, all'inizio di una sessione di lavoro**: chiede alla persona su cosa lavora e quali file toccherà; le ricorda di leggere il canale e di annunciare; crea subito il ramo con un nome che descrive il lavoro (vedi "Nomi dei rami" qui sotto) e lo pubblica su GitHub (**Publish branch**). GitHub è collegato al canale, quindi la creazione del ramo arriva come notifica automatica.
 - **Alla fine**: si carica il ramo, si apre la pull request e si scrive "finito" nel canale. I caricamenti e le pull request arrivano anche loro come notifica.
 - Il Claude di Giuseppe non scrive su Discord: i suoi lavori si vedono dalle notifiche dei rami `giuseppec/...`.
