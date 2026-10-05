@@ -39,9 +39,15 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 ## Chi lavora su cosa (per non sovrapporsi)
 - **Prima di iniziare** un lavoro, la persona lo annuncia nel canale Discord del team dedicato ai lavori in corso: cosa fa e quali file o aree tocca. Esempio: "Lorenzo: oggi porta della cripta, tocco ZonaProva e Assets/Scripts/Livelli/PortaCripta.cs".
 - **Prima di annunciare**, si legge il canale: se qualcun altro sta già lavorando sugli stessi file o sulla stessa area, ci si accorda prima di iniziare.
-- **Ogni Claude, all'inizio di una sessione di lavoro**: chiede alla persona su cosa lavora e quali file toccherà; le ricorda di leggere il canale e di annunciare; crea subito il ramo con un nome che descrive il lavoro (`persona/lavoro`) e lo pubblica su GitHub (**Publish branch**). GitHub è collegato al canale, quindi la creazione del ramo arriva come notifica automatica.
+- **Ogni Claude, all'inizio di una sessione di lavoro**: chiede alla persona su cosa lavora e quali file toccherà; le ricorda di leggere il canale e di annunciare; crea subito il ramo con un nome che descrive il lavoro (vedi "Nomi dei rami" qui sotto) e lo pubblica su GitHub (**Publish branch**). GitHub è collegato al canale, quindi la creazione del ramo arriva come notifica automatica.
 - **Alla fine**: si carica il ramo, si apre la pull request e si scrive "finito" nel canale. I caricamenti e le pull request arrivano anche loro come notifica.
-- Il Claude di Giuseppe non scrive su Discord: i suoi lavori si vedono dalle notifiche dei rami `claude/...`.
+- Il Claude di Giuseppe non scrive su Discord: i suoi lavori si vedono dalle notifiche dei rami `giuseppec/...`.
+
+## Nomi dei rami
+- Il ramo porta il nome della persona e del lavoro, in minuscolo con trattini.
+- Se il lavoro è fatto con l'aiuto di Claude, al nome si aggiunge una **c**: `giuseppec/menu-iniziale`, `lorenzoc/combattimento`, `nazarc/esportazione-fbx`.
+- Se la persona lavora da sola, senza Claude, solo il nome: `nazar/lapide`, `giuseppe/pacchetto-audio`.
+- Non si usano più rami `claude/...`: quelli vecchi sono già uniti a `main` e vanno cancellati da GitHub (pagina Branches).
 - Compiti della settimana: documento "Compiti del team". Istruzioni dettagliate per il Claude di Lorenzo: `Docs/compiti-lorenzo.md`.
 
 ## Convenzioni
@@ -51,7 +57,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 
 ## Come lavora Claude su questo progetto
 - Claude si occupa del **codice C#** (gameplay, combattimento, rete co-op). Blender e i modelli sono di Giuseppe e Nazar.
-- Claude carica il codice su un **ramo a parte** (`claude/nome-funzione`), mai direttamente su `main`.
+- Claude carica il codice su un **ramo a parte** con il nome della persona più la c (per Giuseppe: `giuseppec/nome-funzione`), mai direttamente su `main`.
 - Dopo ogni caricamento Claude scrive cosa controllare. Chi lo prova in Unity dice se va bene; solo allora il ramo si unisce a `main`.
 - Le prove in Unity e la ricerca dei problemi le fa Giuseppe (o chi lavora), per non consumare crediti: Claude non prende il controllo del PC di Giuseppe per fare le prove, salvo richiesta esplicita. Dopo ogni caricamento Claude scrive esattamente cosa provare.
 - Ogni script C# ha un commento iniziale che dice a cosa serve e come montarlo su un oggetto della scena.
@@ -63,6 +69,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - `Assets/Scripts/Rete/` co-op e integrazione Steam
 - `Assets/Scripts/Ambiente/` ciclo giorno e notte, torce, effetto retro PS2
 - `Assets/Scripts/Livelli/` script degli elementi delle zone (porte, leve, trappole, checkpoint)
+- `Assets/Scripts/Interfaccia/` menu iniziale, scelta della classe, opzioni
 - `Assets/Segnaposto/` materiali e forme provvisorie della zona di prova, da sostituire con l'arte vera
 - Menu dell'editor **magic-gnl**: "Crea scena di prova" (combattimento) e "Crea zona di prova (villaggio in rovina)" (prima zona giocabile)
 - `Docs/` documenti di design
