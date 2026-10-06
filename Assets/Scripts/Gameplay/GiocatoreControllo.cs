@@ -23,6 +23,9 @@ using UnityEngine.InputSystem;
 // costa mana (terza barra), che si recupera sconfiggendo i nemici.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
+// Strettoie (vedi PassaggioStretto): fra due pareti vicine il personaggio rallenta piano piano, si gira
+// di fianco e stringe il suo ingombro, così passa anche dove prima urtava. Quando la strettoia è vera
+// rinfodera l'arma sulla schiena e la riprende appena esce; dentro non si attacca, non si para e non si scatta.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
 // Il modo più rapido è il menu "magic-gnl > Crea scena di prova", che prepara tutto da solo.
 [RequireComponent(typeof(CharacterController))]
@@ -114,6 +117,18 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float memoriaComandi = 0.2f;
     [SerializeField] float durataBarcollamento = 0.3f;
 
+    [Header("Strettoie")]
+    [Tooltip("Velocità nella strettoia piena, rispetto alla corsa normale (0,35 = 35%).")]
+    [SerializeField] float velocitaInStrettoia = 0.35f;
+    [Tooltip("Raggio dell'ingombro nella strettoia piena (metri). Normale: 0,5. Il varco più stretto in cui si passa è circa il doppio.")]
+    [SerializeField] float raggioInStrettoia = 0.22f;
+    [Tooltip("Oltre questo valore di strettoia (da 0 a 1) l'arma va nel fodero.")]
+    [SerializeField] float sogliaFodero = 0.5f;
+    [Tooltip("Sotto questo valore l'arma torna in mano.")]
+    [SerializeField] float sogliaRiprendiArma = 0.12f;
+    [Tooltip("Quanto dura il gesto di rinfoderare o riprendere l'arma, in secondi.")]
+    [SerializeField] float durataGestoFodero = 0.45f;
+
     public Stato StatoAttuale => stato;
 
     // Letti da AnimazioneUmanoide per muovere la figura nel momento giusto.
@@ -139,9 +154,19 @@ public class GiocatoreControllo : MonoBehaviour
     public float DurataPreparazioneIncantesimo => preparazioneIncantesimo;
     public float DurataRecuperoIncantesimo => recuperoIncantesimo;
 
+    // Strettoie: quanto è stretto (0-1), se l'arma è nel fodero e da quanto è iniziato il gesto del fodero.
+    public float Strettoia => passaggio != null ? passaggio.Valore : 0f;
+    public bool ArmaNelFodero => armaNelFodero;
+    public float TempoGestoFodero => Time.time - inizioGestoFodero;
+    public float DurataGestoFodero => durataGestoFodero;
+
     CharacterController controller;
     Resistenza resistenza;
     AggancioBersaglio aggancio;
+    PassaggioStretto passaggio;
+    float raggioNormale;
+    bool armaNelFodero;
+    float inizioGestoFodero = -10f;
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2;
     bool staSprintando;
 
@@ -190,6 +215,9 @@ public class GiocatoreControllo : MonoBehaviour
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
+        passaggio = GetComponent<PassaggioStretto>();
+        if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
+        raggioNormale = controller.radius;
         Vita = vitaMassima;
         puntoRinascita = transform.position;
         rotazioneRinascita = transform.rotation;
@@ -276,8 +304,8 @@ public class GiocatoreControllo : MonoBehaviour
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
 
-        // Cambio arma, non durante un attacco e non da morti.
-        if (stato != Stato.Morto && stato != Stato.Attacco)
+        // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
+        if (stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
         {
             if (comandoArma1.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Spada);
             if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
@@ -285,6 +313,7 @@ public class GiocatoreControllo : MonoBehaviour
 
         Vector3 direzioneInput = DirezioneDaInput(comandoMuovi.ReadValue<Vector2>());
         Vector3 movimento = Vector3.zero;
+        AggiornaStrettoia(direzioneInput, dt);
 
         switch (stato)
         {
@@ -327,6 +356,18 @@ public class GiocatoreControllo : MonoBehaviour
 
     Vector3 AggiornaLiberoOParata(Vector3 direzioneInput, float dt)
     {
+        // In una strettoia si avanza soltanto, di fianco e piano: niente schivate, attacchi, parate e sprint.
+        if (InStrettoia)
+        {
+            schivataPrenotataFino = -1f;
+            attaccoPrenotatoFino = -1f;
+            staSprintando = false;
+            if (stato == Stato.Parata) CambiaStato(Stato.Libero);
+            if (direzioneInput.sqrMagnitude <= 0.0001f) return Vector3.zero;
+            RuotaVerso(direzioneInput, dt);
+            return direzioneInput * velocitaCorsa * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+        }
+
         // Priorità: schivata, poi attacco, poi parata.
         if (SchivataRichiesta && resistenza.HaResistenza)
         {
@@ -363,7 +404,36 @@ public class GiocatoreControllo : MonoBehaviour
             // Spendere resistenza ogni frame ferma anche la ricarica, come per le altre azioni.
             resistenza.Spendi(costoSprintAlSecondo * dt);
         }
-        return direzioneInput * velocita;
+        // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
+        return direzioneInput * velocita * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+    }
+
+    // ---------- Strettoie ----------
+
+    bool GestoFoderoInCorso => Time.time - inizioGestoFodero < durataGestoFodero;
+    bool InStrettoia => Strettoia > 0.3f || armaNelFodero || GestoFoderoInCorso;
+
+    void AggiornaStrettoia(Vector3 direzioneInput, float dt)
+    {
+        bool puoMuoversi = stato == Stato.Libero || stato == Stato.Parata;
+        passaggio.Aggiorna(puoMuoversi ? direzioneInput : Vector3.zero, dt);
+
+        // L'ingombro si stringe insieme alla strettoia: così il personaggio passa nei varchi stretti.
+        controller.radius = Mathf.Lerp(raggioNormale, raggioInStrettoia, Strettoia);
+
+        if (stato == Stato.Morto) return;
+        if (!armaNelFodero && Strettoia > sogliaFodero && stato == Stato.Libero && !GestoFoderoInCorso)
+        {
+            armaNelFodero = true;
+            inizioGestoFodero = Time.time;
+            Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.5f, 0.85f);
+        }
+        else if (armaNelFodero && Strettoia < sogliaRiprendiArma && !GestoFoderoInCorso)
+        {
+            armaNelFodero = false;
+            inizioGestoFodero = Time.time;
+            Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.6f, 1.1f);
+        }
     }
 
     // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
@@ -734,6 +804,8 @@ public class GiocatoreControllo : MonoBehaviour
         controller.enabled = true;
 
         velocitaVerticale = 0f;
+        armaNelFodero = false;   // si rinasce con l'arma in mano
+        inizioGestoFodero = -10f;
         Vita = vitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);

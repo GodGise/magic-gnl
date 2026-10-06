@@ -12,6 +12,9 @@ using UnityEngine;
 //     taglia la gola con un fendente orizzontale; il nemico si inarca all'indietro con le braccia aperte.
 //   - Nemici: durante il preavviso rosso caricano il colpo, poi colpiscono; ogni attacco usa
 //     uno dei tre movimenti, a turno.
+//   - Strettoie (solo giocatore, vedi PassaggioStretto): più lo spazio si stringe, più la figura si gira
+//     di fianco, abbassa le braccia vicino al corpo e avanza a passetti laterali corti. Quando entra nella
+//     strettoia porta il braccio dietro la spalla e mette l'arma nel fodero sulla schiena; quando esce la riprende.
 // Come montarlo: non serve montarlo. Lo aggiunge da solo AspettoUmanoide quando crea la figura.
 // I numeri si possono regolare dall'Inspector durante il Play (sul giocatore o sul nemico).
 public class AnimazioneUmanoide : MonoBehaviour
@@ -37,6 +40,14 @@ public class AnimazioneUmanoide : MonoBehaviour
     [SerializeField] float inclinazioneSchivata = 28f;
     [Tooltip("Per quanti secondi il nemico resta nella posa del colpo dopo aver colpito.")]
     [SerializeField] float durataColpoNemico = 0.4f;
+
+    [Header("Strettoie")]
+    [Tooltip("Di quanto si gira di fianco la figura nella strettoia piena, in gradi.")]
+    [SerializeField] float rotazioneDiFianco = 80f;
+    [Tooltip("Lunghezza dei passetti laterali nella strettoia piena, in metri.")]
+    [SerializeField] float passoInStrettoia = 0.35f;
+    [Tooltip("Quanto si allargano le gambe a ogni passetto laterale, in gradi.")]
+    [SerializeField] float aperturaPassetti = 22f;
 
     // Oltre questa velocità non è camminare ma uno spostamento di colpo (per esempio la rinascita).
     const float VelocitaTeletrasporto = 30f;
@@ -116,6 +127,17 @@ public class AnimazioneUmanoide : MonoBehaviour
         corpo = new Vector3(-15f, 0f, 0f), abbassamento = 0.05f
     };
 
+    // Di fianco fra due pareti: braccia strette al corpo, busto appena chinato.
+    // (La rotazione di fianco e i passetti si aggiungono a parte, perché dipendono dai numeri dell'Inspector.)
+    static readonly Posa PosaStretta = new Posa
+    {
+        braccioDestro = new Vector3(-20f, 0f, -6f), braccioSinistro = new Vector3(-20f, 0f, 6f),
+        corpo = new Vector3(4f, 0f, 0f), abbassamento = 0.06f
+    };
+
+    // Il braccio destro va dietro la spalla destra, dove sta il fodero.
+    static readonly Vector3 BraccioAlFodero = new Vector3(-165f, 0f, -20f);
+
     static readonly Posa PosaCaduto = new Posa
     {
         braccioDestro = new Vector3(-20f, 0f, 60f), braccioSinistro = new Vector3(-20f, 0f, -60f),
@@ -162,6 +184,9 @@ public class AnimazioneUmanoide : MonoBehaviour
     float colpoNemicoFino;
     int movimentoNemico;
 
+    // Fodero sulla schiena (solo giocatore): dove va l'arma nelle strettoie.
+    Transform mano, fodero, armaNelFodero;
+
     // Chiamato da AspettoUmanoide: la figura e i quattro perni (anche e spalle) da far muovere.
     public void Imposta(Transform figura, Transform gambaSinistra, Transform gambaDestra, Transform braccioSinistro, Transform braccioDestro)
     {
@@ -174,6 +199,16 @@ public class AnimazioneUmanoide : MonoBehaviour
         ultimaPosizione = transform.position;
         giocatore = GetComponent<GiocatoreControllo>();
         nemico = GetComponent<Bersaglio>();
+
+        if (giocatore != null)
+        {
+            mano = TrovaFiglio(transform, "Mano destra");
+            // Fodero dietro la spalla destra: l'impugnatura in alto, la lama giù in diagonale dietro la schiena.
+            fodero = new GameObject("Fodero").transform;
+            fodero.SetParent(figura, false);
+            fodero.localPosition = new Vector3(0.2f, 0.62f, -0.2f);
+            fodero.localRotation = Quaternion.Euler(0f, 0f, -25f);
+        }
     }
 
     void LateUpdate()
@@ -189,28 +224,106 @@ public class AnimazioneUmanoide : MonoBehaviour
         float distanza = spostamento.magnitude;
         if (distanza / dt > VelocitaTeletrasporto) distanza = 0f;
 
-        float obiettivo = Mathf.Clamp01(distanza / dt / velocitaPienaAmpiezza);
+        // Strettoia: 0 = camminata normale, 1 = tutto di fianco a passetti (cresce piano, vedi PassaggioStretto).
+        float stretto = giocatore != null ? giocatore.Strettoia : 0f;
+
+        // Nella strettoia si va piano: l'ampiezza piena si raggiunge già a passo lento.
+        float velocitaPiena = Mathf.Lerp(velocitaPienaAmpiezza, 1.5f, stretto);
+        float obiettivo = Mathf.Clamp01(distanza / dt / velocitaPiena);
         ampiezza = Mathf.MoveTowards(ampiezza, obiettivo, dt * prontezza);
-        fase += distanza / lunghezzaPasso * Mathf.PI; // un ciclo completo ogni due passi
+        fase += distanza / Mathf.Lerp(lunghezzaPasso, passoInStrettoia, stretto) * Mathf.PI; // un ciclo ogni due passi
         float onda = Mathf.Sin(fase);
         float gamba = onda * angoloGambe * ampiezza;
         float braccio = onda * angoloBraccia * ampiezza;
         float saltello = Mathf.Abs(Mathf.Cos(fase)) * saltelloCorpo * ampiezza;
 
+        // Camminata normale, poi mescolata con quella di fianco quanto è stretto il passaggio.
+        // Di fianco si va verso la sinistra della figura: la gamba sinistra si apre, poi la destra la raggiunge.
+        Quaternion camminaGambaS = Quaternion.Euler(gamba, 0f, 0f);
+        Quaternion camminaGambaD = Quaternion.Euler(-gamba, 0f, 0f);
+        Quaternion camminaBraccioS = Quaternion.Euler(-braccio, 0f, 0f);
+        Quaternion camminaBraccioD = Quaternion.Euler(braccio, 0f, 0f);
+        if (stretto > 0f)
+        {
+            float apertura = aperturaPassetti * ampiezza;
+            camminaGambaS = Quaternion.Slerp(camminaGambaS, Quaternion.Euler(0f, 0f, -apertura * Mathf.Max(0f, onda)), stretto);
+            camminaGambaD = Quaternion.Slerp(camminaGambaD, Quaternion.Euler(0f, 0f, -apertura * 0.6f * Mathf.Max(0f, -onda)), stretto);
+            camminaBraccioS = Quaternion.Slerp(camminaBraccioS, Quaternion.Euler(PosaStretta.braccioSinistro), stretto);
+            camminaBraccioD = Quaternion.Slerp(camminaBraccioD, Quaternion.Euler(PosaStretta.braccioDestro), stretto);
+        }
+
         // 2. Azione in corso (attacco, schivata...): quanto pesa sulla camminata, da 0 a 1.
         Posa azione = PosaAzione(out float peso);
 
+        // Gesto del fodero: il braccio destro va dietro la spalla e torna, a metà gesto l'arma cambia posto.
+        float gestoFodero = AggiornaFodero();
+        if (gestoFodero > 0f) camminaBraccioD = Quaternion.Slerp(camminaBraccioD, Quaternion.Euler(BraccioAlFodero), gestoFodero);
+
         // 3. Mescola camminata e azione, poi avvicina ogni parte alla sua posa in modo morbido.
         float k = 1f - Mathf.Exp(-velocitaPose * dt);
-        Avvicina(gambaSinistra, Quaternion.Euler(gamba, 0f, 0f), azione.gambaSinistra, peso, k);
-        Avvicina(gambaDestra, Quaternion.Euler(-gamba, 0f, 0f), azione.gambaDestra, peso, k);
-        Avvicina(braccioSinistro, Quaternion.Euler(-braccio, 0f, 0f), azione.braccioSinistro, peso, k);
-        Avvicina(braccioDestro, Quaternion.Euler(braccio, 0f, 0f), azione.braccioDestro, peso, k);
+        Avvicina(gambaSinistra, camminaGambaS, azione.gambaSinistra, peso, k);
+        Avvicina(gambaDestra, camminaGambaD, azione.gambaDestra, peso, k);
+        Avvicina(braccioSinistro, camminaBraccioS, azione.braccioSinistro, peso, k);
+        Avvicina(braccioDestro, camminaBraccioD, azione.braccioDestro, peso, k);
 
-        Quaternion rotazioneCorpo = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(azione.corpo), peso);
+        // Corpo: di fianco quanto è stretto il passaggio, poi l'eventuale azione sopra.
+        Quaternion corpoCammina = Quaternion.Slerp(Quaternion.identity,
+            Quaternion.Euler(PosaStretta.corpo.x, rotazioneDiFianco, PosaStretta.corpo.z), stretto);
+        Quaternion rotazioneCorpo = Quaternion.Slerp(corpoCammina, Quaternion.Euler(azione.corpo), peso);
         figura.localRotation = Quaternion.Slerp(figura.localRotation, rotazioneCorpo, k);
-        Vector3 posizioneCorpo = posizioneFigura + Vector3.up * (saltello * (1f - peso) - azione.abbassamento * peso);
+        float abbassamentoCammina = PosaStretta.abbassamento * stretto - saltello;
+        Vector3 posizioneCorpo = posizioneFigura + Vector3.up * (-abbassamentoCammina * (1f - peso) - azione.abbassamento * peso);
         figura.localPosition = Vector3.Lerp(figura.localPosition, posizioneCorpo, k);
+    }
+
+    // Sposta l'arma fra mano e fodero seguendo GiocatoreControllo. Restituisce quanto il braccio
+    // deve andare verso il fodero (0 = niente gesto, 1 = mano dietro la spalla).
+    float AggiornaFodero()
+    {
+        if (giocatore == null || mano == null || fodero == null) return 0f;
+
+        float g = giocatore.TempoGestoFodero / Mathf.Max(0.01f, giocatore.DurataGestoFodero);
+        bool gestoInCorso = g < 1f;
+
+        // L'arma cambia posto a metà gesto (quando la mano è alla spalla), oppure subito se non c'è un gesto (rinascita).
+        if (!gestoInCorso || g >= 0.5f)
+        {
+            if (giocatore.ArmaNelFodero && armaNelFodero == null) MettiNelFodero();
+            else if (!giocatore.ArmaNelFodero && armaNelFodero != null) RiprendiArma();
+        }
+        return gestoInCorso ? Mathf.Sin(g * Mathf.PI) : 0f;
+    }
+
+    void MettiNelFodero()
+    {
+        foreach (Transform arma in mano)
+        {
+            if (!arma.gameObject.activeSelf) continue;
+            armaNelFodero = arma;
+            arma.SetParent(fodero, false);
+            arma.localPosition = Vector3.zero;
+            arma.localRotation = Quaternion.identity;
+            return;
+        }
+    }
+
+    void RiprendiArma()
+    {
+        armaNelFodero.SetParent(mano, false);
+        armaNelFodero.localPosition = Vector3.zero;
+        armaNelFodero.localRotation = Quaternion.identity;
+        armaNelFodero = null;
+    }
+
+    static Transform TrovaFiglio(Transform da, string nome)
+    {
+        foreach (Transform figlio in da)
+        {
+            if (figlio.name == nome) return figlio;
+            Transform trovato = TrovaFiglio(figlio, nome);
+            if (trovato != null) return trovato;
+        }
+        return null;
     }
 
     static void Avvicina(Transform parte, Quaternion camminata, Vector3 angoliAzione, float peso, float k)
