@@ -15,11 +15,18 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// Acqua bassa (vedi AcquaBassa): nel lago, dove l'acqua arriva alle ginocchia, il personaggio va più piano.
+// Esecuzione furtiva: alle spalle di un nemico che non ti ha visto (vedi InseguimentoNemico), l'attacco con la
+// spada diventa un'esecuzione: il personaggio si mette dietro di lui, lo afferra e gli taglia la gola. Il nemico
+// muore sul colpo; durante l'esecuzione il giocatore non subisce danni. In basso compare l'avviso quando è possibile.
 // Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
 // spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
 // costa mana (terza barra), che si recupera sconfiggendo i nemici.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
+// Strettoie (vedi PassaggioStretto): fra due pareti vicine il personaggio rallenta piano piano, si gira
+// di fianco e stringe il suo ingombro, così passa anche dove prima urtava. Quando la strettoia è vera
+// rinfodera l'arma sulla schiena e la riprende appena esce; dentro non si attacca, non si para e non si scatta.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
 // Il modo più rapido è il menu "magic-gnl > Crea scena di prova", che prepara tutto da solo.
 [RequireComponent(typeof(CharacterController))]
@@ -27,7 +34,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(AggancioBersaglio))]
 public class GiocatoreControllo : MonoBehaviour
 {
-    public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto }
+    public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto, Esecuzione }
 
     [Header("Riferimenti")]
     [Tooltip("Se vuoto usa la camera principale.")]
@@ -81,6 +88,16 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float arcoAttacco = 120f;
     [SerializeField] float velocitaAffondo = 3f;
 
+    [Header("Esecuzione furtiva (alle spalle di un nemico che non ti ha visto)")]
+    [Tooltip("Distanza massima dal nemico per l'esecuzione, in metri.")]
+    [SerializeField] float distanzaEsecuzione = 2f;
+    [Tooltip("Quanto bisogna essere dietro al nemico: ampiezza dell'arco alle sue spalle, in gradi.")]
+    [SerializeField] float arcoAlleSpalle = 120f;
+    [Tooltip("Durata di tutta l'esecuzione, in secondi.")]
+    [SerializeField] float durataEsecuzione = 1.4f;
+    [Tooltip("Dopo quanti secondi parte il taglio (e il nemico muore).")]
+    [SerializeField] float momentoTaglio = 0.7f;
+
     [Header("Bastone magico (si trova nel baule della chiesetta)")]
     [SerializeField] float manaMassimo = 100f;
     [Tooltip("Mana speso per ogni sfera.")]
@@ -101,6 +118,18 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float memoriaComandi = 0.2f;
     [SerializeField] float durataBarcollamento = 0.3f;
 
+    [Header("Strettoie")]
+    [Tooltip("Velocità nella strettoia piena, rispetto alla corsa normale (0,35 = 35%).")]
+    [SerializeField] float velocitaInStrettoia = 0.35f;
+    [Tooltip("Raggio dell'ingombro nella strettoia piena (metri). Normale: 0,5. Il varco più stretto in cui si passa è circa il doppio.")]
+    [SerializeField] float raggioInStrettoia = 0.22f;
+    [Tooltip("Oltre questo valore di strettoia (da 0 a 1) l'arma va nel fodero.")]
+    [SerializeField] float sogliaFodero = 0.5f;
+    [Tooltip("Sotto questo valore l'arma torna in mano.")]
+    [SerializeField] float sogliaRiprendiArma = 0.12f;
+    [Tooltip("Quanto dura il gesto di rinfoderare o riprendere l'arma, in secondi.")]
+    [SerializeField] float durataGestoFodero = 0.45f;
+
     public Stato StatoAttuale => stato;
 
     // Letti da AnimazioneUmanoide per muovere la figura nel momento giusto.
@@ -113,6 +142,8 @@ public class GiocatoreControllo : MonoBehaviour
     public Vector3 DirezioneSchivata => direzioneSchivata;
     public float Vita { get; private set; }
     public float VitaMassima => vitaMassima;
+    public float DurataEsecuzione => durataEsecuzione;
+    public float MomentoTaglio => momentoTaglio;
 
     // Armi: la spada c'è sempre, il bastone magico si trova nel baule. Tasto 1 spada, tasto 2 bastone.
     public enum ArmaImpugnata { Spada, Bastone }
@@ -124,9 +155,19 @@ public class GiocatoreControllo : MonoBehaviour
     public float DurataPreparazioneIncantesimo => preparazioneIncantesimo;
     public float DurataRecuperoIncantesimo => recuperoIncantesimo;
 
+    // Strettoie: quanto è stretto (0-1), se l'arma è nel fodero e da quanto è iniziato il gesto del fodero.
+    public float Strettoia => passaggio != null ? passaggio.Valore : 0f;
+    public bool ArmaNelFodero => armaNelFodero;
+    public float TempoGestoFodero => Time.time - inizioGestoFodero;
+    public float DurataGestoFodero => durataGestoFodero;
+
     CharacterController controller;
     Resistenza resistenza;
     AggancioBersaglio aggancio;
+    PassaggioStretto passaggio;
+    float raggioNormale;
+    bool armaNelFodero;
+    float inizioGestoFodero = -10f;
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2;
     bool staSprintando;
 
@@ -136,6 +177,12 @@ public class GiocatoreControllo : MonoBehaviour
     bool sferaLanciata;
     Bersaglio bersaglioSfera;
     float prossimoAvvisoMana;
+
+    // Esecuzione furtiva: il nemico che si può giustiziare adesso (per l'avviso) e quello che si sta giustiziando.
+    float velocitaAcqua = 1f;   // 1 fuori dall'acqua, meno di 1 nell'acqua bassa
+    InseguimentoNemico vittimaPossibile;
+    InseguimentoNemico vittima;
+    bool taglioFatto;
 
     // Dove rinasce il personaggio: all'inizio è il punto di partenza, poi l'ultimo checkpoint toccato.
     Vector3 puntoRinascita;
@@ -156,6 +203,10 @@ public class GiocatoreControllo : MonoBehaviour
     float attaccoPrenotatoFino = -1f;
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
     readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
+    Statistiche statistiche;
+
+    // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
+    public Statistiche Statistiche => statistiche;
 
     bool SchivataRichiesta => Time.time <= schivataPrenotataFino;
     bool AttaccoRichiesto => Time.time <= attaccoPrenotatoFino;
@@ -170,6 +221,10 @@ public class GiocatoreControllo : MonoBehaviour
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
+        statistiche = Statistiche.Di(this);
+        passaggio = GetComponent<PassaggioStretto>();
+        if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
+        raggioNormale = controller.radius;
         Vita = vitaMassima;
         puntoRinascita = transform.position;
         rotazioneRinascita = transform.rotation;
@@ -256,8 +311,8 @@ public class GiocatoreControllo : MonoBehaviour
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
 
-        // Cambio arma, non durante un attacco e non da morti.
-        if (stato != Stato.Morto && stato != Stato.Attacco)
+        // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
+        if (stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
         {
             if (comandoArma1.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Spada);
             if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
@@ -265,6 +320,7 @@ public class GiocatoreControllo : MonoBehaviour
 
         Vector3 direzioneInput = DirezioneDaInput(comandoMuovi.ReadValue<Vector2>());
         Vector3 movimento = Vector3.zero;
+        AggiornaStrettoia(direzioneInput, dt);
 
         switch (stato)
         {
@@ -286,9 +342,21 @@ public class GiocatoreControllo : MonoBehaviour
                 if (tempoNelloStato >= durataStordimento) CambiaStato(Stato.Libero);
                 break;
 
+            case Stato.Esecuzione:
+                AggiornaEsecuzione();
+                break;
+
             case Stato.Morto:
                 break;
         }
+
+        // Nell'acqua bassa si va più piano (vedi AcquaBassa), con un passaggio graduale entrando e uscendo.
+        float fattoreAcqua = AcquaBassa.FattoreVelocita(transform.position + Vector3.down * 0.9f);
+        velocitaAcqua = Mathf.MoveTowards(velocitaAcqua, fattoreAcqua, 3f * dt);
+        if (stato != Stato.Esecuzione) movimento *= velocitaAcqua;
+
+        // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
+        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
 
@@ -300,6 +368,18 @@ public class GiocatoreControllo : MonoBehaviour
 
     Vector3 AggiornaLiberoOParata(Vector3 direzioneInput, float dt)
     {
+        // In una strettoia si avanza soltanto, di fianco e piano: niente schivate, attacchi, parate e sprint.
+        if (InStrettoia)
+        {
+            schivataPrenotataFino = -1f;
+            attaccoPrenotatoFino = -1f;
+            staSprintando = false;
+            if (stato == Stato.Parata) CambiaStato(Stato.Libero);
+            if (direzioneInput.sqrMagnitude <= 0.0001f) return Vector3.zero;
+            RuotaVerso(direzioneInput, dt);
+            return direzioneInput * velocitaCorsa * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+        }
+
         // Priorità: schivata, poi attacco, poi parata.
         if (SchivataRichiesta && resistenza.HaResistenza)
         {
@@ -336,7 +416,36 @@ public class GiocatoreControllo : MonoBehaviour
             // Spendere resistenza ogni frame ferma anche la ricarica, come per le altre azioni.
             resistenza.Spendi(costoSprintAlSecondo * dt);
         }
-        return direzioneInput * velocita;
+        // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
+        return direzioneInput * velocita * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+    }
+
+    // ---------- Strettoie ----------
+
+    bool GestoFoderoInCorso => Time.time - inizioGestoFodero < durataGestoFodero;
+    bool InStrettoia => Strettoia > 0.3f || armaNelFodero || GestoFoderoInCorso;
+
+    void AggiornaStrettoia(Vector3 direzioneInput, float dt)
+    {
+        bool puoMuoversi = stato == Stato.Libero || stato == Stato.Parata;
+        passaggio.Aggiorna(puoMuoversi ? direzioneInput : Vector3.zero, dt);
+
+        // L'ingombro si stringe insieme alla strettoia: così il personaggio passa nei varchi stretti.
+        controller.radius = Mathf.Lerp(raggioNormale, raggioInStrettoia, Strettoia);
+
+        if (stato == Stato.Morto) return;
+        if (!armaNelFodero && Strettoia > sogliaFodero && stato == Stato.Libero && !GestoFoderoInCorso)
+        {
+            armaNelFodero = true;
+            inizioGestoFodero = Time.time;
+            Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.5f, 0.85f);
+        }
+        else if (armaNelFodero && Strettoia < sogliaRiprendiArma && !GestoFoderoInCorso)
+        {
+            armaNelFodero = false;
+            inizioGestoFodero = Time.time;
+            Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.6f, 1.1f);
+        }
     }
 
     // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
@@ -444,6 +553,13 @@ public class GiocatoreControllo : MonoBehaviour
             return;
         }
 
+        // Alle spalle di un nemico ignaro il primo colpo diventa un'esecuzione furtiva.
+        if (!concatenato && CercaVittima() is InseguimentoNemico bersaglioFurtivo)
+        {
+            IniziaEsecuzione(bersaglioFurtivo);
+            return;
+        }
+
         colpoCombo = concatenato ? (colpoCombo + 1) % 3 : 0;
         fendenteSuonato = false;
         resistenza.Spendi(costoAttacco);
@@ -547,6 +663,73 @@ public class GiocatoreControllo : MonoBehaviour
         return true;
     }
 
+    // ---------- Esecuzione furtiva ----------
+
+    // Il nemico più vicino che si può giustiziare: vicino, ignaro, con il giocatore alle sue spalle e girato verso di lui.
+    InseguimentoNemico CercaVittima()
+    {
+        if (arma != ArmaImpugnata.Spada) return null;
+        InseguimentoNemico migliore = null;
+        float distanzaMigliore = float.MaxValue;
+        foreach (Collider c in Physics.OverlapSphere(transform.position, distanzaEsecuzione, ~0, QueryTriggerInteraction.Ignore))
+        {
+            InseguimentoNemico nemico = c.GetComponentInParent<InseguimentoNemico>();
+            if (nemico == null || !nemico.Ignaro) continue;
+
+            Vector3 dalNemico = transform.position - nemico.transform.position;
+            dalNemico.y = 0f;
+            float distanza = dalNemico.magnitude;
+            if (distanza < 0.01f || distanza > distanzaEsecuzione) continue;
+            // Dietro di lui: lontano dal suo sguardo.
+            if (Vector3.Angle(nemico.transform.forward, dalNemico) < 180f - arcoAlleSpalle * 0.5f) continue;
+            // Il giocatore deve guardare più o meno verso il nemico.
+            if (Vector3.Angle(transform.forward, -dalNemico) > 80f) continue;
+
+            if (distanza < distanzaMigliore)
+            {
+                distanzaMigliore = distanza;
+                migliore = nemico;
+            }
+        }
+        return migliore;
+    }
+
+    void IniziaEsecuzione(InseguimentoNemico bersaglioFurtivo)
+    {
+        vittima = bersaglioFurtivo;
+        taglioFatto = false;
+        attaccoPrenotatoFino = -1f;
+        vittima.IniziaEsecuzione();
+
+        // Si mette subito dietro al nemico, guardando nella sua stessa direzione.
+        Vector3 avanti = vittima.transform.forward;
+        avanti.y = 0f;
+        avanti.Normalize();
+        Vector3 posto = vittima.transform.position - avanti * 0.85f;
+        posto.y = transform.position.y;
+        controller.enabled = false;
+        transform.SetPositionAndRotation(posto, Quaternion.LookRotation(avanti));
+        controller.enabled = true;
+
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.5f, 0.7f);
+        CambiaStato(Stato.Esecuzione);
+    }
+
+    void AggiornaEsecuzione()
+    {
+        if (!taglioFatto && tempoNelloStato >= momentoTaglio)
+        {
+            taglioFatto = true;
+            Suoni.Suona(Suono.Fendente, transform.position + Vector3.up * 1.4f, 0.9f, 0.7f);
+            if (vittima != null) vittima.Giustizia(transform.position);
+        }
+        if (tempoNelloStato >= durataEsecuzione)
+        {
+            vittima = null;
+            CambiaStato(Stato.Libero);
+        }
+    }
+
     void ControllaColpi()
     {
         Vector3 centro = transform.position + transform.forward * (portataColpo * 0.5f);
@@ -560,8 +743,10 @@ public class GiocatoreControllo : MonoBehaviour
                 if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
 
                 colpitiInQuestoAttacco.Add(bersaglio);
-                bersaglio.RiceviColpo(dannoAttacco, transform.position);
-                Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, 0.9f);
+                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico);
+                bersaglio.RiceviColpo(danno, transform.position, critico);
+                // Il critico suona più forte e più grave, così si sente senza guardare i numeri.
+                Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, critico ? 1f : 0.9f, critico ? 0.75f : 1f);
                 continue;
             }
 
@@ -575,10 +760,11 @@ public class GiocatoreControllo : MonoBehaviour
         }
     }
 
-    // Chiamato dai nemici quando un loro colpo arriva.
-    public void RiceviColpo(float danno, Vector3 origineColpo)
+    // Chiamato dai nemici quando un loro colpo arriva. "danno" è già calcolato (armatura e critico compresi).
+    // Un critico non parato fa barcollare il doppio.
+    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false)
     {
-        if (stato == Stato.Morto) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
@@ -609,8 +795,8 @@ public class GiocatoreControllo : MonoBehaviour
         PerdiVita(danno);
         if (stato != Stato.Morto)
         {
-            Stordisci(durataBarcollamento);
-            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up);
+            Stordisci(durataBarcollamento * (critico ? 2f : 1f));
+            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up, 1f, critico ? 0.8f : 1f);
         }
     }
 
@@ -633,6 +819,8 @@ public class GiocatoreControllo : MonoBehaviour
         controller.enabled = true;
 
         velocitaVerticale = 0f;
+        armaNelFodero = false;   // si rinasce con l'arma in mano
+        inizioGestoFodero = -10f;
         Vita = vitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
@@ -652,7 +840,7 @@ public class GiocatoreControllo : MonoBehaviour
     // Danno dall'ambiente (trappole, fuoco...): non si può parare, ma la schivata fatta al momento giusto lo evita.
     public void RiceviDannoAmbiente(float danno)
     {
-        if (stato == Stato.Morto) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
             Debug.Log("Schivato!");
@@ -728,6 +916,12 @@ public class GiocatoreControllo : MonoBehaviour
         {
             GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
             DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+        }
+
+        if (vittimaPossibile != null)
+        {
+            var stileAvviso = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            GUI.Label(new Rect(0f, Screen.height - 90f, Screen.width, 30f), "Tasto sinistro: esecuzione furtiva", stileAvviso);
         }
 
         if (stato == Stato.Morto)

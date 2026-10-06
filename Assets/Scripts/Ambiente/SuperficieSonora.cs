@@ -2,7 +2,8 @@ using UnityEngine;
 
 // Tipo di pavimento per il suono dei passi.
 // A cosa serve: di solito i passi capiscono da soli su cosa si cammina guardando il materiale del
-// pavimento (Terreno = erba, Sentiero = terra, Pietra / PietraScura / Lapide / Buio = pietra, Legno = legno).
+// pavimento (Terreno = erba, Sentiero = terra, Pietra / PietraScura / Lapide / Buio = pietra, Legno = legno,
+// Acqua = acqua bassa).
 // Questo componente serve quando vuoi decidere tu, per esempio per un pavimento con un materiale
 // diverso, o per una zona intera (l'interno di una casa, una grotta).
 // Come montarlo, due modi:
@@ -11,7 +12,7 @@ using UnityEngine;
 //     ingrandiscilo sulla zona e aggiungi Superficie Sonora. Dentro la zona vale il Tipo scelto.
 public class SuperficieSonora : MonoBehaviour
 {
-    public enum Tipo { Erba, Terra, Pietra, Legno }
+    public enum Tipo { Erba, Terra, Pietra, Legno, Acqua }
 
     public Tipo tipo = Tipo.Pietra;
 
@@ -23,6 +24,7 @@ public class SuperficieSonora : MonoBehaviour
         if (nome.Contains("Terreno") || nome.Contains("Foglie")) return Tipo.Erba;
         if (nome.Contains("Sentiero")) return Tipo.Terra;
         if (nome.Contains("Legno")) return Tipo.Legno;
+        if (nome.Contains("Acqua")) return Tipo.Acqua;
         if (nome.Contains("Pietra") || nome.Contains("Lapide") || nome.Contains("Buio")) return Tipo.Pietra;
         trovato = false;
         return Tipo.Pietra;
@@ -35,6 +37,7 @@ public class SuperficieSonora : MonoBehaviour
             case Tipo.Erba: return Suono.PassoErba;
             case Tipo.Terra: return Suono.PassoTerra;
             case Tipo.Legno: return Suono.PassoLegno;
+            case Tipo.Acqua: return Suono.PassoAcqua;
             default: return Suono.PassoPietra;
         }
     }

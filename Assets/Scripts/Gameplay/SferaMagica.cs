@@ -99,7 +99,9 @@ public class SferaMagica : MonoBehaviour
         Bersaglio nemico = toccato.GetComponentInParent<Bersaglio>();
         if (nemico != null)
         {
-            nemico.RiceviColpo(danno, transform.position - direzione);
+            Statistiche diChiLancia = lanciatore != null ? Statistiche.Di(lanciatore) : null;
+            float dannoFinale = CalcoloDanno.Calcola(danno, diChiLancia, nemico.Statistiche, out bool critico);
+            nemico.RiceviColpo(dannoFinale, transform.position - direzione, critico);
         }
         else
         {

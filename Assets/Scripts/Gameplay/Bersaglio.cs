@@ -8,11 +8,16 @@ using UnityEngine;
 // (preavviso) e poi colpisce. Il momento giusto per schivare o parare è la fine del rosso.
 // Se è un cilindro di Unity, all'avvio prende un aspetto provvisorio da figura umana (vedi AspettoUmanoide):
 // rosso, lampo bianco e scomparsa alla morte valgono per tutta la figura.
+// Il danno dei colpi passa da CalcoloDanno (vedi Statistiche): l'armatura del nemico riduce i colpi del giocatore,
+// e anche il nemico può fare colpi critici. Un critico ricevuto lo fa lampeggiare di giallo e lo spinge più lontano.
+// Con "Rinasce" attivo, dopo la morte torna in vita dopo qualche secondo (per allenarsi); spento, resta morto.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
 // Il menu "magic-gnl > Crea scena di prova" ne mette uno già pronto.
 public class Bersaglio : MonoBehaviour
 {
     [SerializeField] float vitaMassima = 100f;
+    [Tooltip("Se attivo, dopo la morte il nemico rinasce (utile per allenarsi). Se spento, resta morto.")]
+    [SerializeField] bool rinasce = true;
     [SerializeField] float secondiPerRinascere = 2f;
     [SerializeField] float spintaQuandoColpito = 0.3f;
 
@@ -22,12 +27,16 @@ public class Bersaglio : MonoBehaviour
     [Tooltip("Secondi in cui resta rosso prima di colpire.")]
     [SerializeField] float preavviso = 0.7f;
     [SerializeField] float portataAttacco = 2.5f;
+    [Tooltip("Danno dell'arma del nemico, prima dell'armatura del giocatore e dei critici (vedi Statistiche).")]
     [SerializeField] float dannoAttacco = 20f;
 
     float vita;
     bool morto;
 
     public bool Morto => morto;
+    public float VitaMassima => vitaMassima;
+    // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
+    public event System.Action Colpito;
     bool staAttaccando;
     float inizioAttacco;
 
@@ -42,9 +51,13 @@ public class Bersaglio : MonoBehaviour
     Color[] coloriBase;
     Collider corpo;
     GiocatoreControllo giocatore;
+    Statistiche statistiche;
+
+    public Statistiche Statistiche => statistiche;
 
     void Awake()
     {
+        statistiche = Statistiche.Di(this);
         AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f), AspettoUmanoide.Arma.Mazza);
 
         // Solo le parti accese: la forma originale nascosta dalla figura umana resta spenta.
@@ -97,7 +110,10 @@ public class Bersaglio : MonoBehaviour
             RipristinaColori();
             Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, 0.75f);
             if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
-                giocatore.RiceviColpo(dannoAttacco, transform.position);
+            {
+                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, giocatore.Statistiche, out bool critico);
+                giocatore.RiceviColpo(danno, transform.position, critico);
+            }
         }
 
         prossimoAttacco = Time.time + intervalloAttacchi;
@@ -105,29 +121,31 @@ public class Bersaglio : MonoBehaviour
     }
 
     // Chiamato dal giocatore quando un suo colpo va a segno.
-    public void RiceviColpo(float danno, Vector3 origineColpo)
+    // "danno" è già calcolato (armatura e critico compresi, vedi CalcoloDanno).
+    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false)
     {
         if (morto) return;
 
         vita -= danno;
-        Debug.Log(name + " colpito: vita " + Mathf.Max(0f, vita));
+        Debug.Log(name + (critico ? " colpito con un CRITICO: -" : " colpito: -") + danno.ToString("0.#") + ", vita " + Mathf.Max(0f, vita).ToString("0.#"));
+        Colpito?.Invoke();
 
         Vector3 spinta = transform.position - origineColpo;
         spinta.y = 0f;
-        if (spinta.sqrMagnitude > 0.0001f) transform.position += spinta.normalized * spintaQuandoColpito;
+        if (spinta.sqrMagnitude > 0.0001f) transform.position += spinta.normalized * spintaQuandoColpito * (critico ? 2f : 1f);
 
         if (vita <= 0f)
         {
             Muori();
             return;
         }
-        if (!staAttaccando) StartCoroutine(Lampeggia());
+        if (!staAttaccando) StartCoroutine(Lampeggia(critico));
     }
 
-    IEnumerator Lampeggia()
+    IEnumerator Lampeggia(bool critico)
     {
-        ImpostaColore(Color.white);
-        yield return new WaitForSeconds(0.1f);
+        ImpostaColore(critico ? new Color(1f, 0.85f, 0.2f) : Color.white);
+        yield return new WaitForSeconds(critico ? 0.2f : 0.1f);
         if (!staAttaccando) RipristinaColori();
     }
 
@@ -140,7 +158,7 @@ public class Bersaglio : MonoBehaviour
         staAttaccando = false;
         MostraAspetto(false);
         if (corpo != null) corpo.enabled = false;
-        Invoke(nameof(Rinasci), secondiPerRinascere);
+        if (rinasce) Invoke(nameof(Rinasci), secondiPerRinascere);
     }
 
     void Rinasci()

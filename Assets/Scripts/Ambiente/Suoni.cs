@@ -7,7 +7,8 @@ public enum Suono
     PassoErba, PassoTerra, PassoPietra, PassoLegno,
     Fendente, Schivata, ImpattoColpo, Parata, GuardiaRotta, Colpito, Morte, Rinascita,
     ColpoMuro, CrolloMuro, Leva, PortaPietra, FuocoAcceso, ScattoTrappola, Spuntoni, MorteNemico,
-    Raccolta, Serratura, BauleAperto, CambioArma, SferaLancio, SferaImpatto, Negato
+    Raccolta, Serratura, BauleAperto, CambioArma, SferaLancio, SferaImpatto, Negato,
+    PassoAcqua
 }
 
 // Suoni provvisori creati direttamente dal codice, senza file audio.
@@ -80,6 +81,7 @@ public static class Suoni
             case Suono.PassoTerra:
             case Suono.PassoPietra:
             case Suono.PassoLegno:
+            case Suono.PassoAcqua:
                 return 4;
             case Suono.Fendente:
             case Suono.Schivata:
@@ -116,6 +118,7 @@ public static class Suoni
             case Suono.PassoTerra: return PassoTerra(caso);
             case Suono.PassoPietra: return PassoPietra(caso);
             case Suono.PassoLegno: return PassoLegno(caso);
+            case Suono.PassoAcqua: return PassoAcqua(caso);
             case Suono.Fendente: return Sibilo(caso, 0.28f, 0.04f, 0.35f, 0.9f);
             case Suono.Schivata: return Schivata(caso);
             case Suono.ImpattoColpo: return Tonfo(caso, 0.25f, 110f, 55f, 18f, 0.6f);
@@ -155,6 +158,24 @@ public static class Suoni
             lento += 0.02f * (basso - lento);
             float busta = Busta(t, 0.004f, 30f) + 0.5f * Busta(t - 0.045f, 0.004f, 40f);
             d[i] = (basso - lento) * busta;
+        }
+        return d;
+    }
+
+    // Passo nell'acqua bassa: uno sciacquio (rumore morbido che si spegne piano) con un piccolo gorgoglio dopo.
+    static float[] PassoAcqua(System.Random caso)
+    {
+        float[] d = Vuoto(0.34f);
+        float basso = 0f, lento = 0f;
+        float tonoBolla = 340f + (float)caso.NextDouble() * 160f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            basso += 0.3f * (Rumore(caso) - basso);
+            lento += 0.04f * (basso - lento);
+            float sciacquio = (basso - lento) * (Busta(t, 0.008f, 11f) + 0.4f * Busta(t - 0.07f, 0.01f, 16f));
+            float gorgoglio = Seno(tonoBolla + 220f * Mathf.Sin(t * 60f), t) * Busta(t - 0.04f, 0.01f, 24f) * 0.22f;
+            d[i] = sciacquio + gorgoglio;
         }
         return d;
     }
