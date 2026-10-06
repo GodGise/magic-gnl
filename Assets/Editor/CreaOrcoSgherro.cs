@@ -10,7 +10,7 @@ using UnityEngine;
 // Il menu "magic-gnl > Crea Villaggio Lago Nero" usa questo prefab per l'orco della piazza (e lo crea se manca).
 //
 // Valori di partenza (inizio del gioco, arma iniziale da 25, nessuna armatura per il giocatore):
-// - vita 120 e armatura 25: un colpo normale del giocatore fa 20, quindi servono 6 colpi (5 con un critico);
+// - vita 160 e armatura 25: un colpo normale del giocatore fa 20, quindi servono 8 colpi (6-7 con dei critici);
 // - danno 26: il giocatore (100 di vita) muore al 4° colpo non parato, al 3° se arriva un critico;
 // - critico 10% da ×1,5 (39 di danno): chi non sta attento lo paga caro;
 // - attacca ogni 2,5 secondi, con 0,7 secondi di rosso prima del colpo.
@@ -66,7 +66,7 @@ public static class CreaOrcoSgherro
         var bersaglio = orco.AddComponent<Bersaglio>();
         bersaglio.attaccaIlGiocatore = false; // lo accende InseguimentoNemico quando vede il giocatore
         var b = new SerializedObject(bersaglio);
-        b.FindProperty("vitaMassima").floatValue = 120f;
+        b.FindProperty("vitaMassima").floatValue = 160f;
         b.FindProperty("rinasce").boolValue = false; // nel mondo i nemici uccisi restano morti
         b.FindProperty("intervalloAttacchi").floatValue = 2.5f;
         b.FindProperty("preavviso").floatValue = 0.7f;
