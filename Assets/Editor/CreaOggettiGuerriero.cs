@@ -29,7 +29,7 @@ public static class CreaOggettiGuerriero
             a.danno = 25f; a.costoAttacco = 20f;
             a.preparazione = 0.25f; a.colpoAttivo = 0.15f; a.recupero = 0.35f;
             a.portata = 1.8f; a.raggio = 1.3f; a.arco = 120f; a.affondo = 3f;
-            a.dannoAssorbitoSenzaScudo = 0.5f; a.costoParataSenzaScudo = 25f;
+            a.dannoAssorbitoSenzaScudo = 0.4f; a.costoParataSenzaScudo = 25f;
         });
         creati += Arma("spada-del-capitano", "Spada del capitano", "spada_capitano", a =>
         {
