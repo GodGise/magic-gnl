@@ -13,6 +13,8 @@ using UnityEngine.InputSystem;
 // Strettoie (vedi PassaggioStretto): fra due pareti vicine la camera si porta piano piano dietro al
 // personaggio, lungo il passaggio, e si abbassa un po', così non resta schiacciata contro i muri.
 // Il mouse la può spostare, ma finché si è nella strettoia torna sempre dietro.
+// Negli spazi stretti la camera "si assottiglia": il suo spessore nei controlli si riduce a quello che
+// entra fra i muri, e il piano di taglio vicino (near clip) si accorcia, così non si vede dentro i muri.
 // Come montarlo: sulla Main Camera, trascinando il personaggio nel campo "Bersaglio".
 public class CameraTerzaPersona : MonoBehaviour
 {
@@ -52,6 +54,10 @@ public class CameraTerzaPersona : MonoBehaviour
     [SerializeField] float velocitaAllineamentoStrettoia = 4f;
     [Tooltip("Inclinazione della camera nella strettoia, in gradi (più bassa = più dietro e meno dall'alto).")]
     [SerializeField] float inclinazioneStrettoia = 12f;
+    [Tooltip("Spessore minimo della camera negli spazi stretti (metri). Sotto questo valore non si riduce.")]
+    [SerializeField] float raggioMinimo = 0.06f;
+    [Tooltip("Piano di taglio vicino più corto che la camera può usare negli spazi stretti (metri).")]
+    [SerializeField] float tagliaVicinoMinimo = 0.03f;
 
     InputAction guardaMouse, guardaPad;
     float rotazioneOrizzontale;
@@ -62,10 +68,15 @@ public class CameraTerzaPersona : MonoBehaviour
     Collider corpoPersonaggio;
     readonly List<Renderer> partiNascoste = new List<Renderer>();
     bool personaggioNascosto;
+    Camera obiettivo;
+    float tagliaVicinoNormale = 0.3f;
+    readonly Collider[] toccati = new Collider[16];
 
     void Awake()
     {
         distanzaAttuale = distanza;
+        obiettivo = GetComponent<Camera>();
+        if (obiettivo != null) tagliaVicinoNormale = obiettivo.nearClipPlane;
 
         guardaMouse = new InputAction("GuardaMouse", InputActionType.Value);
         guardaMouse.AddBinding("<Mouse>/delta");
@@ -139,8 +150,17 @@ public class CameraTerzaPersona : MonoBehaviour
         // quello "di anticipo" è più largo e vede il muro prima, così l'avvicinamento parte in anticipo.
         // Il controllo largo non conta i muri che tocca già alla partenza (per esempio un muro di lato
         // quando si cammina rasente): conta solo quelli che incontra andando davvero verso la camera.
-        float distanzaDura = DistanzaLibera(fuoco, indietro, raggioCollisione, true);
-        float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, raggioAnticipo, false));
+        // Negli spazi stretti la sfera normale toccherebbe già i muri ai lati e la camera finirebbe
+        // schiacciata dentro il personaggio o dentro i muri: si usa lo spessore che ci entra davvero.
+        float raggio = RaggioCheEntra(fuoco, raggioCollisione);
+        float pesoStretto = giocatore != null ? Mathf.InverseLerp(0.1f, 0.5f, giocatore.Strettoia) : 0f;
+        float anticipo = Mathf.Lerp(raggioAnticipo, raggio, pesoStretto);
+        AggiornaTaglioVicino(raggio);
+
+        // Il limite duro non ha distanza minima: se il muro è più vicino, la camera resta prima del muro
+        // (al massimo nasconde il personaggio), invece di finirci dentro.
+        float distanzaDura = Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, true), 0.05f);
+        float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, anticipo, false));
 
         // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
         float velocita = distanzaObiettivo < distanzaAttuale ? velocitaAvvicinamento : velocitaRitorno;
@@ -158,7 +178,7 @@ public class CameraTerzaPersona : MonoBehaviour
         float vicinanza = 1f - Mathf.InverseLerp(distanzaMinima, distanzaSollevamento, distanzaAttuale);
         if (vicinanza > 0f)
         {
-            posizione += Vector3.up * PrimoOstacolo(posizione, Vector3.up, sollevamentoMassimo * vicinanza, raggioCollisione, false);
+            posizione += Vector3.up * PrimoOstacolo(posizione, Vector3.up, sollevamentoMassimo * vicinanza, raggio, true);
         }
 
         // Lontano dai muri la camera guarda la testa del personaggio (come prima). Più si avvicina a un
@@ -208,8 +228,36 @@ public class CameraTerzaPersona : MonoBehaviour
         return corpo.Contains(posizione);
     }
 
-    // Nasconde le parti visibili del personaggio e, quando la camera si allontana, riaccende solo
-    // quelle che aveva spento (le parti già spente, come la capsula sotto la figura umana, restano spente).
+    // Lo spessore più grande (fino a "massimo") che la camera può avere in quel punto senza toccare
+    // nessun ostacolo. Lontano dai muri è quello normale; fra due pareti vicine si riduce.
+    float RaggioCheEntra(Vector3 punto, float massimo)
+    {
+        float raggio = massimo;
+        while (raggio > raggioMinimo && TroppoVicino(punto, raggio)) raggio *= 0.75f;
+        return Mathf.Max(raggio, raggioMinimo);
+    }
+
+    bool TroppoVicino(Vector3 punto, float raggio)
+    {
+        int n = Physics.OverlapSphereNonAlloc(punto, raggio, toccati, stratiOstacoli, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            if (!toccati[i].transform.IsChildOf(bersaglio)) return true;
+        }
+        return false;
+    }
+
+    // Il piano di taglio vicino deve stare dentro lo spessore della camera, altrimenti i suoi angoli
+    // entrano nei muri vicini e si vede attraverso. Torna piano al valore normale quando c'è spazio.
+    void AggiornaTaglioVicino(float raggio)
+    {
+        if (obiettivo == null) return;
+        float voluto = Mathf.Clamp(raggio * 0.6f, tagliaVicinoMinimo, tagliaVicinoNormale);
+        obiettivo.nearClipPlane = voluto < obiettivo.nearClipPlane
+            ? voluto
+            : Mathf.MoveTowards(obiettivo.nearClipPlane, voluto, Time.deltaTime);
+    }
+
     // In una strettoia la camera si mette dietro al personaggio, guardando lungo il passaggio.
     void AllineaNellaStrettoia()
     {
@@ -225,6 +273,8 @@ public class CameraTerzaPersona : MonoBehaviour
         inclinazione = Mathf.Lerp(inclinazione, inclinazioneStrettoia, morbidezza);
     }
 
+    // Nasconde le parti visibili del personaggio e, quando la camera si allontana, riaccende solo
+    // quelle che aveva spento (le parti già spente, come la capsula sotto la figura umana, restano spente).
     void NascondiPersonaggio(bool nascondi)
     {
         if (nascondi == personaggioNascosto) return;
