@@ -70,8 +70,8 @@ public static class CreaOggettiGuerriero
             a.danno = 28f; a.costoAttacco = 25f;
             a.preparazione = 0.36f; a.colpoAttivo = 0.15f; a.recupero = 0.45f;
             a.portata = 1.6f; a.raggio = 1.2f; a.arco = 100f; a.affondo = 2.5f;
-            a.penetrazioneArmatura = 0.6f;
-            a.dannoAssorbitoSenzaScudo = 0.45f; a.costoParataSenzaScudo = 26f;
+            a.penetrazioneArmatura = 0.3f;
+            a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 26f;
         });
         creati += Arma("martello-di-ossa", "Martello di ossa", "martello_ossa", a =>
         {
