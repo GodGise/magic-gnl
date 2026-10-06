@@ -1,12 +1,17 @@
 using UnityEngine;
 
-// Un'armatura (per il Guerriero, per esempio cotta di maglia, corazza di piastre).
-// A cosa serve: dà armatura (meno danno dai colpi, vedi Statistiche) e può pesare: un'armatura pesante rende
-// la schivata più cara e il personaggio più lento. Si equipaggia con Equipaggiamento.
+// Un'armatura del Guerriero: pesante, media o leggera.
+// A cosa serve: dà armatura (meno danno dai colpi, vedi Statistiche) ma pesa: più è pesante, più la schivata
+// costa resistenza e più la corsa è lenta. Si equipaggia con Equipaggiamento.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Armatura.
 [CreateAssetMenu(fileName = "nuova-armatura", menuName = "magic-gnl/Oggetti/Armatura")]
 public class DatiArmatura : DatiOggetto
 {
+    public enum Peso { Pesante, Media, Leggera }
+
+    [Header("Tipo")]
+    public Peso peso = Peso.Media;
+
     [Header("Protezione")]
     [Tooltip("Armatura: 25 = -20% di danno, 50 = -33%, 100 = -50%.")]
     public float armatura = 10f;

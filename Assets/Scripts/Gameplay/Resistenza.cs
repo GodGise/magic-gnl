@@ -17,6 +17,9 @@ public class Resistenza : MonoBehaviour
     // Come in Elden Ring: si può agire finché la barra non è vuota, anche se l'azione la manda a zero.
     public bool HaResistenza => Attuale > 0.01f;
 
+    // Ricarica più veloce o più lenta (1 = normale, 1,3 = +30%): lo cambiano gli amuleti arcani.
+    public float MoltiplicatoreRecupero { get; set; } = 1f;
+
     // Messo a true dal giocatore mentre tiene la parata.
     public bool InPausaRecupero { get; set; }
 
@@ -30,7 +33,7 @@ public class Resistenza : MonoBehaviour
     void Update()
     {
         if (InPausaRecupero || Time.time < prossimoRecupero) return;
-        Attuale = Mathf.Min(massimo, Attuale + recuperoAlSecondo * Time.deltaTime);
+        Attuale = Mathf.Min(massimo, Attuale + recuperoAlSecondo * MoltiplicatoreRecupero * Time.deltaTime);
     }
 
     public void Spendi(float costo)

@@ -58,7 +58,8 @@ public class Statistiche : MonoBehaviour
 // Con questa formula l'armatura non arriva mai a rendere immuni: più ne hai, meno conta ogni punto in più.
 public static class CalcoloDanno
 {
-    public static float Calcola(float dannoArma, Statistiche attaccante, Statistiche difensore, out bool critico)
+    // penetrazioneArmatura: quota dell'armatura del difensore che il colpo ignora (0,5 = metà, per le mazze).
+    public static float Calcola(float dannoArma, Statistiche attaccante, Statistiche difensore, out bool critico, float penetrazioneArmatura = 0f)
     {
         float danno = dannoArma;
         critico = false;
@@ -68,7 +69,7 @@ public static class CalcoloDanno
             critico = Random.value * 100f < attaccante.ProbabilitaCritico;
             if (critico) danno *= attaccante.MoltiplicatoreCritico;
         }
-        if (difensore != null) danno *= 100f / (100f + difensore.Armatura);
+        if (difensore != null) danno *= 100f / (100f + difensore.Armatura * (1f - Mathf.Clamp01(penetrazioneArmatura)));
         return Mathf.Max(0f, danno);
     }
 }

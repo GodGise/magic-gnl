@@ -46,6 +46,7 @@ public class Bersaglio : MonoBehaviour
     public float DurataPreavviso => preavviso;
     public int NumeroAttacco { get; private set; } // cresce a ogni attacco: serve a cambiare movimento
     float prossimoAttacco;
+    float sbilanciatoFino; // dopo una parata perfetta del giocatore non attacca fino a questo momento
     // Tutte le parti visibili del nemico, ognuna con il suo colore di partenza.
     Renderer[] aspetto;
     Color[] coloriBase;
@@ -83,7 +84,7 @@ public class Bersaglio : MonoBehaviour
     void Update()
     {
         if (morto || staAttaccando || !attaccaIlGiocatore || giocatore == null) return;
-        if (Time.time < prossimoAttacco) return;
+        if (Time.time < prossimoAttacco || Time.time < sbilanciatoFino) return;
 
         // Attacca solo se il giocatore è abbastanza vicino da vedere il preavviso.
         if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco * 2f)
@@ -112,7 +113,7 @@ public class Bersaglio : MonoBehaviour
             if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
             {
                 float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, giocatore.Statistiche, out bool critico);
-                giocatore.RiceviColpo(danno, transform.position, critico);
+                giocatore.RiceviColpo(danno, transform.position, critico, this);
             }
         }
 
@@ -140,6 +141,25 @@ public class Bersaglio : MonoBehaviour
             return;
         }
         if (!staAttaccando) StartCoroutine(Lampeggia(critico));
+    }
+
+    // Chiamato dal giocatore dopo una parata perfetta: il nemico indietreggia, lampeggia di azzurro
+    // e non attacca per "durata" secondi.
+    public void Sbilancia(float durata, Vector3 daDove)
+    {
+        if (morto) return;
+        sbilanciatoFino = Time.time + durata;
+        Vector3 spinta = transform.position - daDove;
+        spinta.y = 0f;
+        if (spinta.sqrMagnitude > 0.0001f) transform.position += spinta.normalized * spintaQuandoColpito * 2f;
+        StartCoroutine(LampeggiaColore(new Color(0.4f, 0.7f, 1f), 0.25f));
+    }
+
+    IEnumerator LampeggiaColore(Color colore, float durata)
+    {
+        ImpostaColore(colore);
+        yield return new WaitForSeconds(durata);
+        if (!staAttaccando) RipristinaColori();
     }
 
     IEnumerator Lampeggia(bool critico)

@@ -204,11 +204,16 @@ public class GiocatoreControllo : MonoBehaviour
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
     readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
     Statistiche statistiche;
-    // Numeri del colpo e della parata scritti nell'Inspector: valgono senza arma equipaggiata (vedi ImpostaArma).
+    // Numeri del colpo e della parata scritti nell'Inspector: valgono senza arma e scudo (vedi AggiornaEquipaggiamento).
     float[] valoriSenzaArma;
-    // Peso dell'armatura equipaggiata (vedi ImpostaArmatura).
-    float schivataExtraArmatura;
-    float velocitaArmatura = 1f;
+    // Effetti dell'equipaggiamento (vedi AggiornaEquipaggiamento).
+    float schivataExtraArmatura;       // peso di scudo e armatura sulla schivata
+    float velocitaArmatura = 1f;       // peso di scudo e armatura sulla corsa
+    float penetrazioneArma;            // quota di armatura nemica ignorata (mazze)
+    float finestraParataPerfetta;      // scudo piccolo: secondi utili per la parata perfetta
+    float sbilanciamentoParata = 1.5f; // secondi in cui il nemico resta sbilanciato dopo una parata perfetta
+    float vitaPerUccisione;            // amuleto arcano
+    float rubaVitaPercento;            // amuleto arcano
 
     // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
     public Statistiche Statistiche => statistiche;
@@ -228,7 +233,7 @@ public class GiocatoreControllo : MonoBehaviour
         aggancio = GetComponent<AggancioBersaglio>();
         statistiche = Statistiche.Di(this);
         valoriSenzaArma = new[] { dannoAttacco, costoAttacco, preparazioneAttacco, colpoAttivo, recuperoAttacco,
-            portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato };
+            portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato, arcoParata };
         if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
@@ -641,33 +646,59 @@ public class GiocatoreControllo : MonoBehaviour
         Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.7f);
     }
 
-    // ---------- Equipaggiamento (vedi Equipaggiamento, DatiArma, DatiArmatura) ----------
+    // ---------- Equipaggiamento (vedi Equipaggiamento e gli oggetti in Gameplay/Oggetti) ----------
 
-    // Chiamato da Equipaggiamento: i numeri del colpo e della parata diventano quelli dell'arma.
-    // Senza arma (null) tornano quelli scritti nell'Inspector di Giocatore Controllo.
-    public void ImpostaArma(DatiArma nuova)
+    // Chiamato da Equipaggiamento ogni volta che cambia qualcosa addosso al giocatore.
+    // - L'arma decide i numeri del colpo; senza arma valgono quelli scritti nell'Inspector.
+    // - La parata la decide lo scudo; senza scudo si para con l'arma (peggio); senza niente, l'Inspector.
+    // - Scudo e armatura pesano: schivata più cara e corsa più lenta.
+    // - Gli amuleti arcani danno il loro effetto speciale.
+    public void AggiornaEquipaggiamento(DatiArma armaNuova, DatiScudo scudo, DatiArmatura armatura, DatiAmuleto amuleto)
     {
         if (valoriSenzaArma == null) return;
         float[] v = valoriSenzaArma;
-        dannoAttacco = nuova != null ? nuova.danno : v[0];
-        costoAttacco = nuova != null ? nuova.costoAttacco : v[1];
-        preparazioneAttacco = nuova != null ? nuova.preparazione : v[2];
-        colpoAttivo = nuova != null ? nuova.colpoAttivo : v[3];
-        recuperoAttacco = nuova != null ? nuova.recupero : v[4];
-        portataColpo = nuova != null ? nuova.portata : v[5];
-        raggioColpo = nuova != null ? nuova.raggio : v[6];
-        arcoAttacco = nuova != null ? nuova.arco : v[7];
-        velocitaAffondo = nuova != null ? nuova.affondo : v[8];
-        dannoAssorbitoInParata = nuova != null ? nuova.dannoAssorbitoInParata : v[9];
-        costoColpoParato = nuova != null ? nuova.costoColpoParato : v[10];
+        bool a = armaNuova != null;
+        dannoAttacco = a ? armaNuova.danno : v[0];
+        costoAttacco = a ? armaNuova.costoAttacco : v[1];
+        preparazioneAttacco = a ? armaNuova.preparazione : v[2];
+        colpoAttivo = a ? armaNuova.colpoAttivo : v[3];
+        recuperoAttacco = a ? armaNuova.recupero : v[4];
+        portataColpo = a ? armaNuova.portata : v[5];
+        raggioColpo = a ? armaNuova.raggio : v[6];
+        arcoAttacco = a ? armaNuova.arco : v[7];
+        velocitaAffondo = a ? armaNuova.affondo : v[8];
+        penetrazioneArma = a ? armaNuova.penetrazioneArmatura : 0f;
         // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
+
+        if (scudo != null)
+        {
+            dannoAssorbitoInParata = scudo.dannoAssorbito;
+            costoColpoParato = scudo.costoColpoParato;
+            arcoParata = scudo.arcoParata;
+            finestraParataPerfetta = scudo.finestraParataPerfetta;
+            sbilanciamentoParata = scudo.sbilanciamento;
+        }
+        else
+        {
+            dannoAssorbitoInParata = a ? armaNuova.dannoAssorbitoSenzaScudo : v[9];
+            costoColpoParato = a ? armaNuova.costoParataSenzaScudo : v[10];
+            arcoParata = v[11];
+            finestraParataPerfetta = 0f;
+        }
+
+        schivataExtraArmatura = (armatura != null ? armatura.costoSchivataExtra : 0f) + (scudo != null ? scudo.costoSchivataExtra : 0f);
+        velocitaArmatura = (armatura != null ? armatura.moltiplicatoreVelocita : 1f) * (scudo != null ? scudo.moltiplicatoreVelocita : 1f);
+
+        vitaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.VitaPerUccisione) : 0f;
+        rubaVitaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaVita) : 0f;
+        if (resistenza != null)
+            resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
     }
 
-    // Chiamato da Equipaggiamento: il peso dell'armatura rende la schivata più cara e la corsa più lenta.
-    public void ImpostaArmatura(DatiArmatura nuova)
+    void Cura(float quantita)
     {
-        schivataExtraArmatura = nuova != null ? nuova.costoSchivataExtra : 0f;
-        velocitaArmatura = nuova != null ? nuova.moltiplicatoreVelocita : 1f;
+        if (quantita <= 0f || stato == Stato.Morto) return;
+        Vita = Mathf.Min(vitaMassima, Vita + quantita);
     }
 
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
@@ -683,6 +714,7 @@ public class GiocatoreControllo : MonoBehaviour
     // Chiamato da un nemico quando muore: con il bastone si recupera un po' di mana.
     public void NemicoSconfitto()
     {
+        Cura(vitaPerUccisione); // amuleto arcano
         if (!haBastone) return;
         Mana = Mathf.Min(manaMassimo, Mana + manaMassimo * manaPerUccisionePercento / 100f);
     }
@@ -780,8 +812,9 @@ public class GiocatoreControllo : MonoBehaviour
                 if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
 
                 colpitiInQuestoAttacco.Add(bersaglio);
-                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico);
+                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico, penetrazioneArma);
                 bersaglio.RiceviColpo(danno, transform.position, critico);
+                Cura(danno * rubaVitaPercento / 100f); // amuleto arcano
                 // Il critico suona più forte e più grave, così si sente senza guardare i numeri.
                 Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, critico ? 1f : 0.9f, critico ? 0.75f : 1f);
                 continue;
@@ -799,7 +832,9 @@ public class GiocatoreControllo : MonoBehaviour
 
     // Chiamato dai nemici quando un loro colpo arriva. "danno" è già calcolato (armatura e critico compresi).
     // Un critico non parato fa barcollare il doppio.
-    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false)
+    // Con uno scudo piccolo, un colpo che arriva subito dopo aver alzato lo scudo è una parata perfetta:
+    // niente danno, niente resistenza persa, e il nemico (attaccante) resta sbilanciato.
+    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false, Bersaglio attaccante = null)
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
 
@@ -811,6 +846,13 @@ public class GiocatoreControllo : MonoBehaviour
 
         if (stato == Stato.Parata && resistenza.HaResistenza && NellArcoFrontale(origineColpo, arcoParata))
         {
+            if (finestraParataPerfetta > 0f && tempoNelloStato <= finestraParataPerfetta)
+            {
+                Debug.Log("Parata perfetta!");
+                Suoni.Suona(Suono.Parata, transform.position + Vector3.up, 1f, 1.35f);
+                if (attaccante != null) attaccante.Sbilancia(sbilanciamentoParata, transform.position);
+                return;
+            }
             resistenza.Spendi(costoColpoParato);
             PerdiVita(danno * (1f - dannoAssorbitoInParata));
             if (stato == Stato.Morto) return;
