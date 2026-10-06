@@ -328,4 +328,15 @@ public static class DatiVillaggioLagoNero
     public static readonly float[] Molo = { 243f, 109.5f, 36f, 3.8f };
     // Punto di partenza del giocatore: davanti alla porta della casa dell'eroe.
     public static readonly float[] Partenza = { 212.12f, 78.54f };
+    // Torce lungo le strade (X, Z): ai lati della strada, alternate, lontano da case e piazzetta.
+    public static readonly float[] TorceStrade = {
+        4.31f, 91.49f, 21.17f, 88.23f, 35.01f, 98.13f, 50.04f, 103.6f, 67.18f, 103.17f, 80.23f, 114.33f,
+        97.33f, 113.61f, 110.72f, 124.36f, 140.92f, 96.42f, 129.94f, 83.25f, 131.73f, 66.18f, 121.97f, 51.98f,
+        125.36f, 35.15f, 116.61f, 20.26f, 120.91f, 3.64f, 129.68f, 153.19f, 130.7f, 169.95f, 116.94f, 180.22f,
+        110.81f, 195.76f, 191.3f, 118.51f, 205.77f, 109.27f, 222.39f, 113.66f, 238.07f, 106.68f, 91.83f, 126.68f,
+        100.81f, 145.06f, 114.48f, 162.91f, 142.63f, 165.68f, 163.62f, 160f, 186.19f, 155.11f, 196.85f, 133.57f,
+        187.93f, 106.89f, 180.92f, 90.09f, 163.09f, 76.92f, 143.09f, 87.21f, 102.21f, 81.63f, 90.06f, 95.45f,
+        198.43f, 86.87f, 61.78f, 93.82f, 69.67f, 75.24f, 84.87f, 58.66f, 107.8f, 56.06f, 156.41f, 176.24f,
+        155.02f, 194f,
+    };
 }

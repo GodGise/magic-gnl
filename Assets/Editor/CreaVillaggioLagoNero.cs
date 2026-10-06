@@ -14,7 +14,8 @@ using UnityEngine.Rendering;
 //   - Strade (principali 4,4 m, vicoli 2,9 m) e la piazzetta di 48 m con il pozzo al centro;
 //   - Edifici speciali (Mercante, Taverna, Fabbro, Erborista, Tempio, Casa dell'eroe) e 71 case, molte più grandi
 //     della mappa e alcune come sulla mappa, tutte copie del prefab "casa-blocco" con un cubetto scuro dove sta la porta;
-//   - Cimitero con recinto e lapidi, orti, bosco ai bordi (cilindri e sfere), torce, confini invisibili;
+//   - Cimitero con recinto e lapidi, orti, bosco ai bordi (cilindri e sfere), confini invisibili;
+//   - Torce lungo le strade (43) e in piazza: spente di giorno, si accendono da sole al buio (TorciaAutomatica);
 //   - MappaGuida: l'immagine della mappa stesa sul terreno, spenta. Accendendola (casella accanto al nome
 //     nell'Inspector) si confronta la scena con la mappa;
 //   - Giocatore davanti alla porta della casa dell'eroe, un orco di prova in piazzetta che insegue solo dopo averti visto,
@@ -61,6 +62,7 @@ public static class CreaVillaggioLagoNero
         CreaCimitero(Gruppo("Cimitero", villaggio));
         CreaOrti(Gruppo("Orti", villaggio));
         CreaBosco(Gruppo("Bosco", villaggio));
+        CreaTorceStrade(Gruppo("Torce stradali", villaggio));
         CreaConfini(Gruppo("Confini", villaggio));
         CreaMappaGuida(villaggio);
         PreparaLuciECielo();
@@ -278,6 +280,13 @@ public static class CreaVillaggioLagoNero
         Vector3 lato = Vector3.Cross(Vector3.up, (partenza - eroe).normalized);
         Torcia(speciali, partenza + lato * 2.5f);
         Torcia(speciali, new Vector3(68f * S, 0f, 136f * S));
+    }
+
+    // Torce lungo le strade: spente di giorno, si accendono da sole al buio (TorciaAutomatica).
+    static void CreaTorceStrade(Transform gruppo)
+    {
+        float[] t = DatiVillaggioLagoNero.TorceStrade;
+        for (int i = 0; i + 1 < t.Length; i += 2) Torcia(gruppo, new Vector3(t[i], 0f, t[i + 1]));
     }
 
     static void CreaCimitero(Transform gruppo)
@@ -545,6 +554,8 @@ public static class CreaVillaggioLagoNero
         luce.intensity = 1.8f;
         luce.shadows = LightShadows.None;
         oggettoLuce.AddComponent<global::Torcia>();
+        // Tutte le torce del villaggio si accendono al buio e si spengono di giorno.
+        torcia.gameObject.AddComponent<TorciaAutomatica>();
     }
 
     static Vector3 TrovaEdificio(string nome)
