@@ -204,6 +204,11 @@ public class GiocatoreControllo : MonoBehaviour
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
     readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
     Statistiche statistiche;
+    // Numeri del colpo e della parata scritti nell'Inspector: valgono senza arma equipaggiata (vedi ImpostaArma).
+    float[] valoriSenzaArma;
+    // Peso dell'armatura equipaggiata (vedi ImpostaArmatura).
+    float schivataExtraArmatura;
+    float velocitaArmatura = 1f;
 
     // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
     public Statistiche Statistiche => statistiche;
@@ -222,6 +227,9 @@ public class GiocatoreControllo : MonoBehaviour
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
         statistiche = Statistiche.Di(this);
+        valoriSenzaArma = new[] { dannoAttacco, costoAttacco, preparazioneAttacco, colpoAttivo, recuperoAttacco,
+            portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato };
+        if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
         raggioNormale = controller.radius;
@@ -417,7 +425,7 @@ public class GiocatoreControllo : MonoBehaviour
             resistenza.Spendi(costoSprintAlSecondo * dt);
         }
         // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
-        return direzioneInput * velocita * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+        return direzioneInput * velocita * velocitaArmatura * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
     }
 
     // ---------- Strettoie ----------
@@ -497,7 +505,7 @@ public class GiocatoreControllo : MonoBehaviour
 
     void IniziaSchivata(Vector3 direzioneInput)
     {
-        resistenza.Spendi(costoSchivata);
+        resistenza.Spendi(costoSchivata + schivataExtraArmatura);
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.7f);
         schivataPrenotataFino = -1f;
 
@@ -631,6 +639,35 @@ public class GiocatoreControllo : MonoBehaviour
         arma = nuova;
         AspettoUmanoide.MostraArma(gameObject, arma == ArmaImpugnata.Bastone ? AspettoUmanoide.Arma.Bastone : AspettoUmanoide.Arma.Spada);
         Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.7f);
+    }
+
+    // ---------- Equipaggiamento (vedi Equipaggiamento, DatiArma, DatiArmatura) ----------
+
+    // Chiamato da Equipaggiamento: i numeri del colpo e della parata diventano quelli dell'arma.
+    // Senza arma (null) tornano quelli scritti nell'Inspector di Giocatore Controllo.
+    public void ImpostaArma(DatiArma nuova)
+    {
+        if (valoriSenzaArma == null) return;
+        float[] v = valoriSenzaArma;
+        dannoAttacco = nuova != null ? nuova.danno : v[0];
+        costoAttacco = nuova != null ? nuova.costoAttacco : v[1];
+        preparazioneAttacco = nuova != null ? nuova.preparazione : v[2];
+        colpoAttivo = nuova != null ? nuova.colpoAttivo : v[3];
+        recuperoAttacco = nuova != null ? nuova.recupero : v[4];
+        portataColpo = nuova != null ? nuova.portata : v[5];
+        raggioColpo = nuova != null ? nuova.raggio : v[6];
+        arcoAttacco = nuova != null ? nuova.arco : v[7];
+        velocitaAffondo = nuova != null ? nuova.affondo : v[8];
+        dannoAssorbitoInParata = nuova != null ? nuova.dannoAssorbitoInParata : v[9];
+        costoColpoParato = nuova != null ? nuova.costoColpoParato : v[10];
+        // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
+    }
+
+    // Chiamato da Equipaggiamento: il peso dell'armatura rende la schivata più cara e la corsa più lenta.
+    public void ImpostaArmatura(DatiArmatura nuova)
+    {
+        schivataExtraArmatura = nuova != null ? nuova.costoSchivataExtra : 0f;
+        velocitaArmatura = nuova != null ? nuova.moltiplicatoreVelocita : 1f;
     }
 
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
