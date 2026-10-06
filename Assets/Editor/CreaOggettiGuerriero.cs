@@ -38,7 +38,7 @@ public static class CreaOggettiGuerriero
             a.preparazione = 0.24f; a.colpoAttivo = 0.15f; a.recupero = 0.33f;
             a.portata = 1.9f; a.raggio = 1.3f; a.arco = 120f; a.affondo = 3f;
             a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.55f; a.costoParataSenzaScudo = 24f;
+            a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 20f;
         });
 
         // Ascia: più lenta, colpo largo, critici che fanno male.
