@@ -15,6 +15,7 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// Acqua bassa (vedi AcquaBassa): nel lago, dove l'acqua arriva alle ginocchia, il personaggio va più piano.
 // Esecuzione furtiva: alle spalle di un nemico che non ti ha visto (vedi InseguimentoNemico), l'attacco con la
 // spada diventa un'esecuzione: il personaggio si mette dietro di lui, lo afferra e gli taglia la gola. Il nemico
 // muore sul colpo; durante l'esecuzione il giocatore non subisce danni. In basso compare l'avviso quando è possibile.
@@ -178,6 +179,7 @@ public class GiocatoreControllo : MonoBehaviour
     float prossimoAvvisoMana;
 
     // Esecuzione furtiva: il nemico che si può giustiziare adesso (per l'avviso) e quello che si sta giustiziando.
+    float velocitaAcqua = 1f;   // 1 fuori dall'acqua, meno di 1 nell'acqua bassa
     InseguimentoNemico vittimaPossibile;
     InseguimentoNemico vittima;
     bool taglioFatto;
@@ -342,6 +344,11 @@ public class GiocatoreControllo : MonoBehaviour
             case Stato.Morto:
                 break;
         }
+
+        // Nell'acqua bassa si va più piano (vedi AcquaBassa), con un passaggio graduale entrando e uscendo.
+        float fattoreAcqua = AcquaBassa.FattoreVelocita(transform.position + Vector3.down * 0.9f);
+        velocitaAcqua = Mathf.MoveTowards(velocitaAcqua, fattoreAcqua, 3f * dt);
+        if (stato != Stato.Esecuzione) movimento *= velocitaAcqua;
 
         // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
         vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;

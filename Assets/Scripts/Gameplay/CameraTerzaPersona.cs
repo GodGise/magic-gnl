@@ -10,6 +10,9 @@ using UnityEngine.InputSystem;
 // Collisione: la camera non attraversa muri, strutture e pavimento. Se qualcosa si mette tra il
 // personaggio e la camera, questa si avvicina al personaggio in modo graduale (parte un po' prima
 // del muro); quando lo spazio torna libero si allontana piano piano fino alla distanza normale.
+// Strettoie (vedi PassaggioStretto): fra due pareti vicine la camera si porta piano piano dietro al
+// personaggio, lungo il passaggio, e si abbassa un po', così non resta schiacciata contro i muri.
+// Il mouse la può spostare, ma finché si è nella strettoia torna sempre dietro.
 // Come montarlo: sulla Main Camera, trascinando il personaggio nel campo "Bersaglio".
 public class CameraTerzaPersona : MonoBehaviour
 {
@@ -44,9 +47,15 @@ public class CameraTerzaPersona : MonoBehaviour
     [SerializeField] float inclinazioneAggancio = 15f;
     [Tooltip("Quanto velocemente la camera si gira verso il nemico agganciato.")]
     [SerializeField] float velocitaAggancio = 10f;
+    [Header("Strettoie")]
+    [Tooltip("Quanto in fretta la camera si porta dietro al personaggio in una strettoia.")]
+    [SerializeField] float velocitaAllineamentoStrettoia = 4f;
+    [Tooltip("Inclinazione della camera nella strettoia, in gradi (più bassa = più dietro e meno dall'alto).")]
+    [SerializeField] float inclinazioneStrettoia = 12f;
 
     InputAction guardaMouse, guardaPad;
     float rotazioneOrizzontale;
+    GiocatoreControllo giocatore;
     float inclinazione = 20f;
     float distanzaAttuale;
     AggancioBersaglio aggancio;
@@ -119,6 +128,8 @@ public class CameraTerzaPersona : MonoBehaviour
             rotazioneOrizzontale += mouse.x + pad.x;
             inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y), inclinazioneMinima, inclinazioneMassima);
         }
+
+        AllineaNellaStrettoia();
 
         Quaternion rotazione = Quaternion.Euler(inclinazione, rotazioneOrizzontale, 0f);
         Vector3 fuoco = bersaglio.position + Vector3.up * altezzaFuoco;
@@ -199,6 +210,21 @@ public class CameraTerzaPersona : MonoBehaviour
 
     // Nasconde le parti visibili del personaggio e, quando la camera si allontana, riaccende solo
     // quelle che aveva spento (le parti già spente, come la capsula sotto la figura umana, restano spente).
+    // In una strettoia la camera si mette dietro al personaggio, guardando lungo il passaggio.
+    void AllineaNellaStrettoia()
+    {
+        if (giocatore == null) giocatore = bersaglio.GetComponent<GiocatoreControllo>();
+        if (giocatore == null || (aggancio != null && aggancio.Agganciato)) return;
+
+        // Pesa quanto è stretto: niente nei passaggi larghi, pieno nella strettoia vera.
+        float peso = Mathf.InverseLerp(0.2f, 0.6f, giocatore.Strettoia);
+        if (peso <= 0f) return;
+
+        float morbidezza = (1f - Mathf.Exp(-velocitaAllineamentoStrettoia * Time.deltaTime)) * peso;
+        rotazioneOrizzontale = Mathf.LerpAngle(rotazioneOrizzontale, bersaglio.eulerAngles.y, morbidezza);
+        inclinazione = Mathf.Lerp(inclinazione, inclinazioneStrettoia, morbidezza);
+    }
+
     void NascondiPersonaggio(bool nascondi)
     {
         if (nascondi == personaggioNascosto) return;

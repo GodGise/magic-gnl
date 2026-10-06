@@ -10,7 +10,8 @@ using UnityEngine.Rendering;
 //
 // Cosa costruisce, seguendo la mappa vista dall'alto di Giuseppe allargata del 50% (DatiVillaggioLagoNero.Scala):
 //   - Terreno di 315 x 255 metri, con il Lago Nero a est, la riva e il molo con tre barche. Nel lago si entra
-//     solo per 5,5 metri, con l'acqua fino alle ginocchia; oltre c'è un limite invisibile (il molo resta percorribile);
+//     solo per 5,5 metri, con l'acqua fino alle ginocchia, dove si va più piano e i passi sciacquano;
+//     oltre c'è un limite invisibile (il molo resta percorribile);
 //   - Strade (principali 4,4 m, vicoli 2,9 m) e la piazzetta di 48 m con il pozzo al centro;
 //   - Edifici speciali (Mercante, Taverna, Fabbro, Erborista, Tempio, Casa dell'eroe) e 71 case, molte più grandi
 //     della mappa e alcune come sulla mappa, tutte copie del prefab "casa-blocco" con un cubetto scuro dove sta la porta;
@@ -129,6 +130,9 @@ public static class CreaVillaggioLagoNero
             Forma(PrimitiveType.Cube, "Superficie dell'acqua", gruppoLago, new Vector3((xRiva + Larghezza) / 2f, -0.03f, zCentro),
                 new Vector3(Larghezza - xRiva, 0.02f, zLungo), acqua).GetComponent<Collider>().enabled = false;
 
+            // Zona di acqua bassa: rallenta il giocatore (AcquaBassa) e fa i passi nell'acqua (Superficie Sonora).
+            ZonaAcquaBassa(gruppoLago, xRiva, z0, z1);
+
             // Oltre l'acqua bassa non si va: blocco invisibile fino al bordo est, interrotto solo dove passa il molo.
             LimiteLago(gruppoLago, xRiva + DistanzaLimite, z0 - 0.05f, z1 + 0.05f);
         }
@@ -167,6 +171,21 @@ public static class CreaVillaggioLagoNero
         if (zMin < moloMin) BloccoInvisibile(gruppo, xInizio, xFine, zMin, moloMin);
         if (zMax > moloMax) BloccoInvisibile(gruppo, xInizio, xFine, moloMax, zMax);
         BloccoInvisibile(gruppo, fineMolo, xFine, Mathf.Max(zMin, moloMin), Mathf.Min(zMax, moloMax));   // oltre la punta del molo
+    }
+
+    // Zona invisibile (trigger) sopra il fondale, dalla riva al limite: da poco sotto la superficie fino al fondale.
+    static void ZonaAcquaBassa(Transform gruppo, float xRiva, float z0, float z1)
+    {
+        var zona = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        zona.name = "Acqua bassa";
+        zona.transform.SetParent(gruppo, false);
+        zona.transform.localPosition = new Vector3(xRiva + DistanzaLimite / 2f, -0.4f, (z0 + z1) / 2f);
+        zona.transform.localScale = new Vector3(DistanzaLimite, 0.6f, z1 - z0 + 0.05f);
+        Object.DestroyImmediate(zona.GetComponent<MeshRenderer>());
+        zona.GetComponent<BoxCollider>().isTrigger = true;
+        zona.layer = 2; // Ignore Raycast
+        zona.AddComponent<AcquaBassa>();
+        zona.AddComponent<SuperficieSonora>().tipo = SuperficieSonora.Tipo.Acqua;
     }
 
     static void BloccoInvisibile(Transform gruppo, float x0, float x1, float z0, float z1)
@@ -399,6 +418,10 @@ public static class CreaVillaggioLagoNero
         orco.GetComponent<Renderer>().sharedMaterial = Materiale("PelleOrco", new Color(0.28f, 0.36f, 0.2f));
         var bersaglio = orco.AddComponent<Bersaglio>();
         bersaglio.attaccaIlGiocatore = false;
+        // Nel villaggio i nemici restano morti: così l'esecuzione furtiva e i combattimenti contano davvero.
+        var impostazioni = new SerializedObject(bersaglio);
+        impostazioni.FindProperty("rinasce").boolValue = false;
+        impostazioni.ApplyModifiedPropertiesWithoutUndo();
         orco.AddComponent<InseguimentoNemico>();
     }
 

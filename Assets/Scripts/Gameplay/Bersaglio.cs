@@ -8,11 +8,14 @@ using UnityEngine;
 // (preavviso) e poi colpisce. Il momento giusto per schivare o parare è la fine del rosso.
 // Se è un cilindro di Unity, all'avvio prende un aspetto provvisorio da figura umana (vedi AspettoUmanoide):
 // rosso, lampo bianco e scomparsa alla morte valgono per tutta la figura.
+// Con "Rinasce" attivo, dopo la morte torna in vita dopo qualche secondo (per allenarsi); spento, resta morto.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
 // Il menu "magic-gnl > Crea scena di prova" ne mette uno già pronto.
 public class Bersaglio : MonoBehaviour
 {
     [SerializeField] float vitaMassima = 100f;
+    [Tooltip("Se attivo, dopo la morte il nemico rinasce (utile per allenarsi). Se spento, resta morto.")]
+    [SerializeField] bool rinasce = true;
     [SerializeField] float secondiPerRinascere = 2f;
     [SerializeField] float spintaQuandoColpito = 0.3f;
 
@@ -144,7 +147,7 @@ public class Bersaglio : MonoBehaviour
         staAttaccando = false;
         MostraAspetto(false);
         if (corpo != null) corpo.enabled = false;
-        Invoke(nameof(Rinasci), secondiPerRinascere);
+        if (rinasce) Invoke(nameof(Rinasci), secondiPerRinascere);
     }
 
     void Rinasci()
