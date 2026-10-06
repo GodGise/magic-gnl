@@ -45,11 +45,12 @@ public static class CreaOggettiGuerriero
         creati += Arma("ascia-da-legna", "Ascia da legna", "ascia_legna", a =>
         {
             a.tipo = DatiArma.Tipo.Ascia;
-            a.danno = 30f; a.costoAttacco = 24f;
+            a.danno = 34f; a.costoAttacco = 24f;
             a.preparazione = 0.38f; a.colpoAttivo = 0.15f; a.recupero = 0.48f;
             a.portata = 1.8f; a.raggio = 1.4f; a.arco = 150f; a.affondo = 2.5f;
-            a.probabilitaCritico = 5f; a.moltiplicatoreCritico = 0.25f;
-            a.dannoAssorbitoSenzaScudo = 0.4f; a.costoParataSenzaScudo = 28f;
+            // Critico totale ×1,7: il giocatore parte da ×1,75, quindi l'ascia toglie 0,05.
+            a.probabilitaCritico = 5f; a.moltiplicatoreCritico = -0.05f;
+            a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 30f;
         });
         creati += Arma("ascia-del-boia", "Ascia del boia", "ascia_boia", a =>
         {
