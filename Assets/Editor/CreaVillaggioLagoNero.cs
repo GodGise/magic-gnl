@@ -406,23 +406,12 @@ public static class CreaVillaggioLagoNero
         quad.SetActive(false);
     }
 
-    // Un nemico di prova (Bersaglio) un po' più grosso e verdastro, con vista e inseguimento (InseguimentoNemico).
     // Guarda verso sud, cioè verso la strada da cui arriva il giocatore partendo dalla casa dell'eroe.
+    // L'orco della piazza è una copia del prefab dell'orco sgherro (vedi CreaOrcoSgherro):
+    // i suoi numeri si bilanciano sul prefab, non qui.
     static void CreaOrco(string nome, Vector3 piedi)
     {
-        const float grandezza = 1.15f;
-        var orco = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        orco.name = nome;
-        orco.transform.SetPositionAndRotation(piedi + Vector3.up * grandezza, Quaternion.LookRotation(Vector3.back));
-        orco.transform.localScale = Vector3.one * grandezza;
-        orco.GetComponent<Renderer>().sharedMaterial = Materiale("PelleOrco", new Color(0.28f, 0.36f, 0.2f));
-        var bersaglio = orco.AddComponent<Bersaglio>();
-        bersaglio.attaccaIlGiocatore = false;
-        // Nel villaggio i nemici restano morti: così l'esecuzione furtiva e i combattimenti contano davvero.
-        var impostazioni = new SerializedObject(bersaglio);
-        impostazioni.FindProperty("rinasce").boolValue = false;
-        impostazioni.ApplyModifiedPropertiesWithoutUndo();
-        orco.AddComponent<InseguimentoNemico>();
+        CreaOrcoSgherro.Metti(nome, piedi, Vector3.back);
     }
 
     static void CreaSegnalini(Transform gruppo)

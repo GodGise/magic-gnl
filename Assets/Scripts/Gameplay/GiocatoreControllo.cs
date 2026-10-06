@@ -203,6 +203,10 @@ public class GiocatoreControllo : MonoBehaviour
     float attaccoPrenotatoFino = -1f;
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
     readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
+    Statistiche statistiche;
+
+    // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
+    public Statistiche Statistiche => statistiche;
 
     bool SchivataRichiesta => Time.time <= schivataPrenotataFino;
     bool AttaccoRichiesto => Time.time <= attaccoPrenotatoFino;
@@ -217,6 +221,7 @@ public class GiocatoreControllo : MonoBehaviour
         controller = GetComponent<CharacterController>();
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
+        statistiche = Statistiche.Di(this);
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
         raggioNormale = controller.radius;
@@ -738,8 +743,10 @@ public class GiocatoreControllo : MonoBehaviour
                 if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
 
                 colpitiInQuestoAttacco.Add(bersaglio);
-                bersaglio.RiceviColpo(dannoAttacco, transform.position);
-                Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, 0.9f);
+                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico);
+                bersaglio.RiceviColpo(danno, transform.position, critico);
+                // Il critico suona più forte e più grave, così si sente senza guardare i numeri.
+                Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, critico ? 1f : 0.9f, critico ? 0.75f : 1f);
                 continue;
             }
 
@@ -753,8 +760,9 @@ public class GiocatoreControllo : MonoBehaviour
         }
     }
 
-    // Chiamato dai nemici quando un loro colpo arriva.
-    public void RiceviColpo(float danno, Vector3 origineColpo)
+    // Chiamato dai nemici quando un loro colpo arriva. "danno" è già calcolato (armatura e critico compresi).
+    // Un critico non parato fa barcollare il doppio.
+    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false)
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
 
@@ -787,8 +795,8 @@ public class GiocatoreControllo : MonoBehaviour
         PerdiVita(danno);
         if (stato != Stato.Morto)
         {
-            Stordisci(durataBarcollamento);
-            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up);
+            Stordisci(durataBarcollamento * (critico ? 2f : 1f));
+            Suoni.Suona(Suono.Colpito, transform.position + Vector3.up, 1f, critico ? 0.8f : 1f);
         }
     }
 
