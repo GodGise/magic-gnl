@@ -6,6 +6,9 @@ using UnityEngine;
 // le accendesse; all'alba si spengono. Legge il "Buio" del CicloGiornoNotte (0 = giorno pieno, 1 = notte).
 // Se nella scena non c'è il ciclo giorno e notte, la torcia resta sempre accesa.
 // La luce che tremola è quella del componente Torcia (Assets/Scripts/Ambiente): questo script la accende e la spegne soltanto.
+// La luce viene sempre calcolata "per pixel": con tante torce, Unity illumina bene solo le poche più importanti
+// e quali siano cambia mentre tremolano, così le luci sembravano guaste. Ogni torcia illumina solo il suo raggio,
+// quindi il costo resta basso.
 // Come montarlo: sull'oggetto della torcia (il "palo"), che deve avere fra i figli la luce (Light, con Torcia)
 // e la fiamma (un oggetto che si chiama "Brace"). Il menu "magic-gnl > Crea Villaggio Lago Nero" lo mette da solo.
 public class TorciaAutomatica : MonoBehaviour
@@ -32,6 +35,7 @@ public class TorciaAutomatica : MonoBehaviour
     void Awake()
     {
         luce = GetComponentInChildren<Light>(true);
+        if (luce != null) luce.renderMode = LightRenderMode.ForcePixel;
         fiamma = TrovaFiglio(transform, "Brace");
         if (fiamma != null) grandezzaFiamma = fiamma.localScale;
     }

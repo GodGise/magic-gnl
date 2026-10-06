@@ -553,7 +553,13 @@ public static class CreaVillaggioLagoNero
         luce.color = new Color(1f, 0.55f, 0.2f);
         luce.intensity = 1.8f;
         luce.shadows = LightShadows.None;
-        oggettoLuce.AddComponent<global::Torcia>();
+        luce.renderMode = LightRenderMode.ForcePixel;   // sempre illuminata bene, niente salti fra una luce e l'altra
+        var fiamma = oggettoLuce.AddComponent<global::Torcia>();
+        // Tremolio leggero e lento, come una fiamma vera (i valori di base erano pensati per poche torce isolate).
+        var impostazioni = new SerializedObject(fiamma);
+        impostazioni.FindProperty("tremolio").floatValue = 0.08f;
+        impostazioni.FindProperty("velocitaTremolio").floatValue = 2.5f;
+        impostazioni.ApplyModifiedPropertiesWithoutUndo();
         // Tutte le torce del villaggio si accendono al buio e si spengono di giorno.
         torcia.gameObject.AddComponent<TorciaAutomatica>();
     }
