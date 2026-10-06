@@ -55,11 +55,12 @@ public static class CreaOggettiGuerriero
         creati += Arma("ascia-del-boia", "Ascia del boia", "ascia_boia", a =>
         {
             a.tipo = DatiArma.Tipo.Ascia;
-            a.danno = 38f; a.costoAttacco = 27f;
+            a.danno = 42f; a.costoAttacco = 30f;
             a.preparazione = 0.42f; a.colpoAttivo = 0.15f; a.recupero = 0.52f;
             a.portata = 1.9f; a.raggio = 1.4f; a.arco = 150f; a.affondo = 2.5f;
-            a.probabilitaCritico = 10f; a.moltiplicatoreCritico = 0.5f;
-            a.dannoAssorbitoSenzaScudo = 0.4f; a.costoParataSenzaScudo = 28f;
+            // Critico totale ×2: il giocatore parte da ×1,75, quindi l'ascia aggiunge 0,25.
+            a.probabilitaCritico = 10f; a.moltiplicatoreCritico = 0.25f;
+            a.dannoAssorbitoSenzaScudo = 0.35f; a.costoParataSenzaScudo = 30f;
         });
 
         // Mazza: lenta e corta, ma ignora gran parte dell'armatura: la scelta contro i nemici corazzati.
