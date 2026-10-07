@@ -83,7 +83,7 @@ I critici delle armi si sommano a quelli del giocatore.
 | # | Oggetto (chiave) | Tipo | Effetto | Revisione |
 | --- | --- | --- | --- | --- |
 | 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: scudo alzato il 5% più lento | ✔ fatta |
-| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% danno; malus: -2,5% dell'armatura totale | ✔ fatta |
+| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% critico; malus: scudo alzato il 5% più lento | ✔ fatta |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +10 armatura | da fare |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso | da fare |
 | 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce | da fare |

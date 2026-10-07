@@ -146,8 +146,8 @@ public static class CreaOggettiGuerriero
         });
         creati += Amuleto("occhio-di-corvo", "Occhio di corvo", "occhio_corvo", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.bonusDanno = 10f;
-            m.malus.armaturaPercento = -2.5f; // il 2,5% in meno dell'armatura totale
+            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.probabilitaCritico = 10f;
+            m.malus.velocitaParata = -5f; // come la Zanna di lupo: lo scudo si alza il 5% più lento
         });
         creati += Amuleto("pietra-del-focolare", "Pietra del focolare", "pietra_focolare", m =>
         {
