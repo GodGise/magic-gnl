@@ -167,7 +167,7 @@ public static class CreaOggettiLadro
         creati += Amuleto("laccio-del-borsaiolo", "Laccio del borsaiolo", "laccio_borsaiolo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.velocitaAttacco = 10f;
-            m.malus.vitaMassimaPercento = -10f;
+            m.malus.probabilitaCritico = -5f; m.malus.vitaMassimaPercento = -5f;
         });
 
         // Arcani: effetti speciali.
