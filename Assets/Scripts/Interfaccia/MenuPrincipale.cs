@@ -6,7 +6,8 @@ using UnityEngine.SceneManagement;
 
 // Menu iniziale del gioco.
 // Schermate: titolo ("premi un tasto"), menu principale (Nuova partita, Continua, Opzioni, Crediti, Esci),
-// scelta della classe (Guerriero, Ladro, Stregone), opzioni (lingua, volumi, schermo intero, effetto retro) e crediti.
+// scelta della classe (Guerriero, Ladro, Stregone), opzioni (lingua, volumi, schermo intero, effetto retro) e crediti
+// (provvisori, che scorrono: l'elenco è in TestiCrediti.cs).
 // Tutti i testi passano da Lingua.T(...): si traducono nelle 8 lingue del gioco (vedi Lingua.cs).
 // Si usa con mouse, tastiera (frecce o WASD, Invio, Esc) o pad (croce o levetta, A per confermare, B per tornare).
 // Le opzioni restano salvate anche chiudendo il gioco. La classe scelta va in SceltaPartita.Classe.
@@ -410,8 +411,8 @@ public class MenuPrincipale : MonoBehaviour
                 break;
 
             case Schermata.Crediti:
-                Scritta(new Rect(0, 520, Larghezza, 60), Lingua.T("menu.crediti_testo"), stVoce, coloreTesto, comparsa);
-                DisegnaVoci(700f, comparsa);
+                DisegnaCrediti(comparsa);
+                DisegnaVoci(930f, comparsa);
                 break;
 
             default:
@@ -435,6 +436,40 @@ public class MenuPrincipale : MonoBehaviour
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), texNero);
             GUI.color = Color.white;
         }
+    }
+
+    // Crediti che scorrono dal basso verso l'alto dentro una fascia dello schermo, e ricominciano alla fine.
+    void DisegnaCrediti(float comparsa)
+    {
+        const float alto = 380f, altezzaFascia = 520f, passo = 104f, velocita = 55f;
+        int n = TestiCrediti.Elenco.Length;
+        float lunghezza = altezzaFascia + 140f + n * passo;
+        float scorrimento = (tempoSchermata * velocita) % lunghezza;
+
+        GUI.BeginGroup(new Rect(0f, alto, Larghezza, altezzaFascia));
+        float y = altezzaFascia - scorrimento;
+        Riga(ref y, Lingua.T("menu.crediti_testo"), null, altezzaFascia, comparsa, 140f);
+        for (int i = 0; i < n; i++)
+            Riga(ref y, TestiCrediti.Ruolo(i), TestiCrediti.Elenco[i].nomi, altezzaFascia, comparsa, passo);
+        GUI.EndGroup();
+    }
+
+    void Riga(ref float y, string ruolo, string nomi, float altezzaFascia, float comparsa, float passo)
+    {
+        if (y > -passo && y < altezzaFascia)
+        {
+            // sfuma vicino ai bordi della fascia
+            float centro = y + 30f;
+            float alfa = Mathf.Clamp01(Mathf.Min(centro, altezzaFascia - centro) / 90f) * comparsa;
+            if (string.IsNullOrEmpty(nomi))
+                Scritta(new Rect(0, y, Larghezza, 60), ruolo, stVoce, coloreTesto, alfa);
+            else
+            {
+                Scritta(new Rect(0, y, Larghezza, 34), ruolo, stSottotitolo, coloreSpento, alfa);
+                Scritta(new Rect(0, y + 36, Larghezza, 46), nomi, stVoce, coloreTesto, alfa);
+            }
+        }
+        y += passo;
     }
 
     void DisegnaVoci(float alto, float comparsa)
