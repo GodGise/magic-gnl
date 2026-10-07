@@ -35,5 +35,6 @@ public class DatiArmatura : DatiOggetto
         moltiplicatoreCritico = bonus.moltiplicatoreCritico,
         velocitaParata = bonus.velocitaParata,
         velocitaAttacco = bonus.velocitaAttacco,
+        vitaMassimaPercento = bonus.vitaMassimaPercento,
     };
 }

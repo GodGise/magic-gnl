@@ -168,7 +168,8 @@ public static class CreaOggettiGuerriero
         });
         creati += Amuleto("sangue-antico", "Sangue antico", "sangue_antico", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 8f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 10f;
+            m.malus.vitaMassimaPercento = -15f; // vita massima -15%
         });
 
         AssetDatabase.SaveAssets();

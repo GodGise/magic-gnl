@@ -143,7 +143,8 @@ public class GiocatoreControllo : MonoBehaviour
     public float DurataSchivata => durataSchivata;
     public Vector3 DirezioneSchivata => direzioneSchivata;
     public float Vita { get; private set; }
-    public float VitaMassima => vitaMassima;
+    // Vita massima vera: quella dell'Inspector cambiata dalle Statistiche (amuleti: -15 = il 15% in meno).
+    public float VitaMassima => statistiche != null ? vitaMassima * (1f + statistiche.VitaMassimaPercento / 100f) : vitaMassima;
     public float DurataEsecuzione => durataEsecuzione;
     public float MomentoTaglio => momentoTaglio;
 
@@ -241,7 +242,7 @@ public class GiocatoreControllo : MonoBehaviour
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
         raggioNormale = controller.radius;
-        Vita = vitaMassima;
+        Vita = VitaMassima;
         puntoRinascita = transform.position;
         rotazioneRinascita = transform.rotation;
         CreaComandi();
@@ -697,6 +698,9 @@ public class GiocatoreControllo : MonoBehaviour
 
         vitaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.VitaPerUccisione) : 0f;
         rubaVitaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaVita) : 0f;
+        // Se la vita massima scende (amuleto), la vita attuale non può restare sopra.
+        Vita = Mathf.Min(Vita, VitaMassima);
+
         if (resistenza != null)
             resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
     }
@@ -707,7 +711,7 @@ public class GiocatoreControllo : MonoBehaviour
     void Cura(float quantita)
     {
         if (quantita <= 0f || stato == Stato.Morto) return;
-        Vita = Mathf.Min(vitaMassima, Vita + quantita);
+        Vita = Mathf.Min(VitaMassima, Vita + quantita);
     }
 
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
@@ -911,7 +915,7 @@ public class GiocatoreControllo : MonoBehaviour
         velocitaVerticale = 0f;
         armaNelFodero = false;   // si rinasce con l'arma in mano
         inizioGestoFodero = -10f;
-        Vita = vitaMassima;
+        Vita = VitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
         Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f);
@@ -997,8 +1001,8 @@ public class GiocatoreControllo : MonoBehaviour
         GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
         string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
         GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
-        GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
-        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
+        GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(VitaMassima));
+        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
         GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");

@@ -25,6 +25,7 @@ Ogni oggetto è unico, con un nome suo (niente livelli di rarità). Gli oggetti 
   - Parata perfetta con lo scudo piccolo, ed effetti degli amuleti arcani.
   - `Bersaglio.Sbilancia`: dopo una parata perfetta il nemico lampeggia di azzurro e non attacca per un po'.
   - `Resistenza.MoltiplicatoreRecupero`.
+  - Statistiche nuove per bonus e malus: *Velocita Parata*, *Velocita Attacco*, *Vita Massima Percento* e, nei modificatori, *Armatura Percento*. Ogni amuleto ha un bonus e un malus.
   - Tempo per alzare lo scudo (`GiocatoreControllo`, *Tempo Alzata Scudo*, 0,1 s): prima la parata non ferma i colpi. Le Statistiche hanno *Velocita Parata* per accelerarlo o rallentarlo (malus degli amuleti).
   - `CalcoloDanno` accetta la penetrazione dell'armatura (mazze).
 
@@ -87,11 +88,11 @@ I critici delle armi si sommano a quelli del giocatore.
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +15 armatura; malus: attacchi il 7,5% più lenti | ✔ fatta |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso; malus: -5% danno | ✔ fatta |
 | 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce; malus: -20% dell'armatura totale | ✔ fatta |
-| 19 | Sangue antico (`sangue_antico`) | Arcano | 8% del danno inflitto torna come vita | da fare |
+| 19 | Sangue antico (`sangue_antico`) | Arcano | 10% del danno inflitto torna come vita; malus: -15% di vita massima | ✔ fatta |
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo: manca il Sangue antico.
+1. ~~Revisione con Lorenzo~~: fatta per tutti i 19 oggetti (7 ottobre).
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.

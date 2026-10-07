@@ -23,6 +23,8 @@ public class Statistiche : MonoBehaviour
     [SerializeField] float velocitaParata = 0f;
     [Tooltip("Velocità degli attacchi, in percentuale (-7,5 = il 7,5% più lenti: carica, colpo e recupero durano di più). Di base 0.")]
     [SerializeField] float velocitaAttacco = 0f;
+    [Tooltip("Vita massima in più o in meno, in percentuale (-15 = il 15% in meno). Di base 0. Vale per il giocatore.")]
+    [SerializeField] float vitaMassimaPercento = 0f;
 
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
@@ -40,6 +42,7 @@ public class Statistiche : MonoBehaviour
     public float BonusDanno { get { float v = bonusDanno; foreach (var m in modificatori) v += m.bonusDanno; return v; } }
     public float ProbabilitaCritico { get { float v = probabilitaCritico; foreach (var m in modificatori) v += m.probabilitaCritico; return Mathf.Clamp(v, 0f, 100f); } }
     public float MoltiplicatoreCritico { get { float v = moltiplicatoreCritico; foreach (var m in modificatori) v += m.moltiplicatoreCritico; return Mathf.Max(1f, v); } }
+    public float VitaMassimaPercento { get { float v = vitaMassimaPercento; foreach (var m in modificatori) v += m.vitaMassimaPercento; return Mathf.Max(-90f, v); } }
     public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
     public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
 
@@ -55,6 +58,7 @@ public class Statistiche : MonoBehaviour
         public float moltiplicatoreCritico;    // si somma (0,25 = critico da 1,75 a 2)
         public float velocitaParata;           // punti percentuali: -5 = lo scudo si alza il 5% più lento
         public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
+        public float vitaMassimaPercento;      // punti percentuali: -15 = vita massima il 15% in meno
 
         // Somma di due modificatori (per esempio il bonus e il malus di un amuleto).
         public static Modificatore Somma(string fonte, Modificatore a, Modificatore b) => new Modificatore
@@ -67,6 +71,7 @@ public class Statistiche : MonoBehaviour
             moltiplicatoreCritico = a.moltiplicatoreCritico + b.moltiplicatoreCritico,
             velocitaParata = a.velocitaParata + b.velocitaParata,
             velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
+            vitaMassimaPercento = a.vitaMassimaPercento + b.vitaMassimaPercento,
         };
     }
 
