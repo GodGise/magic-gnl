@@ -74,6 +74,8 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float dannoAssorbitoInParata = 0.9f;
     [Tooltip("Ampiezza in gradi dell'arco frontale coperto dalla parata.")]
     [SerializeField] float arcoParata = 120f;
+    [Tooltip("Secondi per alzare lo scudo: prima di questo tempo la parata non ferma i colpi. Lo cambiano gli amuleti (Statistiche > Velocita Parata).")]
+    [SerializeField] float tempoAlzataScudo = 0.1f;
     [SerializeField] float durataGuardiaRotta = 1f;
 
     [Header("Attacco")]
@@ -697,6 +699,9 @@ public class GiocatoreControllo : MonoBehaviour
             resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
     }
 
+    // Tempo per alzare lo scudo, rallentato o velocizzato dalle Statistiche (-5 = il 5% più lento).
+    float TempoAlzataScudo => tempoAlzataScudo * (1f - statistiche.VelocitaParata / 100f);
+
     void Cura(float quantita)
     {
         if (quantita <= 0f || stato == Stato.Morto) return;
@@ -846,9 +851,11 @@ public class GiocatoreControllo : MonoBehaviour
             return;
         }
 
-        if (stato == Stato.Parata && resistenza.HaResistenza && NellArcoFrontale(origineColpo, arcoParata))
+        // Lo scudo para solo quando è alzato del tutto; la parata perfetta conta da quel momento.
+        float alzata = TempoAlzataScudo;
+        if (stato == Stato.Parata && tempoNelloStato >= alzata && resistenza.HaResistenza && NellArcoFrontale(origineColpo, arcoParata))
         {
-            if (finestraParataPerfetta > 0f && tempoNelloStato <= finestraParataPerfetta)
+            if (finestraParataPerfetta > 0f && tempoNelloStato <= alzata + finestraParataPerfetta)
             {
                 Debug.Log("Parata perfetta!");
                 Suoni.Suona(Suono.Parata, transform.position + Vector3.up, 1f, 1.35f);

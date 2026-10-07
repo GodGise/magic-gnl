@@ -137,10 +137,12 @@ public static class CreaOggettiGuerriero
 
         // ---------- Amuleti ----------
 
+        // Ogni amuleto ha un bonus e un malus (scelta di Lorenzo).
         // Magici: bonus semplici alle statistiche.
         creati += Amuleto("zanna-di-lupo", "Zanna di lupo", "zanna_lupo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.bonusDanno = 10f;
+            m.malus.velocitaParata = -5f; // lo scudo si alza il 5% più lento
         });
         creati += Amuleto("occhio-di-corvo", "Occhio di corvo", "occhio_corvo", m =>
         {

@@ -11,7 +11,7 @@ Il Guerriero ha quattro categorie di oggetti, decise da Lorenzo:
 | Arma | spada, spadone (a due mani: niente scudo), ascia, mazza |
 | Scudo | grande, medio, piccolo |
 | Armatura | pesante, media, leggera |
-| Amuleto | magico (bonus semplici), arcano (effetti speciali) |
+| Amuleto | magico (bonus semplici), arcano (effetti speciali); ogni amuleto ha anche un malus |
 
 Ogni oggetto è unico, con un nome suo (niente livelli di rarità). Gli oggetti si raccolgono con E e finiscono nell'inventario, da cui si equipaggiano: **l'inventario lo fa Giuseppe**. Per ora c'è la parte sotto: oggetti, statistiche ed equipaggiamento.
 
@@ -25,6 +25,7 @@ Ogni oggetto è unico, con un nome suo (niente livelli di rarità). Gli oggetti 
   - Parata perfetta con lo scudo piccolo, ed effetti degli amuleti arcani.
   - `Bersaglio.Sbilancia`: dopo una parata perfetta il nemico lampeggia di azzurro e non attacca per un po'.
   - `Resistenza.MoltiplicatoreRecupero`.
+  - Tempo per alzare lo scudo (`GiocatoreControllo`, *Tempo Alzata Scudo*, 0,1 s): prima la parata non ferma i colpi. Le Statistiche hanno *Velocita Parata* per accelerarlo o rallentarlo (malus degli amuleti).
   - `CalcoloDanno` accetta la penetrazione dell'armatura (mazze).
 
 ### Per l'inventario di Giuseppe
@@ -81,7 +82,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 | # | Oggetto (chiave) | Tipo | Effetto | Revisione |
 | --- | --- | --- | --- | --- |
-| 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno | da fare |
+| 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: scudo alzato il 5% più lento | ✔ fatta |
 | 15 | Occhio di corvo (`occhio_corvo`) | Magico | +8% critico | da fare |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +10 armatura | da fare |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso | da fare |
@@ -90,7 +91,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dagli amuleti in poi.
+1. Finire la revisione con Lorenzo, dall'Occhio di corvo in poi.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.
