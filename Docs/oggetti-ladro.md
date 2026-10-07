@@ -68,5 +68,6 @@ Parata senza scudo: dal 10% al 25%. Il Ladro schiva, non para.
 ## Per Giuseppe
 
 - Chiavi da aggiungere in `Lingua.cs`: `oggetto.<chiave>.nome` e `.descrizione` per pugnale_scuoiare, pugnale_ricurvo, stiletto_tagliagole, stiletto_ombra, pugnali_gemelli, arco_caccia, arco_osso, arco_tasso, balestra_posta, balestra_carceriere, giubba_scura, corpetto_cuoio, manto_ombra, piuma_civetta, dente_vipera, laccio_borsaiolo, ultimo_respiro, fiato_predatore, goccia_sangue_nero.
-- `Equipaggiamento` ha la casella nuova `ArmaDistanza`, con `TogliArmaDistanza()`.
+- `Equipaggiamento` ha la casella nuova `ArmaDistanza`, con `TogliArmaDistanza()`. Per l'inventario approvato (`Docs/interfaccia.md`, 4 caselle) il Ladro ne ha una quinta: proposta di usare la casella dello **Scudo** come **Arma a distanza** quando la classe è il Ladro, così le caselle restano 4 e i tasti 1 e 2 diventano pugnale e arco.
+- L'amuleto Ultimo respiro usa il tasto **Q** (pad: croce su): va previsto nell'HUD (rombo dell'amuleto con la ricarica).
 - File degli oggetti: menu *magic-gnl → Crea oggetti del Ladro*, in `Assets/Dati/Oggetti/Ladro/`.
