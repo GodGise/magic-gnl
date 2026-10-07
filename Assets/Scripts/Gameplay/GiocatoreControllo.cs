@@ -212,6 +212,7 @@ public class GiocatoreControllo : MonoBehaviour
     float penetrazioneArma;            // quota di armatura nemica ignorata (mazze)
     float finestraParataPerfetta;      // scudo piccolo: secondi utili per la parata perfetta
     float sbilanciamentoParata = 1.5f; // secondi in cui il nemico resta sbilanciato dopo una parata perfetta
+    float dannoSuSbilanciato = 1f;     // moltiplicatore del danno sui nemici sbilanciati
     float vitaPerUccisione;            // amuleto arcano
     float rubaVitaPercento;            // amuleto arcano
 
@@ -677,6 +678,7 @@ public class GiocatoreControllo : MonoBehaviour
             arcoParata = scudo.arcoParata;
             finestraParataPerfetta = scudo.finestraParataPerfetta;
             sbilanciamentoParata = scudo.sbilanciamento;
+            dannoSuSbilanciato = scudo.moltiplicatoreDannoSbilanciato;
         }
         else
         {
@@ -850,7 +852,7 @@ public class GiocatoreControllo : MonoBehaviour
             {
                 Debug.Log("Parata perfetta!");
                 Suoni.Suona(Suono.Parata, transform.position + Vector3.up, 1f, 1.35f);
-                if (attaccante != null) attaccante.Sbilancia(sbilanciamentoParata, transform.position);
+                if (attaccante != null) attaccante.Sbilancia(sbilanciamentoParata, transform.position, dannoSuSbilanciato);
                 return;
             }
             resistenza.Spendi(costoColpoParato);

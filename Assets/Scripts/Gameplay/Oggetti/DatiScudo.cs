@@ -6,7 +6,8 @@ using UnityEngine;
 //   schivata più cara).
 // - Medio: una via di mezzo.
 // - Piccolo: para meno, ma è leggero e permette la PARATA PERFETTA: se il colpo arriva entro pochi istanti
-//   da quando si alza lo scudo, non si perde né vita né resistenza e il nemico resta sbilanciato.
+//   da quando si alza lo scudo, non si perde né vita né resistenza e il nemico resta sbilanciato:
+//   per un attimo non attacca e ogni colpo che riceve fa più danno.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Scudo.
 [CreateAssetMenu(fileName = "nuovo-scudo", menuName = "magic-gnl/Oggetti/Scudo")]
 public class DatiScudo : DatiOggetto
@@ -27,6 +28,8 @@ public class DatiScudo : DatiOggetto
     public float finestraParataPerfetta = 0f;
     [Tooltip("Dopo una parata perfetta, per quanti secondi il nemico resta sbilanciato (non attacca).")]
     public float sbilanciamento = 1.5f;
+    [Tooltip("Mentre il nemico è sbilanciato, i colpi che riceve fanno questo multiplo del danno (1,5 = +50%, si somma al critico).")]
+    public float moltiplicatoreDannoSbilanciato = 1f;
 
     [Header("Peso")]
     [Tooltip("Resistenza in più spesa per ogni schivata.")]

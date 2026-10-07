@@ -112,9 +112,9 @@ public static class CreaOggettiGuerriero
         creati += Scudo("brocchiere-di-ferro", "Brocchiere di ferro", "brocchiere_ferro", s =>
         {
             s.taglia = DatiScudo.Taglia.Piccolo;
-            s.dannoAssorbito = 0.7f; s.costoColpoParato = 22f; s.arcoParata = 100f;
-            s.finestraParataPerfetta = 0.2f; s.sbilanciamento = 1.5f;
-            s.costoSchivataExtra = 0f; s.moltiplicatoreVelocita = 1f;
+            s.dannoAssorbito = 0.3f; s.costoColpoParato = 25f; s.arcoParata = 100f;
+            s.finestraParataPerfetta = 0.2f; s.sbilanciamento = 0.8f; s.moltiplicatoreDannoSbilanciato = 1.5f;
+            s.costoSchivataExtra = 3f; s.moltiplicatoreVelocita = 0.98f;
         });
 
         // ---------- Armature ----------

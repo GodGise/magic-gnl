@@ -67,7 +67,7 @@ I critici delle armi si sommano a quelli del giocatore.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 8 | Scudo della vecchia vita (`scudo_vecchia_vita`) | Medio | 60% | 25 | 120° | — | schivata +5, corsa -3% | ✔ fatta |
 | 9 | Pavese di quercia (`pavese_quercia`) | Grande | 85% | 22 | 160° | — | schivata +15, corsa -10% | ✔ fatta |
-| 10 | Brocchiere di ferro (`brocchiere_ferro`) | Piccolo | 70% | 22 | 100° | entro 0,2 s, nemico sbilanciato 1,5 s | nessuno | da fare |
+| 10 | Brocchiere di ferro (`brocchiere_ferro`) | Piccolo | 30% | 25 | 100° | entro 0,2 s: nemico sbilanciato 0,8 s, e intanto i colpi che riceve fanno ×1,5 | schivata +3, corsa -2% | ✔ fatta |
 
 ### Armature
 
@@ -90,7 +90,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dal Brocchiere di ferro in poi.
+1. Finire la revisione con Lorenzo, dalle armature in poi.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.

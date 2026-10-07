@@ -47,6 +47,9 @@ public class Bersaglio : MonoBehaviour
     public int NumeroAttacco { get; private set; } // cresce a ogni attacco: serve a cambiare movimento
     float prossimoAttacco;
     float sbilanciatoFino; // dopo una parata perfetta del giocatore non attacca fino a questo momento
+    float dannoDaSbilanciato = 1f; // e intanto i colpi che riceve fanno questo multiplo del danno
+
+    public bool Sbilanciato => Time.time < sbilanciatoFino;
     // Tutte le parti visibili del nemico, ognuna con il suo colore di partenza.
     Renderer[] aspetto;
     Color[] coloriBase;
@@ -127,6 +130,7 @@ public class Bersaglio : MonoBehaviour
     {
         if (morto) return;
 
+        if (Sbilanciato) danno *= dannoDaSbilanciato;
         vita -= danno;
         Debug.Log(name + (critico ? " colpito con un CRITICO: -" : " colpito: -") + danno.ToString("0.#") + ", vita " + Mathf.Max(0f, vita).ToString("0.#"));
         Colpito?.Invoke();
@@ -144,11 +148,12 @@ public class Bersaglio : MonoBehaviour
     }
 
     // Chiamato dal giocatore dopo una parata perfetta: il nemico indietreggia, lampeggia di azzurro
-    // e non attacca per "durata" secondi.
-    public void Sbilancia(float durata, Vector3 daDove)
+    // e non attacca per "durata" secondi; intanto i colpi che riceve fanno "moltiplicatoreDanno" volte il danno.
+    public void Sbilancia(float durata, Vector3 daDove, float moltiplicatoreDanno = 1f)
     {
         if (morto) return;
         sbilanciatoFino = Time.time + durata;
+        dannoDaSbilanciato = moltiplicatoreDanno;
         Vector3 spinta = transform.position - daDove;
         spinta.y = 0f;
         if (spinta.sqrMagnitude > 0.0001f) transform.position += spinta.normalized * spintaQuandoColpito * 2f;
