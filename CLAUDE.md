@@ -45,6 +45,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - **Ogni Claude, all'inizio di una sessione di lavoro**: chiede alla persona su cosa lavora e quali file toccherà; le ricorda di leggere il canale e di annunciare; crea subito il ramo con un nome che descrive il lavoro (vedi "Nomi dei rami" qui sotto) e lo pubblica su GitHub (**Publish branch**). GitHub è collegato al canale, quindi la creazione del ramo arriva come notifica automatica.
 - **Alla fine**: si carica il ramo, si apre la pull request e si scrive "finito" nel canale. I caricamenti e le pull request arrivano anche loro come notifica.
 - Il Claude di Giuseppe non scrive su Discord: i suoi lavori si vedono dalle notifiche dei rami `giuseppec/...`.
+- **Ogni Claude, a inizio sessione (dopo il Pull di `main`)**: legge `Docs/da-approvare.md`, che serve a passarsi documenti e richieste fra il Claude di Giuseppe e quello di Lorenzo, e dice alla persona cosa c'è di nuovo. Le risposte si scrivono in quel file.
 
 ## Nomi dei rami
 - Il ramo porta il nome della persona e del lavoro, in minuscolo con trattini.
