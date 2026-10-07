@@ -25,6 +25,8 @@ public class Statistiche : MonoBehaviour
     [SerializeField] float velocitaAttacco = 0f;
     [Tooltip("Vita massima in più o in meno, in percentuale (-15 = il 15% in meno). Di base 0. Vale per il giocatore.")]
     [SerializeField] float vitaMassimaPercento = 0f;
+    [Tooltip("Furtività, in percentuale: i nemici vedono il giocatore da più vicino (30 = vista ridotta del 30%). Di base 0.")]
+    [SerializeField] float furtivita = 0f;
 
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
@@ -42,6 +44,7 @@ public class Statistiche : MonoBehaviour
     public float BonusDanno { get { float v = bonusDanno; foreach (var m in modificatori) v += m.bonusDanno; return v; } }
     public float ProbabilitaCritico { get { float v = probabilitaCritico; foreach (var m in modificatori) v += m.probabilitaCritico; return Mathf.Clamp(v, 0f, 100f); } }
     public float MoltiplicatoreCritico { get { float v = moltiplicatoreCritico; foreach (var m in modificatori) v += m.moltiplicatoreCritico; return Mathf.Max(1f, v); } }
+    public float Furtivita { get { float v = furtivita; foreach (var m in modificatori) v += m.furtivita; return Mathf.Clamp(v, -100f, 90f); } }
     public float VitaMassimaPercento { get { float v = vitaMassimaPercento; foreach (var m in modificatori) v += m.vitaMassimaPercento; return Mathf.Max(-90f, v); } }
     public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
     public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
@@ -59,6 +62,7 @@ public class Statistiche : MonoBehaviour
         public float velocitaParata;           // punti percentuali: -5 = lo scudo si alza il 5% più lento
         public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
         public float vitaMassimaPercento;      // punti percentuali: -15 = vita massima il 15% in meno
+        public float furtivita;                // punti percentuali: 30 = i nemici ti vedono a 30% di distanza in meno
 
         // Somma di due modificatori (per esempio il bonus e il malus di un amuleto).
         public static Modificatore Somma(string fonte, Modificatore a, Modificatore b) => new Modificatore
@@ -72,6 +76,7 @@ public class Statistiche : MonoBehaviour
             velocitaParata = a.velocitaParata + b.velocitaParata,
             velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
             vitaMassimaPercento = a.vitaMassimaPercento + b.vitaMassimaPercento,
+            furtivita = a.furtivita + b.furtivita,
         };
     }
 

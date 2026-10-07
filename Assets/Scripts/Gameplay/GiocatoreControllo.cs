@@ -22,6 +22,9 @@ using UnityEngine.InputSystem;
 // Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
 // spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
 // costa mana (terza barra), che si recupera sconfiggendo i nemici.
+// Abilità dell'amuleto: tasto Q / croce su del pad. Con l'amuleto Ultimo respiro il personaggio svanisce
+// nell'ombra: per qualche secondo i nemici non lo vedono, smettono di inseguirlo e non lo attaccano.
+// L'invisibilità finisce allo scadere del tempo oppure appena si attacca.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
 // Strettoie (vedi PassaggioStretto): fra due pareti vicine il personaggio rallenta piano piano, si gira
@@ -171,7 +174,7 @@ public class GiocatoreControllo : MonoBehaviour
     float raggioNormale;
     bool armaNelFodero;
     float inizioGestoFodero = -10f;
-    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2;
+    InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2, comandoAbilita;
     bool staSprintando;
 
     ArmaImpugnata arma = ArmaImpugnata.Spada;
@@ -213,11 +216,16 @@ public class GiocatoreControllo : MonoBehaviour
     float schivataExtraArmatura;       // peso di scudo e armatura sulla schivata
     float velocitaArmatura = 1f;       // peso di scudo e armatura sulla corsa
     float penetrazioneArma;            // quota di armatura nemica ignorata (mazze)
+    float dannoAlleSpalle = 1f;        // moltiplicatore del danno colpendo un nemico da dietro (pugnali)
     float finestraParataPerfetta;      // scudo piccolo: secondi utili per la parata perfetta
     float sbilanciamentoParata = 1.5f; // secondi in cui il nemico resta sbilanciato dopo una parata perfetta
     float dannoSuSbilanciato = 1f;     // moltiplicatore del danno sui nemici sbilanciati
     float vitaPerUccisione;            // amuleto arcano
     float rubaVitaPercento;            // amuleto arcano
+    float durataOmbra, ricaricaOmbra;  // amuleto arcano "svanire nell'ombra" (tasto Q)
+    float invisibileFino = -1f, ombraProntaDa;
+    readonly List<Renderer> partiInOmbra = new List<Renderer>();
+    readonly List<Color> coloriPrimaDellOmbra = new List<Color>();
 
     // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
     public Statistiche Statistiche => statistiche;
@@ -257,6 +265,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSprint.Enable();
         comandoArma1.Enable();
         comandoArma2.Enable();
+        comandoAbilita.Enable();
     }
 
     void OnDisable()
@@ -268,6 +277,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSprint.Disable();
         comandoArma1.Disable();
         comandoArma2.Disable();
+        comandoAbilita.Disable();
     }
 
     void OnDestroy()
@@ -279,6 +289,7 @@ public class GiocatoreControllo : MonoBehaviour
         comandoSprint.Dispose();
         comandoArma1.Dispose();
         comandoArma2.Dispose();
+        comandoAbilita.Dispose();
     }
 
     void CreaComandi()
@@ -315,6 +326,10 @@ public class GiocatoreControllo : MonoBehaviour
         comandoArma2 = new InputAction("ImpugnaBastone", InputActionType.Button);
         comandoArma2.AddBinding("<Keyboard>/2");
         comandoArma2.AddBinding("<Gamepad>/dpad/right");
+        // Abilità dell'amuleto (per esempio Ultimo respiro: svanire nell'ombra).
+        comandoAbilita = new InputAction("Abilita", InputActionType.Button);
+        comandoAbilita.AddBinding("<Keyboard>/q");
+        comandoAbilita.AddBinding("<Gamepad>/dpad/up");
     }
 
     void Update()
@@ -327,6 +342,8 @@ public class GiocatoreControllo : MonoBehaviour
 
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
+        if (comandoAbilita.WasPressedThisFrame()) SvanisciNellOmbra();
+        AggiornaOmbra();
 
         // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
         if (stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
@@ -551,6 +568,7 @@ public class GiocatoreControllo : MonoBehaviour
     // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
     void IniziaAttacco(bool concatenato = false)
     {
+        RompiOmbra(); // attaccare (anche con il bastone o con l'esecuzione furtiva) fa tornare visibili
         attaccoMagico = arma == ArmaImpugnata.Bastone;
         if (attaccoMagico)
         {
@@ -674,6 +692,7 @@ public class GiocatoreControllo : MonoBehaviour
         arcoAttacco = a ? armaNuova.arco : v[7];
         velocitaAffondo = a ? armaNuova.affondo : v[8];
         penetrazioneArma = a ? armaNuova.penetrazioneArmatura : 0f;
+        dannoAlleSpalle = a ? armaNuova.moltiplicatoreAlleSpalle : 1f;
         // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
 
         if (scudo != null)
@@ -698,6 +717,8 @@ public class GiocatoreControllo : MonoBehaviour
 
         vitaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.VitaPerUccisione) : 0f;
         rubaVitaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaVita) : 0f;
+        durataOmbra = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.SvanireNellOmbra) : 0f;
+        ricaricaOmbra = durataOmbra > 0f ? amuleto.ricarica : 0f;
         // Se la vita massima scende (amuleto), la vita attuale non può restare sopra.
         Vita = Mathf.Min(Vita, VitaMassima);
 
@@ -707,6 +728,51 @@ public class GiocatoreControllo : MonoBehaviour
 
     // Tempo per alzare lo scudo, rallentato o velocizzato dalle Statistiche (-5 = il 5% più lento).
     float TempoAlzataScudo => tempoAlzataScudo * (1f - statistiche.VelocitaParata / 100f);
+
+    // ---------- Svanire nell'ombra (amuleto arcano, tasto Q) ----------
+
+    // Vero mentre il giocatore è invisibile ai nemici: non lo vedono, smettono di inseguirlo e non lo attaccano.
+    public bool Invisibile => Time.time < invisibileFino;
+    // Da 0 (appena usato) a 1 (pronto): per la barra del pannello.
+    public float OmbraPronta => ricaricaOmbra <= 0f ? 1f : Mathf.Clamp01(1f - (ombraProntaDa - Time.time) / ricaricaOmbra);
+
+    void SvanisciNellOmbra()
+    {
+        if (durataOmbra <= 0f || stato == Stato.Morto || Time.time < ombraProntaDa) return;
+        invisibileFino = Time.time + durataOmbra;
+        ombraProntaDa = Time.time + ricaricaOmbra;
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.8f, 0.55f);
+
+        // Il personaggio diventa scuro, quasi un'ombra (il giocatore deve comunque vedersi).
+        partiInOmbra.Clear();
+        coloriPrimaDellOmbra.Clear();
+        foreach (Renderer parte in GetComponentsInChildren<Renderer>())
+        {
+            if (!parte.enabled) continue;
+            partiInOmbra.Add(parte);
+            coloriPrimaDellOmbra.Add(parte.material.color);
+            parte.material.color = new Color(0.04f, 0.04f, 0.08f);
+        }
+    }
+
+    // Un'azione che si fa notare (per ora: attaccare) interrompe subito l'invisibilità.
+    // Quando ci sarà il tiro con l'arco, va chiamato anche lì.
+    public void RompiOmbra()
+    {
+        if (!Invisibile) return;
+        invisibileFino = Time.time;
+        AggiornaOmbra();
+    }
+
+    // Finita l'invisibilità, il personaggio torna dei suoi colori.
+    void AggiornaOmbra()
+    {
+        if (Invisibile || partiInOmbra.Count == 0) return;
+        for (int i = 0; i < partiInOmbra.Count; i++)
+            if (partiInOmbra[i] != null) partiInOmbra[i].material.color = coloriPrimaDellOmbra[i];
+        partiInOmbra.Clear();
+        coloriPrimaDellOmbra.Clear();
+    }
 
     void Cura(float quantita)
     {
@@ -748,6 +814,14 @@ public class GiocatoreControllo : MonoBehaviour
     // ---------- Esecuzione furtiva ----------
 
     // Il nemico più vicino che si può giustiziare: vicino, ignaro, con il giocatore alle sue spalle e girato verso di lui.
+    // Vero se il giocatore è alle spalle di quel nemico (nell'arco "Arco Alle Spalle" dietro di lui).
+    bool DietroA(Transform nemico)
+    {
+        Vector3 dalNemico = transform.position - nemico.position;
+        dalNemico.y = 0f;
+        return dalNemico.sqrMagnitude > 0.0001f && Vector3.Angle(nemico.forward, dalNemico) >= 180f - arcoAlleSpalle * 0.5f;
+    }
+
     InseguimentoNemico CercaVittima()
     {
         if (arma != ArmaImpugnata.Spada) return null;
@@ -826,6 +900,7 @@ public class GiocatoreControllo : MonoBehaviour
 
                 colpitiInQuestoAttacco.Add(bersaglio);
                 float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico, penetrazioneArma);
+                if (DietroA(bersaglio.transform)) danno *= dannoAlleSpalle; // colpo alle spalle
                 bersaglio.RiceviColpo(danno, transform.position, critico);
                 Cura(danno * rubaVitaPercento / 100f); // amuleto arcano
                 // Il critico suona più forte e più grave, così si sente senza guardare i numeri.
@@ -1005,6 +1080,8 @@ public class GiocatoreControllo : MonoBehaviour
         DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
+        // Abilità dell'amuleto (Q): barra viola accanto alla resistenza, piena quando è pronta.
+        if (durataOmbra > 0f) DisegnaBarra(new Rect(480, 86, 60, 10), Invisibile ? 0f : OmbraPronta, new Color(0.55f, 0.3f, 0.85f));
         GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
         if (conBastone)
         {

@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// Quello che il giocatore ha addosso: un'arma, uno scudo, un'armatura e un amuleto.
+// Quello che il giocatore ha addosso: un'arma, uno scudo, un'armatura, un amuleto e, per il Ladro, un'arma
+// a distanza (arco o balestra: i suoi numeri sono pronti, il tiro si farà più avanti).
 // A cosa serve: applica gli oggetti al personaggio. Arma e scudo cambiano i numeri del colpo e della parata
 // in Giocatore Controllo; armatura, amuleto e critico dell'arma diventano Modificatori delle Statistiche;
 // il peso di scudo e armatura rallenta e rende la schivata più cara; l'effetto degli amuleti arcani lo
@@ -18,11 +19,13 @@ public class Equipaggiamento : MonoBehaviour
     [SerializeField] DatiScudo scudo;
     [SerializeField] DatiArmatura armatura;
     [SerializeField] DatiAmuleto amuleto;
+    [SerializeField] DatiArmaDistanza armaDistanza;
 
     public DatiArma Arma => arma;
     public DatiScudo Scudo => scudo;
     public DatiArmatura Armatura => armatura;
     public DatiAmuleto Amuleto => amuleto;
+    public DatiArmaDistanza ArmaDistanza => armaDistanza;
     public event System.Action Cambiato;
 
     GiocatoreControllo giocatore;
@@ -58,6 +61,7 @@ public class Equipaggiamento : MonoBehaviour
                 break;
             case DatiArmatura b: armatura = b; break;
             case DatiAmuleto c: amuleto = c; break;
+            case DatiArmaDistanza d: armaDistanza = d; break;
             default: return;
         }
         Applica();
@@ -67,6 +71,7 @@ public class Equipaggiamento : MonoBehaviour
     public void TogliScudo() { scudo = null; Applica(); }
     public void TogliArmatura() { armatura = null; Applica(); }
     public void TogliAmuleto() { amuleto = null; Applica(); }
+    public void TogliArmaDistanza() { armaDistanza = null; Applica(); }
 
     void Applica()
     {
