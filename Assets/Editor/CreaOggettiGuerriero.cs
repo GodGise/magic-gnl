@@ -151,7 +151,8 @@ public static class CreaOggettiGuerriero
         });
         creati += Amuleto("pietra-del-focolare", "Pietra del focolare", "pietra_focolare", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.armatura = 10f;
+            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.armatura = 15f;
+            m.malus.velocitaAttacco = -7.5f; // attacchi il 7,5% più lenti
         });
 
         // Arcani: effetti speciali.

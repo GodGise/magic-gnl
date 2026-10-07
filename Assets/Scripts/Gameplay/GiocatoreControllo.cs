@@ -663,9 +663,11 @@ public class GiocatoreControllo : MonoBehaviour
         bool a = armaNuova != null;
         dannoAttacco = a ? armaNuova.danno : v[0];
         costoAttacco = a ? armaNuova.costoAttacco : v[1];
-        preparazioneAttacco = a ? armaNuova.preparazione : v[2];
-        colpoAttivo = a ? armaNuova.colpoAttivo : v[3];
-        recuperoAttacco = a ? armaNuova.recupero : v[4];
+        // Velocità d'attacco delle Statistiche (amuleti): -7,5 = carica, colpo e recupero durano il 7,5% in più.
+        float lentezza = 1f - statistiche.VelocitaAttacco / 100f;
+        preparazioneAttacco = (a ? armaNuova.preparazione : v[2]) * lentezza;
+        colpoAttivo = (a ? armaNuova.colpoAttivo : v[3]) * lentezza;
+        recuperoAttacco = (a ? armaNuova.recupero : v[4]) * lentezza;
         portataColpo = a ? armaNuova.portata : v[5];
         raggioColpo = a ? armaNuova.raggio : v[6];
         arcoAttacco = a ? armaNuova.arco : v[7];

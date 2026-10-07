@@ -34,5 +34,6 @@ public class DatiArmatura : DatiOggetto
         probabilitaCritico = bonus.probabilitaCritico,
         moltiplicatoreCritico = bonus.moltiplicatoreCritico,
         velocitaParata = bonus.velocitaParata,
+        velocitaAttacco = bonus.velocitaAttacco,
     };
 }

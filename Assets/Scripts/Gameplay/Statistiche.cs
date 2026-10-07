@@ -21,6 +21,8 @@ public class Statistiche : MonoBehaviour
     [Min(1f)] [SerializeField] float moltiplicatoreCritico = 1.75f;
     [Tooltip("Velocità con cui si alza lo scudo, in percentuale (-5 = il 5% più lento, 10 = il 10% più veloce). Di base 0.")]
     [SerializeField] float velocitaParata = 0f;
+    [Tooltip("Velocità degli attacchi, in percentuale (-7,5 = il 7,5% più lenti: carica, colpo e recupero durano di più). Di base 0.")]
+    [SerializeField] float velocitaAttacco = 0f;
 
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
@@ -38,6 +40,7 @@ public class Statistiche : MonoBehaviour
     public float BonusDanno { get { float v = bonusDanno; foreach (var m in modificatori) v += m.bonusDanno; return v; } }
     public float ProbabilitaCritico { get { float v = probabilitaCritico; foreach (var m in modificatori) v += m.probabilitaCritico; return Mathf.Clamp(v, 0f, 100f); } }
     public float MoltiplicatoreCritico { get { float v = moltiplicatoreCritico; foreach (var m in modificatori) v += m.moltiplicatoreCritico; return Mathf.Max(1f, v); } }
+    public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
     public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
 
     // Un pezzo di equipaggiamento (o un livello, una pozione...) che cambia le statistiche finché è attivo.
@@ -51,6 +54,7 @@ public class Statistiche : MonoBehaviour
         public float probabilitaCritico;       // punti percentuali in più
         public float moltiplicatoreCritico;    // si somma (0,25 = critico da 1,75 a 2)
         public float velocitaParata;           // punti percentuali: -5 = lo scudo si alza il 5% più lento
+        public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
 
         // Somma di due modificatori (per esempio il bonus e il malus di un amuleto).
         public static Modificatore Somma(string fonte, Modificatore a, Modificatore b) => new Modificatore
@@ -62,6 +66,7 @@ public class Statistiche : MonoBehaviour
             probabilitaCritico = a.probabilitaCritico + b.probabilitaCritico,
             moltiplicatoreCritico = a.moltiplicatoreCritico + b.moltiplicatoreCritico,
             velocitaParata = a.velocitaParata + b.velocitaParata,
+            velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
         };
     }
 
