@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667f5a233d940da4790324f38e74baf5, type: 3}
+  m_Name: fiato-del-predatore
+  m_EditorClassIdentifier: Assembly-CSharp::DatiAmuleto
+  nomeDiLavoro: Fiato del predatore
+  chiaveNome: oggetto.fiato_predatore.nome
+  chiaveDescrizione: oggetto.fiato_predatore.descrizione
+  classe: 1
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  tipo: 1
+  bonus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: 0
+    furtivita: 0
+  malus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: -20
+    furtivita: 0
+  effetto: 2
+  valore: 40
+  ricarica: 0

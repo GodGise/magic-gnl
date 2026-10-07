@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ee1efe8a10db840a8f94ecbe82cbd4, type: 3}
+  m_Name: brocchiere-di-ferro
+  m_EditorClassIdentifier: Assembly-CSharp::DatiScudo
+  nomeDiLavoro: Brocchiere di ferro
+  chiaveNome: oggetto.brocchiere_ferro.nome
+  chiaveDescrizione: oggetto.brocchiere_ferro.descrizione
+  classe: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  taglia: 2
+  dannoAssorbito: 0.3
+  costoColpoParato: 25
+  arcoParata: 100
+  finestraParataPerfetta: 0.2
+  sbilanciamento: 0.8
+  moltiplicatoreDannoSbilanciato: 1.5
+  costoSchivataExtra: 3
+  moltiplicatoreVelocita: 0.98

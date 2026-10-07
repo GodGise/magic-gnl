@@ -16,6 +16,7 @@ public class DatiAmuleto : DatiOggetto
         VitaPerUccisione,     // "valore" = vita recuperata per ogni nemico sconfitto
         RecuperoResistenza,   // "valore" = percentuale in più di ricarica della resistenza (30 = +30%)
         RubaVita,             // "valore" = percentuale del danno inflitto che torna come vita (8 = 8%)
+        SvanireNellOmbra,     // si attiva con Q: invisibile ai nemici per "valore" secondi; poi "ricarica" secondi di attesa
     }
 
     [Header("Tipo")]
@@ -30,6 +31,8 @@ public class DatiAmuleto : DatiOggetto
     public Effetto effetto = Effetto.Nessuno;
     [Tooltip("Quanto vale l'effetto (vedi l'elenco degli effetti).")]
     public float valore = 0f;
+    [Tooltip("Solo per gli effetti da attivare con Q: secondi di attesa prima di poterlo riusare (360 = 6 minuti).")]
+    public float ricarica = 0f;
 
     public Statistiche.Modificatore Modificatore() => Statistiche.Modificatore.Somma(Nome, bonus, malus);
 

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c67f3842dbfe7479a094ed6af7252c, type: 3}
+  m_Name: manto-dell-ombra
+  m_EditorClassIdentifier: Assembly-CSharp::DatiArmatura
+  nomeDiLavoro: Manto dell'ombra
+  chiaveNome: oggetto.manto_ombra.nome
+  chiaveDescrizione: oggetto.manto_ombra.descrizione
+  classe: 1
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  peso: 4
+  armatura: 3
+  furtivita: 35
+  costoSchivataExtra: 0
+  moltiplicatoreVelocita: 1
+  bonus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: 0
+    furtivita: 0
