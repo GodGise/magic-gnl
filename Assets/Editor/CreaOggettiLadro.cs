@@ -107,9 +107,9 @@ public static class CreaOggettiLadro
         creati += ArmaDistanza("arco-d-osso-degli-orchi", "Arco d'osso degli orchi", "arco_osso", d =>
         {
             d.tipo = DatiArmaDistanza.Tipo.ArcoCorto;
-            d.danno = 22f; d.costoTiro = 14f; d.carica = 0.45f; d.ricarica = 0.4f;
-            d.portata = 28f; d.velocitaFreccia = 38f;
-            d.probabilitaCritico = 5f; d.moltiplicatoreNonVisto = 1.5f;
+            d.danno = 23f; d.costoTiro = 14f; d.carica = 0.45f; d.ricarica = 0.4f;
+            d.portata = 28f; d.velocitaFreccia = 38f; d.penetrazioneArmatura = 0.07f;
+            d.probabilitaCritico = 2f; d.moltiplicatoreNonVisto = 1.5f;
         });
         creati += ArmaDistanza("arco-lungo-di-tasso", "Arco lungo di tasso", "arco_tasso", d =>
         {
