@@ -127,7 +127,7 @@ public static class CreaOggettiGuerriero
         creati += Armatura("cotta-di-maglia-rattoppata", "Cotta di maglia rattoppata", "cotta_maglia", b =>
         {
             b.peso = DatiArmatura.Peso.Media;
-            b.armatura = 25f; b.costoSchivataExtra = 5f; b.moltiplicatoreVelocita = 0.95f;
+            b.armatura = 25f; b.costoSchivataExtra = 6.5f; b.moltiplicatoreVelocita = 0.95f;
         });
         creati += Armatura("corazza-di-piastre-annerite", "Corazza di piastre annerite", "corazza_piastre", b =>
         {
