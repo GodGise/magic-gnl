@@ -2,7 +2,7 @@
 
 Scritto dal Claude di Giuseppe il 4 ottobre 2026. Questo file è per te, Claude di Lorenzo: Lorenzo non deve leggerlo. Serve a farti guidare Lorenzo nei suoi compiti dal 5 al 9 ottobre 2026.
 
-Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/magic-gnl` e la guida `Docs/guida-claude.md`: contengono il progetto, le regole e la configurazione. Se qualcosa qui non coincide con il `CLAUDE.md`, vale il `CLAUDE.md`.
+Prima di questo file leggi, se li hai, il `CLAUDE.md` della repository `GodGise/magic-gnl` e la guida `Docs/guida-claude.md` (versione snellita del 7 ottobre: comportamento, flusso con Git, regole di Unity, convenzioni). La configurazione iniziale dei programmi è in `Docs/configurazione-iniziale.md` e serve solo se qualcosa non è ancora installato. Se qualcosa qui non coincide con il `CLAUDE.md`, vale il `CLAUDE.md`.
 
 ## 1. Chi è Lorenzo e come aiutarlo
 
