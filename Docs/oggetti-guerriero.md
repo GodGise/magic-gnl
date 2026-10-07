@@ -73,7 +73,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 | # | Oggetto (chiave) | Peso | Armatura | Peso sulla schivata / corsa | Revisione |
 | --- | --- | --- | --- | --- | --- |
-| 11 | Giubba di cuoio imbottito (`giubba_cuoio`) | Leggera | 10 | — | da fare |
+| 11 | Giubba di cuoio imbottito (`giubba_cuoio`) | Leggera | 10 | +3,5 / -2% | ✔ fatta |
 | 12 | Cotta di maglia rattoppata (`cotta_maglia`) | Media | 25 | +5 / -5% | da fare |
 | 13 | Corazza di piastre annerite (`corazza_piastre`) | Pesante | 45 | +12 / -12% | da fare |
 
@@ -90,7 +90,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dalle armature in poi.
+1. Finire la revisione con Lorenzo, dalla Cotta di maglia rattoppata in poi.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.
