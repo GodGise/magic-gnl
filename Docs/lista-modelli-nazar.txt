@@ -1,79 +1,205 @@
 LISTA MODELLI PER NAZAR - magic-GNL
+Aggiornata il 7 ottobre 2026. Sostituisce la lista vecchia.
 ====================================
 
-LA PRIMA REGIONE
-Il gioco inizia sotto terra: il personaggio è rinchiuso in una prigione buia
-(la "gattabuia") e deve scappare. Si passa dalle celle ai sotterranei, poi
-alle grotte, fino all'uscita in superficie.
-Quindi i primi modelli sono pietra, ferro, legno marcio e roccia.
-Per l'uscita servono anche alberi e pietre.
+DOVE SIAMO (in breve)
+Il gioco inizia a VILLAGGIO LAGO NERO, di notte, durante la razzia degli
+orchi: il protagonista combatte e perde contro un orco enorme.
+Si risveglia sotto terra nella GATTABUIA, la prigione degli orchi:
+celle, sotterranei, grotte, uscita in superficie (bosco).
+Poi torna al villaggio, che ora è in ROVINA (bruciato).
+Il villaggio serve quindi in DUE VERSIONI: intatto (di notte, durante la
+razzia) e distrutto (dopo).
+La mappa del villaggio vista dall'alto è in Docs/mappe/villaggio-lago-nero.png:
+guardala prima di fare le case, ti dice cosa c'è e dove.
 
+Il codice delle armi e dell'inventario è GIÀ PRONTO: ogni oggetto ha un
+campo "modello" che aspetta solo il tuo file. Per questo le armi sono la
+prima cosa della lista: appena le carichi si vedono nel gioco.
+
+-------------------------------------------------------------
 REGOLE PER TUTTI I MODELLI
-- Stile PS2: pochi poligoni, texture piccole (256 o 512 px).
-- Scala: 1 unità di Blender = 1 metro. Una porta è alta circa 2 metri.
-- Il punto di origine (pivot) va alla base del modello, al centro.
-- Nomi in minuscolo con trattini e numero di variante: roccia-01, roccia-02.
-- Esportazione in FBX, nella cartella Assets/Art/Modelli/ del progetto.
-- Non copiare mai modelli o texture da altri giochi o siti: solo cose fatte
-  da te o con licenza libera CC0.
-- Nella prima settimana proponi tu il limite di poligoni per oggetto
-  piccolo, medio e grande, e lo decidiamo insieme.
+-------------------------------------------------------------
+- Stile PlayStation 2: pochi poligoni, texture piccole (256 o 512 px),
+  niente dettagli minuti. Meglio una bella texture che tanti poligoni.
+- Limiti di poligoni (triangoli) indicativi, da confermare insieme dopo
+  i primi modelli:
+    oggetto piccolo (sasso, secchio, amuleto)   fino a 300
+    arma o scudo                                 300 - 800
+    mobile, carro, barca                         300 - 1000
+    casa intera                                  1000 - 3000
+    personaggio                                  3000 - 6000
+- Scala: 1 unità di Blender = 1 metro. Una porta è alta circa 2 metri,
+  una persona 1,80.
+- Punto di origine (pivot):
+    oggetti e case: alla base, al centro;
+    armi: nel punto dove la mano impugna;
+    scudi: sulla maniglia dietro lo scudo.
+- Nomi: minuscolo con trattini e numero di variante (casa-01, casa-02).
+- Esportazione in FBX nella cartella giusta qui sotto, dentro
+  Assets/Art/Modelli/  (armi/, scudi/, armature/, amuleti/, villaggio/,
+  prigione/, grotte/, natura/, personaggi/).
+- Mai copiare modelli o texture da altri giochi o siti: solo cose fatte da
+  te o con licenza libera CC0 (per esempio texture di ambientcg.com o
+  polyhaven.com, che sono CC0).
 
+-------------------------------------------------------------
 COME SI LAVORA
-1. Prima di iniziare scrivi nel canale Discord #darkfantasyaggiornamenti
-   cosa fai, per esempio: "Nazar: oggi rocce e stalattiti".
-2. Lavora sul ramo nazar/kit-prigione (in GitHub Desktop: Current branch,
-   New branch, poi Publish branch).
+-------------------------------------------------------------
+1. Prima di iniziare scrivi nel canale Discord dei lavori in corso cosa fai,
+   per esempio: "Nazar: oggi le spade, tocco Assets/Art/Modelli/armi/".
+2. Fai un ramo con il tuo nome e il lavoro: nazar/armi-guerriero
+   (se ti aiuti con Claude: nazarc/armi-guerriero).
+   In GitHub Desktop: Current branch, New branch, poi Publish branch.
 3. A fine giornata: Commit, Push, e scrivi nel canale cosa hai caricato.
 4. Carica anche i file .meta che Unity crea accanto ai tuoi FBX.
 5. Non caricare render, video o versioni di prova: occupano lo spazio
    condiviso di GitHub.
+6. Spunta [x] le voci finite in questo file, così sappiamo a che punto sei.
 
 -------------------------------------------------------------
-LISTA IN ORDINE (dal più facile al più difficile)
+PARTE 1 - ARMI E OGGETTI DEL GUERRIERO  (priorità massima)
+Il codice è pronto: appena ci sono si vedono nel gioco e nell'inventario.
+Tra parentesi la chiave dell'oggetto: usa lo stesso nome per il file.
 -------------------------------------------------------------
+Armi (cartella armi/)
+[ ] 1. spada-vecchia-vita: la spada semplice del protagonista, usurata,
+       lama lunga circa 90 cm
+[ ] 2. spada-capitano: spada più curata, guardia decorata
+[ ] 3. ascia-legna: ascia da legna da contadino, manico di legno lungo
+       (è l'arma con cui il protagonista combatte la notte della razzia)
+[ ] 4. ascia-boia: ascia grande dalla lama larga e minacciosa
+[ ] 5. mazza-ferrata: bastone di legno con punte e fasce di ferro
+[ ] 6. martello-ossa: martello degli orchi fatto di ossa legate
+[ ] 7. spadone-cavaliere: spada a due mani, lunga circa 1,5 metri
 
-PARTE 1 - PIETRE E ROCCE (per prendere la mano)
-[ ] 1. sasso-01/02/03: sassi piccoli da sparpagliare a terra
-[ ] 2. roccia-01/02/03: rocce medie, alte più o meno quanto una persona
-[ ] 3. masso-01/02: massi grandi che bloccano un passaggio
-[ ] 4. stalattite-01/02: punte che scendono dal soffitto della grotta
-[ ] 5. stalagmite-01/02: punte che salgono da terra
+Scudi (cartella scudi/)
+[ ] 8. scudo-vecchia-vita: scudo rotondo medio di legno, bordo di ferro
+[ ] 9. pavese-quercia: scudo grande e alto, quasi quanto una persona
+[ ] 10. brocchiere-ferro: scudo piccolo e tondo, tutto di ferro
 
-PARTE 2 - LA PRIGIONE (la prima cosa che vede il giocatore)
-[ ] 6. muro-pietra-01: pezzo di muro dritto, largo 2 metri, si ripete
-[ ] 7. muro-pietra-angolo-01: angolo dello stesso muro
-[ ] 8. pavimento-pietra-01: pezzo di pavimento 2x2 metri
-[ ] 9. sbarre-cella-01: parete di sbarre di ferro
-[ ] 10. porta-cella-01: porta di sbarre che si apre (cerniera su un lato)
-[ ] 11. catene-muro-01: catene con manette appese al muro
-[ ] 12. torcia-muro-01: torcia con supporto di ferro da muro
-[ ] 13. paglia-01: mucchio di paglia per terra (il letto del prigioniero)
-[ ] 14. secchio-01: secchio di legno
-[ ] 15. tavolo-carceriere-01 e sgabello-01
-[ ] 16. botte-01 e cassa-01: botte e cassa di legno
-[ ] 17. chiave-cella-01: grossa chiave di ferro (oggetto da raccogliere)
-[ ] 18. scala-pietra-01: rampa di scale che sale
+Armature (cartella armature/). Per ora basta la versione "appoggiata a
+terra o su un manichino" che si raccoglie; quella indossata arriva con il
+personaggio.
+[ ] 11. giubba-cuoio: giubba di cuoio imbottito
+[ ] 12. cotta-maglia: cotta di maglia rattoppata
+[ ] 13. corazza-piastre: corazza di piastre annerite
 
-PARTE 3 - LE GROTTE (fra la prigione e l'uscita)
-[ ] 19. parete-grotta-01/02: pezzi di parete di roccia irregolare
-[ ] 20. radici-soffitto-01: radici che pendono dal soffitto
-[ ] 21. funghi-01: gruppo di funghi (si possono far brillare nel gioco)
-[ ] 22. ossa-01 e teschio-01: resti di chi non è riuscito a scappare
-[ ] 23. ponte-legno-01: passerella di legno marcio sopra un crepaccio
-[ ] 24. ragnatela-01: un piano semplice con texture trasparente
+Amuleti (cartella amuleti/): piccoli ciondoli con laccio
+[ ] 14. zanna-lupo
+[ ] 15. occhio-corvo: piuma nera con una pietra scura
+[ ] 16. pietra-focolare: pietra tonda con una venatura arancione
+[ ] 17. cuore-brace: pietra rossa che sembra ardere
+[ ] 18. respiro-lago: goccia di vetro azzurro scuro
+[ ] 19. sangue-antico: fiala o pietra rosso scuro
 
-PARTE 4 - L'USCITA IN SUPERFICIE: ALBERI E PIETRE
-[ ] 25. albero-morto-01/02/03: alberi secchi senza foglie
-[ ] 26. albero-01/02: alberi con chioma, foglie fatte con pochi piani
-[ ] 27. ceppo-01: ceppo tagliato
-[ ] 28. tronco-caduto-01: tronco a terra
-[ ] 29. cespuglio-01/02
-[ ] 30. uscita-grotta-01: l'apertura nella roccia da cui si esce alla luce
+Icone: per ogni oggetto anche un'immagine quadrata 256x256 px (l'oggetto
+su sfondo trasparente, PNG), cartella Assets/Art/Icone/, stesso nome.
+Servono all'inventario. Va bene un render dall'alto dello stesso modello.
+In Unity, nelle impostazioni dell'immagine, metti Texture Type: Sprite.
 
-DOPO
-- Il Guerriero (il personaggio) arriva quando la storia del protagonista
-  è decisa. Te lo diciamo noi.
+-------------------------------------------------------------
+PARTE 2 - ARMI DEGLI ALTRI DUE PERSONAGGI
+-------------------------------------------------------------
+[ ] 20. arco-01: arco semplice di legno (Ladro)
+[ ] 21. freccia-01 e faretra-01
+[ ] 22. pugnale-01: pugnale corto (Ladro)
+[ ] 23. bastone-incantato-01: bastone di legno nodoso con una pietra in
+        cima (Stregone)
+[ ] 24. libro-incantesimi-01: libro vecchio con copertina di cuoio (Stregone)
+
+-------------------------------------------------------------
+PARTE 3 - VILLAGGIO LAGO NERO (inizio del gioco)
+Case vecchie di legno e pietra, tetti di paglia o di assi, immerse nella
+natura. Fai prima la versione INTATTA; poi per ogni casa una variante
+BRUCIATA (tetto crollato, travi annerite) per il villaggio in rovina.
+-------------------------------------------------------------
+Case
+[ ] 25. casa-01/02/03: case piccole del borgo, una diversa dall'altra
+        (servono tante, una accanto all'altra intorno alla piazza)
+[ ] 26. casa-eroe-01: la casa del protagonista, un po' fuori dal centro
+[ ] 27. le stesse case in versione bruciata: casa-01-bruciata, ecc.
+Edifici importanti (guarda la mappa)
+[ ] 28. taverna-01: più grande delle case, con insegna appesa
+[ ] 29. fabbro-01: bottega aperta con forgia e incudine
+[ ] 30. mercante-01 ed erborista-01: botteghe sulla piazzetta
+[ ] 31. tempio-01: piccolo tempio di pietra a nord del villaggio
+Piazza e strade
+[ ] 32. pozzo-01: pozzo di pietra al centro della piazza
+[ ] 33. bancarella-01: banco del mercato con telo
+[ ] 34. carro-01: carro di legno
+[ ] 35. recinto-legno-01: pezzo di staccionata che si ripete
+[ ] 36. lanterna-palo-01: palo con lanterna
+[ ] 37. barile, cassa, sacco, cesta: piccoli oggetti da sparpagliare
+[ ] 38. orto-01: aiuola coltivata con pali
+Lago
+[ ] 39. molo-01: pezzo di molo di legno su pali, che si ripete
+[ ] 40. barca-01/02: barchette a remi
+Cimitero
+[ ] 41. lapide-01/02/03 e croce-legno-01
+Razzia (la notte dell'attacco)
+[ ] 42. fuoco-01: mucchio di macerie in fiamme (le fiamme le fa il gioco,
+        tu fai solo legna e macerie)
+[ ] 43. macerie-01/02: travi e assi bruciate a terra
+
+-------------------------------------------------------------
+PARTE 4 - LA GATTABUIA (la prigione degli orchi)
+Pietra, ferro, legno marcio, roccia.
+-------------------------------------------------------------
+[ ] 44. muro-pietra-01: pezzo di muro dritto, largo 2 metri, si ripete
+[ ] 45. muro-pietra-angolo-01
+[ ] 46. pavimento-pietra-01: pezzo 2x2 metri
+[ ] 47. sbarre-cella-01: parete di sbarre di ferro
+[ ] 48. porta-cella-01: porta di sbarre che si apre (cerniera su un lato:
+        il pivot va sulla cerniera)
+[ ] 49. catene-muro-01: catene con manette appese al muro
+[ ] 50. torcia-muro-01: torcia con supporto di ferro
+[ ] 51. paglia-01: mucchio di paglia (il letto del prigioniero)
+[ ] 52. secchio-01
+[ ] 53. tavolo-carceriere-01 e sgabello-01
+[ ] 54. chiave-cella-01: grossa chiave di ferro (oggetto da raccogliere)
+[ ] 55. scala-pietra-01: rampa di scale che sale
+[ ] 56. baule-01: baule di legno e ferro con coperchio che si apre
+        (coperchio separato, pivot sulla cerniera)
+[ ] 57. leva-muro-01: leva di ferro su una piastra (la leva separata)
+
+-------------------------------------------------------------
+PARTE 5 - GROTTE E USCITA IN SUPERFICIE
+-------------------------------------------------------------
+[ ] 58. sasso-01/02/03, roccia-01/02/03, masso-01/02
+[ ] 59. stalattite-01/02 e stalagmite-01/02
+[ ] 60. parete-grotta-01/02: pezzi di parete di roccia irregolare
+[ ] 61. radici-soffitto-01
+[ ] 62. funghi-01: gruppo di funghi (nel gioco li facciamo brillare)
+[ ] 63. ossa-01 e teschio-01
+[ ] 64. ponte-legno-01: passerella di legno marcio sopra un crepaccio
+[ ] 65. ragnatela-01: un piano con texture trasparente
+[ ] 66. uscita-grotta-01: l'apertura nella roccia da cui si esce
+[ ] 67. albero-morto-01/02/03: alberi secchi senza foglie
+[ ] 68. albero-01/02: alberi con chioma fatta con pochi piani
+[ ] 69. ceppo-01, tronco-caduto-01, cespuglio-01/02, erba-01
+
+-------------------------------------------------------------
+PARTE 6 - PERSONAGGI (dopo, insieme a Giuseppe)
+Sono i modelli più difficili: hanno bisogno di scheletro e animazioni.
+Non iniziarli da solo: ne parliamo quando le parti sopra sono avanti.
+-------------------------------------------------------------
+[ ] 70. protagonista: Guerriero, Ladro, Stregone (stesso corpo, vestiti e
+        armi diversi)
+[ ] 71. orco-01: orco normale, nemico base
+[ ] 72. orco-enorme: alto come una porta, armatura fatta di ossa
+        (il nemico della notte della razzia)
+[ ] 73. druido: vecchio stregone della natura, il boss finale
+[ ] 74. reliquia-01: l'oggetto antico che cercano gli orchi
+
+-------------------------------------------------------------
+ORDINE CONSIGLIATO
+1) Parte 1 (armi, scudi, poi armature e amuleti) con le icone.
+2) Parte 3 (villaggio): prima 2-3 case, la taverna e il pozzo, poi il resto.
+3) Parte 4 e 5.
+4) Parte 2 quando arrivano Ladro e Stregone.
+5) Parte 6 con Giuseppe.
 
 Se non sai come fare qualcosa (esportazione, scala, texture, GitHub),
-chiedilo al tuo Claude: ha la guida del progetto.
+chiedilo al tuo Claude: ha la guida del progetto (CLAUDE.md e
+Docs/guida-claude.md).
