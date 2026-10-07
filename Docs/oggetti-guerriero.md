@@ -58,7 +58,7 @@ I critici delle armi si sommano a quelli del giocatore.
 | 4 | Ascia del boia (`ascia_boia`) | 42 | 30 | 0,42 / 0,52 | 1,9 m / 150° | +10%, totale ×2 | — | 35% (30) | ✔ fatta |
 | 5 | Mazza ferrata (`mazza_ferrata`) | 28 | 25 | 0,36 / 0,45 | 1,6 m / 100° | — | 30% | 30% (26) | ✔ fatta |
 | 6 | Martello di ossa (`martello_ossa`) | 34 | 28 | 0,42 / 0,50 | 1,7 m / 100° | +1,5% | 45% | 30% (28) | ✔ fatta |
-| 7 | Spadone del cavaliere (`spadone_cavaliere`), due mani | 46 | 32 | 0,50 / 0,60 | 2,4 m / 160° | +5% | — | 60% (25) | da fare |
+| 7 | Spadone del cavaliere (`spadone_cavaliere`), due mani | 46 | 32 | 0,50 / 0,60 | 2,4 m / 160° | +5% | — | 30% (35) | ✔ fatta |
 
 
 ### Scudi
@@ -90,7 +90,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dallo Spadone del cavaliere in poi.
+1. Finire la revisione con Lorenzo, dagli scudi in poi.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.

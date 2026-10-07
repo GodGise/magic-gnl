@@ -92,7 +92,7 @@ public static class CreaOggettiGuerriero
             a.preparazione = 0.5f; a.colpoAttivo = 0.2f; a.recupero = 0.6f;
             a.portata = 2.4f; a.raggio = 1.6f; a.arco = 160f; a.affondo = 2f;
             a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.6f; a.costoParataSenzaScudo = 25f;
+            a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 35f;
         });
 
         // ---------- Scudi ----------
