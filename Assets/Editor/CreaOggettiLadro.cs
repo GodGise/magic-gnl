@@ -59,7 +59,7 @@ public static class CreaOggettiLadro
             a.preparazione = 0.18f; a.colpoAttivo = 0.12f; a.recupero = 0.27f;
             a.portata = 1.5f; a.raggio = 1.1f; a.arco = 100f; a.affondo = 3.5f;
             a.probabilitaCritico = 5f; a.moltiplicatoreAlleSpalle = 2f;
-            a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 25f;
+            a.dannoAssorbitoSenzaScudo = 0.2f; a.costoParataSenzaScudo = 25f;
         });
 
         // Stiletto: punta sottile, buca le armature, colpo alle spalle devastante.
