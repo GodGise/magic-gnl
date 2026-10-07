@@ -125,6 +125,7 @@ public class CicloGiornoNotte : MonoBehaviour
 
     void OnGUI()
     {
+        if (HudGioco.Attivo && !HudGioco.PannelloProva) return; // l'ora la mostra HudGioco; F1 per il pannello di prova
         int ore = Mathf.FloorToInt(ora);
         int minuti = Mathf.FloorToInt((ora - ore) * 60f);
         GUI.Box(new Rect(Screen.width - 250, 10, 240, 44), GUIContent.none);

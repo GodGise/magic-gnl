@@ -1,19 +1,18 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 // Menu iniziale del gioco.
 // Schermate: titolo ("premi un tasto"), menu principale (Nuova partita, Continua, Opzioni, Crediti, Esci),
-// scelta della classe (Guerriero, Ladro, Stregone), opzioni (lingua, volumi, schermo intero, effetto retro) e crediti.
+// scelta della classe (Guerriero, Ladro, Stregone), opzioni (lingua, volumi, schermo intero, effetto retro) e crediti
+// (provvisori, che scorrono e si saltano con Spazio: l'elenco è in TestiCrediti.cs).
 // Tutti i testi passano da Lingua.T(...): si traducono nelle 8 lingue del gioco (vedi Lingua.cs).
 // Si usa con mouse, tastiera (frecce o WASD, Invio, Esc) o pad (croce o levetta, A per confermare, B per tornare).
-// Le opzioni restano salvate anche chiudendo il gioco. La classe scelta va in SceltaPartita.Classe.
+// Le opzioni restano salvate (Impostazioni.cs). La classe scelta va in SceltaPartita.Classe.
 // "Nuova partita" carica la scena di gioco indicata in "Scena iniziale"; se non è nelle Build Settings
 // usa la "Scena di riserva" (ZonaProva).
-// Musica: trascinare un file audio nel campo "Musica" (per esempio la traccia fatta con Suno). Parte piano,
-// sale lentamente e si spegne quando inizia la partita.
+// Musica: trascinare un file audio nel campo "Musica". Parte piano, sale lentamente e si spegne quando inizia la partita.
+// Stile dark fantasy (GraficaMenu.cs): titolo inciso, riquadri con cornice di bronzo, braci che salgono dal basso.
 // Come montarlo: su un oggetto vuoto della scena Menu. Il menu "magic-gnl > Crea scena menu" prepara tutto da solo.
 [RequireComponent(typeof(AudioSource))]
 public class MenuPrincipale : MonoBehaviour
@@ -22,8 +21,6 @@ public class MenuPrincipale : MonoBehaviour
     [SerializeField] string titolo = "magic-GNL";
     [Tooltip("Mostra la scritta \"nome provvisorio\" sotto il titolo, finché il nome del gioco non è deciso.")]
     [SerializeField] bool nomeProvvisorio = true;
-    [Tooltip("Carattere per le scritte. Vuoto = carattere di base di Unity.")]
-    [SerializeField] Font carattere;
 
     [Header("Partita")]
     [SerializeField] string scenaIniziale = "VillaggioLagoNero";
@@ -34,27 +31,16 @@ public class MenuPrincipale : MonoBehaviour
     [Tooltip("Secondi per far salire (o scendere) la musica.")]
     [SerializeField] float dissolvenzaMusica = 4f;
 
-    [Header("Colori")]
-    [SerializeField] Color coloreTesto = new Color(0.85f, 0.81f, 0.74f);
-    [SerializeField] Color coloreSelezione = new Color(0.95f, 0.63f, 0.3f);
-    [SerializeField] Color coloreSpento = new Color(0.45f, 0.43f, 0.4f);
+    [Header("Atmosfera")]
+    [Tooltip("Quante braci salgono dal basso dello schermo.")]
+    [SerializeField] int numeroBraci = 46;
 
     enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti }
 
-    class Voce
-    {
-        public Func<string> testo;
-        public bool attiva = true;
-        public Action conferma;
-        public Action<int> regola;   // frecce sinistra e destra (-1 o +1)
-    }
+    const float Larghezza = GraficaMenu.Larghezza, Altezza = GraficaMenu.Altezza;
 
-    const float Larghezza = 1920f, Altezza = 1080f;
-    const string ChiaveVolume = "VolumeGenerale", ChiaveMusica = "VolumeMusica", ChiaveRetro = "EffettoRetro";
-
+    readonly ElencoMenu elenco = new ElencoMenu();
     Schermata schermata = Schermata.Titolo;
-    List<Voce> voci = new List<Voce>();
-    int selezione;
     float tempoSchermata;
     float nero = 1f;              // velo nero sopra tutto: 1 = schermo nero
     float livelloMusica;          // 0..1, per la dissolvenza
@@ -62,28 +48,22 @@ public class MenuPrincipale : MonoBehaviour
     string scenaDaCaricare;
     string avviso;
     float tempoAvviso;
-    float prossimoScatto;         // per ripetere il movimento tenendo premuta la levetta
-    Vector2 ultimoMouse = new Vector2(-1f, -1f);
+    int ultimaClasse;
     AudioSource sorgente;
 
-    float volumeGenerale, volumeMusica;
-    bool effettoRetro;
-
-    GUIStyle stTitolo, stSottotitolo, stVoce, stDescrizione, stPiccolo;
-    Texture2D texNero, texSfumatura;
+    struct Brace { public Vector2 pos, vel; public float vita, durata, taglia; }
+    Brace[] braci;
+    readonly System.Random caso = new System.Random();
 
     static readonly string[] chiaviClassi = { "classe.guerriero", "classe.ladro", "classe.stregone" };
 
     void Start()
     {
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        volumeGenerale = PlayerPrefs.GetFloat(ChiaveVolume, 0.8f);
-        volumeMusica = PlayerPrefs.GetFloat(ChiaveMusica, 0.7f);
-        effettoRetro = PlayerPrefs.GetInt(ChiaveRetro, 1) == 1;
-        ApplicaOpzioni();
+        Impostazioni.Applica();
 
         sorgente = GetComponent<AudioSource>();
         sorgente.playOnAwake = false;
@@ -96,21 +76,10 @@ public class MenuPrincipale : MonoBehaviour
             sorgente.Play();
         }
 
-        texNero = new Texture2D(1, 1);
-        texNero.SetPixel(0, 0, Color.black);
-        texNero.Apply();
-        texSfumatura = new Texture2D(1, 64) { wrapMode = TextureWrapMode.Clamp };
-        for (int y = 0; y < 64; y++)
-            texSfumatura.SetPixel(0, y, new Color(0f, 0f, 0f, Mathf.Lerp(0.85f, 0f, y / 63f)));
-        texSfumatura.Apply();
+        braci = new Brace[Mathf.Max(0, numeroBraci)];
+        for (int i = 0; i < braci.Length; i++) NuovaBrace(ref braci[i], true);
 
         VaiA(Schermata.Titolo);
-    }
-
-    void OnDestroy()
-    {
-        if (texNero != null) Destroy(texNero);
-        if (texSfumatura != null) Destroy(texSfumatura);
     }
 
     // ---------- schermate ----------
@@ -119,74 +88,37 @@ public class MenuPrincipale : MonoBehaviour
     {
         schermata = nuova;
         tempoSchermata = 0f;
-        voci.Clear();
-        selezione = 0;
+        elenco.Pulisci();
 
         switch (nuova)
         {
             case Schermata.Principale:
-                Aggiungi(() => Lingua.T("menu.nuova"), () => VaiA(Schermata.Classe));
-                voci.Add(new Voce { testo = () => Lingua.T("menu.continua"), attiva = false });
-                Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
-                Aggiungi(() => Lingua.T("menu.crediti"), () => VaiA(Schermata.Crediti));
-                Aggiungi(() => Lingua.T("menu.esci"), Esci);
+                elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => VaiA(Schermata.Classe));
+                elenco.Aggiungi(() => Lingua.T("menu.continua"), null).attiva = false;
+                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
+                elenco.Aggiungi(() => Lingua.T("menu.crediti"), () => VaiA(Schermata.Crediti));
+                elenco.Aggiungi(() => Lingua.T("menu.esci"), Esci);
                 break;
 
             case Schermata.Classe:
                 for (int i = 0; i < chiaviClassi.Length; i++)
                 {
                     int indice = i;
-                    Aggiungi(() => Lingua.T(chiaviClassi[indice]), () => IniziaPartita((ClasseGiocatore)indice));
+                    elenco.Aggiungi(() => Lingua.T(chiaviClassi[indice]), () => IniziaPartita((ClasseGiocatore)indice));
                 }
-                Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
-                selezione = Mathf.Clamp((int)SceltaPartita.Classe, 0, chiaviClassi.Length - 1);
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
+                elenco.selezione = Mathf.Clamp((int)SceltaPartita.Classe, 0, chiaviClassi.Length - 1);
+                ultimaClasse = elenco.selezione;
                 break;
 
             case Schermata.Opzioni:
-                voci.Add(new Voce
-                {
-                    testo = () => Lingua.T("opzioni.lingua") + "   ◄ " + Lingua.NomeAttuale + " ►",
-                    conferma = () => Lingua.Indice = Lingua.Indice + 1,
-                    regola = d => Lingua.Indice = Lingua.Indice + d,
-                });
-                voci.Add(new Voce
-                {
-                    testo = () => Lingua.T("opzioni.volume_generale") + "   ◄ " + Mathf.RoundToInt(volumeGenerale * 100) + "% ►",
-                    conferma = () => CambiaVolume(ref volumeGenerale, 1, true),
-                    regola = d => CambiaVolume(ref volumeGenerale, d, false),
-                });
-                voci.Add(new Voce
-                {
-                    testo = () => Lingua.T("opzioni.volume_musica") + "   ◄ " + Mathf.RoundToInt(volumeMusica * 100) + "% ►",
-                    conferma = () => CambiaVolume(ref volumeMusica, 1, true),
-                    regola = d => CambiaVolume(ref volumeMusica, d, false),
-                });
-                voci.Add(new Voce
-                {
-                    testo = () => Lingua.T("opzioni.schermo_intero") + ":  " + SiNo(Screen.fullScreen),
-                    conferma = () => Screen.fullScreen = !Screen.fullScreen,
-                    regola = d => Screen.fullScreen = !Screen.fullScreen,
-                });
-                voci.Add(new Voce
-                {
-                    testo = () => Lingua.T("opzioni.effetto_retro") + ":  " + SiNo(effettoRetro),
-                    conferma = () => { effettoRetro = !effettoRetro; ApplicaOpzioni(); },
-                    regola = d => { effettoRetro = !effettoRetro; ApplicaOpzioni(); },
-                });
-                Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
+                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Principale));
                 break;
 
             case Schermata.Crediti:
-                Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
                 break;
         }
-    }
-
-    static string SiNo(bool valore) => Lingua.T(valore ? "comune.si" : "comune.no");
-
-    void Aggiungi(Func<string> testo, Action conferma)
-    {
-        voci.Add(new Voce { testo = testo, conferma = conferma });
     }
 
     void Indietro()
@@ -201,25 +133,6 @@ public class MenuPrincipale : MonoBehaviour
     }
 
     // ---------- azioni ----------
-
-    void CambiaVolume(ref float volume, int direzione, bool giraIntorno)
-    {
-        float nuovo = Mathf.Round((volume + 0.1f * direzione) * 10f) / 10f;
-        if (giraIntorno && nuovo > 1.001f) nuovo = 0f;
-        volume = Mathf.Clamp01(nuovo);
-        ApplicaOpzioni();
-    }
-
-    void ApplicaOpzioni()
-    {
-        AudioListener.volume = volumeGenerale;
-        PlayerPrefs.SetFloat(ChiaveVolume, volumeGenerale);
-        PlayerPrefs.SetFloat(ChiaveMusica, volumeMusica);
-        PlayerPrefs.SetInt(ChiaveRetro, effettoRetro ? 1 : 0);
-        PlayerPrefs.Save();
-        foreach (var retro in FindObjectsByType<EffettoRetro>(FindObjectsSortMode.None))
-            retro.attivo = effettoRetro;
-    }
 
     void IniziaPartita(ClasseGiocatore classe)
     {
@@ -261,14 +174,14 @@ public class MenuPrincipale : MonoBehaviour
         float dt = Time.unscaledDeltaTime;
         tempoSchermata += dt;
         if (tempoAvviso > 0f) tempoAvviso -= dt;
+        AggiornaBraci(dt);
 
         // velo nero: si schiarisce all'inizio, si scurisce quando parte la partita
         nero = Mathf.MoveTowards(nero, avvioInCorso ? 1f : 0f, dt / (avvioInCorso ? 1.5f : 2.5f));
 
         // musica
-        float obiettivo = avvioInCorso ? 0f : 1f;
-        livelloMusica = Mathf.MoveTowards(livelloMusica, obiettivo, dt / Mathf.Max(0.1f, dissolvenzaMusica));
-        if (sorgente != null) sorgente.volume = livelloMusica * volumeMusica;
+        livelloMusica = Mathf.MoveTowards(livelloMusica, avvioInCorso ? 0f : 1f, dt / Mathf.Max(0.1f, dissolvenzaMusica));
+        if (sorgente != null) sorgente.volume = livelloMusica * Impostazioni.VolumeMusica;
 
         if (avvioInCorso)
         {
@@ -289,211 +202,212 @@ public class MenuPrincipale : MonoBehaviour
             return;
         }
 
-        int verticale = 0, orizzontale = 0;
-        bool conferma = false, indietro = false;
-
-        if (tastiera != null)
+        // crediti: Spazio (o A del pad) li salta e torna al menu
+        if (schermata == Schermata.Crediti &&
+            ((tastiera != null && tastiera.spaceKey.wasPressedThisFrame) || (pad != null && pad.buttonSouth.wasPressedThisFrame)))
         {
-            if (tastiera.upArrowKey.wasPressedThisFrame || tastiera.wKey.wasPressedThisFrame) verticale = -1;
-            if (tastiera.downArrowKey.wasPressedThisFrame || tastiera.sKey.wasPressedThisFrame) verticale = 1;
-            if (tastiera.leftArrowKey.wasPressedThisFrame || tastiera.aKey.wasPressedThisFrame) orizzontale = -1;
-            if (tastiera.rightArrowKey.wasPressedThisFrame || tastiera.dKey.wasPressedThisFrame) orizzontale = 1;
-            conferma |= tastiera.enterKey.wasPressedThisFrame || tastiera.numpadEnterKey.wasPressedThisFrame || tastiera.spaceKey.wasPressedThisFrame;
-            indietro |= tastiera.escapeKey.wasPressedThisFrame || tastiera.backspaceKey.wasPressedThisFrame;
+            VaiA(Schermata.Principale);
+            return;
         }
-        if (pad != null)
-        {
-            if (pad.dpad.up.wasPressedThisFrame) verticale = -1;
-            if (pad.dpad.down.wasPressedThisFrame) verticale = 1;
-            if (pad.dpad.left.wasPressedThisFrame) orizzontale = -1;
-            if (pad.dpad.right.wasPressedThisFrame) orizzontale = 1;
-            conferma |= pad.buttonSouth.wasPressedThisFrame;
-            indietro |= pad.buttonEast.wasPressedThisFrame;
 
-            // levetta sinistra, con ripetizione se resta inclinata
-            Vector2 leva = pad.leftStick.ReadValue();
-            if (leva.magnitude < 0.5f) prossimoScatto = 0f;
-            else if (Time.unscaledTime >= prossimoScatto)
+        var c = elenco.LeggiComandi();
+
+        // scelta della classe: tre riquadri affiancati (sinistra e destra), "Indietro" sotto (su e giù)
+        if (schermata == Schermata.Classe)
+        {
+            int classi = chiaviClassi.Length;
+            if (c.orizzontale != 0 && elenco.selezione < classi)
             {
-                if (Mathf.Abs(leva.y) > Mathf.Abs(leva.x)) verticale = leva.y > 0 ? -1 : 1;
-                else orizzontale = leva.x > 0 ? 1 : -1;
-                prossimoScatto = Time.unscaledTime + (prossimoScatto == 0f ? 0.35f : 0.15f);
+                elenco.selezione = (elenco.selezione + c.orizzontale + classi) % classi;
+                ultimaClasse = elenco.selezione;
             }
+            if (c.verticale != 0) elenco.selezione = elenco.selezione < classi ? classi : ultimaClasse;
+            c.orizzontale = c.verticale = 0;
         }
 
-        if (verticale != 0) Sposta(verticale);
-        if (orizzontale != 0 && Selezionata()?.regola != null) Selezionata().regola(orizzontale);
-        if (conferma) Conferma(selezione);
-        else if (indietro) Indietro();
+        if (c.indietro) { Indietro(); return; }
+        elenco.Applica(c);
     }
 
-    Voce Selezionata() => selezione >= 0 && selezione < voci.Count ? voci[selezione] : null;
+    // ---------- braci ----------
 
-    void Sposta(int direzione)
+    void NuovaBrace(ref Brace b, bool ovunque)
     {
-        if (voci.Count == 0) return;
-        for (int i = 0; i < voci.Count; i++)
+        float Caso() => (float)caso.NextDouble();
+        b.pos = new Vector2(Caso() * Larghezza, ovunque ? Caso() * Altezza : Altezza + 20f);
+        b.vel = new Vector2((Caso() - 0.5f) * 30f, -(30f + Caso() * 70f));
+        b.durata = 4f + Caso() * 6f;
+        b.vita = ovunque ? Caso() * b.durata : 0f;
+        b.taglia = 3f + Caso() * 6f;
+    }
+
+    void AggiornaBraci(float dt)
+    {
+        if (braci == null) return;
+        for (int i = 0; i < braci.Length; i++)
         {
-            selezione = (selezione + direzione + voci.Count) % voci.Count;
-            if (voci[selezione].attiva) return;
+            ref Brace b = ref braci[i];
+            b.vita += dt;
+            b.pos += b.vel * dt;
+            b.pos.x += Mathf.Sin((Time.unscaledTime + i) * 1.3f) * 12f * dt;
+            if (b.vita >= b.durata || b.pos.y < -20f) NuovaBrace(ref b, false);
         }
     }
 
-    void Conferma(int indice)
+    void DisegnaBraci()
     {
-        if (indice < 0 || indice >= voci.Count) return;
-        var voce = voci[indice];
-        if (voce.attiva && voce.conferma != null) voce.conferma();
+        if (braci == null) return;
+        foreach (var b in braci)
+        {
+            float t = Mathf.Clamp01(b.vita / b.durata);
+            GraficaMenu.Alone(new Rect(b.pos.x - b.taglia, b.pos.y - b.taglia, b.taglia * 2f, b.taglia * 2f),
+                new Color(1f, 0.5f + 0.25f * (1f - t), 0.18f, Mathf.Sin(t * Mathf.PI) * 0.75f));
+        }
     }
 
     // ---------- disegno ----------
 
-    void PreparaStili()
-    {
-        if (stTitolo != null) return;
-        stTitolo = Stile(108, FontStyle.Bold);
-        stSottotitolo = Stile(26, FontStyle.Italic);
-        stVoce = Stile(40, FontStyle.Normal);
-        stDescrizione = Stile(28, FontStyle.Italic);
-        stDescrizione.wordWrap = true;
-        stPiccolo = Stile(20, FontStyle.Normal);
-    }
-
-    GUIStyle Stile(int dimensione, FontStyle tipo)
-    {
-        var s = new GUIStyle(GUI.skin.label)
-        {
-            fontSize = dimensione,
-            fontStyle = tipo,
-            alignment = TextAnchor.MiddleCenter,
-            richText = false,
-            clipping = TextClipping.Overflow,
-        };
-        s.normal.textColor = Color.white;
-        if (carattere != null) s.font = carattere;
-        return s;
-    }
-
     void OnGUI()
     {
-        PreparaStili();
-
-        // sfumatura scura in basso, per leggere meglio le scritte
-        GUI.matrix = Matrix4x4.identity;
-        GUI.color = Color.white;
-        GUI.DrawTexture(new Rect(0, Screen.height * 0.35f, Screen.width, Screen.height * 0.65f), texSfumatura, ScaleMode.StretchToFill);
-
-        // tutto il resto è disegnato su un foglio virtuale 1920x1080, ingrandito per lo schermo
-        float s = Screen.height / Altezza;
-        GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - Larghezza * s) * 0.5f, 0f, 0f), Quaternion.identity, new Vector3(s, s, 1f));
+        GraficaMenu.PreparaStili();
+        GraficaMenu.Atmosfera(0f);
+        GraficaMenu.FoglioVirtuale();
+        elenco.InizioGUI();
+        DisegnaBraci();
 
         float comparsa = Mathf.Clamp01(tempoSchermata / 0.6f);
+        bool schermoTitolo = schermata == Schermata.Titolo;
 
-        // titolo
-        float altoTitolo = schermata == Schermata.Titolo ? 360f : 190f;
-        Scritta(new Rect(0, altoTitolo, Larghezza, 140), Spaziato(titolo.ToUpperInvariant()), stTitolo, coloreTesto, 1f);
+        // titolo, con un alone caldo dietro e il divisore sotto
+        float altoTitolo = schermoTitolo ? 290f : 110f;
+        GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
+        GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
+        GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
         if (nomeProvvisorio)
-            Scritta(new Rect(0, altoTitolo + 120, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), stSottotitolo, coloreSpento, 1f);
+            GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
 
         switch (schermata)
         {
             case Schermata.Titolo:
-                float pulsa = 0.45f + 0.45f * Mathf.Sin(Time.unscaledTime * 2.2f);
-                Scritta(new Rect(0, 760, Larghezza, 50), Lingua.T("menu.premi"), stVoce, coloreTesto, pulsa * comparsa);
+            {
+                float pulsa = 0.4f + 0.5f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 2.2f));
+                string premi = Lingua.T("menu.premi");
+                var area = new Rect(0, 760, Larghezza, 60);
+                GraficaMenu.Scritta(area, premi, GraficaMenu.Voce, GraficaMenu.Testo, pulsa * comparsa);
+                float w = GraficaMenu.Voce.CalcSize(new GUIContent(premi)).x;
+                Color rombo = GraficaMenu.Con(GraficaMenu.Bronzo, pulsa * comparsa);
+                GraficaMenu.Rombo(new Vector2(Larghezza * 0.5f - w * 0.5f - 34f, area.center.y), 10f, rombo);
+                GraficaMenu.Rombo(new Vector2(Larghezza * 0.5f + w * 0.5f + 34f, area.center.y), 10f, rombo);
                 break;
-
+            }
+            case Schermata.Principale:
+                if (elenco.DisegnaElenco(380f, 600f, comparsa, avvioInCorso)) return;
+                break;
+            case Schermata.Opzioni:
+                if (elenco.DisegnaOpzioni(370f, comparsa, avvioInCorso)) return;
+                break;
             case Schermata.Classe:
-                Scritta(new Rect(0, 400, Larghezza, 50), Lingua.T("classe.scegli"), stSottotitolo, coloreTesto, comparsa);
-                DisegnaVoci(500f, comparsa);
-                if (selezione < chiaviClassi.Length)
-                    Scritta(new Rect(360, 860, Larghezza - 720, 80), Lingua.T(chiaviClassi[selezione] + ".descrizione"), stDescrizione, coloreTesto, comparsa);
+                if (DisegnaClassi(comparsa)) return;
                 break;
-
             case Schermata.Crediti:
-                Scritta(new Rect(0, 520, Larghezza, 60), Lingua.T("menu.crediti_testo"), stVoce, coloreTesto, comparsa);
-                DisegnaVoci(700f, comparsa);
+            {
+                var fascia = new Rect(Larghezza * 0.5f - 560f, 365f, 1120f, 520f);
+                GraficaMenu.Cornice(fascia, comparsa, false);
+                DisegnaCrediti(new Rect(fascia.x + 12f, fascia.y + 12f, fascia.width - 24f, fascia.height - 24f), comparsa);
+                if (elenco.voci.Count > 0)
+                {
+                    var area = new Rect(Larghezza * 0.5f - 220f, 910f, 440f, 60f);
+                    if (elenco.Mouse(area, 0, avvioInCorso)) return;
+                    elenco.VoceCentrata(area, elenco.voci[0], elenco.selezione == 0, comparsa);
+                }
                 break;
-
-            default:
-                DisegnaVoci(470f, comparsa);
-                break;
+            }
         }
 
-        if (schermata != Schermata.Titolo)
-            Scritta(new Rect(0, 1010, Larghezza, 30),
-                Lingua.T("menu.aiuto"),
-                stPiccolo, coloreSpento, 0.8f * comparsa);
+        if (!schermoTitolo)
+            GraficaMenu.Scritta(new Rect(0, 1030, Larghezza, 30),
+                schermata == Schermata.Crediti ? Lingua.T("menu.salta") : Lingua.T("menu.aiuto"),
+                GraficaMenu.Piccolo, GraficaMenu.Spento, 0.8f * comparsa);
 
         if (tempoAvviso > 0f && !string.IsNullOrEmpty(avviso))
-            Scritta(new Rect(0, 960, Larghezza, 40), avviso, stPiccolo, coloreSelezione, Mathf.Clamp01(tempoAvviso));
+            GraficaMenu.Scritta(new Rect(0, 985, Larghezza, 40), avviso, GraficaMenu.Piccolo, GraficaMenu.Selezione, Mathf.Clamp01(tempoAvviso));
 
         // velo nero per le dissolvenze
         if (nero > 0.001f)
         {
             GUI.matrix = Matrix4x4.identity;
-            GUI.color = new Color(1f, 1f, 1f, nero);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), texNero);
-            GUI.color = Color.white;
+            GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, nero));
         }
     }
 
-    void DisegnaVoci(float alto, float comparsa)
+    // Scelta della classe: tre riquadri affiancati con numero romano, nome e descrizione; sotto "Indietro".
+    bool DisegnaClassi(float comparsa)
     {
-        const float passo = 66f;
-        var e = Event.current;
-        // il mouse seleziona solo quando si muove davvero (così non ruba la scelta alla tastiera)
-        bool mouseMosso = false;
-        if (e.type == EventType.Repaint)
-        {
-            mouseMosso = (e.mousePosition - ultimoMouse).sqrMagnitude > 1f && ultimoMouse.x >= 0f;
-            ultimoMouse = e.mousePosition;
-            if (ultimoMouse.x < 0f) ultimoMouse = Vector2.zero;
-        }
-        for (int i = 0; i < voci.Count; i++)
-        {
-            var voce = voci[i];
-            var area = new Rect(Larghezza * 0.5f - 420f, alto + i * passo, 840f, 56f);
+        GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("classe.scegli"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
 
-            // mouse: passando sopra si seleziona, il clic conferma
-            if (voce.attiva && area.Contains(e.mousePosition))
+        const float larghezza = 440f, altezza = 440f, spazio = 50f, alto = 420f;
+        string[] numeri = { "I", "II", "III" };
+        int classi = chiaviClassi.Length;
+        float inizio = Larghezza * 0.5f - (classi * larghezza + (classi - 1) * spazio) * 0.5f;
+
+        for (int i = 0; i < classi; i++)
+        {
+            bool scelta = i == elenco.selezione;
+            var r = new Rect(inizio + i * (larghezza + spazio), alto - (scelta ? 10f : 0f), larghezza, altezza);
+            if (elenco.Mouse(r, i, avvioInCorso)) return true;
+
+            if (scelta) GraficaMenu.Alone(new Rect(r.x - 90f, r.y - 90f, r.width + 180f, r.height + 180f), new Color(1f, 0.5f, 0.2f, 0.16f * comparsa));
+            GraficaMenu.Cornice(r, comparsa, scelta);
+
+            Color accento = scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo;
+            GraficaMenu.Scritta(new Rect(r.x, r.y + 26f, r.width, 110f), numeri[Mathf.Min(i, numeri.Length - 1)], GraficaMenu.Emblema, accento, comparsa);
+            GraficaMenu.Scritta(new Rect(r.x, r.y + 150f, r.width, 50f), Lingua.T(chiaviClassi[i]).ToUpperInvariant(), GraficaMenu.NomeClasse,
+                scelta ? GraficaMenu.Selezione : GraficaMenu.Testo, comparsa);
+            GraficaMenu.Divisore(r.center.x, r.y + 222f, 260f, comparsa);
+            GraficaMenu.Scritta(new Rect(r.x + 34f, r.y + 248f, r.width - 68f, r.height - 270f), Lingua.T(chiaviClassi[i] + ".descrizione"),
+                GraficaMenu.Descrizione, scelta ? GraficaMenu.Testo : GraficaMenu.Spento, comparsa);
+        }
+
+        if (elenco.voci.Count > classi)
+        {
+            var area = new Rect(Larghezza * 0.5f - 220f, 905f, 440f, 60f);
+            if (elenco.Mouse(area, classi, avvioInCorso)) return true;
+            elenco.VoceCentrata(area, elenco.voci[classi], elenco.selezione == classi, comparsa);
+        }
+        return false;
+    }
+
+    // Crediti che scorrono dal basso verso l'alto dentro la fascia, e ricominciano alla fine.
+    void DisegnaCrediti(Rect fascia, float comparsa)
+    {
+        const float passo = 104f, velocita = 55f;
+        int n = TestiCrediti.Elenco.Length;
+        float lunghezza = fascia.height + 140f + n * passo;
+        float scorrimento = (tempoSchermata * velocita) % lunghezza;
+
+        GUI.BeginGroup(fascia);
+        float y = fascia.height - scorrimento;
+        Riga(ref y, Lingua.T("menu.crediti_testo"), null, fascia, comparsa, 140f);
+        for (int i = 0; i < n; i++)
+            Riga(ref y, TestiCrediti.Ruolo(i), TestiCrediti.Elenco[i].nomi, fascia, comparsa, passo);
+        GUI.EndGroup();
+    }
+
+    void Riga(ref float y, string ruolo, string nomi, Rect fascia, float comparsa, float passo)
+    {
+        if (y > -passo && y < fascia.height)
+        {
+            // sfuma vicino ai bordi della fascia
+            float centro = y + 30f;
+            float alfa = Mathf.Clamp01(Mathf.Min(centro, fascia.height - centro) / 90f) * comparsa;
+            if (string.IsNullOrEmpty(nomi))
+                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 60), ruolo, GraficaMenu.Voce, GraficaMenu.Selezione, alfa);
+            else
             {
-                if (mouseMosso) selezione = i;
-                if (e.type == EventType.MouseDown && e.button == 0 && !avvioInCorso)
-                {
-                    selezione = i;
-                    Conferma(i);
-                    e.Use();
-                    return;
-                }
+                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 34), ruolo, GraficaMenu.Sottotitolo, GraficaMenu.Bronzo, alfa);
+                GraficaMenu.Scritta(new Rect(0, y + 36, fascia.width, 46), nomi, GraficaMenu.Voce, GraficaMenu.Testo, alfa);
             }
-
-            bool scelta = i == selezione && voce.attiva;
-            Color colore = !voce.attiva ? coloreSpento : scelta ? coloreSelezione : coloreTesto;
-            string testo = voce.testo();
-            if (scelta) testo = "—   " + testo + "   —";
-            Scritta(area, testo, stVoce, colore, comparsa);
         }
-    }
-
-    void Scritta(Rect area, string testo, GUIStyle stile, Color colore, float alfa)
-    {
-        if (alfa <= 0.001f) return;
-        var ombra = new Rect(area.x + 3, area.y + 3, area.width, area.height);
-        GUI.color = new Color(0f, 0f, 0f, 0.7f * alfa);
-        GUI.Label(ombra, testo, stile);
-        GUI.color = new Color(colore.r, colore.g, colore.b, colore.a * alfa);
-        GUI.Label(area, testo, stile);
-        GUI.color = Color.white;
-    }
-
-    static string Spaziato(string testo)
-    {
-        var parti = new System.Text.StringBuilder();
-        for (int i = 0; i < testo.Length; i++)
-        {
-            parti.Append(testo[i]);
-            if (i < testo.Length - 1) parti.Append(testo[i] == ' ' ? "  " : " ");
-        }
-        return parti.ToString();
+        y += passo;
     }
 }

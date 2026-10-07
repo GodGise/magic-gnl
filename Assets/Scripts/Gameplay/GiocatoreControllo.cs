@@ -1071,22 +1071,26 @@ public class GiocatoreControllo : MonoBehaviour
     // Pannello di prova in alto a sinistra: stato, vita, resistenza e comandi.
     void OnGUI()
     {
-        // Con il bastone in mano il pannello si allunga per la terza barra, quella del mana.
-        bool conBastone = arma == ArmaImpugnata.Bastone;
-        GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
-        string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
-        GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
-        GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(VitaMassima));
-        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
-        GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
-        DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
-        // Abilità dell'amuleto (Q): barra viola accanto alla resistenza, piena quando è pronta.
-        if (durataOmbra > 0f) DisegnaBarra(new Rect(480, 86, 60, 10), Invisibile ? 0f : OmbraPronta, new Color(0.55f, 0.3f, 0.85f));
-        GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
-        if (conBastone)
+        // Pannello di prova: con le barre vere in partita (HudGioco) si vede solo premendo F1.
+        if (!HudGioco.Attivo || HudGioco.PannelloProva)
         {
-            GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
-            DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+            // Con il bastone in mano il pannello si allunga per la terza barra, quella del mana.
+            bool conBastone = arma == ArmaImpugnata.Bastone;
+            GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
+            string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
+            GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
+            GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(VitaMassima));
+            DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
+            GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
+            DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
+            // Abilità dell'amuleto (Q): barra viola accanto alla resistenza, piena quando è pronta.
+            if (durataOmbra > 0f) DisegnaBarra(new Rect(480, 86, 60, 10), Invisibile ? 0f : OmbraPronta, new Color(0.55f, 0.3f, 0.85f));
+            GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
+            if (conBastone)
+            {
+                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
+                DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+            }
         }
 
         if (vittimaPossibile != null)
