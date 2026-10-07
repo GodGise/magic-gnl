@@ -86,12 +86,12 @@ I critici delle armi si sommano a quelli del giocatore.
 | 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% critico; malus: scudo alzato il 5% più lento | ✔ fatta |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +15 armatura; malus: attacchi il 7,5% più lenti | ✔ fatta |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso; malus: -5% danno | ✔ fatta |
-| 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce | da fare |
+| 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce; malus: -20% dell'armatura totale | ✔ fatta |
 | 19 | Sangue antico (`sangue_antico`) | Arcano | 8% del danno inflitto torna come vita | da fare |
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dal Respiro del lago in poi.
+1. Finire la revisione con Lorenzo: manca il Sangue antico.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.

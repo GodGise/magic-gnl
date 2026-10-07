@@ -164,6 +164,7 @@ public static class CreaOggettiGuerriero
         creati += Amuleto("respiro-del-lago", "Respiro del lago", "respiro_lago", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 30f;
+            m.malus.armaturaPercento = -20f; // armatura totale -20%
         });
         creati += Amuleto("sangue-antico", "Sangue antico", "sangue_antico", m =>
         {
