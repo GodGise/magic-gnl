@@ -79,8 +79,9 @@ public static class CreaOggettiGuerriero
             a.danno = 34f; a.costoAttacco = 28f;
             a.preparazione = 0.42f; a.colpoAttivo = 0.18f; a.recupero = 0.5f;
             a.portata = 1.7f; a.raggio = 1.25f; a.arco = 100f; a.affondo = 2.5f;
-            a.penetrazioneArmatura = 0.8f;
-            a.dannoAssorbitoSenzaScudo = 0.45f; a.costoParataSenzaScudo = 26f;
+            a.penetrazioneArmatura = 0.45f;
+            a.probabilitaCritico = 1.5f;
+            a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 28f;
         });
 
         // Spadone: a due mani (niente scudo), lentissimo, portata e danno altissimi, para male con la lama.
