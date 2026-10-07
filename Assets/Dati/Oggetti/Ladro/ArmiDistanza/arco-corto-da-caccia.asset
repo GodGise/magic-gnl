@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcc2bf286789eeb468f6c999a0c2182d, type: 3}
+  m_Name: arco-corto-da-caccia
+  m_EditorClassIdentifier: Assembly-CSharp::DatiArmaDistanza
+  nomeDiLavoro: Arco corto da caccia
+  chiaveNome: oggetto.arco_caccia.nome
+  chiaveDescrizione: oggetto.arco_caccia.descrizione
+  classe: 1
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  tipo: 0
+  danno: 18
+  costoTiro: 12
+  carica: 0.4
+  ricarica: 0.35
+  portata: 25
+  velocitaFreccia: 35
+  penetrazioneArmatura: 0
+  moltiplicatoreNonVisto: 1.5
+  probabilitaCritico: 0
+  moltiplicatoreCritico: 0
