@@ -138,7 +138,7 @@ public static class CreaOggettiLadro
         creati += Armatura("giubba-scura", "Giubba scura", "giubba_scura", b =>
         {
             b.peso = DatiArmatura.Peso.Leggera;
-            b.armatura = 5f; b.furtivita = 10f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
+            b.armatura = 7f; b.furtivita = 12f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
         });
         creati += Armatura("corpetto-di-cuoio-rinforzato", "Corpetto di cuoio rinforzato", "corpetto_cuoio", b =>
         {
