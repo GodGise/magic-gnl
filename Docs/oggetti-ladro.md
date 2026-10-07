@@ -62,7 +62,7 @@ Parata senza scudo: dal 10% al 25%. Il Ladro schiva, non para.
 | Dente di vipera | Magico | +12% critico | -10% armatura totale |
 | Laccio del borsaiolo | Magico | attacchi il 10% più veloci | -10% vita massima |
 | Ultimo respiro | Arcano | tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 s (ricarica 6 minuti) | -6% danno |
-| Fiato del predatore | Arcano | resistenza +40% più veloce | -15% armatura totale |
+| Fiato del predatore | Arcano | resistenza +40% più veloce | -20% vita massima |
 | Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -10% vita massima |
 
 ## Per Giuseppe

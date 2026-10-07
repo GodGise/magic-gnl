@@ -181,7 +181,7 @@ public static class CreaOggettiLadro
         creati += Amuleto("fiato-del-predatore", "Fiato del predatore", "fiato_predatore", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 40f;
-            m.malus.armaturaPercento = -15f;
+            m.malus.vitaMassimaPercento = -20f;
         });
         creati += Amuleto("goccia-di-sangue-nero", "Goccia di sangue nero", "goccia_sangue_nero", m =>
         {
