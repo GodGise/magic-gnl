@@ -5,6 +5,8 @@ using UnityEngine;
 // A cosa serve: ogni oggetto è un file in Assets/Dati/Oggetti/Guerriero/ (Armi, Scudi, Armature, Amuleti), con i suoi
 // numeri nell'Inspector. Questo menu crea solo quelli che MANCANO: gli oggetti già creati e magari ritoccati
 // a mano nell'Inspector non vengono toccati.
+// Il menu "magic-gnl > Aggiorna oggetti del Guerriero (riscrive i valori)" invece rimette in TUTTI i file i valori
+// scritti qui sotto (tenendo icona e modello già collegati): serve dopo aver cambiato i numeri in questo script.
 // Come si usa: menu in alto "magic-gnl > Crea oggetti del Guerriero". Poi, per provarne uno, selezionare il
 // Giocatore e trascinare l'oggetto nella casella giusta del componente Equipaggiamento.
 // Per aggiungere un oggetto nuovo: una riga nel metodo Crea() qui sotto, con i suoi numeri.
@@ -12,7 +14,26 @@ public static class CreaOggettiGuerriero
 {
     const string Radice = "Assets/Dati/Oggetti/Guerriero";
 
+    static bool riscrivi;
+
     [MenuItem("magic-gnl/Crea oggetti del Guerriero")]
+    static void MenuCrea()
+    {
+        riscrivi = false;
+        Crea();
+    }
+
+    [MenuItem("magic-gnl/Aggiorna oggetti del Guerriero (riscrive i valori)")]
+    static void MenuAggiorna()
+    {
+        if (!EditorUtility.DisplayDialog("Oggetti del Guerriero",
+            "Rimettere in tutti gli oggetti i valori scritti in CreaOggettiGuerriero.cs? Le modifiche fatte a mano nell'Inspector andranno perse (icona e modello restano).",
+            "Aggiorna", "Annulla")) return;
+        riscrivi = true;
+        Crea();
+        riscrivi = false;
+    }
+
     static void Crea()
     {
         int creati = 0;
@@ -174,7 +195,7 @@ public static class CreaOggettiGuerriero
 
         AssetDatabase.SaveAssets();
         Debug.Log(creati > 0
-            ? "Oggetti del Guerriero: creati " + creati + " file nuovi in " + Radice + "."
+            ? "Oggetti del Guerriero: " + (riscrivi ? "aggiornati " : "creati ") + creati + " file in " + Radice + "."
             : "Oggetti del Guerriero: c'erano già tutti, nessun file cambiato.");
     }
 
@@ -190,13 +211,15 @@ public static class CreaOggettiGuerriero
     static int Amuleto(string file, string nome, string chiave, System.Action<DatiAmuleto> imposta) =>
         Oggetto("Amuleti", file, nome, chiave, imposta);
 
-    // Crea il file se manca; restituisce 1 se l'ha creato, 0 se c'era già.
+    // Crea il file se manca (restituisce 1) o, con "Aggiorna", gli rimette i valori di questo script (1);
+    // altrimenti lo lascia com'è (0).
     static int Oggetto<T>(string cartella, string file, string nome, string chiave, System.Action<T> imposta) where T : DatiOggetto
     {
         string percorsoCartella = Radice + "/" + cartella;
         CreaCartelle(percorsoCartella);
         string percorso = percorsoCartella + "/" + file + ".asset";
-        if (AssetDatabase.LoadAssetAtPath<T>(percorso) != null) return 0;
+        T esistente = AssetDatabase.LoadAssetAtPath<T>(percorso);
+        if (esistente != null && !riscrivi) return 0;
 
         T oggetto = ScriptableObject.CreateInstance<T>();
         oggetto.nomeDiLavoro = nome;
@@ -204,7 +227,20 @@ public static class CreaOggettiGuerriero
         oggetto.chiaveDescrizione = "oggetto." + chiave + ".descrizione";
         oggetto.classe = ClasseGiocatore.Guerriero;
         imposta(oggetto);
-        AssetDatabase.CreateAsset(oggetto, percorso);
+
+        if (esistente == null)
+        {
+            AssetDatabase.CreateAsset(oggetto, percorso);
+            return 1;
+        }
+
+        // Stesso file (stesso .meta, così i collegamenti restano), valori nuovi; icona e modello restano.
+        oggetto.icona = esistente.icona;
+        oggetto.modello = esistente.modello;
+        EditorUtility.CopySerialized(oggetto, esistente);
+        esistente.name = file;
+        EditorUtility.SetDirty(esistente);
+        Object.DestroyImmediate(oggetto);
         return 1;
     }
 

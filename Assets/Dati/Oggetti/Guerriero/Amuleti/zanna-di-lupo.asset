@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667f5a233d940da4790324f38e74baf5, type: 3}
+  m_Name: zanna-di-lupo
+  m_EditorClassIdentifier: Assembly-CSharp::DatiAmuleto
+  nomeDiLavoro: Zanna di lupo
+  chiaveNome: oggetto.zanna_lupo.nome
+  chiaveDescrizione: oggetto.zanna_lupo.descrizione
+  classe: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  tipo: 0
+  bonus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 10
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: 0
+  malus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: -5
+    velocitaAttacco: 0
+    vitaMassimaPercento: 0
+  effetto: 0
+  valore: 0

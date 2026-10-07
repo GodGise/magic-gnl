@@ -1,6 +1,6 @@
 # Oggetti del Guerriero: stato del lavoro
 
-Riepilogo per Giuseppe (e per il Claude di Lorenzo alla prossima sessione). Ramo `lorenzoc/oggetti-guerriero`, 6 ottobre 2026 sera. **Lavoro in corso: non ancora da unire.** Mancano la revisione di metà degli oggetti e la prova in Unity.
+Riepilogo per Giuseppe (e per il Claude di Lorenzo alla prossima sessione). Ramo `lorenzoc/oggetti-guerriero`, 6 ottobre 2026 sera. Aggiornato il 7 ottobre: **revisione finita** per tutti i 19 oggetti e prima prova in Unity andata bene. Mancano i file `.asset`/`.meta` creati da Unity e la pull request.
 
 ## Cosa c'è
 
@@ -34,7 +34,7 @@ Ogni oggetto è unico, con un nome suo (niente livelli di rarità). Gli oggetti 
 - Equipaggiare: `GetComponent<Equipaggiamento>().Equipaggia(oggetto)`. Mette l'oggetto nella casella giusta in base al tipo.
 - Togliere: `TogliArma()`, `TogliScudo()`, `TogliArmatura()`, `TogliAmuleto()`.
 - Cosa c'è addosso: le proprietà `Arma`, `Scudo`, `Armatura` e `Amuleto`; l'evento `Cambiato` avvisa per ridisegnare il menu.
-- Testi: `oggetto.Nome` e `oggetto.Descrizione` passano da `Lingua.T`. **In `Lingua.cs` vanno aggiunte le chiavi** `oggetto.<nome>.nome` e `oggetto.<nome>.descrizione` (l'elenco dei nomi è nella tabella qui sotto). Finché mancano, si vede il nome italiano di lavoro. `Lingua.cs` è di Giuseppe, quindi non l'abbiamo toccato.
+- Testi: `oggetto.Nome` e `oggetto.Descrizione` passano da `Lingua.T`. Le chiavi `oggetto.<nome>.nome` e `oggetto.<nome>.descrizione` di tutti i 19 oggetti le ha già aggiunte Giuseppe in `Lingua.cs`, sul ramo `giuseppec/traduzioni-oggetti`.
 
 ### Creare i file degli oggetti
 
