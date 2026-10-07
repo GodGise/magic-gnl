@@ -173,8 +173,10 @@ public static class CreaOggettiLadro
         // Arcani: effetti speciali.
         creati += Amuleto("ultimo-respiro", "Ultimo respiro", "ultimo_respiro", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 8f;
-            m.malus.bonusDanno = -5f;
+            // Tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 secondi; poi 6 minuti di ricarica.
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.SvanireNellOmbra;
+            m.valore = 2.5f; m.ricarica = 360f;
+            m.malus.bonusDanno = -6f;
         });
         creati += Amuleto("fiato-del-predatore", "Fiato del predatore", "fiato_predatore", m =>
         {

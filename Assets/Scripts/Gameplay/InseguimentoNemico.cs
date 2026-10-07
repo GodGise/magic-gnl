@@ -88,7 +88,8 @@ public class InseguimentoNemico : MonoBehaviour
             bersaglio.attaccaIlGiocatore = false;
             return;
         }
-        if (giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto)
+        // Giocatore morto o svanito nell'ombra: chi lo inseguiva lo perde subito e torna al suo posto.
+        if (giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto || giocatore.Invisibile)
         {
             if (stato == Stato.Insegue) Rinuncia();
         }
@@ -120,6 +121,7 @@ public class InseguimentoNemico : MonoBehaviour
     bool VedeGiocatore()
     {
         if (giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+        if (giocatore.Invisibile) return false;   // svanito nell'ombra (amuleto Ultimo respiro)
 
         Vector3 occhi = transform.position + Vector3.up * 0.8f;
         Vector3 bersaglioVista = giocatore.transform.position + Vector3.up * 0.5f;

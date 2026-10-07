@@ -17,6 +17,7 @@ Il Ladro uccide **a distanza o di soppiatto**. Il nome "Assassino" al posto di "
 
 - **Furtività** (statistica nuova): accorcia la vista dei nemici. Con 30% di furtività l'orco ti vede da 12,6 m invece che da 18 m. La danno armature e amuleti del Ladro.
 - **Colpo alle spalle**: ogni arma ha un *Moltiplicatore Alle Spalle*. Colpendo un nemico da dietro, nell'arco di 120°, il danno si moltiplica. Vale anche se il nemico ti ha visto; l'esecuzione furtiva resta in più.
+- **Svanire nell'ombra** (amuleto Ultimo respiro, tasto **Q**): per 2,5 s i nemici non vedono il giocatore, chi lo inseguiva torna al suo posto e nessuno lo attacca. Ricarica 6 minuti, barra viola nel pannello.
 - **Arma a distanza**: nuovo tipo di oggetto (`DatiArmaDistanza`) e nuova casella in `Equipaggiamento`. **Il tiro con l'arco non c'è ancora**: gli oggetti sono pronti con i loro numeri per quando si farà la meccanica.
 
 ## Oggetti
@@ -60,7 +61,7 @@ Parata senza scudo: dal 10% al 25%. Il Ladro schiva, non para.
 | Piuma di civetta | Magico | +15% furtività | -5% danno |
 | Dente di vipera | Magico | +12% critico | -10% armatura totale |
 | Laccio del borsaiolo | Magico | attacchi il 10% più veloci | -10% vita massima |
-| Ultimo respiro | Arcano | +8 vita per nemico ucciso | -5% danno |
+| Ultimo respiro | Arcano | tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 s (ricarica 6 minuti) | -6% danno |
 | Fiato del predatore | Arcano | resistenza +40% più veloce | -15% armatura totale |
 | Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -10% vita massima |
 

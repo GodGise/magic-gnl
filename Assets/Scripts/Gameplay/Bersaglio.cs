@@ -86,7 +86,7 @@ public class Bersaglio : MonoBehaviour
 
     void Update()
     {
-        if (morto || staAttaccando || !attaccaIlGiocatore || giocatore == null) return;
+        if (morto || staAttaccando || !attaccaIlGiocatore || giocatore == null || giocatore.Invisibile) return;
         if (Time.time < prossimoAttacco || Time.time < sbilanciatoFino) return;
 
         // Attacca solo se il giocatore è abbastanza vicino da vedere il preavviso.
@@ -113,7 +113,7 @@ public class Bersaglio : MonoBehaviour
         {
             RipristinaColori();
             Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, 0.75f);
-            if (Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
+            if (!giocatore.Invisibile && Vector3.Distance(transform.position, giocatore.transform.position) <= portataAttacco)
             {
                 float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, giocatore.Statistiche, out bool critico);
                 giocatore.RiceviColpo(danno, transform.position, critico, this);
