@@ -17,7 +17,7 @@ Il Ladro uccide **a distanza o di soppiatto**. Il nome "Assassino" al posto di "
 
 - **Furtività** (statistica nuova): accorcia la vista dei nemici. Con 30% di furtività l'orco ti vede da 12,6 m invece che da 18 m. La danno armature e amuleti del Ladro.
 - **Colpo alle spalle**: ogni arma ha un *Moltiplicatore Alle Spalle*. Colpendo un nemico da dietro, nell'arco di 120°, il danno si moltiplica. Vale anche se il nemico ti ha visto; l'esecuzione furtiva resta in più.
-- **Svanire nell'ombra** (amuleto Ultimo respiro, tasto **Q**): per 2,5 s i nemici non vedono il giocatore, chi lo inseguiva torna al suo posto e nessuno lo attacca. Ricarica 6 minuti, barra viola nel pannello.
+- **Svanire nell'ombra** (amuleto Ultimo respiro, tasto **Q**): per 2,5 s i nemici non vedono il giocatore, chi lo inseguiva torna al suo posto e nessuno lo attacca. L'invisibilità finisce allo scadere del tempo o appena si attacca (anche con l'esecuzione furtiva). Ricarica 6 minuti, barra viola nel pannello.
 - **Arma a distanza**: nuovo tipo di oggetto (`DatiArmaDistanza`) e nuova casella in `Equipaggiamento`. **Il tiro con l'arco non c'è ancora**: gli oggetti sono pronti con i loro numeri per quando si farà la meccanica.
 
 ## Oggetti

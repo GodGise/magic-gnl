@@ -24,6 +24,7 @@ using UnityEngine.InputSystem;
 // costa mana (terza barra), che si recupera sconfiggendo i nemici.
 // Abilità dell'amuleto: tasto Q / croce su del pad. Con l'amuleto Ultimo respiro il personaggio svanisce
 // nell'ombra: per qualche secondo i nemici non lo vedono, smettono di inseguirlo e non lo attaccano.
+// L'invisibilità finisce allo scadere del tempo oppure appena si attacca.
 // Con l'aggancio del bersaglio attivo (vedi AggancioBersaglio) il personaggio guarda sempre il nemico:
 // A e D girano attorno al nemico, S indietreggia, attacchi e schivate partono verso di lui.
 // Strettoie (vedi PassaggioStretto): fra due pareti vicine il personaggio rallenta piano piano, si gira
@@ -567,6 +568,7 @@ public class GiocatoreControllo : MonoBehaviour
     // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
     void IniziaAttacco(bool concatenato = false)
     {
+        RompiOmbra(); // attaccare (anche con il bastone o con l'esecuzione furtiva) fa tornare visibili
         attaccoMagico = arma == ArmaImpugnata.Bastone;
         if (attaccoMagico)
         {
@@ -751,6 +753,15 @@ public class GiocatoreControllo : MonoBehaviour
             coloriPrimaDellOmbra.Add(parte.material.color);
             parte.material.color = new Color(0.04f, 0.04f, 0.08f);
         }
+    }
+
+    // Un'azione che si fa notare (per ora: attaccare) interrompe subito l'invisibilità.
+    // Quando ci sarà il tiro con l'arco, va chiamato anche lì.
+    public void RompiOmbra()
+    {
+        if (!Invisibile) return;
+        invisibileFino = Time.time;
+        AggiornaOmbra();
     }
 
     // Finita l'invisibilità, il personaggio torna dei suoi colori.
