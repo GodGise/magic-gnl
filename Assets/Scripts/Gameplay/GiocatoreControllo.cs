@@ -213,6 +213,7 @@ public class GiocatoreControllo : MonoBehaviour
     float schivataExtraArmatura;       // peso di scudo e armatura sulla schivata
     float velocitaArmatura = 1f;       // peso di scudo e armatura sulla corsa
     float penetrazioneArma;            // quota di armatura nemica ignorata (mazze)
+    float dannoAlleSpalle = 1f;        // moltiplicatore del danno colpendo un nemico da dietro (pugnali)
     float finestraParataPerfetta;      // scudo piccolo: secondi utili per la parata perfetta
     float sbilanciamentoParata = 1.5f; // secondi in cui il nemico resta sbilanciato dopo una parata perfetta
     float dannoSuSbilanciato = 1f;     // moltiplicatore del danno sui nemici sbilanciati
@@ -674,6 +675,7 @@ public class GiocatoreControllo : MonoBehaviour
         arcoAttacco = a ? armaNuova.arco : v[7];
         velocitaAffondo = a ? armaNuova.affondo : v[8];
         penetrazioneArma = a ? armaNuova.penetrazioneArmatura : 0f;
+        dannoAlleSpalle = a ? armaNuova.moltiplicatoreAlleSpalle : 1f;
         // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
 
         if (scudo != null)
@@ -748,6 +750,14 @@ public class GiocatoreControllo : MonoBehaviour
     // ---------- Esecuzione furtiva ----------
 
     // Il nemico più vicino che si può giustiziare: vicino, ignaro, con il giocatore alle sue spalle e girato verso di lui.
+    // Vero se il giocatore è alle spalle di quel nemico (nell'arco "Arco Alle Spalle" dietro di lui).
+    bool DietroA(Transform nemico)
+    {
+        Vector3 dalNemico = transform.position - nemico.position;
+        dalNemico.y = 0f;
+        return dalNemico.sqrMagnitude > 0.0001f && Vector3.Angle(nemico.forward, dalNemico) >= 180f - arcoAlleSpalle * 0.5f;
+    }
+
     InseguimentoNemico CercaVittima()
     {
         if (arma != ArmaImpugnata.Spada) return null;
@@ -826,6 +836,7 @@ public class GiocatoreControllo : MonoBehaviour
 
                 colpitiInQuestoAttacco.Add(bersaglio);
                 float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico, penetrazioneArma);
+                if (DietroA(bersaglio.transform)) danno *= dannoAlleSpalle; // colpo alle spalle
                 bersaglio.RiceviColpo(danno, transform.position, critico);
                 Cura(danno * rubaVitaPercento / 100f); // amuleto arcano
                 // Il critico suona più forte e più grave, così si sente senza guardare i numeri.

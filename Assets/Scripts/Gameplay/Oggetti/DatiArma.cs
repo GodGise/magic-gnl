@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// Un'arma del Guerriero: spada, spadone, ascia o mazza.
+// Un'arma da corpo a corpo. Guerriero: spada, spadone, ascia o mazza. Ladro: pugnale, stiletto o doppi pugnali
+// (veloci, danno basso, ma molto forti colpendo alle spalle: vedi "Moltiplicatore Alle Spalle").
 // A cosa serve: contiene tutti i numeri del colpo che dipendono dall'arma: danno, velocità, portata, ampiezza,
 // resistenza spesa, critico e quanta armatura del nemico ignora. Ogni tipo cambia il modo di combattere:
 // - Spada: equilibrata, veloce, la base di confronto.
@@ -14,7 +15,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "nuova-arma", menuName = "magic-gnl/Oggetti/Arma")]
 public class DatiArma : DatiOggetto
 {
-    public enum Tipo { Spada, Spadone, Ascia, Mazza }
+    public enum Tipo { Spada, Spadone, Ascia, Mazza, Pugnale, Stiletto, DoppiPugnali }
 
     [Header("Tipo")]
     public Tipo tipo = Tipo.Spada;
@@ -42,6 +43,8 @@ public class DatiArma : DatiOggetto
     public float affondo = 3f;
     [Tooltip("Quota dell'armatura del nemico che il colpo ignora (0,5 = metà). Alta per le mazze.")]
     [Range(0f, 1f)] public float penetrazioneArmatura = 0f;
+    [Tooltip("Colpo alle spalle: se colpisci un nemico da dietro, il danno si moltiplica per questo (2 = doppio). Le armi del Ladro lo hanno alto.")]
+    public float moltiplicatoreAlleSpalle = 1f;
 
     [Header("Critico (si somma a quello del personaggio)")]
     [Tooltip("Punti percentuali di critico in più (5 = +5%).")]

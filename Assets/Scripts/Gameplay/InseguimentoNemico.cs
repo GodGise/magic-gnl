@@ -124,7 +124,10 @@ public class InseguimentoNemico : MonoBehaviour
         Vector3 occhi = transform.position + Vector3.up * 0.8f;
         Vector3 bersaglioVista = giocatore.transform.position + Vector3.up * 0.5f;
         Vector3 verso = bersaglioVista - occhi;
-        if (verso.magnitude > distanzaVista) return false;
+        // La furtività del giocatore (armature e amuleti del Ladro, vedi Statistiche) accorcia la vista.
+        float vista = distanzaVista;
+        if (giocatore.Statistiche != null) vista *= 1f - giocatore.Statistiche.Furtivita / 100f;
+        if (verso.magnitude > vista) return false;
 
         Vector3 orizzontale = new Vector3(verso.x, 0f, verso.z);
         if (Vector3.Angle(transform.forward, orizzontale) > angoloVisivo * 0.5f) return false;
