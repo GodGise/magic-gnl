@@ -114,9 +114,9 @@ public static class CreaOggettiLadro
         creati += ArmaDistanza("arco-lungo-di-tasso", "Arco lungo di tasso", "arco_tasso", d =>
         {
             d.tipo = DatiArmaDistanza.Tipo.ArcoLungo;
-            d.danno = 32f; d.costoTiro = 20f; d.carica = 0.9f; d.ricarica = 0.6f;
-            d.portata = 45f; d.velocitaFreccia = 50f;
-            d.probabilitaCritico = 5f; d.moltiplicatoreNonVisto = 2f;
+            d.danno = 30f; d.costoTiro = 20f; d.carica = 0.9f; d.ricarica = 0.6f;
+            d.portata = 45f; d.velocitaFreccia = 50f; d.penetrazioneArmatura = 0.12f;
+            d.probabilitaCritico = 7f; d.moltiplicatoreNonVisto = 2.3f;
         });
         creati += ArmaDistanza("balestra-da-posta", "Balestra da posta", "balestra_posta", d =>
         {
