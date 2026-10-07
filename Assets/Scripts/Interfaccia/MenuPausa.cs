@@ -10,8 +10,9 @@ using UnityEngine.SceneManagement;
 // giocatore, della camera e dell'aggancio sono spenti (si riaccendono alla ripresa).
 // Si crea da solo all'avvio del gioco e resta attivo in tutte le scene, tranne in quella del menu iniziale:
 // non va messo in nessuna scena.
-// Nota per il co-op: con più giocatori in rete il tempo non potrà fermarsi per tutti. Quando arriverà la rete,
-// in partita online il menu resterà aperto ma il gioco continuerà a scorrere.
+// Co-op: in partita in rete il tempo non si ferma (gli altri continuano a giocare): il menu resta aperto, il proprio
+// personaggio sta fermo e i nemici possono ancora colpirlo. "Torna al menu principale" lascia la partita; se lo fa
+// chi ospita, la partita finisce per tutti (lo dice anche la domanda di conferma).
 public class MenuPausa : MonoBehaviour
 {
     [Tooltip("Nome della scena del menu iniziale.")]
@@ -28,6 +29,7 @@ public class MenuPausa : MonoBehaviour
     bool nelMenuIniziale;
     bool riprendiAlProssimoFotogramma;
     float scalaTempoPrima = 1f;
+    bool tempoFermato;
     CursorLockMode cursorePrima;
     bool cursoreVisibilePrima;
 
@@ -59,9 +61,14 @@ public class MenuPausa : MonoBehaviour
 
     void Apri()
     {
-        scalaTempoPrima = Time.timeScale > 0f ? Time.timeScale : 1f;
-        Time.timeScale = 0f;
-        AudioListener.pause = true;
+        // In rete il tempo non si ferma: gli altri giocatori continuano.
+        tempoFermato = !Rete.Attiva;
+        if (tempoFermato)
+        {
+            scalaTempoPrima = Time.timeScale > 0f ? Time.timeScale : 1f;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
+        }
         cursorePrima = Cursor.lockState;
         cursoreVisibilePrima = Cursor.visible;
 
@@ -87,8 +94,12 @@ public class MenuPausa : MonoBehaviour
     // ripristina = true: rimette i comandi e il cursore com'erano (si torna a giocare).
     void Chiudi(bool ripristina)
     {
-        Time.timeScale = scalaTempoPrima;
-        AudioListener.pause = false;
+        if (tempoFermato)
+        {
+            Time.timeScale = scalaTempoPrima;
+            AudioListener.pause = false;
+            tempoFermato = false;
+        }
         if (ripristina)
         {
             foreach (var b in spenti)
@@ -109,6 +120,12 @@ public class MenuPausa : MonoBehaviour
     {
         Chiudi(false);
         Time.timeScale = 1f;
+        // In rete: si lascia la partita (ReteCoop spegne la rete e carica il menu).
+        if (Rete.Attiva && ReteCoop.Istanza != null)
+        {
+            ReteCoop.Istanza.Esci();
+            return;
+        }
         if (Application.CanStreamedLevelBeLoaded(scenaMenu)) SceneManager.LoadScene(scenaMenu);
         else SceneManager.LoadScene(0);
     }
@@ -116,6 +133,7 @@ public class MenuPausa : MonoBehaviour
     void EsciDalGioco()
     {
         Chiudi(false);
+        if (Rete.Attiva && ReteCoop.Istanza != null) ReteCoop.Istanza.Spegni();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -219,7 +237,9 @@ public class MenuPausa : MonoBehaviour
             case Schermata.ConfermaEsci:
             {
                 string domanda = Lingua.T(schermata == Schermata.ConfermaMenu ? "pausa.conferma_menu" : "pausa.conferma_esci");
-                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 330, 1200f, 90), domanda, GraficaMenu.Descrizione, GraficaMenu.Testo, comparsa);
+                // Chi ospita: uscendo, la partita finisce anche per gli altri giocatori.
+                if (ReteCoop.Istanza != null && ReteCoop.Istanza.SonoHost) domanda += "\n" + Lingua.T("rete.avviso_host_esce");
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 305, 1200f, 135), domanda, GraficaMenu.Descrizione, GraficaMenu.Testo, comparsa);
                 if (elenco.DisegnaElenco(450f, 440f, comparsa, bloccato)) return;
                 break;
             }

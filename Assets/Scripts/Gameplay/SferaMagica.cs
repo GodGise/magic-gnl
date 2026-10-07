@@ -5,6 +5,7 @@ using UnityEngine;
 // A cosa serve: vola verso il bersaglio scelto al momento del lancio, correggendo un po' la rotta se
 // il nemico si sposta. Quando tocca un nemico gli fa danno (e lo spinge indietro come un colpo di spada);
 // tocca anche i muri crepati. Contro un muro qualsiasi, o dopo 3 secondi, si spegne con un piccolo scoppio.
+// Con danno 0 è solo da vedere (co-op: la sfera lanciata da un altro giocatore; il danno lo manda il suo PC).
 // Come montarlo: non serve montarlo. La crea GiocatoreControllo con SferaMagica.Lancia(...).
 public class SferaMagica : MonoBehaviour
 {
@@ -96,6 +97,7 @@ public class SferaMagica : MonoBehaviour
 
     void Colpisci(Collider toccato)
     {
+        if (danno <= 0f) { Esplodi(); return; }
         Bersaglio nemico = toccato.GetComponentInParent<Bersaglio>();
         if (nemico != null)
         {

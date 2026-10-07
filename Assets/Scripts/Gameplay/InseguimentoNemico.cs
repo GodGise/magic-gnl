@@ -10,6 +10,8 @@ using UnityEngine;
 // resta immobile, si inarca all'indietro e muore al taglio.
 // Come montarlo: sullo stesso oggetto di un Bersaglio (per esempio un cilindro con Bersaglio).
 // Selezionando il nemico, nella vista Scene si vede il cono giallo del suo campo visivo.
+// Co-op: vede e insegue il giocatore più vicino fra quelli che vede (vedi ObiettiviNemici). Pensa solo sul PC
+// di chi ospita; sugli altri PC riceve da MondoRete solo se sta inseguendo, se è sotto esecuzione e il "!".
 [RequireComponent(typeof(Bersaglio))]
 public class InseguimentoNemico : MonoBehaviour
 {
@@ -39,7 +41,7 @@ public class InseguimentoNemico : MonoBehaviour
     Stato stato = Stato.Fermo;
 
     Bersaglio bersaglio;
-    GiocatoreControllo giocatore;
+    IObiettivoNemico giocatore;   // il giocatore che sta inseguendo (o l'ultimo visto)
     Collider corpo;
     Vector3 posto;
     Quaternion sguardoIniziale;
@@ -53,6 +55,8 @@ public class InseguimentoNemico : MonoBehaviour
     public bool Ignaro => !bersaglio.Morto && stato != Stato.Insegue && !inEsecuzione;
     // Letto da AnimazioneUmanoide: durante l'esecuzione il nemico si inarca all'indietro.
     public bool InEsecuzione => inEsecuzione;
+    // Per MondoRete: vero mentre insegue qualcuno.
+    public bool StaInseguendo => stato == Stato.Insegue;
 
     void Awake()
     {
@@ -65,11 +69,6 @@ public class InseguimentoNemico : MonoBehaviour
         CreaEsclamativo();
     }
 
-    void Start()
-    {
-        giocatore = FindFirstObjectByType<GiocatoreControllo>();
-    }
-
     void OnDestroy()
     {
         if (bersaglio != null) bersaglio.Colpito -= SiAccorge;
@@ -79,6 +78,7 @@ public class InseguimentoNemico : MonoBehaviour
     {
         float dt = Time.deltaTime;
         AggiornaEsclamativo();
+        if (Rete.Ospite) return;    // in co-op, per chi non ospita, decide tutto l'host
         if (inEsecuzione) return;   // immobile mentre viene giustiziato
 
         // Da morto non fa niente; quando rinasce torna tranquillo al suo posto.
@@ -88,17 +88,17 @@ public class InseguimentoNemico : MonoBehaviour
             bersaglio.attaccaIlGiocatore = false;
             return;
         }
-        // Giocatore morto o svanito nell'ombra: chi lo inseguiva lo perde subito e torna al suo posto.
-        if (giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto || giocatore.Invisibile)
+        // Giocatore morto o svanito nell'ombra: chi lo inseguiva lo perde subito (se ne vede un altro, insegue quello).
+        if (!ObiettiviNemici.Valido(giocatore))
         {
-            if (stato == Stato.Insegue) Rinuncia();
+            if (stato == Stato.Insegue && !CercaChiVede()) Rinuncia();
         }
 
         switch (stato)
         {
             case Stato.Fermo:
                 GuardaIntorno(dt);
-                if (VedeGiocatore()) SiAccorge();
+                if (CercaChiVede()) SiAccorge();
                 break;
 
             case Stato.Insegue:
@@ -106,7 +106,7 @@ public class InseguimentoNemico : MonoBehaviour
                 break;
 
             case Stato.Torna:
-                if (VedeGiocatore()) { SiAccorge(); break; }
+                if (CercaChiVede()) { SiAccorge(); break; }
                 if (CamminaVerso(posto, velocitaRitorno, 0.3f, dt))
                 {
                     stato = Stato.Fermo;
@@ -118,27 +118,45 @@ public class InseguimentoNemico : MonoBehaviour
 
     // ---------- Vista ----------
 
-    bool VedeGiocatore()
+    // Fra tutti i giocatori, il più vicino che vede adesso: diventa quello da inseguire. Vero se ne ha trovato uno.
+    bool CercaChiVede()
     {
-        if (giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
-        if (giocatore.Invisibile) return false;   // svanito nell'ombra (amuleto Ultimo respiro)
+        IObiettivoNemico migliore = null;
+        float minima = float.MaxValue;
+        foreach (var chi in ObiettiviNemici.Tutti)
+        {
+            if (!Vede(chi)) continue;
+            float d = (chi.Corpo.position - transform.position).sqrMagnitude;
+            if (d < minima) { minima = d; migliore = chi; }
+        }
+        if (migliore == null) return false;
+        giocatore = migliore;
+        bersaglio.Obiettivo = migliore;
+        return true;
+    }
+
+    bool VedeGiocatore() => Vede(giocatore);
+
+    bool Vede(IObiettivoNemico chi)
+    {
+        // Morto, oppure svanito nell'ombra (amuleto Ultimo respiro): non si vede.
+        if (!ObiettiviNemici.Valido(chi)) return false;
 
         Vector3 occhi = transform.position + Vector3.up * 0.8f;
-        Vector3 bersaglioVista = giocatore.transform.position + Vector3.up * 0.5f;
+        Vector3 bersaglioVista = chi.Corpo.position + Vector3.up * 0.5f;
         Vector3 verso = bersaglioVista - occhi;
         // La furtività del giocatore (armature e amuleti del Ladro, vedi Statistiche) accorcia la vista.
-        float vista = distanzaVista;
-        if (giocatore.Statistiche != null) vista *= 1f - giocatore.Statistiche.Furtivita / 100f;
+        float vista = distanzaVista * (1f - chi.Furtivita / 100f);
         if (verso.magnitude > vista) return false;
 
         Vector3 orizzontale = new Vector3(verso.x, 0f, verso.z);
         if (Vector3.Angle(transform.forward, orizzontale) > angoloVisivo * 0.5f) return false;
 
-        // Niente muri in mezzo: il primo oggetto incontrato (a parte sé stesso) deve essere il giocatore.
+        // Niente muri in mezzo: il primo oggetto incontrato (a parte sé stesso e i giocatori) deve essere il giocatore.
         foreach (RaycastHit colpo in Physics.RaycastAll(occhi, verso.normalized, verso.magnitude, ~0, QueryTriggerInteraction.Ignore))
         {
             if (colpo.collider == corpo || colpo.collider.transform.IsChildOf(transform)) continue;
-            if (colpo.collider.transform.IsChildOf(giocatore.transform)) continue;
+            if (colpo.collider.transform.IsChildOf(chi.Corpo) || ObiettiviNemici.EGiocatore(colpo.collider)) continue;
             if (colpo.distance < verso.magnitude - 0.6f) return false;
         }
         return true;
@@ -156,15 +174,39 @@ public class InseguimentoNemico : MonoBehaviour
     // Si accorge del giocatore: "!" sopra la testa, inizia a inseguire e può attaccare.
     void SiAccorge()
     {
+        if (Rete.Ospite) return;   // lo decide l'host (che manda il "!" con AllarmeDaRete)
         if (bersaglio.Morto || inEsecuzione) return;
+        // Colpito alle spalle senza aver visto nessuno: insegue il giocatore più vicino.
+        if (!ObiettiviNemici.Valido(giocatore) && !CercaChiVede())
+        {
+            giocatore = ObiettiviNemici.PiuVicino(transform.position);
+            if (giocatore == null) return;
+            bersaglio.Obiettivo = giocatore;
+        }
         if (stato != Stato.Insegue)
         {
-            esclamativoFino = Time.time + 1.2f;
-            Suoni.Suona(Suono.Negato, transform.position + Vector3.up, 0.6f, 0.6f);
+            MostraAllarme();
+            MondoRete.InviaAllarme(bersaglio);
         }
         stato = Stato.Insegue;
         ultimaVolta = Time.time;
         bersaglio.attaccaIlGiocatore = true;
+    }
+
+    void MostraAllarme()
+    {
+        esclamativoFino = Time.time + 1.2f;
+        Suoni.Suona(Suono.Negato, transform.position + Vector3.up, 0.6f, 0.6f);
+    }
+
+    // ---------- co-op: per chi non ospita (chiamati da MondoRete) ----------
+
+    public void AllarmeDaRete() => MostraAllarme();
+
+    public void StatoDaRete(bool insegue, bool sottoEsecuzione)
+    {
+        stato = insegue ? Stato.Insegue : Stato.Fermo;
+        inEsecuzione = sottoEsecuzione;
     }
 
     // ---------- Esecuzione furtiva ----------
@@ -174,12 +216,23 @@ public class InseguimentoNemico : MonoBehaviour
     {
         inEsecuzione = true;
         bersaglio.attaccaIlGiocatore = false;
+        if (Rete.Ospite) MondoRete.ChiediEsecuzione(bersaglio);
     }
 
     // Il taglio: il nemico muore sul colpo, poi rinasce tranquillo al suo posto come dopo una morte normale.
     public void Giustizia(Vector3 daDove)
     {
-        bersaglio.RiceviColpo(bersaglio.VitaMassima * 10f, daDove);
+        if (Rete.Ospite)
+        {
+            MondoRete.ChiediGiustizia(bersaglio, daDove);
+            return;
+        }
+        GiustiziaDa(Rete.MioId, daDove);
+    }
+
+    public void GiustiziaDa(ulong chi, Vector3 daDove)
+    {
+        bersaglio.RiceviColpoDa(chi, bersaglio.VitaMassima * 10f, daDove, false);
         inEsecuzione = false;
         stato = Stato.Torna;
     }
@@ -188,6 +241,7 @@ public class InseguimentoNemico : MonoBehaviour
     {
         stato = Stato.Torna;
         bersaglio.attaccaIlGiocatore = false;
+        bersaglio.Obiettivo = null;
     }
 
     // ---------- Movimento ----------
@@ -203,8 +257,8 @@ public class InseguimentoNemico : MonoBehaviour
         }
 
         // Mentre carica o sferra un colpo resta fermo (il preavviso rosso di Bersaglio).
-        if (bersaglio.StaAttaccando) return;
-        CamminaVerso(giocatore.transform.position, velocitaInseguimento, distanzaAttacco, dt);
+        if (bersaglio.StaAttaccando || !ObiettiviNemici.Esiste(giocatore)) return;
+        CamminaVerso(giocatore.Corpo.position, velocitaInseguimento, distanzaAttacco, dt);
     }
 
     // Cammina verso un punto, girando attorno agli ostacoli semplici. Restituisce true quando è arrivato.
@@ -250,7 +304,7 @@ public class InseguimentoNemico : MonoBehaviour
         foreach (RaycastHit colpo in Physics.CapsuleCastAll(basso, alto, 0.4f, direzione, distanza, ~0, QueryTriggerInteraction.Ignore))
         {
             if (colpo.collider == corpo || colpo.collider.transform.IsChildOf(transform)) continue;
-            if (giocatore != null && colpo.collider.transform.IsChildOf(giocatore.transform)) continue;
+            if (ObiettiviNemici.EGiocatore(colpo.collider)) continue;
             if (colpo.distance <= 0f) continue;   // già a contatto (per esempio il pavimento): non blocca
             return false;
         }

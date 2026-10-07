@@ -30,12 +30,15 @@ using UnityEngine.InputSystem;
 // Strettoie (vedi PassaggioStretto): fra due pareti vicine il personaggio rallenta piano piano, si gira
 // di fianco e stringe il suo ingombro, così passa anche dove prima urtava. Quando la strettoia è vera
 // rinfodera l'arma sulla schiena e la riprende appena esce; dentro non si attacca, non si para e non si scatta.
+// Co-op: è sempre il giocatore di questo PC. Gli altri giocatori si vedono come figure (GiocatoreRete) che copiano
+// i loro movimenti; i nemici li prendono di mira tutti (vedi ObiettiviNemici). I colpi ai nemici passano da
+// Bersaglio, che in rete li manda a chi ospita la partita.
 // Come montarlo: su un oggetto con CharacterController (aggiunto in automatico insieme a Resistenza).
 // Il modo più rapido è il menu "magic-gnl > Crea scena di prova", che prepara tutto da solo.
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Resistenza))]
 [RequireComponent(typeof(AggancioBersaglio))]
-public class GiocatoreControllo : MonoBehaviour
+public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioAnimato
 {
     public enum Stato { Libero, Parata, Attacco, Schivata, Stordito, Morto, Esecuzione }
 
@@ -254,6 +257,7 @@ public class GiocatoreControllo : MonoBehaviour
         puntoRinascita = transform.position;
         rotazioneRinascita = transform.rotation;
         CreaComandi();
+        ObiettiviNemici.Iscrivi(this);
     }
 
     void OnEnable()
@@ -282,6 +286,7 @@ public class GiocatoreControllo : MonoBehaviour
 
     void OnDestroy()
     {
+        ObiettiviNemici.Togli(this);
         comandoMuovi.Dispose();
         comandoSchiva.Dispose();
         comandoAttacca.Dispose();
@@ -636,6 +641,7 @@ public class GiocatoreControllo : MonoBehaviour
 
         SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, dannoSfera, transform);
         Suoni.Suona(Suono.SferaLancio, partenza, 0.9f);
+        MondoRete.InviaSfera(partenza, direzione, obiettivo, velocitaSfera); // gli altri giocatori la vedono partire
     }
 
     // Il nemico agganciato; se non c'è, il nemico vivo più vicino entro la portata (o nessuno).
@@ -916,6 +922,30 @@ public class GiocatoreControllo : MonoBehaviour
             colpitiInQuestoAttacco.Add(muro);
             muro.RiceviColpo(transform.position);
         }
+    }
+
+    // ---------- Nemici (vedi ObiettiviNemici) ----------
+
+    public Transform Corpo => transform;
+    public bool Abbattuto => stato == Stato.Morto;
+    public float Furtivita => statistiche != null ? statistiche.Furtivita : 0f;
+
+    // Il colpo di un nemico arriva (anche da un nemico dell'host, in co-op): il danno si calcola qui,
+    // con l'armatura e i critici (vedi CalcoloDanno), poi vale tutto quello che fa RiceviColpo (parata, schivata).
+    public void ColpitoDaNemico(Bersaglio nemico)
+    {
+        if (nemico == null) return;
+        float danno = CalcoloDanno.Calcola(nemico.DannoAttacco, nemico.Statistiche, statistiche, out bool critico);
+        RiceviColpo(danno, nemico.transform.position, critico, nemico);
+    }
+
+    // Co-op: chi entra nella partita di un altro parte un po' di lato, per non comparire dentro l'host.
+    public void SpostaPartenza(Vector3 spostamento)
+    {
+        controller.enabled = false;
+        transform.position += spostamento;
+        controller.enabled = true;
+        if (ultimoCheckpoint == null) puntoRinascita += spostamento;
     }
 
     // Chiamato dai nemici quando un loro colpo arriva. "danno" è già calcolato (armatura e critico compresi).

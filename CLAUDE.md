@@ -20,7 +20,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 - Ciclo giorno e notte: **45 minuti reali di luce** (6-18 del gioco) e **50 di notte** (18-6).
 - Co-op **da 1 a 3 giocatori**. Aggancio del bersaglio (lock-on): la rotellina del mouse cambia bersaglio.
 - **Lingue**: 8 (italiano, inglese, spagnolo, francese, tedesco, portoghese del Brasile, russo, cinese semplificato), scelte dal menu. Ogni testo visibile passa da `Lingua.T("chiave")` (`Assets/Scripts/Interfaccia/Lingua.cs`) con le 8 traduzioni; niente frasi scritte nel codice.
-- **Rete co-op**: Netcode for GameObjects 2.13 + trasporto SteamNetworkingSockets + Steamworks.NET (gratis, un giocatore ospita, nessun server). Si prova prima in locale. Chi scrive codice di giocatore, nemici o combattimento deve tenerne conto: diventeranno oggetti di rete. Dettagli e fonti: `Docs/rete-coop.md`.
+- **Rete co-op**: Netcode for GameObjects 2.13 + trasporto SteamNetworkingSockets + Steamworks.NET (gratis, un giocatore ospita, nessun server). Per ora senza Steam: menu "Multigiocatore", ci si collega con l'indirizzo IP. I nemici pensano solo sull'host; i nemici cercano i giocatori in `ObiettiviNemici`, il danno ai nemici passa da `Bersaglio.RiceviColpo`. Regole e limiti: `Docs/rete-coop.md`.
 
 ## Motore
 **Unity 6.3 LTS, versione 6000.3.25f1 (C#)**, uguale per tutti. Supporto fino a dicembre 2027: prima del lancio va pianificato il passaggio a un LTS più nuovo. Serializzazione asset "Force Text", controllo versione "Visible Meta Files".
