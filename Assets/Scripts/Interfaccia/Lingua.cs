@@ -98,6 +98,17 @@ public static class Lingua
         ["pausa.conferma_esci"] = new[] { "Uscire dal gioco? I progressi non salvati andranno persi.", "Quit the game? Unsaved progress will be lost.", "¿Salir del juego? Se perderá el progreso no guardado.", "Quitter le jeu ? La progression non sauvegardée sera perdue.", "Spiel beenden? Nicht gespeicherter Fortschritt geht verloren.", "Sair do jogo? O progresso não salvo será perdido.", "Выйти из игры? Несохранённый прогресс будет потерян.", "退出游戏？未保存的进度将会丢失。" },
 
         // ---------- partita: barre, inventario, oggetti ----------
+        // ---------- co-op (pannello F9, Assets/Scripts/Rete/ReteCoop.cs) ----------
+        ["rete.titolo"] = new[] { "Co-op (prova in locale)", "Co-op (local test)", "Cooperativo (prueba local)", "Coop (test local)", "Koop (lokaler Test)", "Cooperativo (teste local)", "Кооператив (локальный тест)", "合作模式（本地测试）" },
+        ["rete.ospita"] = new[] { "Ospita (F6)", "Host (F6)", "Alojar (F6)", "Héberger (F6)", "Hosten (F6)", "Hospedar (F6)", "Создать (F6)", "创建房间 (F6)" },
+        ["rete.entra"] = new[] { "Entra (F7)", "Join (F7)", "Unirse (F7)", "Rejoindre (F7)", "Beitreten (F7)", "Entrar (F7)", "Войти (F7)", "加入 (F7)" },
+        ["rete.esci"] = new[] { "Disconnetti (F8)", "Disconnect (F8)", "Desconectar (F8)", "Déconnecter (F8)", "Trennen (F8)", "Desconectar (F8)", "Отключиться (F8)", "断开 (F8)" },
+        ["rete.indirizzo"] = new[] { "Indirizzo dell'host", "Host address", "Dirección del anfitrión", "Adresse de l'hôte", "Adresse des Hosts", "Endereço do host", "Адрес хоста", "主机地址" },
+        ["rete.giocatori"] = new[] { "Giocatori", "Players", "Jugadores", "Joueurs", "Spieler", "Jogadores", "Игроки", "玩家" },
+        ["rete.host"] = new[] { "Sei l'host", "You are the host", "Eres el anfitrión", "Vous êtes l'hôte", "Du bist der Host", "Você é o host", "Вы хост", "你是主机" },
+        ["rete.client"] = new[] { "Collegato a un host", "Connected to a host", "Conectado a un anfitrión", "Connecté à un hôte", "Mit Host verbunden", "Conectado a um host", "Подключено к хосту", "已连接到主机" },
+        ["rete.spento"] = new[] { "Non collegato", "Not connected", "Sin conexión", "Non connecté", "Nicht verbunden", "Não conectado", "Нет соединения", "未连接" },
+        ["rete.suggerimento"] = new[] { "F9: co-op", "F9: co-op", "F9: coop", "F9 : coop", "F9: Koop", "F9: co-op", "F9: кооператив", "F9：合作" },
         ["inv.titolo"] = new[] { "Equipaggiamento", "Equipment", "Equipo", "Équipement", "Ausrüstung", "Equipamento", "Снаряжение", "装备" },
         ["inv.zaino"] = new[] { "Zaino", "Backpack", "Mochila", "Sac", "Rucksack", "Mochila", "Рюкзак", "背包" },
         ["inv.arma"] = new[] { "Arma", "Weapon", "Arma", "Arme", "Waffe", "Arma", "Оружие", "武器" },

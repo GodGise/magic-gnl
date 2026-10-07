@@ -37,7 +37,7 @@ Da sapere:
 Il co-op tocca soprattutto **giocatore, nemici e combattimento**. Ogni oggetto che si muove deve diventare un "oggetto di rete" e ogni colpo deve essere deciso da chi ha l'autorità (l'host per i nemici). Per questo va deciso **prima** di scrivere ancora molto codice di combattimento: più ne scriviamo "solo per un giocatore", più ne va riadattato.
 
 Ordine proposto:
-1. Installare NGO 2.13 e fare una scena di prova con due giocatori in locale (Lorenzo e il suo Claude devono saperlo: il combattimento passerà di lì).
+1. **[Fatto l'8 ottobre, da provare]** Installare NGO 2.13 e fare una prova con due giocatori in locale: `Assets/Scripts/Rete/ReteCoop.cs` (F6 ospita, F7 entra, F8 esce, F9 pannello) e `GiocatoreRete.cs` (sagoma degli altri giocatori), nessuno script esistente modificato. Prefab creato dall'editor da `Assets/Editor/CreaPrefabRete.cs` (Lorenzo e il suo Claude devono saperlo: il combattimento passerà di lì).
 2. Rendere "di rete" il movimento del giocatore e la camera.
 3. Combattimento: colpi, parata, schivata, vita.
 4. Nemici guidati dall'host.
