@@ -66,12 +66,12 @@ public static class CreaOggettiLadro
         creati += Arma("stiletto-del-tagliagole", "Stiletto del tagliagole", "stiletto_tagliagole", a =>
         {
             a.tipo = DatiArma.Tipo.Stiletto;
-            a.danno = 20f; a.costoAttacco = 13f;
+            a.danno = 18f; a.costoAttacco = 13f;
             a.preparazione = 0.17f; a.colpoAttivo = 0.1f; a.recupero = 0.25f;
             a.portata = 1.4f; a.raggio = 0.9f; a.arco = 60f; a.affondo = 4f;
-            a.penetrazioneArmatura = 0.5f;
+            a.penetrazioneArmatura = 0.4f;
             a.probabilitaCritico = 15f; a.moltiplicatoreCritico = 0.25f; a.moltiplicatoreAlleSpalle = 3f;
-            a.dannoAssorbitoSenzaScudo = 0.15f; a.costoParataSenzaScudo = 28f;
+            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 26f;
         });
         creati += Arma("stiletto-d-ombra", "Stiletto d'ombra", "stiletto_ombra", a =>
         {
