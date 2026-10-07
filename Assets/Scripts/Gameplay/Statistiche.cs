@@ -25,7 +25,16 @@ public class Statistiche : MonoBehaviour
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
     // Valori finali, base più modificatori: sono quelli che usa il calcolo del danno.
-    public float Armatura { get { float v = armatura; foreach (var m in modificatori) v += m.armatura; return Mathf.Max(0f, v); } }
+    // Armatura finale: base più i punti dei modificatori, poi le percentuali (-2,5 = il 2,5% in meno del totale).
+    public float Armatura
+    {
+        get
+        {
+            float v = armatura, percento = 0f;
+            foreach (var m in modificatori) { v += m.armatura; percento += m.armaturaPercento; }
+            return Mathf.Max(0f, v * (1f + percento / 100f));
+        }
+    }
     public float BonusDanno { get { float v = bonusDanno; foreach (var m in modificatori) v += m.bonusDanno; return v; } }
     public float ProbabilitaCritico { get { float v = probabilitaCritico; foreach (var m in modificatori) v += m.probabilitaCritico; return Mathf.Clamp(v, 0f, 100f); } }
     public float MoltiplicatoreCritico { get { float v = moltiplicatoreCritico; foreach (var m in modificatori) v += m.moltiplicatoreCritico; return Mathf.Max(1f, v); } }
@@ -37,6 +46,7 @@ public class Statistiche : MonoBehaviour
     {
         public string fonte = "";              // per esempio "Amuleto del lupo", utile per capire da dove arriva
         public float armatura;                 // si somma all'armatura
+        public float armaturaPercento;         // percentuale sull'armatura totale (-2,5 = il 2,5% in meno)
         public float bonusDanno;               // punti percentuali in più
         public float probabilitaCritico;       // punti percentuali in più
         public float moltiplicatoreCritico;    // si somma (0,25 = critico da 1,75 a 2)
@@ -47,6 +57,7 @@ public class Statistiche : MonoBehaviour
         {
             fonte = fonte,
             armatura = a.armatura + b.armatura,
+            armaturaPercento = a.armaturaPercento + b.armaturaPercento,
             bonusDanno = a.bonusDanno + b.bonusDanno,
             probabilitaCritico = a.probabilitaCritico + b.probabilitaCritico,
             moltiplicatoreCritico = a.moltiplicatoreCritico + b.moltiplicatoreCritico,

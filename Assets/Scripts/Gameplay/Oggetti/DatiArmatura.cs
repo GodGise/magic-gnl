@@ -29,6 +29,7 @@ public class DatiArmatura : DatiOggetto
     {
         fonte = Nome,
         armatura = armatura + bonus.armatura,
+        armaturaPercento = bonus.armaturaPercento,
         bonusDanno = bonus.bonusDanno,
         probabilitaCritico = bonus.probabilitaCritico,
         moltiplicatoreCritico = bonus.moltiplicatoreCritico,

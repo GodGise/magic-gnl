@@ -83,7 +83,7 @@ I critici delle armi si sommano a quelli del giocatore.
 | # | Oggetto (chiave) | Tipo | Effetto | Revisione |
 | --- | --- | --- | --- | --- |
 | 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: scudo alzato il 5% più lento | ✔ fatta |
-| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +8% critico | da fare |
+| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% danno; malus: -2,5% dell'armatura totale | ✔ fatta |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +10 armatura | da fare |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso | da fare |
 | 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce | da fare |
@@ -91,7 +91,7 @@ I critici delle armi si sommano a quelli del giocatore.
 
 ## Prossimi passi
 
-1. Finire la revisione con Lorenzo, dall'Occhio di corvo in poi.
+1. Finire la revisione con Lorenzo, dalla Pietra del focolare in poi.
 2. Prova in Unity: menu *Crea oggetti del Guerriero*, poi trascinare gli oggetti nelle caselle di **Equipaggiamento** del Giocatore e combattere l'orco sgherro nel villaggio.
 3. Salvare e caricare i `.meta` e i file `.asset` creati da Unity, poi aprire la pull request.
 4. Più avanti: inventario e raccolta con E (Giuseppe), modelli e icone (Nazar), traduzioni in `Lingua.cs`.
