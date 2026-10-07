@@ -165,6 +165,7 @@ public class AggancioBersaglio : MonoBehaviour
     // Quadratino rosso sopra il nemico agganciato.
     void OnGUI()
     {
+        if (HudGioco.Attivo) return; // in partita il segno lo disegna HudGioco
         if (Attuale == null || Camera.main == null) return;
 
         Vector3 schermo = Camera.main.WorldToScreenPoint(Attuale.transform.position + Vector3.up * 1.4f);

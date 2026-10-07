@@ -32,6 +32,8 @@ public class MenuPausa : MonoBehaviour
     bool cursoreVisibilePrima;
 
     public static bool InPausa { get; private set; }
+    // Fotogramma in cui si è aperta la pausa: l'inventario non si apre con lo stesso tasto nello stesso fotogramma.
+    public static int FotogrammaApertura { get; private set; } = -1;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void CreaAllAvvio()
@@ -71,6 +73,7 @@ public class MenuPausa : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         InPausa = true;
+        FotogrammaApertura = Time.frameCount;
         VaiA(Schermata.Pausa);
     }
 
@@ -167,6 +170,8 @@ public class MenuPausa : MonoBehaviour
 
         if (schermata == Schermata.Chiuso)
         {
+            // con l'inventario aperto Esc chiude l'inventario, non apre la pausa
+            if (InventarioGioco.Aperto || InventarioGioco.FotogrammaChiusura == Time.frameCount) return;
             if ((tastiera != null && tastiera.escapeKey.wasPressedThisFrame) || start) Apri();
             return;
         }

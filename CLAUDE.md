@@ -16,6 +16,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), con
 - Grafica retro in stile PlayStation 2: pochi poligoni, texture piccole (256-512 px), nebbia, atmosfera notturna e gotica.
 - Budget quasi zero: solo strumenti gratuiti, asset con licenza libera (CC0) o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.
 - Caratteri dei menu (tutti gratuiti, licenza SIL OFL, file di licenza accanto in `Assets/Resources/Caratteri/`): **Cinzel** e **IM Fell English** per le lingue latine, **Forum** e **Cormorant Garamond** per il russo, **ZCOOL XiaoWei** per il cinese. Lo stile dei menu è in `Assets/Scripts/Interfaccia/GraficaMenu.cs`; il menu di pausa (`MenuPausa.cs`) si crea da solo in ogni scena di gioco, non va messo nelle scene.
+- Interfaccia in partita (disegno approvato: `Docs/interfaccia.md`): barre di vita, resistenza e mana (`HudGioco.cs`) e inventario con Tab (`InventarioGioco.cs`) si creano da soli come il menu di pausa, non vanno messi nelle scene. F1 mostra il pannello di prova. Gli oggetti stanno nello `Zaino` del giocatore; nel mondo si raccolgono con `OggettoRaccoglibile` (E). Per provare l'inventario: in Play, menu "magic-gnl > Prova: metti tutti gli oggetti nello zaino". Ogni nuovo comando con E deve ignorare il tasto se `InventarioGioco.Aperto` o `MenuPausa.InPausa`.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
 - **Il gioco inizia a Villaggio Lago Nero**, la notte della razzia degli orchi (prologo: il protagonista combatte e perde contro l'orco enorme). Poi si risveglia sotto terra nella gattabuia, la tana degli orchi: celle, sotterranei, grotte, uscita in superficie. Infine torna al villaggio, ormai in rovina. Il villaggio serve quindi in due versioni: di notte durante la razzia, e distrutto. Mappa del villaggio: `Docs/mappe/` (script che la genera). Lista dei modelli per Nazar: `Docs/lista-modelli-nazar.txt`.
 - Ciclo giorno e notte: **45 minuti reali di luce** (dalle 6 alle 18 del gioco) e **50 minuti di notte** (dalle 18 alle 6), per l'atmosfera.
@@ -74,7 +75,7 @@ Ogni persona modifica solo la propria area; per toccare quella di un altro, chie
 - `Assets/Scripts/Rete/` co-op e integrazione Steam
 - `Assets/Scripts/Ambiente/` ciclo giorno e notte, torce, effetto retro PS2
 - `Assets/Scripts/Livelli/` script degli elementi delle zone (porte, leve, trappole, checkpoint)
-- `Assets/Scripts/Interfaccia/` menu iniziale, scelta della classe, opzioni
+- `Assets/Scripts/Interfaccia/` menu iniziale, scelta della classe, opzioni, menu di pausa, barre in partita, inventario
 - `Assets/Segnaposto/` materiali e forme provvisorie della zona di prova, da sostituire con l'arte vera
 - Menu dell'editor **magic-gnl**: "Crea scena di prova" (combattimento) e "Crea zona di prova (villaggio in rovina)" (prima zona giocabile)
 - `Docs/` documenti di design

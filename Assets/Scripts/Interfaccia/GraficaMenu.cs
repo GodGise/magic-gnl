@@ -100,6 +100,7 @@ public static class GraficaMenu
     }
 
     public static GUIStyle Titolo, Emblema, Intestazione, NomeClasse, Sottotitolo, Voce, VoceSinistra, Descrizione, Piccolo;
+    public static GUIStyle Didascalia, Etichetta, Valore, TestoSinistra, Iniziale;
     static int linguaStili = -1;
 
     // Da chiamare all'inizio di OnGUI: prepara gli stili e li rifà quando cambia la lingua.
@@ -141,6 +142,14 @@ public static class GraficaMenu
         Descrizione.wordWrap = true;
         Descrizione.alignment = TextAnchor.UpperCenter;
         Piccolo = Stile(20, null, false);
+        Didascalia = Stile(22, corsivo, false, true);
+        Etichetta = Stile(18, voce, false);
+        Valore = Stile(24, voce, false);
+        Valore.alignment = TextAnchor.MiddleLeft;
+        TestoSinistra = Stile(24, corsivo, false, true);
+        TestoSinistra.alignment = TextAnchor.MiddleLeft;
+        TestoSinistra.wordWrap = true;
+        Iniziale = Stile(44, forte, true);
     }
 
     // Se il carattere manca (file non trovato), si usa quello di base con grassetto o corsivo finti.
@@ -166,6 +175,33 @@ public static class GraficaMenu
     {
         float s = Screen.height / Altezza;
         GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - Larghezza * s) * 0.5f, 0f, 0f), Quaternion.identity, new Vector3(s, s, 1f));
+    }
+
+    // Foglio alto 1080 ma largo quanto lo schermo (per l'interfaccia in partita, attaccata ai bordi).
+    // Restituisce la larghezza del foglio.
+    public static float FoglioIntero()
+    {
+        float s = Screen.height / Altezza;
+        GUI.matrix = Matrix4x4.Scale(new Vector3(s, s, 1f));
+        return Screen.width / s;
+    }
+
+    // Icona di un oggetto: l'immagine fatta da Nazar se c'è, altrimenti l'iniziale del nome.
+    public static void Icona(Rect r, DatiOggetto oggetto, float alfa)
+    {
+        if (oggetto == null) return;
+        if (oggetto.icona != null && oggetto.icona.texture != null)
+        {
+            var t = oggetto.icona.texture;
+            var uv = oggetto.icona.textureRect;
+            GUI.color = new Color(1f, 1f, 1f, alfa);
+            GUI.DrawTextureWithTexCoords(r, t, new Rect(uv.x / t.width, uv.y / t.height, uv.width / t.width, uv.height / t.height));
+            GUI.color = Color.white;
+            return;
+        }
+        string nome = oggetto.Nome;
+        string iniziale = string.IsNullOrEmpty(nome) ? "?" : nome.Substring(0, 1).ToUpperInvariant();
+        Scritta(r, iniziale, Iniziale, Testo, alfa);
     }
 
     // Bordi scuri e sfumatura in basso, su tutto lo schermo (fuori dal foglio virtuale).
@@ -273,4 +309,7 @@ public static class GraficaMenu
         }
         return parti.ToString();
     }
+
+    // Separatore fra due parti di una riga ("Spada  ·  Guerriero"). Il carattere cinese non ha il punto centrale.
+    public static string Separatore => Lingua.Indice == 7 ? "  |  " : "  ·  ";
 }
