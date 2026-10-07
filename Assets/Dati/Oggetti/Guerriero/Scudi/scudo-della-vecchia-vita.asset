@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ee1efe8a10db840a8f94ecbe82cbd4, type: 3}
+  m_Name: scudo-della-vecchia-vita
+  m_EditorClassIdentifier: Assembly-CSharp::DatiScudo
+  nomeDiLavoro: Scudo della vecchia vita
+  chiaveNome: oggetto.scudo_vecchia_vita.nome
+  chiaveDescrizione: oggetto.scudo_vecchia_vita.descrizione
+  classe: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  taglia: 1
+  dannoAssorbito: 0.6
+  costoColpoParato: 25
+  arcoParata: 120
+  finestraParataPerfetta: 0
+  sbilanciamento: 1.5
+  moltiplicatoreDannoSbilanciato: 1
+  costoSchivataExtra: 5
+  moltiplicatoreVelocita: 0.97

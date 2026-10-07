@@ -19,14 +19,32 @@ public class Statistiche : MonoBehaviour
     [Range(0f, 100f)] [SerializeField] float probabilitaCritico = 10f;
     [Tooltip("Quanto vale un colpo critico rispetto a uno normale (1,75 = +75% di danno).")]
     [Min(1f)] [SerializeField] float moltiplicatoreCritico = 1.75f;
+    [Tooltip("Velocità con cui si alza lo scudo, in percentuale (-5 = il 5% più lento, 10 = il 10% più veloce). Di base 0.")]
+    [SerializeField] float velocitaParata = 0f;
+    [Tooltip("Velocità degli attacchi, in percentuale (-7,5 = il 7,5% più lenti: carica, colpo e recupero durano di più). Di base 0.")]
+    [SerializeField] float velocitaAttacco = 0f;
+    [Tooltip("Vita massima in più o in meno, in percentuale (-15 = il 15% in meno). Di base 0. Vale per il giocatore.")]
+    [SerializeField] float vitaMassimaPercento = 0f;
 
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
     // Valori finali, base più modificatori: sono quelli che usa il calcolo del danno.
-    public float Armatura { get { float v = armatura; foreach (var m in modificatori) v += m.armatura; return Mathf.Max(0f, v); } }
+    // Armatura finale: base più i punti dei modificatori, poi le percentuali (-2,5 = il 2,5% in meno del totale).
+    public float Armatura
+    {
+        get
+        {
+            float v = armatura, percento = 0f;
+            foreach (var m in modificatori) { v += m.armatura; percento += m.armaturaPercento; }
+            return Mathf.Max(0f, v * (1f + percento / 100f));
+        }
+    }
     public float BonusDanno { get { float v = bonusDanno; foreach (var m in modificatori) v += m.bonusDanno; return v; } }
     public float ProbabilitaCritico { get { float v = probabilitaCritico; foreach (var m in modificatori) v += m.probabilitaCritico; return Mathf.Clamp(v, 0f, 100f); } }
     public float MoltiplicatoreCritico { get { float v = moltiplicatoreCritico; foreach (var m in modificatori) v += m.moltiplicatoreCritico; return Mathf.Max(1f, v); } }
+    public float VitaMassimaPercento { get { float v = vitaMassimaPercento; foreach (var m in modificatori) v += m.vitaMassimaPercento; return Mathf.Max(-90f, v); } }
+    public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
+    public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
 
     // Un pezzo di equipaggiamento (o un livello, una pozione...) che cambia le statistiche finché è attivo.
     [System.Serializable]
@@ -34,9 +52,27 @@ public class Statistiche : MonoBehaviour
     {
         public string fonte = "";              // per esempio "Amuleto del lupo", utile per capire da dove arriva
         public float armatura;                 // si somma all'armatura
+        public float armaturaPercento;         // percentuale sull'armatura totale (-2,5 = il 2,5% in meno)
         public float bonusDanno;               // punti percentuali in più
         public float probabilitaCritico;       // punti percentuali in più
         public float moltiplicatoreCritico;    // si somma (0,25 = critico da 1,75 a 2)
+        public float velocitaParata;           // punti percentuali: -5 = lo scudo si alza il 5% più lento
+        public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
+        public float vitaMassimaPercento;      // punti percentuali: -15 = vita massima il 15% in meno
+
+        // Somma di due modificatori (per esempio il bonus e il malus di un amuleto).
+        public static Modificatore Somma(string fonte, Modificatore a, Modificatore b) => new Modificatore
+        {
+            fonte = fonte,
+            armatura = a.armatura + b.armatura,
+            armaturaPercento = a.armaturaPercento + b.armaturaPercento,
+            bonusDanno = a.bonusDanno + b.bonusDanno,
+            probabilitaCritico = a.probabilitaCritico + b.probabilitaCritico,
+            moltiplicatoreCritico = a.moltiplicatoreCritico + b.moltiplicatoreCritico,
+            velocitaParata = a.velocitaParata + b.velocitaParata,
+            velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
+            vitaMassimaPercento = a.vitaMassimaPercento + b.vitaMassimaPercento,
+        };
     }
 
     public void AggiungiModificatore(Modificatore m) { if (m != null && !modificatori.Contains(m)) modificatori.Add(m); }
@@ -58,7 +94,8 @@ public class Statistiche : MonoBehaviour
 // Con questa formula l'armatura non arriva mai a rendere immuni: più ne hai, meno conta ogni punto in più.
 public static class CalcoloDanno
 {
-    public static float Calcola(float dannoArma, Statistiche attaccante, Statistiche difensore, out bool critico)
+    // penetrazioneArmatura: quota dell'armatura del difensore che il colpo ignora (0,5 = metà, per le mazze).
+    public static float Calcola(float dannoArma, Statistiche attaccante, Statistiche difensore, out bool critico, float penetrazioneArmatura = 0f)
     {
         float danno = dannoArma;
         critico = false;
@@ -68,7 +105,7 @@ public static class CalcoloDanno
             critico = Random.value * 100f < attaccante.ProbabilitaCritico;
             if (critico) danno *= attaccante.MoltiplicatoreCritico;
         }
-        if (difensore != null) danno *= 100f / (100f + difensore.Armatura);
+        if (difensore != null) danno *= 100f / (100f + difensore.Armatura * (1f - Mathf.Clamp01(penetrazioneArmatura)));
         return Mathf.Max(0f, danno);
     }
 }
