@@ -100,8 +100,8 @@ public static class CreaOggettiGuerriero
         creati += Scudo("scudo-della-vecchia-vita", "Scudo della vecchia vita", "scudo_vecchia_vita", s =>
         {
             s.taglia = DatiScudo.Taglia.Medio;
-            s.dannoAssorbito = 0.85f; s.costoColpoParato = 20f; s.arcoParata = 120f;
-            s.costoSchivataExtra = 3f; s.moltiplicatoreVelocita = 0.97f;
+            s.dannoAssorbito = 0.6f; s.costoColpoParato = 25f; s.arcoParata = 120f;
+            s.costoSchivataExtra = 5f; s.moltiplicatoreVelocita = 0.97f;
         });
         creati += Scudo("pavese-di-quercia", "Pavese di quercia", "pavese_quercia", s =>
         {
