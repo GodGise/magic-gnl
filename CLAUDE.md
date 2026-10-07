@@ -22,6 +22,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), con
 - Prospettiva: **terza persona**.
 - Co-op: **da 1 a 3 giocatori** (si gioca anche da soli).
 - **Lingue**: il gioco esce in 8 lingue, scelte dalle opzioni del menu: italiano, inglese, spagnolo, francese, tedesco, portoghese (Brasile), russo, cinese semplificato. Ogni testo che vede il giocatore passa da `Lingua.T("chiave")` (`Assets/Scripts/Interfaccia/Lingua.cs`), con le 8 traduzioni; niente frasi scritte direttamente nel codice.
+- **Rete co-op: Netcode for GameObjects 2.13** (ufficiale Unity, gratis) con il trasporto **SteamNetworkingSockets** e **Steamworks.NET**. Un giocatore ospita, gli altri entrano con invito Steam; il traffico passa dal relay di Valve, niente server da pagare. Si sviluppa e prova prima in locale (trasporto di base di Unity), poi si collega Steam. Ricerca e fonti: `Docs/rete-coop.md`. Chi scrive codice di giocatore, nemici o combattimento deve tenerne conto: diventeranno oggetti di rete.
 - Aggancio del bersaglio (lock-on): la camera resta puntata sul nemico; **con la rotellina del mouse si cambia bersaglio**.
 
 ## Motore

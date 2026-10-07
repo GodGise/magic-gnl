@@ -74,6 +74,8 @@ public class GiocatoreControllo : MonoBehaviour
     [SerializeField] float dannoAssorbitoInParata = 0.9f;
     [Tooltip("Ampiezza in gradi dell'arco frontale coperto dalla parata.")]
     [SerializeField] float arcoParata = 120f;
+    [Tooltip("Secondi per alzare lo scudo: prima di questo tempo la parata non ferma i colpi. Lo cambiano gli amuleti (Statistiche > Velocita Parata).")]
+    [SerializeField] float tempoAlzataScudo = 0.1f;
     [SerializeField] float durataGuardiaRotta = 1f;
 
     [Header("Attacco")]
@@ -141,7 +143,8 @@ public class GiocatoreControllo : MonoBehaviour
     public float DurataSchivata => durataSchivata;
     public Vector3 DirezioneSchivata => direzioneSchivata;
     public float Vita { get; private set; }
-    public float VitaMassima => vitaMassima;
+    // Vita massima vera: quella dell'Inspector cambiata dalle Statistiche (amuleti: -15 = il 15% in meno).
+    public float VitaMassima => statistiche != null ? vitaMassima * (1f + statistiche.VitaMassimaPercento / 100f) : vitaMassima;
     public float DurataEsecuzione => durataEsecuzione;
     public float MomentoTaglio => momentoTaglio;
 
@@ -204,6 +207,17 @@ public class GiocatoreControllo : MonoBehaviour
     // Nemici e muri crepati già colpiti da questo attacco (ognuno una volta sola per colpo).
     readonly HashSet<MonoBehaviour> colpitiInQuestoAttacco = new HashSet<MonoBehaviour>();
     Statistiche statistiche;
+    // Numeri del colpo e della parata scritti nell'Inspector: valgono senza arma e scudo (vedi AggiornaEquipaggiamento).
+    float[] valoriSenzaArma;
+    // Effetti dell'equipaggiamento (vedi AggiornaEquipaggiamento).
+    float schivataExtraArmatura;       // peso di scudo e armatura sulla schivata
+    float velocitaArmatura = 1f;       // peso di scudo e armatura sulla corsa
+    float penetrazioneArma;            // quota di armatura nemica ignorata (mazze)
+    float finestraParataPerfetta;      // scudo piccolo: secondi utili per la parata perfetta
+    float sbilanciamentoParata = 1.5f; // secondi in cui il nemico resta sbilanciato dopo una parata perfetta
+    float dannoSuSbilanciato = 1f;     // moltiplicatore del danno sui nemici sbilanciati
+    float vitaPerUccisione;            // amuleto arcano
+    float rubaVitaPercento;            // amuleto arcano
 
     // Armatura, bonus e critici del giocatore (vedi Statistiche): li usano tutti i calcoli del danno.
     public Statistiche Statistiche => statistiche;
@@ -222,10 +236,13 @@ public class GiocatoreControllo : MonoBehaviour
         resistenza = GetComponent<Resistenza>();
         aggancio = GetComponent<AggancioBersaglio>();
         statistiche = Statistiche.Di(this);
+        valoriSenzaArma = new[] { dannoAttacco, costoAttacco, preparazioneAttacco, colpoAttivo, recuperoAttacco,
+            portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato, arcoParata };
+        if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
         raggioNormale = controller.radius;
-        Vita = vitaMassima;
+        Vita = VitaMassima;
         puntoRinascita = transform.position;
         rotazioneRinascita = transform.rotation;
         CreaComandi();
@@ -417,7 +434,7 @@ public class GiocatoreControllo : MonoBehaviour
             resistenza.Spendi(costoSprintAlSecondo * dt);
         }
         // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
-        return direzioneInput * velocita * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
+        return direzioneInput * velocita * velocitaArmatura * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
     }
 
     // ---------- Strettoie ----------
@@ -497,7 +514,7 @@ public class GiocatoreControllo : MonoBehaviour
 
     void IniziaSchivata(Vector3 direzioneInput)
     {
-        resistenza.Spendi(costoSchivata);
+        resistenza.Spendi(costoSchivata + schivataExtraArmatura);
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.7f);
         schivataPrenotataFino = -1f;
 
@@ -633,6 +650,70 @@ public class GiocatoreControllo : MonoBehaviour
         Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.7f);
     }
 
+    // ---------- Equipaggiamento (vedi Equipaggiamento e gli oggetti in Gameplay/Oggetti) ----------
+
+    // Chiamato da Equipaggiamento ogni volta che cambia qualcosa addosso al giocatore.
+    // - L'arma decide i numeri del colpo; senza arma valgono quelli scritti nell'Inspector.
+    // - La parata la decide lo scudo; senza scudo si para con l'arma (peggio); senza niente, l'Inspector.
+    // - Scudo e armatura pesano: schivata più cara e corsa più lenta.
+    // - Gli amuleti arcani danno il loro effetto speciale.
+    public void AggiornaEquipaggiamento(DatiArma armaNuova, DatiScudo scudo, DatiArmatura armatura, DatiAmuleto amuleto)
+    {
+        if (valoriSenzaArma == null) return;
+        float[] v = valoriSenzaArma;
+        bool a = armaNuova != null;
+        dannoAttacco = a ? armaNuova.danno : v[0];
+        costoAttacco = a ? armaNuova.costoAttacco : v[1];
+        // Velocità d'attacco delle Statistiche (amuleti): -7,5 = carica, colpo e recupero durano il 7,5% in più.
+        float lentezza = 1f - statistiche.VelocitaAttacco / 100f;
+        preparazioneAttacco = (a ? armaNuova.preparazione : v[2]) * lentezza;
+        colpoAttivo = (a ? armaNuova.colpoAttivo : v[3]) * lentezza;
+        recuperoAttacco = (a ? armaNuova.recupero : v[4]) * lentezza;
+        portataColpo = a ? armaNuova.portata : v[5];
+        raggioColpo = a ? armaNuova.raggio : v[6];
+        arcoAttacco = a ? armaNuova.arco : v[7];
+        velocitaAffondo = a ? armaNuova.affondo : v[8];
+        penetrazioneArma = a ? armaNuova.penetrazioneArmatura : 0f;
+        // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
+
+        if (scudo != null)
+        {
+            dannoAssorbitoInParata = scudo.dannoAssorbito;
+            costoColpoParato = scudo.costoColpoParato;
+            arcoParata = scudo.arcoParata;
+            finestraParataPerfetta = scudo.finestraParataPerfetta;
+            sbilanciamentoParata = scudo.sbilanciamento;
+            dannoSuSbilanciato = scudo.moltiplicatoreDannoSbilanciato;
+        }
+        else
+        {
+            dannoAssorbitoInParata = a ? armaNuova.dannoAssorbitoSenzaScudo : v[9];
+            costoColpoParato = a ? armaNuova.costoParataSenzaScudo : v[10];
+            arcoParata = v[11];
+            finestraParataPerfetta = 0f;
+        }
+
+        schivataExtraArmatura = (armatura != null ? armatura.costoSchivataExtra : 0f) + (scudo != null ? scudo.costoSchivataExtra : 0f);
+        velocitaArmatura = (armatura != null ? armatura.moltiplicatoreVelocita : 1f) * (scudo != null ? scudo.moltiplicatoreVelocita : 1f);
+
+        vitaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.VitaPerUccisione) : 0f;
+        rubaVitaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaVita) : 0f;
+        // Se la vita massima scende (amuleto), la vita attuale non può restare sopra.
+        Vita = Mathf.Min(Vita, VitaMassima);
+
+        if (resistenza != null)
+            resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
+    }
+
+    // Tempo per alzare lo scudo, rallentato o velocizzato dalle Statistiche (-5 = il 5% più lento).
+    float TempoAlzataScudo => tempoAlzataScudo * (1f - statistiche.VelocitaParata / 100f);
+
+    void Cura(float quantita)
+    {
+        if (quantita <= 0f || stato == Stato.Morto) return;
+        Vita = Mathf.Min(VitaMassima, Vita + quantita);
+    }
+
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
     public void SbloccaBastone()
     {
@@ -646,6 +727,7 @@ public class GiocatoreControllo : MonoBehaviour
     // Chiamato da un nemico quando muore: con il bastone si recupera un po' di mana.
     public void NemicoSconfitto()
     {
+        Cura(vitaPerUccisione); // amuleto arcano
         if (!haBastone) return;
         Mana = Mathf.Min(manaMassimo, Mana + manaMassimo * manaPerUccisionePercento / 100f);
     }
@@ -743,8 +825,9 @@ public class GiocatoreControllo : MonoBehaviour
                 if (!NellArcoFrontale(bersaglio.transform.position, arcoAttacco)) continue;
 
                 colpitiInQuestoAttacco.Add(bersaglio);
-                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico);
+                float danno = CalcoloDanno.Calcola(dannoAttacco, statistiche, bersaglio.Statistiche, out bool critico, penetrazioneArma);
                 bersaglio.RiceviColpo(danno, transform.position, critico);
+                Cura(danno * rubaVitaPercento / 100f); // amuleto arcano
                 // Il critico suona più forte e più grave, così si sente senza guardare i numeri.
                 Suoni.Suona(Suono.ImpattoColpo, bersaglio.transform.position + Vector3.up, critico ? 1f : 0.9f, critico ? 0.75f : 1f);
                 continue;
@@ -762,7 +845,9 @@ public class GiocatoreControllo : MonoBehaviour
 
     // Chiamato dai nemici quando un loro colpo arriva. "danno" è già calcolato (armatura e critico compresi).
     // Un critico non parato fa barcollare il doppio.
-    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false)
+    // Con uno scudo piccolo, un colpo che arriva subito dopo aver alzato lo scudo è una parata perfetta:
+    // niente danno, niente resistenza persa, e il nemico (attaccante) resta sbilanciato.
+    public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false, Bersaglio attaccante = null)
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
 
@@ -772,8 +857,17 @@ public class GiocatoreControllo : MonoBehaviour
             return;
         }
 
-        if (stato == Stato.Parata && resistenza.HaResistenza && NellArcoFrontale(origineColpo, arcoParata))
+        // Lo scudo para solo quando è alzato del tutto; la parata perfetta conta da quel momento.
+        float alzata = TempoAlzataScudo;
+        if (stato == Stato.Parata && tempoNelloStato >= alzata && resistenza.HaResistenza && NellArcoFrontale(origineColpo, arcoParata))
         {
+            if (finestraParataPerfetta > 0f && tempoNelloStato <= alzata + finestraParataPerfetta)
+            {
+                Debug.Log("Parata perfetta!");
+                Suoni.Suona(Suono.Parata, transform.position + Vector3.up, 1f, 1.35f);
+                if (attaccante != null) attaccante.Sbilancia(sbilanciamentoParata, transform.position, dannoSuSbilanciato);
+                return;
+            }
             resistenza.Spendi(costoColpoParato);
             PerdiVita(danno * (1f - dannoAssorbitoInParata));
             if (stato == Stato.Morto) return;
@@ -821,7 +915,7 @@ public class GiocatoreControllo : MonoBehaviour
         velocitaVerticale = 0f;
         armaNelFodero = false;   // si rinasce con l'arma in mano
         inizioGestoFodero = -10f;
-        Vita = vitaMassima;
+        Vita = VitaMassima;
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
         Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f);
@@ -907,8 +1001,8 @@ public class GiocatoreControllo : MonoBehaviour
         GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
         string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
         GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
-        GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(vitaMassima));
-        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / vitaMassima, new Color(0.8f, 0.15f, 0.15f));
+        GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(VitaMassima));
+        DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
         GUI.Label(new Rect(20, 66, 280, 20), "Resistenza");
         DisegnaBarra(new Rect(20, 86, 450, 10), resistenza.Attuale / resistenza.Massimo, new Color(0.2f, 0.75f, 0.3f));
         GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
