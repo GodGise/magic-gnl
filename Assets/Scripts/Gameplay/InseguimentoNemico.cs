@@ -50,6 +50,9 @@ public class InseguimentoNemico : MonoBehaviour
     TextMesh esclamativo;
     float esclamativoFino;
     bool inEsecuzione;
+    float fineEsecuzione;          // sicurezza: oltre questo momento l'esecuzione finisce comunque (co-op: chi la faceva è uscito)
+    float esecuzioneLocaleFino;    // co-op, chi non ospita: la sta facendo il giocatore di questo PC
+    const float DurataMassimaEsecuzione = 5f;
 
     // Ignaro: vivo, non sta inseguendo il giocatore e non sta già subendo un'esecuzione. Solo così si può giustiziare.
     public bool Ignaro => !bersaglio.Morto && stato != Stato.Insegue && !inEsecuzione;
@@ -79,6 +82,12 @@ public class InseguimentoNemico : MonoBehaviour
         float dt = Time.deltaTime;
         AggiornaEsclamativo();
         if (Rete.Ospite) return;    // in co-op, per chi non ospita, decide tutto l'host
+        if (inEsecuzione && Time.time > fineEsecuzione)
+        {
+            // L'esecuzione non è mai finita (in co-op chi la faceva è uscito): il nemico torna libero.
+            inEsecuzione = false;
+            stato = Stato.Torna;
+        }
         if (inEsecuzione) return;   // immobile mentre viene giustiziato
 
         // Da morto non fa niente; quando rinasce torna tranquillo al suo posto.
@@ -206,7 +215,8 @@ public class InseguimentoNemico : MonoBehaviour
     public void StatoDaRete(bool insegue, bool sottoEsecuzione)
     {
         stato = insegue ? Stato.Insegue : Stato.Fermo;
-        inEsecuzione = sottoEsecuzione;
+        // Mentre il giocatore di questo PC lo sta giustiziando, la posa resta quella anche se l'host non lo sa ancora.
+        inEsecuzione = sottoEsecuzione || Time.time < esecuzioneLocaleFino;
     }
 
     // ---------- Esecuzione furtiva ----------
@@ -215,8 +225,13 @@ public class InseguimentoNemico : MonoBehaviour
     public void IniziaEsecuzione()
     {
         inEsecuzione = true;
+        fineEsecuzione = Time.time + DurataMassimaEsecuzione;
         bersaglio.attaccaIlGiocatore = false;
-        if (Rete.Ospite) MondoRete.ChiediEsecuzione(bersaglio);
+        if (Rete.Ospite)
+        {
+            esecuzioneLocaleFino = Time.time + DurataMassimaEsecuzione;
+            MondoRete.ChiediEsecuzione(bersaglio);
+        }
     }
 
     // Il taglio: il nemico muore sul colpo, poi rinasce tranquillo al suo posto come dopo una morte normale.
@@ -224,6 +239,7 @@ public class InseguimentoNemico : MonoBehaviour
     {
         if (Rete.Ospite)
         {
+            esecuzioneLocaleFino = 0f;
             MondoRete.ChiediGiustizia(bersaglio, daDove);
             return;
         }

@@ -272,7 +272,7 @@ public class Bersaglio : MonoBehaviour
     {
         if (morto) return;
         vita = 0f;
-        MostraMorte();
+        MostraMorte(true);
     }
 
     public void RinatoDaRete()
@@ -285,7 +285,7 @@ public class Bersaglio : MonoBehaviour
     public void StatoDaRete(float vitaAttuale, bool eMorto)
     {
         vita = vitaAttuale;
-        if (eMorto && !morto) MostraMorte();
+        if (eMorto && !morto) MostraMorte(false);   // senza suono: chi entra non deve sentire tutte le morti passate
         else if (!eMorto && morto) Rinasci();
     }
 
@@ -305,7 +305,7 @@ public class Bersaglio : MonoBehaviour
 
     void Muori()
     {
-        MostraMorte();
+        MostraMorte(true);
         // Il premio dell'uccisione (con il bastone ridà un po' di mana) va a chi ha dato l'ultimo colpo.
         if (!Rete.Attiva || ultimoColpitore == Rete.MioId)
         {
@@ -316,10 +316,10 @@ public class Bersaglio : MonoBehaviour
         if (rinasce) Invoke(nameof(Rinasci), secondiPerRinascere);
     }
 
-    void MostraMorte()
+    void MostraMorte(bool conSuono)
     {
         morto = true;
-        Suoni.Suona(Suono.MorteNemico, transform.position);
+        if (conSuono) Suoni.Suona(Suono.MorteNemico, transform.position);
         StopAllCoroutines();
         staAttaccando = false;
         MostraAspetto(false);

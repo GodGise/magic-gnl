@@ -80,8 +80,18 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
             }
             return;
         }
+        // La figura si crea (e i nemici dell'host la vedono) solo quando arriva la prima posizione vera:
+        // vedi SeguiGiocatore. Prima di allora è a (0, 0, 0) e non deve comparire lì.
+    }
+
+    bool figuraPronta;
+
+    void PreparaFigura()
+    {
+        figuraPronta = true;
         CreaFigura();
         transform.SetPositionAndRotation(posizione.Value, Quaternion.Euler(0f, direzione.Value, 0f));
+        primoAggiornamento = false;
         // Sul PC dell'host i nemici possono prendere di mira anche questa figura.
         if (IsServer) ObiettiviNemici.Iscrivi(this);
     }
@@ -172,6 +182,11 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     // Chi guarda: muove la figura verso la posizione ricevuta e aggiorna arma, fodero, ombra e tempi delle azioni.
     void SeguiGiocatore()
     {
+        if (!figuraPronta)
+        {
+            if (posizione.Value == Vector3.zero) return;
+            PreparaFigura();
+        }
         int a = azione.Value;
         int contatore = (a >> 16) & 0xFFFF;
         if (contatore != ultimoContatore) { ultimoContatore = contatore; tempoLocale = 0f; }

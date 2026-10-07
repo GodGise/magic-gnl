@@ -208,6 +208,8 @@ public class MenuPrincipale : MonoBehaviour
 
     void AnnullaCollegamento()
     {
+        // Se la scena dell'host si sta già caricando non si può più annullare: si aspetta.
+        if (ReteCoop.Istanza != null && ReteCoop.Istanza.StaSincronizzando) return;
         if (ReteCoop.Istanza != null) ReteCoop.Istanza.AnnullaEntrata();
         VaiA(Schermata.Indirizzo);
     }

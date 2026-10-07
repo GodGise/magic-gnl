@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -39,11 +40,16 @@ public static class CreaPrefabRete
     {
         if (!Directory.Exists(Cartella)) Directory.CreateDirectory(Cartella);
 
+        // Si costruisce in una scena "di anteprima" vuota: così non si tocca la scena aperta (per esempio ZonaProva
+        // di Lorenzo) e Netcode non scambia il prefab per un oggetto messo in una scena.
+        var anteprima = EditorSceneManager.NewPreviewScene();
         var radice = new GameObject(nome);
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(radice, anteprima);
         radice.AddComponent<NetworkObject>();
         radice.AddComponent<T>();
         var prefab = PrefabUtility.SaveAsPrefabAsset(radice, percorso);
         Object.DestroyImmediate(radice);
+        EditorSceneManager.ClosePreviewScene(anteprima);
 
         // Netcode riconosce il prefab dal suo "numero di identità" (GlobalObjectIdHash), che assegna da solo
         // quando il prefab viene salvato. Lo si fa salvare di nuovo per sicurezza; se resta zero lo scriviamo noi.

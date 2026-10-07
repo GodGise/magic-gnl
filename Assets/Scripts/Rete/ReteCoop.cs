@@ -37,6 +37,12 @@ public class ReteCoop : MonoBehaviour
     bool scenaPronta;
     bool staEntrando;
     bool chiusuraVoluta;
+    bool sincronizzando;   // chi entra sta già caricando la scena dell'host: non si può più annullare
+
+    public bool StaSincronizzando => sincronizzando;
+
+    // In rete il gioco deve continuare anche con la finestra in secondo piano, altrimenti gli altri restano bloccati.
+    static void CorreSempre(bool sempre) => Application.runInBackground = sempre;
 
     public bool Collegato => rete != null && rete.IsListening;
     public bool SonoHost => Collegato && rete.IsHost;
@@ -66,6 +72,10 @@ public class ReteCoop : MonoBehaviour
             EnableSceneManagement = true,   // la scena la sceglie l'host, chi entra la carica da solo
             ConnectionApproval = true,      // serve a rifiutare il quarto giocatore
         };
+        // Da soli il gioco si ferma quando la finestra non è in primo piano (come prima); in rete no (vedi CorreSempre).
+        rete.RunInBackground = false;
+        // Indirizzo sbagliato: si rinuncia dopo circa 10 secondi invece di un minuto.
+        trasporto.MaxConnectAttempts = 10;
         gameObject.SetActive(true);
 
         prefabGiocatore = CaricaPrefab("Rete/GiocatoreRete");
@@ -109,17 +119,19 @@ public class ReteCoop : MonoBehaviour
         if (Collegato || rete.ShutdownInProgress) { errore = Lingua.T("rete.errore_occupato"); return false; }
 
         trasporto.SetConnectionData("127.0.0.1", Porta, "0.0.0.0");
+        chiusuraVoluta = false;
         if (!rete.StartHost()) { errore = Lingua.T("rete.errore_ospita"); return false; }
 
-        chiusuraVoluta = false;
         scenaPronta = false;
         rete.SceneManager.OnLoadEventCompleted += ScenaCaricata;
         if (rete.SceneManager.LoadScene(scena, LoadSceneMode.Single) != SceneEventProgressStatus.Started)
         {
+            chiusuraVoluta = true;   // non è "l'host è uscito": la partita non è mai partita
             rete.Shutdown();
             errore = Lingua.T("rete.errore_ospita");
             return false;
         }
+        CorreSempre(true);
         return true;
     }
 
@@ -169,13 +181,22 @@ public class ReteCoop : MonoBehaviour
         trasporto.SetConnectionData(string.IsNullOrWhiteSpace(indirizzo) ? "127.0.0.1" : indirizzo.Trim(), Porta);
         chiusuraVoluta = false;
         staEntrando = true;
+        sincronizzando = false;
         if (!rete.StartClient())
         {
             staEntrando = false;
             errore = Lingua.T("rete.errore_collega");
             return false;
         }
+        rete.SceneManager.OnSynchronize += AllaSincronizzazione;
+        CorreSempre(true);
         return true;
+    }
+
+    // Chi entra: l'host ha accettato e sta mandando la sua scena (la si carica adesso).
+    void AllaSincronizzazione(ulong id)
+    {
+        if (id == rete.LocalClientId) sincronizzando = true;
     }
 
     // ---------- collegamenti e uscite ----------
@@ -190,6 +211,7 @@ public class ReteCoop : MonoBehaviour
         if (id == rete.LocalClientId && staEntrando)
         {
             staEntrando = false;
+            sincronizzando = false;
             EsitoCollegamento?.Invoke(true, null);
         }
     }
@@ -207,12 +229,17 @@ public class ReteCoop : MonoBehaviour
         if (staEntrando)
         {
             staEntrando = false;
-            if (rete.IsListening) rete.Shutdown();
+            bool eraInCaricamento = sincronizzando;
+            sincronizzando = false;
+            if (rete.IsListening && !rete.ShutdownInProgress) rete.Shutdown(true);
+            CorreSempre(false);
             EsitoCollegamento?.Invoke(false, avviso);
+            // Se la scena dell'host si stava già caricando, il menu non c'è più: ci si torna con l'avviso.
+            if (eraInCaricamento || SceneManager.GetActiveScene().name != ScenaMenu) TornaAlMenu(avviso);
             return;
         }
         if (chiusuraVoluta) return;
-        if (rete.IsListening) rete.Shutdown();
+        if (rete.IsListening && !rete.ShutdownInProgress) rete.Shutdown(true);
         TornaAlMenu(avviso);
     }
 
@@ -232,21 +259,25 @@ public class ReteCoop : MonoBehaviour
         chiusuraVoluta = true;
         staEntrando = false;
         if (rete != null && rete.IsListening) rete.Shutdown();
+        CorreSempre(false);
     }
 
     // Annulla un tentativo di entrare ancora in corso.
     public void AnnullaEntrata()
     {
-        if (!staEntrando) return;
+        if (!staEntrando || sincronizzando) return;
         staEntrando = false;
         chiusuraVoluta = true;
         if (rete.IsListening) rete.Shutdown();
+        CorreSempre(false);
     }
 
     void TornaAlMenu(string avviso)
     {
         AvvisoPerMenu = avviso;
         scenaPronta = false;
+        sincronizzando = false;
+        CorreSempre(false);
         if (rete != null && rete.SceneManager != null) rete.SceneManager.OnLoadEventCompleted -= ScenaCaricata;
         Time.timeScale = 1f;
         AudioListener.pause = false;
