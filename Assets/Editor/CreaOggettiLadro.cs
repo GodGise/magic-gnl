@@ -157,7 +157,7 @@ public static class CreaOggettiLadro
         creati += Amuleto("piuma-di-civetta", "Piuma di civetta", "piuma_civetta", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.furtivita = 15f;
-            m.malus.bonusDanno = -5f;
+            m.malus.vitaMassimaPercento = -7f;
         });
         creati += Amuleto("dente-di-vipera", "Dente di vipera", "dente_vipera", m =>
         {
