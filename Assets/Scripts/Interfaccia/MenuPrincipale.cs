@@ -290,6 +290,14 @@ public class MenuPrincipale : MonoBehaviour
             return;
         }
 
+        // crediti: Spazio (o A del pad) li salta e torna al menu
+        if (schermata == Schermata.Crediti &&
+            ((tastiera != null && tastiera.spaceKey.wasPressedThisFrame) || (pad != null && pad.buttonSouth.wasPressedThisFrame)))
+        {
+            VaiA(Schermata.Principale);
+            return;
+        }
+
         int verticale = 0, orizzontale = 0;
         bool conferma = false, indietro = false;
 
@@ -422,7 +430,7 @@ public class MenuPrincipale : MonoBehaviour
 
         if (schermata != Schermata.Titolo)
             Scritta(new Rect(0, 1010, Larghezza, 30),
-                Lingua.T("menu.aiuto"),
+                schermata == Schermata.Crediti ? Lingua.T("menu.salta") : Lingua.T("menu.aiuto"),
                 stPiccolo, coloreSpento, 0.8f * comparsa);
 
         if (tempoAvviso > 0f && !string.IsNullOrEmpty(avviso))
