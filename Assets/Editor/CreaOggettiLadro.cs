@@ -162,7 +162,7 @@ public static class CreaOggettiLadro
         creati += Amuleto("dente-di-vipera", "Dente di vipera", "dente_vipera", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.probabilitaCritico = 12f;
-            m.malus.armaturaPercento = -10f;
+            m.malus.velocitaAttacco = -10f; // attacchi il 10% più lenti
         });
         creati += Amuleto("laccio-del-borsaiolo", "Laccio del borsaiolo", "laccio_borsaiolo", m =>
         {
