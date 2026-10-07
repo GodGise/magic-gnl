@@ -148,7 +148,7 @@ public static class CreaOggettiLadro
         creati += Armatura("manto-dell-ombra", "Manto dell'ombra", "manto_ombra", b =>
         {
             b.peso = DatiArmatura.Peso.Ombra;
-            b.armatura = 3f; b.furtivita = 30f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
+            b.armatura = 3f; b.furtivita = 35f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
         });
 
         // ---------- Amuleti (ognuno con un bonus e un malus) ----------
