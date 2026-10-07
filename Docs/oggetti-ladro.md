@@ -27,7 +27,7 @@ Riferimenti: orco sgherro con vita 160, armatura 25 e vista 18 m. "Colpi all'orc
 
 | Arma | Tipo | Danno | Costo | Carica / recupero (s) | Portata / arco | Critico in più | Ignora armatura | Alle spalle | Colpi all'orco (davanti / alle spalle) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pugnale da scuoiare | Pugnale | 18 | 12 | 0,15 / 0,22 | 1,4 m / 90° | +10% | — | ×2,5 | 12 / 5 |
+| Pugnale da scuoiare | Pugnale | 16 | 12 | 0,15 / 0,22 | 1,4 m / 90° | +10% | — | ×2,5 | 13 / 5 |
 | Pugnale ricurvo degli orchi | Pugnale | 22 | 14 | 0,18 / 0,27 | 1,5 m / 100° | +5% | — | ×2 | 10 / 5 |
 | Stiletto del tagliagole | Stiletto | 20 | 13 | 0,17 / 0,25 | 1,4 m / 60° | +15%, crit +0,25 | 50% | ×3 | 9 / 3 |
 | Stiletto d'ombra | Stiletto | 24 | 14 | 0,16 / 0,24 | 1,4 m / 60° | +20%, crit +0,25 | 30% | ×3 | 8 / 3 |

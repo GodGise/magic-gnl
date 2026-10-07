@@ -46,11 +46,11 @@ public static class CreaOggettiLadro
         creati += Arma("pugnale-da-scuoiare", "Pugnale da scuoiare", "pugnale_scuoiare", a =>
         {
             a.tipo = DatiArma.Tipo.Pugnale;
-            a.danno = 18f; a.costoAttacco = 12f;
+            a.danno = 16f; a.costoAttacco = 12f;
             a.preparazione = 0.15f; a.colpoAttivo = 0.12f; a.recupero = 0.22f;
             a.portata = 1.4f; a.raggio = 1.0f; a.arco = 90f; a.affondo = 3.5f;
             a.probabilitaCritico = 10f; a.moltiplicatoreAlleSpalle = 2.5f;
-            a.dannoAssorbitoSenzaScudo = 0.2f; a.costoParataSenzaScudo = 25f;
+            a.dannoAssorbitoSenzaScudo = 0.15f; a.costoParataSenzaScudo = 20f;
         });
         creati += Arma("pugnale-ricurvo-degli-orchi", "Pugnale ricurvo degli orchi", "pugnale_ricurvo", a =>
         {
