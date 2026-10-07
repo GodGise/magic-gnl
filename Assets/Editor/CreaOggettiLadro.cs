@@ -128,9 +128,9 @@ public static class CreaOggettiLadro
         creati += ArmaDistanza("balestra-del-carceriere", "Balestra del carceriere", "balestra_carceriere", d =>
         {
             d.tipo = DatiArmaDistanza.Tipo.Balestra;
-            d.danno = 60f; d.costoTiro = 25f; d.carica = 0.4f; d.ricarica = 2.2f;
+            d.danno = 55f; d.costoTiro = 30f; d.carica = 0.4f; d.ricarica = 2.2f;
             d.portata = 40f; d.velocitaFreccia = 65f; d.penetrazioneArmatura = 0.7f;
-            d.moltiplicatoreNonVisto = 1.5f;
+            d.probabilitaCritico = 10f; d.moltiplicatoreNonVisto = 1.75f;
         });
 
         // ---------- Armature (poca protezione, tanta furtività) ----------
