@@ -76,7 +76,7 @@ public static class CreaOggettiLadro
         creati += Arma("stiletto-d-ombra", "Stiletto d'ombra", "stiletto_ombra", a =>
         {
             a.tipo = DatiArma.Tipo.Stiletto;
-            a.danno = 24f; a.costoAttacco = 14f;
+            a.danno = 22f; a.costoAttacco = 14f;
             a.preparazione = 0.16f; a.colpoAttivo = 0.1f; a.recupero = 0.24f;
             a.portata = 1.4f; a.raggio = 0.9f; a.arco = 60f; a.affondo = 4f;
             a.penetrazioneArmatura = 0.3f;
