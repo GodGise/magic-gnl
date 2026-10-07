@@ -1,6 +1,6 @@
 # Oggetti del Ladro (stile assassino): stato del lavoro
 
-Ramo `lorenzoc/oggetti-ladro`, 7 ottobre 2026. Parte da `lorenzoc/oggetti-guerriero` (PR #12), quindi va unito **dopo** la #12. È una prima proposta: i numeri si rivedono con Lorenzo oggetto per oggetto, come per il Guerriero.
+Ramo `lorenzoc/oggetti-ladro`, 7 ottobre 2026. Parte da `lorenzoc/oggetti-guerriero` (PR #12), quindi va unito **dopo** la #12. Numeri **rivisti con Lorenzo oggetto per oggetto** il 7 ottobre.
 
 Il Ladro uccide **a distanza o di soppiatto**. Il nome "Assassino" al posto di "Ladro" è una proposta di Lorenzo da decidere con Giuseppe.
 
@@ -30,40 +30,40 @@ Riferimenti: orco sgherro con vita 160, armatura 25 e vista 18 m. "Colpi all'orc
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Pugnale da scuoiare | Pugnale | 16 | 12 | 0,15 / 0,22 | 1,4 m / 90° | +10% | — | ×2,5 | 13 / 5 |
 | Pugnale ricurvo degli orchi | Pugnale | 22 | 14 | 0,18 / 0,27 | 1,5 m / 100° | +5% | — | ×2 | 10 / 5 |
-| Stiletto del tagliagole | Stiletto | 20 | 13 | 0,17 / 0,25 | 1,4 m / 60° | +15%, crit +0,25 | 50% | ×3 | 9 / 3 |
-| Stiletto d'ombra | Stiletto | 24 | 14 | 0,16 / 0,24 | 1,4 m / 60° | +20%, crit +0,25 | 30% | ×3 | 8 / 3 |
+| Stiletto del tagliagole | Stiletto | 18 | 13 | 0,17 / 0,25 | 1,4 m / 60° | +15%, crit +0,25 | 40% | ×3 | 11 / 4 |
+| Stiletto d'ombra | Stiletto | 22 | 14 | 0,16 / 0,24 | 1,4 m / 60° | +20%, crit +0,25 | 30% | ×3 | 9 / 3 |
 | Pugnali gemelli | Doppi pugnali (2 mani) | 12 | 10 | 0,10 / 0,18 | 1,4 m / 120° | +10% | — | ×2 | 17 / 9 (ma colpi rapidissimi) |
 
-Parata senza scudo: dal 10% al 25%. Il Ladro schiva, non para.
+Parata senza scudo: pugnale da scuoiare 15% (costo 20), ricurvo 20% (25), tagliagole 10% (26), stiletto d'ombra 15% (28), gemelli 10% (30). Il Ladro schiva, non para.
 
 ### Armi a distanza (tiro da fare)
 
 | Arma | Tipo | Danno | Costo | Carica / ricarica (s) | Portata | Ignora armatura | Contro chi non ti ha visto | Colpi all'orco (visto / non visto) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Arco corto da caccia | Arco corto | 18 | 12 | 0,4 / 0,35 | 25 m | — | ×1,5 | 12 / 8 |
-| Arco d'osso degli orchi | Arco corto | 22 | 14 | 0,45 / 0,4 | 28 m | — | ×1,5 | 10 / 7 |
-| Arco lungo di tasso | Arco lungo | 32 | 20 | 0,9 / 0,6 | 45 m | — | ×2 | 7 / 4 |
-| Balestra da posta | Balestra | 45 | 18 | 0,3 / 1,6 | 35 m | 50% | ×2 | 4 / 2 |
-| Balestra del carceriere | Balestra | 60 | 25 | 0,4 / 2,2 | 40 m | 70% | ×1,5 | 3 / 2 |
+| Arco d'osso degli orchi | Arco corto | 23 | 14 | 0,45 / 0,4 | 28 m | 7% | ×1,5 | 9 / 6 |
+| Arco lungo di tasso | Arco lungo | 30 | 20 | 0,9 / 0,6 | 45 m | 12% | ×2,3 | 7 / 3 |
+| Balestra da posta | Balestra | 45 | 18 | 0,3 / 1,6 | 23 m | 40% | ×2 | 5 / 3 |
+| Balestra del carceriere | Balestra | 55 | 30 | 0,4 / 2,2 | 40 m | 70% | ×1,75 | 4 / 2 |
 
 ### Armature
 
 | Armatura | Tipo | Armatura | Furtività | Vista dell'orco | Peso schivata / corsa |
 | --- | --- | --- | --- | --- | --- |
-| Giubba scura | Leggera | 5 | 10% | 16,2 m | — |
-| Corpetto di cuoio rinforzato | Cuoio | 15 | 5% | 17,1 m | +2 / -1% |
-| Manto dell'ombra | Ombra | 3 | 30% | 12,6 m | — |
+| Giubba scura | Leggera | 7 | 12% | 15,8 m | — |
+| Corpetto di cuoio rinforzato | Cuoio | 15 | 8% | 16,6 m | +4 / -1% |
+| Manto dell'ombra | Ombra | 3 | 35% | 11,7 m | — |
 
 ### Amuleti
 
 | Amuleto | Tipo | Bonus | Malus |
 | --- | --- | --- | --- |
-| Piuma di civetta | Magico | +15% furtività | -5% danno |
-| Dente di vipera | Magico | +12% critico | -10% armatura totale |
-| Laccio del borsaiolo | Magico | attacchi il 10% più veloci | -10% vita massima |
+| Piuma di civetta | Magico | +15% furtività | -7% vita massima |
+| Dente di vipera | Magico | +12% critico | attacchi il 10% più lenti |
+| Laccio del borsaiolo | Magico | attacchi il 10% più veloci | -5% critico, -5% vita massima |
 | Ultimo respiro | Arcano | tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 s (ricarica 6 minuti) | -6% danno |
 | Fiato del predatore | Arcano | resistenza +40% più veloce | -20% vita massima |
-| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -10% vita massima |
+| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -5% critico, -7% vita massima |
 
 ## Per Giuseppe
 
