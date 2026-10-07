@@ -20,7 +20,7 @@ public class InventarioGioco : MonoBehaviour
     // Fotogramma in cui l'inventario si è chiuso: il menu di pausa non deve aprirsi con lo stesso Esc.
     public static int FotogrammaChiusura { get; private set; } = -10;
 
-    const int Colonne = 6, RigheVisibili = 3;
+    const int Colonne = 9, RigheVisibili = 4;   // 36 caselle visibili; lo zaino non ha limite, il resto si scorre con la rotellina o le frecce
 
     enum Zona { Caselle, Zaino }
 
@@ -343,6 +343,20 @@ public class InventarioGioco : MonoBehaviour
         int n = zaino.Numero;
         int righeTotali = Mathf.Max(1, Mathf.CeilToInt(n / (float)Colonne));
         int rigaScelta = indiceZaino / Colonne;
+        // Rotellina del mouse sopra lo zaino: scorre di una riga alla volta.
+        if (e.type == EventType.ScrollWheel && Z.Contains(e.mousePosition) && righeTotali > RigheVisibili)
+        {
+            int passo = e.delta.y > 0f ? 1 : -1;
+            int nuovaRiga = Mathf.Clamp(rigaIniziale + passo, 0, righeTotali - RigheVisibili);
+            int spostamento = nuovaRiga - rigaIniziale;
+            rigaIniziale = nuovaRiga;
+            if (zona == Zona.Zaino && spostamento != 0)
+            {
+                indiceZaino = Mathf.Clamp(indiceZaino + spostamento * Colonne, 0, n - 1);
+                rigaScelta = indiceZaino / Colonne;
+            }
+            e.Use();
+        }
         if (zona == Zona.Zaino)
         {
             if (rigaScelta < rigaIniziale) rigaIniziale = rigaScelta;
@@ -362,14 +376,14 @@ public class InventarioGioco : MonoBehaviour
             for (int col = 0; col < Colonne; col++)
             {
                 int i = (rigaIniziale + riga) * Colonne + col;
-                var r = new Rect(Z.x + 20f + col * 150f, Z.y + 65f + riga * 140f, 110f, 110f);
+                var r = new Rect(Z.x + 30f + col * 102f, Z.y + 70f + riga * 100f, 90f, 90f);
                 bool pieno = i < n;
                 bool scelta = pieno && zona == Zona.Zaino && i == indiceZaino;
                 if (pieno && Clic(r, Zona.Zaino, i, e, mouseMosso)) return true;
-                if (scelta) GraficaMenu.Alone(new Rect(r.x - 40f, r.y - 40f, r.width + 80f, r.height + 80f), new Color(1f, 0.5f, 0.2f, 0.22f * alfa));
+                if (scelta) GraficaMenu.Alone(new Rect(r.x - 30f, r.y - 30f, r.width + 60f, r.height + 60f), new Color(1f, 0.5f, 0.2f, 0.22f * alfa));
                 GraficaMenu.Riempi(r, new Color(0.055f, 0.055f, 0.07f, 0.9f * alfa));
                 GraficaMenu.Bordo(r, scelta ? 3f : 1f, GraficaMenu.Con(scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo, (scelta ? 1f : 0.55f) * alfa));
-                if (pieno) GraficaMenu.Icona(new Rect(r.x + 15f, r.y + 15f, 80f, 80f), zaino.Oggetti[i], alfa);
+                if (pieno) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 70f, 70f), zaino.Oggetti[i], alfa);
             }
         return false;
     }
