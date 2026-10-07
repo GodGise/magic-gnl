@@ -13,7 +13,7 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ### 7 ottobre: due documenti nuovi, serve approvazione o modifiche
 1. `Docs/mana.md`: regola del mana (si ricarica da solo, lo Stregone più in fretta; deve uccidere quanto Guerriero e Ladro). **Serve a:** barre dell'interfaccia e combattimento dello Stregone.
-2. `Docs/oggetti-ladro-stregone.md`: 19 oggetti per Ladro e 19 per Stregone, nello stesso schema del Guerriero. **Da fare:** confrontare con `Docs/oggetti-guerriero.md` (quando è unito) e dire se nomi dei campi, ordine e tipi non combaciano; controllare che i numeri abbiano senso per il bilanciamento.
+2. `Docs/oggetti-stregone.md`: 19 oggetti dello Stregone (5 armi, 5 libri, 3 vesti, 6 amuleti), scritti sullo stesso schema di `Docs/oggetti-guerriero.md` e `Docs/oggetti-ladro.md`. **Da fare:** rivedere i numeri oggetto per oggetto come per le altre due classi (danno, costo mana, tempi, portata) e dire se la regola del libro nella casella dello Scudo va bene. In fondo al file c'è l'elenco di cosa decidere.
 
 **Cosa chiede Giuseppe:** leggere i due file e rispondere, per ciascuno, "approvato", oppure cosa cambiare. Non modificare i file direttamente: le modifiche si scrivono nelle risposte e le applica Giuseppe.
 
