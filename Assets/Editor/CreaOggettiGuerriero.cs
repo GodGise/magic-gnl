@@ -106,8 +106,8 @@ public static class CreaOggettiGuerriero
         creati += Scudo("pavese-di-quercia", "Pavese di quercia", "pavese_quercia", s =>
         {
             s.taglia = DatiScudo.Taglia.Grande;
-            s.dannoAssorbito = 0.95f; s.costoColpoParato = 14f; s.arcoParata = 160f;
-            s.costoSchivataExtra = 8f; s.moltiplicatoreVelocita = 0.9f;
+            s.dannoAssorbito = 0.85f; s.costoColpoParato = 22f; s.arcoParata = 160f;
+            s.costoSchivataExtra = 15f; s.moltiplicatoreVelocita = 0.9f;
         });
         creati += Scudo("brocchiere-di-ferro", "Brocchiere di ferro", "brocchiere_ferro", s =>
         {
