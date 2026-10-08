@@ -37,10 +37,10 @@ Da sapere:
 Il co-op tocca soprattutto **giocatore, nemici e combattimento**. Ogni oggetto che si muove deve diventare un "oggetto di rete" e ogni colpo deve essere deciso da chi ha l'autorità (l'host per i nemici). Per questo va deciso **prima** di scrivere ancora molto codice di combattimento: più ne scriviamo "solo per un giocatore", più ne va riadattato.
 
 Ordine proposto (stato all'8 ottobre):
-1. **[Fatto, da provare]** Installare NGO 2.13 e provare due giocatori in locale.
-2. **[Fatto, da provare]** Movimento e azioni del giocatore in rete (figure degli altri giocatori).
-3. **[Fatto, da provare]** Combattimento: colpi ai nemici, parata, schivata, vita.
-4. **[Fatto, da provare]** Nemici guidati dall'host.
+1. **[Fatto e provato]** Installare NGO 2.13 e provare due giocatori in locale.
+2. **[Fatto e provato]** Movimento e azioni del giocatore in rete (figure degli altri giocatori).
+3. **[Fatto e provato]** Combattimento: colpi ai nemici, parata, schivata, vita.
+4. **[Fatto e provato]** Nemici guidati dall'host.
 5. Steam: Steamworks.NET, trasporto Steam, inviti fra amici (serve l'App ID, si paga quando il gioco è all'80-90%).
 
 ## Come funziona adesso (ramo `giuseppec/rete-coop`)

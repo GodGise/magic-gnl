@@ -9,7 +9,7 @@ Le date sono una stima per tre persone part-time. I compiti della settimana sono
 | Combattimento (parata, schivata, attacco, aggancio, esecuzione furtiva) | Fatto | Numeri regolati da Lorenzo |
 | Oggetti di Guerriero e Ladro | Fatto | Stregone scritto in `Docs/oggetti-stregone.md`, da approvare da Lorenzo |
 | Interfaccia in partita (barre, inventario, pausa) | Fatto | Mancano casella del Ladro (arma a distanza), abilità Q e libro dello Stregone |
-| Co-op in locale, senza Steam (menu Multigiocatore, nemici e combattimento in rete) | Fatto, da provare in combattimento | Ramo `giuseppec/rete-coop`, PR #17 |
+| Co-op in locale, senza Steam (menu Multigiocatore, nemici e combattimento in rete) | Fatto e provato in due (8 ottobre) | PR #17 |
 | Porte, leve, bauli, checkpoint condivisi in co-op | Da fare | Area di Lorenzo, domanda in `Docs/da-approvare.md` |
 | Steam (App ID, inviti) | Dopo | Si paga quando il gioco è all'80-90% |
 | Mana e oggetti dello Stregone nel codice | Da fare | Dopo l'approvazione di Lorenzo |
