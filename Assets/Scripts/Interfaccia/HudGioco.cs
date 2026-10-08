@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 // Interfaccia in partita, nello stile dei menu (disegno approvato in Docs/interfaccia.md):
 //   - in alto a sinistra: Vita (con la scia chiara del danno appena subito), Resistenza e, se serve, Mana;
 //   - in basso a sinistra: arma (tasto 1) e bastone (tasto 2, se lo hai) dentro due rombi, scudo e amuleto più piccoli;
+//     per il Ladro, al posto dello scudo, l'arma a distanza (tasto 2); se l'amuleto ha un'abilità (Ultimo respiro),
+//     un rombo con Q che si riempie mentre si ricarica, acceso quando è pronta e viola mentre si è invisibili;
+//   - al centro, da morti: la scritta "Sei morto";
 //   - in basso al centro: nome e vita del nemico agganciato, e le azioni possibili ("E  Raccogli: ...");
 //   - sopra il nemico agganciato: un rombo color fiamma;
 //   - in alto a destra: momento del giorno e ora del gioco.
@@ -130,6 +133,7 @@ public class HudGioco : MonoBehaviour
             Barra(80f, 178f, 340f, 16f, giocatore.Mana / Mathf.Max(1f, giocatore.ManaMassimo), 0f, ColoreMana, Lingua.T("stat.mana"), null);
 
         DisegnaArmi(altezza);
+        DisegnaMorte(larghezza, altezza);
         DisegnaNemico(larghezza, altezza);
         DisegnaAzione(larghezza, altezza);
         DisegnaOra(larghezza);
@@ -194,13 +198,52 @@ public class HudGioco : MonoBehaviour
             GraficaMenu.Alone(new Rect(c.x + 8f, c.y - 40f, 30f, 30f), new Color(0.5f, 0.7f, 1f, 0.9f));
             x += 130f;
         }
-        if (e != null && e.Scudo != null)
+        bool ladro = SceltaPartita.Classe == ClasseGiocatore.Ladro;
+        if (ladro && e != null && e.ArmaDistanza != null)
+        {
+            // il tiro con l'arco non c'è ancora: l'arco si vede, ma non si accende
+            RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, "2");
+            x += 130f;
+        }
+        else if (!ladro && e != null && e.Scudo != null)
         {
             RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Scudo, null);
             x += 100f;
         }
         if (e != null && e.Amuleto != null)
+        {
             RomboOggetto(new Vector2(x + 10f, y + 16f), 70f, false, e.Amuleto, null);
+            x += 84f;
+        }
+        if (giocatore.HaAbilitaOmbra) RomboAbilita(new Vector2(x + 10f, y + 16f), 70f);
+    }
+
+    // Abilità dell'amuleto (tasto Q): il rombo interno cresce mentre si ricarica; pronto = color fiamma,
+    // in uso (invisibile) = viola che pulsa.
+    void RomboAbilita(Vector2 centro, float lato)
+    {
+        bool invisibile = giocatore.Invisibile;
+        float pronta = invisibile ? 1f : Mathf.Clamp01(giocatore.OmbraPronta);
+        bool accesa = !invisibile && pronta >= 1f;
+        Color viola = new Color(0.62f, 0.4f, 0.95f);
+        Color bordo = invisibile ? viola : accesa ? GraficaMenu.Selezione : GraficaMenu.Bronzo;
+        GraficaMenu.Rombo(centro, lato, bordo);
+        GraficaMenu.Rombo(centro, lato - 8f, new Color(0.025f, 0.025f, 0.035f, 0.9f));
+        float pulsa = invisibile ? 0.6f + 0.4f * Mathf.Sin(Time.time * 6f) : 1f;
+        Color pieno = invisibile ? GraficaMenu.Con(viola, 0.5f * pulsa) : GraficaMenu.Con(accesa ? GraficaMenu.Selezione : GraficaMenu.Bronzo, accesa ? 0.45f : 0.3f);
+        GraficaMenu.Rombo(centro, (lato - 14f) * pronta, pieno);
+        GraficaMenu.Scritta(new Rect(centro.x - 20f, centro.y - 14f, 40f, 28f), "Q", GraficaMenu.Etichetta,
+            accesa || invisibile ? GraficaMenu.Testo : GraficaMenu.Spento, 1f);
+    }
+
+    // Da morti: "Sei morto" grande al centro, rosso cupo, finché si rinasce.
+    void DisegnaMorte(float larghezza, float altezza)
+    {
+        if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Morto) return;
+        GraficaMenu.Riempi(new Rect(0f, altezza * 0.5f - 90f, larghezza, 180f), new Color(0f, 0f, 0f, 0.55f));
+        string testo = Lingua.T("hud.morto").ToUpperInvariant();
+        if (Lingua.Indice < 6) testo = GraficaMenu.Spaziato(testo);
+        GraficaMenu.Scritta(new Rect(0f, altezza * 0.5f - 70f, larghezza, 140f), testo, GraficaMenu.Titolo, new Color(0.62f, 0.1f, 0.08f), 1f);
     }
 
     void DisegnaNemico(float larghezza, float altezza)
