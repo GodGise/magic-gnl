@@ -396,6 +396,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
         // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
         vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
+        if (vittimaPossibile != null) HudGioco.MostraAzione(Lingua.T("hud.tasto_attacco"), Lingua.T("hud.esecuzione"));
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
 
@@ -564,7 +565,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         if (Time.time >= prossimoAvvisoMana)
         {
             prossimoAvvisoMana = Time.time + 1f;
-            MessaggiSchermo.Mostra("Mana insufficiente", 1.5f);
+            MessaggiSchermo.Mostra(Lingua.T("hud.mana_insufficiente"), 1.5f);
             Suoni.Suona(Suono.Negato, transform.position + Vector3.up, 0.7f);
         }
         return false;
@@ -739,6 +740,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     // Vero mentre il giocatore è invisibile ai nemici: non lo vedono, smettono di inseguirlo e non lo attaccano.
     public bool Invisibile => Time.time < invisibileFino;
+    // Vero se l'amuleto equipaggiato dà l'abilità del tasto Q (per l'indicatore in HudGioco).
+    public bool HaAbilitaOmbra => durataOmbra > 0f;
     // Da 0 (appena usato) a 1 (pronto): per la barra del pannello.
     public float OmbraPronta => ricaricaOmbra <= 0f ? 1f : Mathf.Clamp01(1f - (ombraProntaDa - Time.time) / ricaricaOmbra);
 
@@ -1123,13 +1126,14 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             }
         }
 
-        if (vittimaPossibile != null)
+        // Con l'interfaccia vera, avviso dell'esecuzione e scritta della morte li disegna HudGioco.
+        if (vittimaPossibile != null && !HudGioco.Attivo)
         {
             var stileAvviso = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             GUI.Label(new Rect(0f, Screen.height - 90f, Screen.width, 30f), "Tasto sinistro: esecuzione furtiva", stileAvviso);
         }
 
-        if (stato == Stato.Morto)
+        if (stato == Stato.Morto && !HudGioco.Attivo)
         {
             var stileMorte = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             Color primaMorte = GUI.color;

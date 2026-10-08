@@ -16,6 +16,9 @@ Stile: lo stesso dei menu (`Assets/Scripts/Interfaccia/GraficaMenu.cs`): riquadr
 - **In alto a destra**: momento del giorno e ora del gioco ("Notte · 21:40"), al posto della scritta di prova del ciclo giorno e notte.
 - Il pannello di prova del giocatore (stato, comandi) resta solo per lo sviluppo: si accende e spegne con un tasto (da decidere, per esempio F1).
 
+- **Ladro** (8 ottobre): al posto dello scudo, l'**arma a distanza** nel rombo con il tasto 2 (spenta finché non c'è il tiro con l'arco). **Abilità Q** dell'amuleto (Ultimo respiro): rombo con la Q accanto all'amuleto, si riempie mentre si ricarica, color fiamma quando è pronta, viola mentre si è invisibili.
+- **Morte**: "Sei morto" grande al centro, rosso cupo. L'avviso dell'esecuzione furtiva usa il riquadro delle azioni ("SX · Esecuzione furtiva"). I messaggi temporanei (`MessaggiSchermo`) hanno lo stile dei menu.
+
 ## Inventario (Tab apre e chiude)
 
 - Titolo "Equipaggiamento" in alto con il divisore. Il gioco sotto si scurisce.
@@ -24,6 +27,8 @@ Stile: lo stesso dei menu (`Assets/Scripts/Interfaccia/GraficaMenu.cs`): riquadr
 - **Dettaglio** sotto lo zaino: nome dell'oggetto (color fiamma), tipo e classe a destra, descrizione in corsivo, statistiche con il **confronto** con l'oggetto equipaggiato nella stessa casella: verde se migliora, rosso se peggiora (per i costi, più alto = rosso).
 - **Comandi**: frecce o levetta per scegliere, E (o A) per equipaggiare, Tab (o B) per chiudere; mouse: clic per scegliere, doppio clic per equipaggiare.
 - Con lo spadone a due mani la casella dello scudo si svuota (regola già in `Equipaggiamento`).
+- **Ladro**: la seconda casella è **Arma a distanza** al posto di Scudo (proposta di Lorenzo). Il Ladro non può equipaggiare scudi e le altre classi non possono equipaggiare archi e balestre: compare un avviso in basso.
+- Nomi e descrizioni degli oggetti di Guerriero e Ladro sono tradotti nelle 8 lingue in `Lingua.cs`. Lo Stregone (libro nella seconda casella) lo fa Lorenzo con il suo Claude.
 - In co-op l'inventario non ferma il gioco.
 
 ## Icone (compito per Nazar)
