@@ -15,6 +15,7 @@ using UnityEngine;
 //   - Strettoie (solo giocatore, vedi PassaggioStretto): più lo spazio si stringe, più la figura si gira
 //     di fianco, abbassa le braccia vicino al corpo e avanza a passetti laterali corti. Quando entra nella
 //     strettoia porta il braccio dietro la spalla e mette l'arma nel fodero sulla schiena; quando esce la riprende.
+// Co-op: anima allo stesso modo anche la figura degli altri giocatori (GiocatoreRete), con i loro stati ricevuti in rete.
 // Come montarlo: non serve montarlo. Lo aggiunge da solo AspettoUmanoide quando crea la figura.
 // I numeri si possono regolare dall'Inspector durante il Play (sul giocatore o sul nemico).
 public class AnimazioneUmanoide : MonoBehaviour
@@ -171,7 +172,7 @@ public class AnimazioneUmanoide : MonoBehaviour
     // ---------- Stato ----------
 
     Transform figura, gambaSinistra, gambaDestra, braccioSinistro, braccioDestro;
-    GiocatoreControllo giocatore;
+    IPersonaggioAnimato giocatore;   // GiocatoreControllo, o GiocatoreRete per gli altri giocatori in co-op
     Bersaglio nemico;
     InseguimentoNemico inseguimento;   // solo per i nemici con la vista: serve a sapere se sta subendo un'esecuzione
     Vector3 posizioneFigura;
@@ -197,7 +198,7 @@ public class AnimazioneUmanoide : MonoBehaviour
         this.braccioDestro = braccioDestro;
         posizioneFigura = figura.localPosition;
         ultimaPosizione = transform.position;
-        giocatore = GetComponent<GiocatoreControllo>();
+        giocatore = GetComponentInParent<IPersonaggioAnimato>();
         nemico = GetComponent<Bersaglio>();
 
         if (giocatore != null)

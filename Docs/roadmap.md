@@ -2,6 +2,20 @@
 
 Le date sono una stima per tre persone part-time. I compiti della settimana sono nel documento "Compiti del team" e in `Docs/compiti-lorenzo.md`; la vecchia tabella "Prossimi 3 giorni (5-7 ottobre)" è passata ed è rimasta solo nella storia di Git.
 
+### Dove siamo (aggiornare alla fine di ogni lavoro importante)
+
+| Cosa | Stato | Note |
+| --- | --- | --- |
+| Combattimento (parata, schivata, attacco, aggancio, esecuzione furtiva) | Fatto | Numeri regolati da Lorenzo |
+| Oggetti di Guerriero e Ladro | Fatto | Stregone scritto in `Docs/oggetti-stregone.md`, da approvare da Lorenzo |
+| Interfaccia in partita (barre, inventario, pausa) | Fatto | Mancano casella del Ladro (arma a distanza), abilità Q e libro dello Stregone |
+| Co-op in locale, senza Steam (menu Multigiocatore, nemici e combattimento in rete) | Fatto e provato in due (8 ottobre) | PR #17 |
+| Porte, leve, bauli, checkpoint condivisi in co-op | Da fare | Area di Lorenzo, domanda in `Docs/da-approvare.md` |
+| Steam (App ID, inviti) | Dopo | Si paga quando il gioco è all'80-90% |
+| Mana e oggetti dello Stregone nel codice | Da fare | Dopo l'approvazione di Lorenzo |
+| Icone degli oggetti | Da fare | Nazar |
+| Nome del gioco e del protagonista | Da decidere | |
+
 ### La roadmap
 
 Quattro fasi, con un **gate** tra una e l'altra: si passa alla fase dopo solo se il gate è superato. Le date sono una stima per tre persone part-time, da rivedere dopo il gate 1.

@@ -206,6 +206,26 @@ Aggiungi modello del Guerriero
 Prima versione low-poly senza animazioni, texture 512 px.
 ```
 
+## 14. Scrivere codice ora che c'è il co-op
+
+Dall'8 ottobre il gioco è co-op (Netcode for GameObjects, dettagli in `Docs/rete-coop.md`). Ogni codice nuovo di giocatore, nemici, combattimento o zone deve rispettare queste regole, **anche quando lo scrive il Claude di Lorenzo**.
+
+- **Il giocatore di questo PC** è `GiocatoreControllo`: non è un oggetto di rete. Gli altri giocatori sono figure (`GiocatoreRete`) che copiano movimenti e azioni.
+- **Chi decide il mondo**: `Rete.ComandaIlMondo` è vero da soli e sull'host. I nemici pensano solo lì. `Rete.Ospite` è vero per chi è entrato nella partita di un altro.
+- **Nemici**: cercano i giocatori in `ObiettiviNemici` (il più vicino, `PiuVicino`), **mai** con `FindFirstObjectByType<GiocatoreControllo>`. Un colpo di nemico arriva al giocatore con `ColpitoDaNemico(nemico)`: il danno lo calcola chi viene colpito.
+- **Danno ai nemici**: sempre e solo con `Bersaglio.RiceviColpo`. In rete lo manda da solo all'host.
+- **Cose del giocatore di questo PC** (barre, inventario, trappole che colpiscono chi ci passa sopra, raccolta oggetti): `FindFirstObjectByType<GiocatoreControllo>` va ancora bene, perché ognuno ha il suo.
+- **Cose del mondo condivise** (porte, leve, bauli, muri crepati, checkpoint): per ora ognuno ha la sua copia. Per condividerne una: la decide l'host, poi un messaggio di rete la manda a tutti, come fa `MondoRete` per i nemici. Prima di farlo, accordarsi con Giuseppe (vedi `Docs/da-approvare.md`).
+- **Tempo**: in rete la pausa non ferma il tempo. Niente meccaniche che si basano su `Time.timeScale = 0`.
+- **Prova in due**: menu **magic-gnl > Crea build di prova (Windows)**, poi **magic-gnl > Avvia build di prova** due volte. In una finestra **Multigiocatore > Ospita una partita**, nell'altra **Entra in una partita** con `127.0.0.1`.
+
+## 15. Riprendere in una chat nuova
+
+Per consumare meno crediti, quando una chat diventa lunga se ne apre una nuova. Il nuovo Claude non ricorda niente: tutto quello che serve sta nei file.
+1. Pull di `main` e del ramo di lavoro, poi lettura di `CLAUDE.md`, di questa guida e di `Docs/da-approvare.md`.
+2. Lo stato del progetto (cosa è fatto, cosa manca) sta nella tabella "Dove siamo" di `Docs/roadmap.md`: va aggiornata alla fine di ogni lavoro importante.
+3. Chi chiude una chat chiede a Claude di scrivere nella tabella cosa ha lasciato a metà, in una riga.
+
 ## 17. Richieste tipiche e come rispondere
 
 Ecco le richieste che probabilmente ti faranno Nazar e Lorenzo, con il modo di rispondere che ha funzionato con Giuseppe.

@@ -36,12 +36,25 @@ Da sapere:
 
 Il co-op tocca soprattutto **giocatore, nemici e combattimento**. Ogni oggetto che si muove deve diventare un "oggetto di rete" e ogni colpo deve essere deciso da chi ha l'autorità (l'host per i nemici). Per questo va deciso **prima** di scrivere ancora molto codice di combattimento: più ne scriviamo "solo per un giocatore", più ne va riadattato.
 
-Ordine proposto:
-1. Installare NGO 2.13 e fare una scena di prova con due giocatori in locale (Lorenzo e il suo Claude devono saperlo: il combattimento passerà di lì).
-2. Rendere "di rete" il movimento del giocatore e la camera.
-3. Combattimento: colpi, parata, schivata, vita.
-4. Nemici guidati dall'host.
-5. Steam: Steamworks.NET, trasporto Steam, inviti fra amici (serve l'App ID).
+Ordine proposto (stato all'8 ottobre):
+1. **[Fatto e provato]** Installare NGO 2.13 e provare due giocatori in locale.
+2. **[Fatto e provato]** Movimento e azioni del giocatore in rete (figure degli altri giocatori).
+3. **[Fatto e provato]** Combattimento: colpi ai nemici, parata, schivata, vita.
+4. **[Fatto e provato]** Nemici guidati dall'host.
+5. Steam: Steamworks.NET, trasporto Steam, inviti fra amici (serve l'App ID, si paga quando il gioco è all'80-90%).
+
+## Come funziona adesso (ramo `giuseppec/rete-coop`)
+
+- **Menu**: "Multigiocatore" nel menu iniziale. "Ospita una partita": si sceglie la classe e la partita parte; nella schermata si vedono gli indirizzi del PC da dare agli amici. "Entra in una partita": si scrive l'indirizzo dell'host, si sceglie la classe, ci si collega e la scena dell'host si carica da sola. Fino a 3 giocatori, porta 7777.
+- **Dove si gioca senza Steam**: stesso PC (due finestre, 127.0.0.1), stessa casa (indirizzo locale), oppure su internet con una rete privata gratuita (ZeroTier o Radmin VPN) che dà a ognuno un indirizzo come se fossero in casa.
+- **Chi decide cosa** (`Assets/Scripts/Rete/`):
+  - ogni giocatore comanda il **proprio personaggio** (`GiocatoreControllo`, che non è un oggetto di rete); la sua **figura** (`GiocatoreRete`) copia posizione e azioni e le mostra agli altri, animata come il giocatore vero;
+  - i **nemici pensano solo sull'host** (vista, inseguimento, attacchi, vita, morte); `MondoRete` manda a tutti posizioni (12 volte al secondo), eventi (preavviso, colpito, sbilanciato, morto, rinato, "!") e l'ora del giorno;
+  - i **colpi ai nemici** di chi non ospita vanno all'host (`Bersaglio.RiceviColpo` lo fa da solo), che li applica e li rimanda a tutti; lo stesso per parate perfette ed esecuzioni furtive;
+  - i **colpi dei nemici** a un giocatore arrivano al suo PC: lì si decide se ha parato o schivato e quanto danno prende (con la sua armatura);
+  - il premio dell'uccisione (mana, vita degli amuleti) va a chi ha dato l'ultimo colpo; le sfere magiche si vedono da tutti.
+- **Regole per chi scrive codice nuovo**: i nemici cercano i giocatori in `ObiettiviNemici` (non con `FindFirstObjectByType<GiocatoreControllo>`); il danno ai nemici passa sempre da `Bersaglio.RiceviColpo`; per sapere se si comanda il mondo si usa `Rete.ComandaIlMondo` (vero anche da soli); in pausa, in rete, il tempo non si ferma.
+- **Non ancora condivisi** (ognuno ha la sua copia): porte, leve, bauli, chiavi, muri crepati, trappole, oggetti raccolti, checkpoint. Vanno fatti uno per uno con Lorenzo (sono suoi, `Assets/Scripts/Livelli/`). La figura degli altri giocatori è ancora quella provvisoria a blocchi.
 
 ## Fonti
 

@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 // Menu iniziale del gioco.
-// Schermate: titolo ("premi un tasto"), menu principale (Nuova partita, Continua, Opzioni, Crediti, Esci),
+// Schermate: titolo ("premi un tasto"), menu principale (Nuova partita, Multigiocatore, Continua, Opzioni, Crediti, Esci),
 // scelta della classe (Guerriero, Ladro, Stregone), opzioni (lingua, volumi, schermo intero, effetto retro) e crediti
 // (provvisori, che scorrono e si saltano con Spazio: l'elenco è in TestiCrediti.cs).
 // Tutti i testi passano da Lingua.T(...): si traducono nelle 8 lingue del gioco (vedi Lingua.cs).
@@ -11,6 +12,10 @@ using UnityEngine.SceneManagement;
 // Le opzioni restano salvate (Impostazioni.cs). La classe scelta va in SceltaPartita.Classe.
 // "Nuova partita" carica la scena di gioco indicata in "Scena iniziale"; se non è nelle Build Settings
 // usa la "Scena di riserva" (ZonaProva).
+// Multigiocatore (co-op fino a 3, vedi ReteCoop): "Ospita una partita" (scelta della classe, poi la partita parte e
+// gli amici possono entrare) oppure "Entra in una partita" (si scrive l'indirizzo dell'host con numeri e punti,
+// Backspace cancella; poi la classe e il collegamento). Nella schermata Multigiocatore si vedono gli indirizzi di
+// questo PC da dare agli amici. Se l'host chiude o la connessione cade, si torna qui con un avviso.
 // Musica: trascinare un file audio nel campo "Musica". Parte piano, sale lentamente e si spegne quando inizia la partita.
 // Stile dark fantasy (GraficaMenu.cs): titolo inciso, riquadri con cornice di bronzo, braci che salgono dal basso.
 // Come montarlo: su un oggetto vuoto della scena Menu. Il menu "magic-gnl > Crea scena menu" prepara tutto da solo.
@@ -35,7 +40,14 @@ public class MenuPrincipale : MonoBehaviour
     [Tooltip("Quante braci salgono dal basso dello schermo.")]
     [SerializeField] int numeroBraci = 46;
 
-    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti }
+    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento }
+
+    // Come parte la partita dopo la scelta della classe: da soli, ospitando gli amici, o entrando da un amico.
+    enum Modo { DaSolo, Ospita, Entra }
+    Modo modo = Modo.DaSolo;
+    const string ChiaveIndirizzo = "UltimoIndirizzoHost";
+    string indirizzo = "127.0.0.1";
+    List<string> indirizziMiei = new List<string>();
 
     const float Larghezza = GraficaMenu.Larghezza, Altezza = GraficaMenu.Altezza;
 
@@ -79,7 +91,25 @@ public class MenuPrincipale : MonoBehaviour
         braci = new Brace[Mathf.Max(0, numeroBraci)];
         for (int i = 0; i < braci.Length; i++) NuovaBrace(ref braci[i], true);
 
+        indirizzo = PlayerPrefs.GetString(ChiaveIndirizzo, "127.0.0.1");
+        if (Keyboard.current != null) Keyboard.current.onTextInput += TestoScritto;
+        if (ReteCoop.Istanza != null) ReteCoop.Istanza.EsitoCollegamento += Collegato;
+
+        // Tornati qui da una partita in rete finita male (host uscito, connessione caduta): si mostra il perché.
+        if (!string.IsNullOrEmpty(ReteCoop.AvvisoPerMenu))
+        {
+            VaiA(Schermata.Multigiocatore);
+            Avvisa(ReteCoop.AvvisoPerMenu);
+            ReteCoop.AvvisoPerMenu = null;
+            return;
+        }
         VaiA(Schermata.Titolo);
+    }
+
+    void OnDestroy()
+    {
+        if (Keyboard.current != null) Keyboard.current.onTextInput -= TestoScritto;
+        if (ReteCoop.Istanza != null) ReteCoop.Istanza.EsitoCollegamento -= Collegato;
     }
 
     // ---------- schermate ----------
@@ -93,7 +123,8 @@ public class MenuPrincipale : MonoBehaviour
         switch (nuova)
         {
             case Schermata.Principale:
-                elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => VaiA(Schermata.Classe));
+                elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => { modo = Modo.DaSolo; VaiA(Schermata.Classe); });
+                elenco.Aggiungi(() => Lingua.T("menu.multigiocatore"), () => VaiA(Schermata.Multigiocatore));
                 elenco.Aggiungi(() => Lingua.T("menu.continua"), null).attiva = false;
                 elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
                 elenco.Aggiungi(() => Lingua.T("menu.crediti"), () => VaiA(Schermata.Crediti));
@@ -106,7 +137,7 @@ public class MenuPrincipale : MonoBehaviour
                     int indice = i;
                     elenco.Aggiungi(() => Lingua.T(chiaviClassi[indice]), () => IniziaPartita((ClasseGiocatore)indice));
                 }
-                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
                 elenco.selezione = Mathf.Clamp((int)SceltaPartita.Classe, 0, chiaviClassi.Length - 1);
                 ultimaClasse = elenco.selezione;
                 break;
@@ -118,6 +149,24 @@ public class MenuPrincipale : MonoBehaviour
             case Schermata.Crediti:
                 elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
                 break;
+
+            case Schermata.Multigiocatore:
+                indirizziMiei = ReteCoop.IndirizziLocali();
+                elenco.Aggiungi(() => Lingua.T("rete.ospita"), () => { modo = Modo.Ospita; VaiA(Schermata.Classe); });
+                elenco.Aggiungi(() => Lingua.T("rete.entra"), () => VaiA(Schermata.Indirizzo));
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
+                break;
+
+            case Schermata.Indirizzo:
+                // La prima voce mostra l'indirizzo mentre lo si scrive (con il cursore che lampeggia).
+                elenco.Aggiungi(() => Lingua.T("rete.indirizzo") + ":  " + indirizzo + (Mathf.Repeat(Time.unscaledTime, 1f) < 0.5f ? "_" : " "), ConfermaIndirizzo);
+                elenco.Aggiungi(() => Lingua.T("rete.continua"), ConfermaIndirizzo);
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Multigiocatore));
+                break;
+
+            case Schermata.Collegamento:
+                elenco.Aggiungi(() => Lingua.T("rete.annulla"), AnnullaCollegamento);
+                break;
         }
     }
 
@@ -127,9 +176,56 @@ public class MenuPrincipale : MonoBehaviour
         {
             case Schermata.Principale: VaiA(Schermata.Titolo); break;
             case Schermata.Classe:
+                if (modo == Modo.Ospita) VaiA(Schermata.Multigiocatore);
+                else if (modo == Modo.Entra) VaiA(Schermata.Indirizzo);
+                else VaiA(Schermata.Principale);
+                break;
             case Schermata.Opzioni:
-            case Schermata.Crediti: VaiA(Schermata.Principale); break;
+            case Schermata.Crediti:
+            case Schermata.Multigiocatore: VaiA(Schermata.Principale); break;
+            case Schermata.Indirizzo: VaiA(Schermata.Multigiocatore); break;
+            case Schermata.Collegamento: AnnullaCollegamento(); break;
         }
+    }
+
+    // ---------- multigiocatore ----------
+
+    // Lettere scritte dalla tastiera: nella schermata dell'indirizzo valgono solo numeri e punti.
+    void TestoScritto(char c)
+    {
+        if (schermata != Schermata.Indirizzo || avvioInCorso) return;
+        if ((char.IsDigit(c) || c == '.') && indirizzo.Length < 15) indirizzo += c;
+    }
+
+    void ConfermaIndirizzo()
+    {
+        if (string.IsNullOrWhiteSpace(indirizzo)) indirizzo = "127.0.0.1";
+        PlayerPrefs.SetString(ChiaveIndirizzo, indirizzo);
+        PlayerPrefs.Save();
+        modo = Modo.Entra;
+        VaiA(Schermata.Classe);
+    }
+
+    void AnnullaCollegamento()
+    {
+        // Se la scena dell'host si sta già caricando non si può più annullare: si aspetta.
+        if (ReteCoop.Istanza != null && ReteCoop.Istanza.StaSincronizzando) return;
+        if (ReteCoop.Istanza != null) ReteCoop.Istanza.AnnullaEntrata();
+        VaiA(Schermata.Indirizzo);
+    }
+
+    // Risposta al tentativo di entrare: collegati (la scena dell'host si carica da sola) oppure no.
+    void Collegato(bool riuscito, string motivo)
+    {
+        if (schermata != Schermata.Collegamento) return;
+        if (riuscito)
+        {
+            scenaDaCaricare = null;   // la carica Netcode, scelta dall'host
+            avvioInCorso = true;
+            return;
+        }
+        VaiA(Schermata.Indirizzo);
+        Avvisa(motivo);
     }
 
     // ---------- azioni ----------
@@ -147,6 +243,18 @@ public class MenuPrincipale : MonoBehaviour
             return;
         }
         SceltaPartita.Classe = classe;
+
+        if (modo == Modo.Entra)
+        {
+            string errore = Lingua.T("rete.errore_prefab");
+            if (ReteCoop.Istanza == null || !ReteCoop.Istanza.Entra(indirizzo, out errore))
+            {
+                Avvisa(errore);
+                return;
+            }
+            VaiA(Schermata.Collegamento);
+            return;
+        }
         scenaDaCaricare = scena;
         avvioInCorso = true;
     }
@@ -185,7 +293,23 @@ public class MenuPrincipale : MonoBehaviour
 
         if (avvioInCorso)
         {
-            if (nero >= 1f && livelloMusica <= 0.05f) SceneManager.LoadScene(scenaDaCaricare);
+            if (nero >= 1f && livelloMusica <= 0.05f && !string.IsNullOrEmpty(scenaDaCaricare))
+            {
+                string scena = scenaDaCaricare;
+                scenaDaCaricare = null;
+                if (modo != Modo.Ospita) SceneManager.LoadScene(scena);
+                else
+                {
+                    string errore = Lingua.T("rete.errore_prefab");
+                    if (ReteCoop.Istanza == null || !ReteCoop.Istanza.Ospita(scena, out errore))
+                    {
+                        // Non si riesce a ospitare (per esempio la porta è già usata): si torna al menu con l'avviso.
+                        avvioInCorso = false;
+                        VaiA(Schermata.Multigiocatore);
+                        Avvisa(errore);
+                    }
+                }
+            }
             return;
         }
 
@@ -211,6 +335,13 @@ public class MenuPrincipale : MonoBehaviour
         }
 
         var c = elenco.LeggiComandi();
+
+        // Indirizzo: Backspace cancella l'ultima cifra (e torna indietro solo se non c'è più niente da cancellare).
+        if (schermata == Schermata.Indirizzo && tastiera != null && tastiera.backspaceKey.wasPressedThisFrame && indirizzo.Length > 0)
+        {
+            indirizzo = indirizzo.Substring(0, indirizzo.Length - 1);
+            if (!tastiera.escapeKey.wasPressedThisFrame) c.indietro = false;
+        }
 
         // scelta della classe: tre riquadri affiancati (sinistra e destra), "Indietro" sotto (su e giù)
         if (schermata == Schermata.Classe)
@@ -303,6 +434,21 @@ public class MenuPrincipale : MonoBehaviour
             case Schermata.Principale:
                 if (elenco.DisegnaElenco(380f, 600f, comparsa, avvioInCorso)) return;
                 break;
+            case Schermata.Multigiocatore:
+                if (DisegnaMultigiocatore(comparsa)) return;
+                break;
+            case Schermata.Indirizzo:
+                GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("rete.scrivi_indirizzo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(420f, 760f, comparsa, avvioInCorso)) return;
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 560f, 725f, 1120f, 120f), Lingua.T("rete.spiega_indirizzo"), GraficaMenu.Descrizione, GraficaMenu.Spento, comparsa);
+                break;
+            case Schermata.Collegamento:
+            {
+                int puntini = 1 + (int)(Time.unscaledTime * 2f) % 3;
+                GraficaMenu.Scritta(new Rect(0, 420, Larghezza, 60), Lingua.T("rete.collegamento") + " " + indirizzo + new string('.', puntini), GraficaMenu.Voce, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(540f, 440f, comparsa, avvioInCorso)) return;
+                break;
+            }
             case Schermata.Opzioni:
                 if (elenco.DisegnaOpzioni(370f, comparsa, avvioInCorso)) return;
                 break;
@@ -338,6 +484,18 @@ public class MenuPrincipale : MonoBehaviour
             GUI.matrix = Matrix4x4.identity;
             GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, nero));
         }
+    }
+
+    // Multigiocatore: le due scelte, poi gli indirizzi di questo PC da dare agli amici e due righe di spiegazione.
+    bool DisegnaMultigiocatore(float comparsa)
+    {
+        GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("rete.sottotitolo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+        if (elenco.DisegnaElenco(420f, 640f, comparsa, avvioInCorso)) return true;
+
+        string miei = indirizziMiei.Count > 0 ? string.Join(GraficaMenu.Separatore, indirizziMiei) : "—";
+        GraficaMenu.Scritta(new Rect(0, 730f, Larghezza, 40f), Lingua.T("rete.tuo_indirizzo") + ":   " + miei, GraficaMenu.Voce, GraficaMenu.Bronzo, comparsa);
+        GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 620f, 790f, 1240f, 150f), Lingua.T("rete.spiega"), GraficaMenu.Descrizione, GraficaMenu.Spento, comparsa);
+        return false;
     }
 
     // Scelta della classe: tre riquadri affiancati con numero romano, nome e descrizione; sotto "Indietro".

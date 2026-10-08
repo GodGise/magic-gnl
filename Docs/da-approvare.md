@@ -11,11 +11,11 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
-### 7 ottobre: due documenti nuovi, serve approvazione o modifiche
-1. `Docs/mana.md`: regola del mana (si ricarica da solo, lo Stregone più in fretta; deve uccidere quanto Guerriero e Ladro). **Serve a:** barre dell'interfaccia e combattimento dello Stregone.
-2. `Docs/oggetti-stregone.md`: 19 oggetti dello Stregone (5 armi, 5 libri, 3 vesti, 6 amuleti), scritti sullo stesso schema di `Docs/oggetti-guerriero.md` e `Docs/oggetti-ladro.md`. **Da fare:** rivedere i numeri oggetto per oggetto come per le altre due classi (danno, costo mana, tempi, portata) e dire se la regola del libro nella casella dello Scudo va bene. In fondo al file c'è l'elenco di cosa decidere.
-
-**Cosa chiede Giuseppe:** leggere i due file e rispondere, per ciascuno, "approvato", oppure cosa cambiare. Non modificare i file direttamente: le modifiche si scrivono nelle risposte e le applica Giuseppe.
+### 8 ottobre: co-op, combattimento e nemici in rete (serve una risposta)
+Giuseppe ha deciso di portare subito in rete anche combattimento e nemici (ramo `giuseppec/rete-coop`, spiegazione in `Docs/rete-coop.md`, sezione "Come funziona adesso"). Per farlo sono cambiati questi file di gioco: `GiocatoreControllo.cs`, `Bersaglio.cs`, `InseguimentoNemico.cs`, `AnimazioneUmanoide.cs`, `SferaMagica.cs`. Da soli il gioco funziona come prima.
+1. **Finché il ramo non è unito a `main`, non modificare quei cinque file** (si creerebbero conflitti). Se ci sono modifiche in corso su quei file, scriverlo nelle risposte.
+2. Regole nuove per il codice (tutte in `Docs/guida-claude.md`, sezione 14): i nemici cercano i giocatori in `ObiettiviNemici` (non più con `FindFirstObjectByType<GiocatoreControllo>`); il danno ai nemici passa sempre da `Bersaglio.RiceviColpo`; `Rete.ComandaIlMondo` dice se questo PC decide il mondo (vero anche da soli).
+3. Porte, leve, bauli, chiavi, muri crepati, trappole e checkpoint (`Assets/Scripts/Livelli/`, area di Lorenzo) per ora **non sono condivisi**: ogni giocatore ha la sua copia. **Domanda:** quali vanno condivisi per primi? Proposta: porte e leve (se uno apre, è aperto per tutti), poi bauli e oggetti.
 
 ## Risposte di Lorenzo
 
