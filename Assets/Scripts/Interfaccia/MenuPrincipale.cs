@@ -16,7 +16,15 @@ using UnityEngine.SceneManagement;
 // gli amici possono entrare) oppure "Entra in una partita" (si scrive l'indirizzo dell'host con numeri e punti,
 // Backspace cancella; poi la classe e il collegamento). Nella schermata Multigiocatore si vedono gli indirizzi di
 // questo PC da dare agli amici. Se l'host chiude o la connessione cade, si torna qui con un avviso.
-// Musica: trascinare un file audio nel campo "Musica". Parte piano, sale lentamente e si spegne quando inizia la partita.
+// Sequenza di avvio: schermo scuro e titolo che sfuma; "Premi un tasto" compare dopo qualche secondo e finche' non e'
+// del tutto visibile i tasti non contano (niente spam all'avvio). Alla pressione suona un colpo, il paesaggio passa da
+// sfumato (nebbia grigia) a colorato, entra la musica e compare il menu. Dopo la prima pressione gli altri tasti non
+// contano. Tempi regolabili dall'Inspector (campi "Sequenza di avvio"). F2 salta la sequenza (comodo per provare il gioco).
+// Musica: parte solo durante la transizione (sulla schermata del titolo c'e' silenzio). Sale lentamente e si spegne quando
+// inizia la partita. Se il campo "Musica" e' vuoto si carica Assets/Resources/Audio/Musica/menu-principale.
+// Suoni: tick quando ci si sposta su una voce, suono di conferma, colpo del titolo e (facoltativi) onda della transizione e
+// ambiente del titolo. Se i campi sono vuoti si caricano da Assets/Resources/Audio/Effetti (menu-passaggio, menu-conferma,
+// titolo-pressione, titolo-transizione) e Assets/Resources/Audio/Ambiente (titolo): non serve trascinare nulla.
 // Stile dark fantasy (GraficaMenu.cs): titolo inciso, riquadri con cornice di bronzo, braci che salgono dal basso.
 // Come montarlo: su un oggetto vuoto della scena Menu. Il menu "magic-gnl > Crea scena menu" prepara tutto da solo.
 [RequireComponent(typeof(AudioSource))]
@@ -35,6 +43,43 @@ public class MenuPrincipale : MonoBehaviour
     [SerializeField] AudioClip musica;
     [Tooltip("Secondi per far salire (o scendere) la musica.")]
     [SerializeField] float dissolvenzaMusica = 4f;
+
+    [Header("Suoni (se un campo e' vuoto si carica da Assets/Resources/Audio/...)")]
+    [Tooltip("Colpo quando si preme il tasto sulla schermata del titolo. Resources: Audio/Effetti/titolo-pressione")]
+    [SerializeField] AudioClip suonoTitolo;
+    [Tooltip("Facoltativo: onda sonora che sale durante la transizione verso il menu. Resources: Audio/Effetti/titolo-transizione")]
+    [SerializeField] AudioClip suonoTransizione;
+    [Tooltip("Facoltativo: vento e drone quasi impercettibili sulla schermata del titolo, in ciclo. Resources: Audio/Ambiente/titolo")]
+    [SerializeField] AudioClip ambienteTitolo;
+    [Tooltip("Tick quando ci si sposta su una voce. Resources: Audio/Effetti/menu-passaggio")]
+    [SerializeField] AudioClip suonoPassaggio;
+    [Tooltip("Suono quando si conferma una voce. Resources: Audio/Effetti/menu-conferma")]
+    [SerializeField] AudioClip suonoConferma;
+    [Tooltip("Quanto cambia a caso l'altezza del tick, cosi non suona sempre uguale.")]
+    [SerializeField, Range(0f, 0.2f)] float variazioneTono = 0.05f;
+    [Header("Volumi dei suoni (0 = muto, 1 = pieno)")]
+    [Tooltip("Volume del tick quando ci si sposta sulle voci.")]
+    [SerializeField, Range(0f, 1f)] float volumeTick = 0.35f;
+    [Tooltip("Volume del suono di conferma.")]
+    [SerializeField, Range(0f, 1f)] float volumeConferma = 0.6f;
+    [Tooltip("Volume del colpo su Premi un tasto e dell'onda di transizione.")]
+    [SerializeField, Range(0f, 1f)] float volumeTitolo = 0.8f;
+
+    [Header("Sequenza di avvio (secondi)")]
+    [Tooltip("Dopo quanto compare Premi un tasto.")]
+    [SerializeField] float ritardoPremi = 2.5f;
+    [Tooltip("Durata della dissolvenza di Premi un tasto. I tasti si accettano solo a dissolvenza finita.")]
+    [SerializeField] float durataPremi = 1.5f;
+    [Tooltip("Durata della transizione dopo la pressione (da sfumato a colorato).")]
+    [SerializeField] float durataTransizione = 3.5f;
+    [Tooltip("A che punto della transizione entra la musica (0 = subito, 1 = alla fine).")]
+    [SerializeField, Range(0f, 1f)] float puntoMusica = 0.55f;
+    [Tooltip("A che punto della transizione compare il menu.")]
+    [SerializeField, Range(0f, 1f)] float puntoMenu = 0.7f;
+    [Tooltip("Dopo quanto dalla pressione parte l'onda sonora della transizione (se c'e').")]
+    [SerializeField] float ritardoSuonoTransizione = 0.5f;
+    [Tooltip("F2 salta la sequenza di avvio (comodo quando provi il gioco).")]
+    [SerializeField] bool saltoConF2 = true;
 
     [Header("Atmosfera")]
     [Tooltip("Quante braci salgono dal basso dello schermo.")]
@@ -61,7 +106,17 @@ public class MenuPrincipale : MonoBehaviour
     string avviso;
     float tempoAvviso;
     int ultimaClasse;
-    AudioSource sorgente;
+    AudioSource sorgente;                 // la musica
+    AudioSource effetti, ambiente;        // colpi e tick / suono d'ambiente del titolo (creati nello Start)
+    bool musicaAttiva;                    // la musica entra solo dopo Premi un tasto
+    bool inTransizione;
+    float tempoTransizione;
+    float grigio = 1f;                    // velo di nebbia grigia sul paesaggio: 1 = sfumato, 0 = colorato
+    float ambienteLivello;                // 0..1, per la dissolvenza del suono d'ambiente
+    float durataComparsa = 0.6f;          // secondi di dissolvenza dei riquadri quando si cambia schermata
+    bool titoloGiaVisto;
+    float ritardoAttuale, durataAttuale;  // tempi di Premi un tasto (piu brevi se si torna al titolo con Indietro)
+    float altoTitoloVisibile = 290f;      // il titolo sale piano quando compare il menu
 
     struct Brace { public Vector2 pos, vel; public float vita, durata, taglia; }
     Brace[] braci;
@@ -82,11 +137,20 @@ public class MenuPrincipale : MonoBehaviour
         sorgente.loop = true;
         sorgente.spatialBlend = 0f;
         sorgente.volume = 0f;
-        if (musica != null)
-        {
-            sorgente.clip = musica;
-            sorgente.Play();
-        }
+        if (musica == null) musica = Resources.Load<AudioClip>("Audio/Musica/menu-principale");
+        if (musica != null) sorgente.clip = musica;   // parte piu avanti, durante la transizione (AvviaMusica)
+
+        if (suonoTitolo == null) suonoTitolo = Resources.Load<AudioClip>("Audio/Effetti/titolo-pressione");
+        if (suonoTransizione == null) suonoTransizione = Resources.Load<AudioClip>("Audio/Effetti/titolo-transizione");
+        if (ambienteTitolo == null) ambienteTitolo = Resources.Load<AudioClip>("Audio/Ambiente/titolo");
+        if (suonoPassaggio == null) suonoPassaggio = Resources.Load<AudioClip>("Audio/Effetti/menu-passaggio");
+        if (suonoConferma == null) suonoConferma = Resources.Load<AudioClip>("Audio/Effetti/menu-conferma");
+
+        effetti = CreaSorgente(false);
+        ambiente = CreaSorgente(true);
+        if (ambienteTitolo != null) ambiente.clip = ambienteTitolo;
+        elenco.alMuovere = () => SuonaEffetto(suonoPassaggio, true, volumeTick);
+        elenco.alConfermare = () => SuonaEffetto(suonoConferma, true, volumeConferma);
 
         braci = new Brace[Mathf.Max(0, numeroBraci)];
         for (int i = 0; i < braci.Length; i++) NuovaBrace(ref braci[i], true);
@@ -98,6 +162,11 @@ public class MenuPrincipale : MonoBehaviour
         // Tornati qui da una partita in rete finita male (host uscito, connessione caduta): si mostra il perché.
         if (!string.IsNullOrEmpty(ReteCoop.AvvisoPerMenu))
         {
+            // niente sequenza di avvio: si torna direttamente al menu, con musica e paesaggio a colori
+            titoloGiaVisto = true;
+            grigio = 0f;
+            altoTitoloVisibile = 110f;
+            AvviaMusica();
             VaiA(Schermata.Multigiocatore);
             Avvisa(ReteCoop.AvvisoPerMenu);
             ReteCoop.AvvisoPerMenu = null;
@@ -118,7 +187,16 @@ public class MenuPrincipale : MonoBehaviour
     {
         schermata = nuova;
         tempoSchermata = 0f;
+        durataComparsa = 0.6f;
         elenco.Pulisci();
+
+        if (nuova == Schermata.Titolo)
+        {
+            // la prima volta Premi un tasto compare con calma; tornando indietro dal menu e' quasi subito
+            ritardoAttuale = titoloGiaVisto ? 0.2f : ritardoPremi;
+            durataAttuale = titoloGiaVisto ? 0.5f : durataPremi;
+            titoloGiaVisto = true;
+        }
 
         switch (nuova)
         {
@@ -288,8 +366,9 @@ public class MenuPrincipale : MonoBehaviour
         nero = Mathf.MoveTowards(nero, avvioInCorso ? 1f : 0f, dt / (avvioInCorso ? 1.5f : 2.5f));
 
         // musica
-        livelloMusica = Mathf.MoveTowards(livelloMusica, avvioInCorso ? 0f : 1f, dt / Mathf.Max(0.1f, dissolvenzaMusica));
+        livelloMusica = Mathf.MoveTowards(livelloMusica, (avvioInCorso || !musicaAttiva) ? 0f : 1f, dt / Mathf.Max(0.1f, dissolvenzaMusica));
         if (sorgente != null) sorgente.volume = livelloMusica * Impostazioni.VolumeMusica;
+        AggiornaSequenza(dt);
 
         if (avvioInCorso)
         {
@@ -317,12 +396,21 @@ public class MenuPrincipale : MonoBehaviour
         var pad = Gamepad.current;
         var mouse = Mouse.current;
 
+        // durante la transizione verso il menu i comandi non contano: un solo tasto avvia la sequenza
+        if (inTransizione) return;
+
         if (schermata == Schermata.Titolo)
         {
+            if (saltoConF2 && tastiera != null && tastiera.f2Key.wasPressedThisFrame)
+            {
+                SaltaSequenza();
+                return;
+            }
             bool premuto = (tastiera != null && tastiera.anyKey.wasPressedThisFrame)
                 || (mouse != null && mouse.leftButton.wasPressedThisFrame)
                 || (pad != null && (pad.buttonSouth.wasPressedThisFrame || pad.startButton.wasPressedThisFrame));
-            if (premuto && tempoSchermata > 0.5f) VaiA(Schermata.Principale);
+            // Premi un tasto si accetta solo quando e' del tutto visibile
+            if (premuto && tempoSchermata >= ritardoAttuale + durataAttuale) AvviaTransizione();
             return;
         }
 
@@ -351,14 +439,112 @@ public class MenuPrincipale : MonoBehaviour
             {
                 elenco.selezione = (elenco.selezione + c.orizzontale + classi) % classi;
                 ultimaClasse = elenco.selezione;
+                elenco.alMuovere?.Invoke();
             }
-            if (c.verticale != 0) elenco.selezione = elenco.selezione < classi ? classi : ultimaClasse;
+            if (c.verticale != 0)
+            {
+                elenco.selezione = elenco.selezione < classi ? classi : ultimaClasse;
+                elenco.alMuovere?.Invoke();
+            }
             c.orizzontale = c.verticale = 0;
         }
 
         if (c.indietro) { Indietro(); return; }
         elenco.Applica(c);
     }
+
+    // ---------- sequenza di avvio e suoni ----------
+
+    // Suono d'ambiente del titolo, transizione dopo Premi un tasto, velo di nebbia grigia e salita del titolo.
+    void AggiornaSequenza(float dt)
+    {
+        // suono d'ambiente (facoltativo): c'e' solo sulla schermata del titolo e si spegne con la transizione
+        float bersaglioAmbiente = (schermata == Schermata.Titolo && !inTransizione && !avvioInCorso) ? 1f : 0f;
+        ambienteLivello = Mathf.MoveTowards(ambienteLivello, bersaglioAmbiente, dt / (bersaglioAmbiente > 0f ? 3f : Mathf.Max(0.5f, durataTransizione)));
+        if (ambiente != null && ambiente.clip != null)
+        {
+            ambiente.volume = ambienteLivello * 0.4f * Impostazioni.VolumeMusica;
+            if (ambienteLivello > 0f && !ambiente.isPlaying) ambiente.Play();
+            else if (ambienteLivello <= 0f && ambiente.isPlaying) ambiente.Stop();
+        }
+
+        // il titolo sale quando compare il menu (e scende se si torna al titolo)
+        altoTitoloVisibile = Mathf.MoveTowards(altoTitoloVisibile, schermata == Schermata.Titolo ? 290f : 110f, dt * 420f);
+
+        if (inTransizione)
+        {
+            tempoTransizione += dt;
+            float p = Mathf.Clamp01(tempoTransizione / Mathf.Max(0.1f, durataTransizione));
+            grigio = 1f - Mathf.SmoothStep(0f, 1f, p);
+            if (p >= puntoMusica) AvviaMusica();
+            if (p >= puntoMenu && schermata == Schermata.Titolo)
+            {
+                VaiA(Schermata.Principale);
+                durataComparsa = 1.4f;   // il menu compare piu lentamente della prima volta
+            }
+            if (p >= 1f)
+            {
+                inTransizione = false;
+                AvviaMusica();
+            }
+        }
+        else
+        {
+            grigio = Mathf.MoveTowards(grigio, schermata == Schermata.Titolo ? 1f : 0f, dt / 1.2f);
+        }
+    }
+
+    // Un solo tasto avvia la sequenza: colpo, onda sonora (se c'e'), poi paesaggio a colori, musica e menu.
+    void AvviaTransizione()
+    {
+        inTransizione = true;
+        tempoTransizione = 0f;
+        SuonaEffetto(suonoTitolo, false, volumeTitolo);
+        if (suonoTransizione != null) Invoke(nameof(SuonoDellaTransizione), Mathf.Max(0f, ritardoSuonoTransizione));
+    }
+
+    void SuonoDellaTransizione()
+    {
+        SuonaEffetto(suonoTransizione, false, volumeTitolo);
+    }
+
+    // F2: salta tutta la sequenza e va dritto al menu.
+    void SaltaSequenza()
+    {
+        CancelInvoke();
+        inTransizione = false;
+        grigio = 0f;
+        AvviaMusica();
+        VaiA(Schermata.Principale);
+    }
+
+    void AvviaMusica()
+    {
+        if (musicaAttiva) return;
+        musicaAttiva = true;
+        if (sorgente != null && sorgente.clip != null && !sorgente.isPlaying) sorgente.Play();
+    }
+
+    AudioSource CreaSorgente(bool ciclo)
+    {
+        var s = gameObject.AddComponent<AudioSource>();
+        s.playOnAwake = false;
+        s.loop = ciclo;
+        s.spatialBlend = 0f;
+        s.volume = ciclo ? 0f : 1f;
+        return s;
+    }
+
+    // Suona un effetto dell'interfaccia (il volume segue il Volume generale delle opzioni).
+    void SuonaEffetto(AudioClip clip, bool variaTono, float volume)
+    {
+        if (clip == null || effetti == null) return;
+        effetti.pitch = variaTono ? 1f + Random.Range(-variazioneTono, variazioneTono) : 1f;
+        effetti.PlayOneShot(clip, volume);
+    }
+
+    // I comandi non contano durante la transizione e mentre parte la partita.
+    bool Bloccato => avvioInCorso || inTransizione;
 
     // ---------- braci ----------
 
@@ -402,15 +588,18 @@ public class MenuPrincipale : MonoBehaviour
     {
         GraficaMenu.PreparaStili();
         GraficaMenu.Atmosfera(0f);
+        // nebbia grigia sopra il paesaggio: sfumato sulla schermata del titolo, si scioglie nella transizione
+        if (grigio > 0.001f)
+            GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0.30f, 0.32f, 0.37f, 0.62f * grigio));
         GraficaMenu.FoglioVirtuale();
         elenco.InizioGUI();
         DisegnaBraci();
 
-        float comparsa = Mathf.Clamp01(tempoSchermata / 0.6f);
+        float comparsa = Mathf.Clamp01(tempoSchermata / Mathf.Max(0.05f, durataComparsa));
         bool schermoTitolo = schermata == Schermata.Titolo;
 
         // titolo, con un alone caldo dietro e il divisore sotto
-        float altoTitolo = schermoTitolo ? 290f : 110f;
+        float altoTitolo = altoTitoloVisibile;
         GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
         GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
         GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
@@ -422,35 +611,39 @@ public class MenuPrincipale : MonoBehaviour
             case Schermata.Titolo:
             {
                 float pulsa = 0.4f + 0.5f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 2.2f));
+                // Premi un tasto compare lentamente (i tasti contano solo a dissolvenza finita) e sparisce alla pressione
+                float entrata = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((tempoSchermata - ritardoAttuale) / Mathf.Max(0.01f, durataAttuale)));
+                float uscita = inTransizione ? 1f - Mathf.Clamp01(tempoTransizione / 0.4f) : 1f;
+                float alfaPremi = entrata * uscita;
                 string premi = Lingua.T("menu.premi");
                 var area = new Rect(0, 760, Larghezza, 60);
-                GraficaMenu.Scritta(area, premi, GraficaMenu.Voce, GraficaMenu.Testo, pulsa * comparsa);
+                GraficaMenu.Scritta(area, premi, GraficaMenu.Voce, GraficaMenu.Testo, pulsa * alfaPremi);
                 float w = GraficaMenu.Voce.CalcSize(new GUIContent(premi)).x;
-                Color rombo = GraficaMenu.Con(GraficaMenu.Bronzo, pulsa * comparsa);
+                Color rombo = GraficaMenu.Con(GraficaMenu.Bronzo, pulsa * alfaPremi);
                 GraficaMenu.Rombo(new Vector2(Larghezza * 0.5f - w * 0.5f - 34f, area.center.y), 10f, rombo);
                 GraficaMenu.Rombo(new Vector2(Larghezza * 0.5f + w * 0.5f + 34f, area.center.y), 10f, rombo);
                 break;
             }
             case Schermata.Principale:
-                if (elenco.DisegnaElenco(380f, 600f, comparsa, avvioInCorso)) return;
+                if (elenco.DisegnaElenco(380f, 600f, comparsa, Bloccato)) return;
                 break;
             case Schermata.Multigiocatore:
                 if (DisegnaMultigiocatore(comparsa)) return;
                 break;
             case Schermata.Indirizzo:
                 GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("rete.scrivi_indirizzo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
-                if (elenco.DisegnaElenco(420f, 760f, comparsa, avvioInCorso)) return;
+                if (elenco.DisegnaElenco(420f, 760f, comparsa, Bloccato)) return;
                 GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 560f, 725f, 1120f, 120f), Lingua.T("rete.spiega_indirizzo"), GraficaMenu.Descrizione, GraficaMenu.Spento, comparsa);
                 break;
             case Schermata.Collegamento:
             {
                 int puntini = 1 + (int)(Time.unscaledTime * 2f) % 3;
                 GraficaMenu.Scritta(new Rect(0, 420, Larghezza, 60), Lingua.T("rete.collegamento") + " " + indirizzo + new string('.', puntini), GraficaMenu.Voce, GraficaMenu.Testo, comparsa);
-                if (elenco.DisegnaElenco(540f, 440f, comparsa, avvioInCorso)) return;
+                if (elenco.DisegnaElenco(540f, 440f, comparsa, Bloccato)) return;
                 break;
             }
             case Schermata.Opzioni:
-                if (elenco.DisegnaOpzioni(370f, comparsa, avvioInCorso)) return;
+                if (elenco.DisegnaOpzioni(370f, comparsa, Bloccato)) return;
                 break;
             case Schermata.Classe:
                 if (DisegnaClassi(comparsa)) return;
@@ -463,7 +656,7 @@ public class MenuPrincipale : MonoBehaviour
                 if (elenco.voci.Count > 0)
                 {
                     var area = new Rect(Larghezza * 0.5f - 220f, 910f, 440f, 60f);
-                    if (elenco.Mouse(area, 0, avvioInCorso)) return;
+                    if (elenco.Mouse(area, 0, Bloccato)) return;
                     elenco.VoceCentrata(area, elenco.voci[0], elenco.selezione == 0, comparsa);
                 }
                 break;
@@ -490,7 +683,7 @@ public class MenuPrincipale : MonoBehaviour
     bool DisegnaMultigiocatore(float comparsa)
     {
         GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("rete.sottotitolo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
-        if (elenco.DisegnaElenco(420f, 640f, comparsa, avvioInCorso)) return true;
+        if (elenco.DisegnaElenco(420f, 640f, comparsa, Bloccato)) return true;
 
         string miei = indirizziMiei.Count > 0 ? string.Join(GraficaMenu.Separatore, indirizziMiei) : "—";
         GraficaMenu.Scritta(new Rect(0, 730f, Larghezza, 40f), Lingua.T("rete.tuo_indirizzo") + ":   " + miei, GraficaMenu.Voce, GraficaMenu.Bronzo, comparsa);
@@ -512,7 +705,7 @@ public class MenuPrincipale : MonoBehaviour
         {
             bool scelta = i == elenco.selezione;
             var r = new Rect(inizio + i * (larghezza + spazio), alto - (scelta ? 10f : 0f), larghezza, altezza);
-            if (elenco.Mouse(r, i, avvioInCorso)) return true;
+            if (elenco.Mouse(r, i, Bloccato)) return true;
 
             if (scelta) GraficaMenu.Alone(new Rect(r.x - 90f, r.y - 90f, r.width + 180f, r.height + 180f), new Color(1f, 0.5f, 0.2f, 0.16f * comparsa));
             GraficaMenu.Cornice(r, comparsa, scelta);
@@ -529,7 +722,7 @@ public class MenuPrincipale : MonoBehaviour
         if (elenco.voci.Count > classi)
         {
             var area = new Rect(Larghezza * 0.5f - 220f, 905f, 440f, 60f);
-            if (elenco.Mouse(area, classi, avvioInCorso)) return true;
+            if (elenco.Mouse(area, classi, Bloccato)) return true;
             elenco.VoceCentrata(area, elenco.voci[classi], elenco.selezione == classi, comparsa);
         }
         return false;

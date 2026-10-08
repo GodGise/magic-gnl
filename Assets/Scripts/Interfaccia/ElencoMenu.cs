@@ -31,6 +31,11 @@ public class ElencoMenu
     public readonly List<VoceMenu> voci = new List<VoceMenu>();
     public int selezione;
 
+    // Collegamenti facoltativi per i suoni: chi usa l'elenco (per esempio il menu iniziale) li imposta.
+    // alMuovere: la selezione cambia o un valore viene regolato. alConfermare: una voce attiva viene confermata.
+    // Se restano vuoti (menu di pausa, inventario) l'elenco funziona come prima.
+    public Action alMuovere, alConfermare;
+
     float prossimoScatto;
     Vector2 ultimoMouse = new Vector2(-1f, -1f);
     bool mouseMosso;
@@ -93,17 +98,22 @@ public class ElencoMenu
     public void Applica(ComandiMenu c)
     {
         if (c.verticale != 0) Sposta(c.verticale);
-        if (c.orizzontale != 0 && Selezionata?.regola != null) Selezionata.regola(c.orizzontale);
+        if (c.orizzontale != 0 && Selezionata?.regola != null) { Selezionata.regola(c.orizzontale); alMuovere?.Invoke(); }
         if (c.conferma) Conferma(selezione);
     }
 
     public void Sposta(int direzione)
     {
         if (voci.Count == 0) return;
+        int prima = selezione;
         for (int i = 0; i < voci.Count; i++)
         {
             selezione = (selezione + direzione + voci.Count) % voci.Count;
-            if (voci[selezione].attiva) return;
+            if (voci[selezione].attiva)
+            {
+                if (selezione != prima) alMuovere?.Invoke();
+                return;
+            }
         }
     }
 
@@ -111,7 +121,7 @@ public class ElencoMenu
     {
         if (indice < 0 || indice >= voci.Count) return;
         var voce = voci[indice];
-        if (voce.attiva && voce.conferma != null) voce.conferma();
+        if (voce.attiva && voce.conferma != null) { alConfermare?.Invoke(); voce.conferma(); }
     }
 
     // ---------- mouse ----------
@@ -132,7 +142,7 @@ public class ElencoMenu
     {
         var e = Event.current;
         if (bloccato || indice < 0 || indice >= voci.Count || !voci[indice].attiva || !area.Contains(e.mousePosition)) return false;
-        if (mouseMosso) selezione = indice;
+        if (mouseMosso && selezione != indice) { selezione = indice; alMuovere?.Invoke(); }
         if (e.type == EventType.MouseDown && e.button == 0)
         {
             selezione = indice;
@@ -189,6 +199,7 @@ public class ElencoMenu
             {
                 selezione = i;
                 voce.regola(frecciaSinistra.Contains(e.mousePosition) ? -1 : 1);
+                alMuovere?.Invoke();
                 e.Use();
                 return true;
             }
