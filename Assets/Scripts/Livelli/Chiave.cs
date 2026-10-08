@@ -9,7 +9,8 @@ using UnityEngine.InputSystem;
 //   1. GameObject > Create Empty, mettilo dove vuoi la chiave, a circa 1 metro da terra.
 //   2. Add Component > Chiave, e scrivi nel campo Codice lo stesso codice della Serratura da aprire.
 //   L'aspetto della chiave si crea da solo quando parte il gioco; nella vista Scene è segnata in giallo.
-public class Chiave : MonoBehaviour
+// Co-op: la chiave è del gruppo. Quando un giocatore la raccoglie sparisce per tutti e tutti possono aprire la porta.
+public class Chiave : MonoBehaviour, IOggettoCondiviso
 {
     [Tooltip("Codice della chiave: deve essere uguale al Codice della Serratura che apre.")]
     [SerializeField] string codice = "chiesa";
@@ -25,8 +26,12 @@ public class Chiave : MonoBehaviour
     bool raccolta;
 
     // Stesso tasto di leva e checkpoint: E sulla tastiera, A (Xbox) o Croce (PS) sul pad.
+    public int NumeroRete { get; private set; }
+    float richiestaFino;   // co-op: richiesta mandata all'host, si aspetta la risposta
+
     void Awake()
     {
+        NumeroRete = RegistroCondivisi.Iscrivi(this);
         comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
         comandoInteragisci.AddBinding("<Keyboard>/e");
         comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
@@ -34,7 +39,11 @@ public class Chiave : MonoBehaviour
 
     void OnEnable() => comandoInteragisci.Enable();
     void OnDisable() => comandoInteragisci.Disable();
-    void OnDestroy() => comandoInteragisci.Dispose();
+    void OnDestroy()
+    {
+        comandoInteragisci.Dispose();
+        RegistroCondivisi.Togli(this, NumeroRete);
+    }
 
     void Start()
     {
@@ -50,26 +59,49 @@ public class Chiave : MonoBehaviour
         aspetto.localRotation = Quaternion.Euler(0f, Time.time * 90f, 0f);
         aspetto.localPosition = Vector3.up * (Mathf.Sin(Time.time * 2f) * 0.08f);
 
-        if (PuoRaccogliere() && comandoInteragisci.WasPressedThisFrame()) Raccogli();
+        if (!PuoRaccogliere()) return;
+        HudGioco.MostraAzione("E", Lingua.T("hud.raccogli") + ": " + nomeVisibile);
+        if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
+        if (MondoRete.ChiediUso(this, 1)) { richiestaFino = Time.time + 2f; return; }   // co-op: decide l'host
+        Raccogli();
+        MondoRete.InviaEvento(this, Rete.MioId, 1);
     }
 
     bool PuoRaccogliere()
     {
-        if (raccolta || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+        if (raccolta || Time.time < richiestaFino || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
         Vector3 distanza = giocatore.transform.position - transform.position;
         if (Mathf.Abs(distanza.y) > 2.5f) return false;
         distanza.y = 0f;
         return distanza.magnitude <= raggioRaccolta;
     }
 
-    void Raccogli()
+    // La chiave va nell'inventario del giocatore di questo PC (in co-op ce l'hanno tutti).
+    // daCompagno: l'ha raccolta un altro giocatore (il messaggio lo dice).
+    void Raccogli(bool conMessaggio = true, bool daCompagno = false)
     {
+        if (raccolta) return;
         raccolta = true;
-        Inventario.Di(giocatore).AggiungiChiave(codice);
-        Suoni.Suona(Suono.Raccolta, transform.position);
-        MessaggiSchermo.Mostra("Hai raccolto: " + nomeVisibile, 3f);
+        if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
+        if (giocatore != null) Inventario.Di(giocatore).AggiungiChiave(codice);
+        if (conMessaggio)
+        {
+            if (!daCompagno) Suoni.Suona(Suono.Raccolta, transform.position);
+            MessaggiSchermo.Mostra(Lingua.T(daCompagno ? "hud.raccolto_compagno" : "hud.raccolto") + ": " + nomeVisibile, 3f);
+        }
         gameObject.SetActive(false);
     }
+
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        if (raccolta) return;
+        Raccogli(true, chi != Rete.MioId);
+        MondoRete.InviaEvento(this, chi, 1);
+    }
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto) => Raccogli(true, chi != Rete.MioId);
+    public int StatoRete => raccolta ? 1 : 0;
+    public void StatoDaRete(int stato) { if (stato == 1) Raccogli(false); }
 
     // Chiave a blocchi: anello, gambo e due denti, dorata e luminosa, con una piccola luce.
     void CreaAspetto()
@@ -111,13 +143,6 @@ public class Chiave : MonoBehaviour
         }
         r.sharedMaterial = materiale;
         return materiale;
-    }
-
-    void OnGUI()
-    {
-        if (!PuoRaccogliere()) return;
-        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        GUI.Box(new Rect(Screen.width * 0.5f - 170f, Screen.height * 0.75f, 340f, 40f), "E   Raccogli: " + nomeVisibile, stile);
     }
 
     void OnDrawGizmos()

@@ -38,6 +38,8 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     };
 
     public int Numero => numero.Value;
+    // Le figure degli altri giocatori presenti su questo PC (per le trappole e simili).
+    public static readonly List<GiocatoreRete> Altri = new List<GiocatoreRete>();
     // Solo sull'host, prima della creazione in rete (vedi ReteCoop): il valore va in rete appena nasce.
     public void ImpostaNumero(int n) => numeroIniziale = (byte)Mathf.Clamp(n, 1, 255);
     byte numeroIniziale = 1;
@@ -89,6 +91,7 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     void PreparaFigura()
     {
         figuraPronta = true;
+        if (!Altri.Contains(this)) Altri.Add(this);
         CreaFigura();
         transform.SetPositionAndRotation(posizione.Value, Quaternion.Euler(0f, direzione.Value, 0f));
         primoAggiornamento = false;
@@ -98,6 +101,7 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
 
     public override void OnNetworkDespawn()
     {
+        Altri.Remove(this);
         ObiettiviNemici.Togli(this);
         if (figura != null) Destroy(figura);
     }
@@ -137,6 +141,7 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
 
     public override void OnDestroy()
     {
+        Altri.Remove(this);
         Lingua.Cambiata -= AggiornaEtichetta;
         ObiettiviNemici.Togli(this);
         base.OnDestroy();

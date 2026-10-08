@@ -8,6 +8,8 @@ using UnityEngine.SceneManagement;
 //   - a destra: lo zaino, una griglia con gli oggetti raccolti;
 //   - sotto lo zaino: il dettaglio dell'oggetto scelto, con il confronto con quello che hai addosso
 //     (verde = meglio, rosso = peggio).
+// Lo zaino non ha limite ed è diviso in schede, come in Elden Ring: Tutto, Armi (anche archi e balestre), Scudi,
+// Armature, Amuleti. Si cambia scheda con Q e R (LB e RB sul pad) o con un clic sul nome della scheda.
 // Comandi: frecce, WASD o levetta per scegliere; E, Invio o A per equipaggiare (dallo zaino) o togliere
 // (da una casella); Tab, Esc o B per chiudere. Mouse: clic per scegliere, doppio clic per equipaggiare o togliere.
 // Equipaggiando un oggetto, quello che c'era nella stessa casella torna nello zaino (con lo spadone a due mani
@@ -36,7 +38,11 @@ public class InventarioGioco : MonoBehaviour
 
     Zona zona = Zona.Zaino;
     int casella;          // 0 Arma, 1 Scudo, 2 Armatura, 3 Amuleto
-    int indiceZaino;
+    int indiceZaino;          // posizione nella scheda scelta (non in tutto lo zaino)
+    int scheda;               // 0 Tutto, 1 Armi, 2 Scudi, 3 Armature, 4 Amuleti
+    static readonly string[] chiaviSchede = { "inv.tutto", "inv.armi", "inv.scudi", "inv.armature", "inv.amuleti" };
+    // Gli oggetti dello zaino che si vedono nella scheda scelta.
+    readonly List<DatiOggetto> visibili = new List<DatiOggetto>();
     int rigaIniziale;
     float tempoApertura;
     bool riattivaAlProssimoFotogramma;
@@ -92,8 +98,9 @@ public class InventarioGioco : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        zona = zaino.Numero > 0 ? Zona.Zaino : Zona.Caselle;
-        indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, zaino.Numero - 1));
+        AggiornaVisibili();
+        zona = visibili.Count > 0 ? Zona.Zaino : Zona.Caselle;
+        indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
         tempoApertura = Time.unscaledTime;
         Aperto = true;
     }
@@ -136,6 +143,34 @@ public class InventarioGioco : MonoBehaviour
         }
     }
 
+    static bool NellaScheda(DatiOggetto o, int s) => s == 0
+        || (s == 1 && (o is DatiArma || o is DatiArmaDistanza)) || (s == 2 && o is DatiScudo)
+        || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto);
+
+    void AggiornaVisibili()
+    {
+        visibili.Clear();
+        if (zaino == null) return;
+        foreach (var o in zaino.Oggetti)
+            if (o != null && NellaScheda(o, scheda)) visibili.Add(o);
+    }
+
+    int QuantiNellaScheda(int s)
+    {
+        int n = 0;
+        if (zaino != null) foreach (var o in zaino.Oggetti) if (o != null && NellaScheda(o, s)) n++;
+        return n;
+    }
+
+    void CambiaScheda(int nuova)
+    {
+        scheda = (nuova + chiaviSchede.Length) % chiaviSchede.Length;
+        indiceZaino = 0;
+        rigaIniziale = 0;
+        AggiornaVisibili();
+        if (visibili.Count == 0 && zona == Zona.Zaino) zona = Zona.Caselle;
+    }
+
     static int CasellaDi(DatiOggetto o) => o is DatiArma ? 0 : o is DatiScudo || o is DatiArmaDistanza ? 1 : o is DatiArmatura ? 2 : 3;
 
     void Equipaggia(DatiOggetto oggetto)
@@ -160,7 +195,7 @@ public class InventarioGioco : MonoBehaviour
         // quello che è uscito dalle caselle torna nello zaino (anche lo scudo tolto dallo spadone)
         for (int i = 0; i < 4; i++)
             if (prima[i] != null && prima[i] != OggettoInCasella(i)) zaino.Aggiungi(prima[i]);
-        indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, zaino.Numero - 1));
+        indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
     }
 
     void Togli(int i)
@@ -181,7 +216,7 @@ public class InventarioGioco : MonoBehaviour
     {
         if (zona == Zona.Zaino)
         {
-            if (indiceZaino >= 0 && indiceZaino < zaino.Numero) Equipaggia(zaino.Oggetti[indiceZaino]);
+            if (indiceZaino >= 0 && indiceZaino < visibili.Count) Equipaggia(visibili[indiceZaino]);
         }
         else Togli(casella);
     }
@@ -213,8 +248,12 @@ public class InventarioGioco : MonoBehaviour
 
         if (giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) { Chiudi(true); return; }
 
+        AggiornaVisibili();
         var c = comandi.LeggiComandi();
         if (tasto || c.indietro) { Chiudi(true); return; }
+        // schede dello zaino: Q indietro, R avanti (LB e RB sul pad)
+        if ((tastiera != null && tastiera.qKey.wasPressedThisFrame) || (pad != null && pad.leftShoulder.wasPressedThisFrame)) CambiaScheda(scheda - 1);
+        if ((tastiera != null && tastiera.rKey.wasPressedThisFrame) || (pad != null && pad.rightShoulder.wasPressedThisFrame)) CambiaScheda(scheda + 1);
         bool conferma = c.conferma || (tastiera != null && tastiera.eKey.wasPressedThisFrame);
 
         if (c.orizzontale != 0 || c.verticale != 0) Muovi(c.orizzontale, c.verticale);
@@ -226,10 +265,10 @@ public class InventarioGioco : MonoBehaviour
         if (zona == Zona.Caselle)
         {
             int col = casella % 2, riga = casella / 2;
-            if (dx > 0 && col == 1 && zaino.Numero > 0)
+            if (dx > 0 && col == 1 && visibili.Count > 0)
             {
                 zona = Zona.Zaino;
-                indiceZaino = Mathf.Min(zaino.Numero - 1, (rigaIniziale + riga) * Colonne);
+                indiceZaino = Mathf.Min(visibili.Count - 1, (rigaIniziale + riga) * Colonne);
                 return;
             }
             if (dx != 0) col = Mathf.Clamp(col + dx, 0, 1);
@@ -238,7 +277,7 @@ public class InventarioGioco : MonoBehaviour
             return;
         }
 
-        int n = zaino.Numero;
+        int n = visibili.Count;
         if (n == 0) { zona = Zona.Caselle; return; }
         int colZ = indiceZaino % Colonne;
         if (dx < 0 && colZ == 0)
@@ -279,6 +318,8 @@ public class InventarioGioco : MonoBehaviour
         GraficaMenu.Divisore(L * 0.5f, 148f, 640f, comparsa);
 
         if (DisegnaCaselle(comparsa, e, mouseMosso)) return;
+        AggiornaVisibili();
+        if (DisegnaSchede(comparsa, e)) return;
         if (DisegnaZaino(comparsa, e, mouseMosso)) return;
         DisegnaDettaglio(comparsa);
 
@@ -358,6 +399,37 @@ public class InventarioGioco : MonoBehaviour
         return false;
     }
 
+    // Le schede sopra lo zaino: nome e quanti oggetti contiene; la scelta è color fiamma. Q a sinistra, R a destra.
+    bool DisegnaSchede(float alfa, Event e)
+    {
+        const float x0 = 860f, y = 160f, h = 34f, larghezza = 900f;
+        float w = larghezza / chiaviSchede.Length;
+        for (int i = 0; i < chiaviSchede.Length; i++)
+        {
+            var r = new Rect(x0 + i * w, y, w, h);
+            bool scelta = i == scheda;
+            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition))
+            {
+                e.Use();
+                CambiaScheda(i);
+                return true;
+            }
+            if (scelta) GraficaMenu.FasciaLuce(new Rect(r.x + 6f, r.y, r.width - 12f, r.height), GraficaMenu.Con(GraficaMenu.Selezione, 0.22f * alfa));
+            string testo = Lingua.T(chiaviSchede[i]) + "  " + QuantiNellaScheda(i);
+            var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
+            GraficaMenu.Scritta(r, testo, stile, scelta ? GraficaMenu.Selezione : GraficaMenu.Spento, alfa);
+        }
+        // i tasti per cambiare scheda, dentro due rombi ai lati
+        var tq = new Vector2(x0 - 22f, y + h * 0.5f);
+        var tr = new Vector2(x0 + larghezza + 22f, y + h * 0.5f);
+        GraficaMenu.Rombo(tq, 30f, GraficaMenu.Con(GraficaMenu.Bronzo, alfa));
+        GraficaMenu.Rombo(tr, 30f, GraficaMenu.Con(GraficaMenu.Bronzo, alfa));
+        var tasto = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
+        GraficaMenu.Scritta(new Rect(tq.x - 20f, tq.y - 14f, 40f, 28f), "Q", tasto, new Color(0.05f, 0.05f, 0.06f), alfa);
+        GraficaMenu.Scritta(new Rect(tr.x - 20f, tr.y - 14f, 40f, 28f), "R", tasto, new Color(0.05f, 0.05f, 0.06f), alfa);
+        return false;
+    }
+
     bool DisegnaZaino(float alfa, Event e, bool mouseMosso)
     {
         var Z = new Rect(820f, 200f, 980f, 490f);
@@ -365,7 +437,7 @@ public class InventarioGioco : MonoBehaviour
         var et = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 24 };
         GraficaMenu.Scritta(new Rect(Z.x + 40f, Z.y + 16f, 400f, 34f), Lingua.T("inv.zaino").ToUpperInvariant(), et, GraficaMenu.Bronzo, alfa);
 
-        int n = zaino.Numero;
+        int n = visibili.Count;
         int righeTotali = Mathf.Max(1, Mathf.CeilToInt(n / (float)Colonne));
         int rigaScelta = indiceZaino / Colonne;
         // Rotellina del mouse sopra lo zaino: scorre di una riga alla volta.
@@ -408,7 +480,7 @@ public class InventarioGioco : MonoBehaviour
                 if (scelta) GraficaMenu.Alone(new Rect(r.x - 30f, r.y - 30f, r.width + 60f, r.height + 60f), new Color(1f, 0.5f, 0.2f, 0.22f * alfa));
                 GraficaMenu.Riempi(r, new Color(0.055f, 0.055f, 0.07f, 0.9f * alfa));
                 GraficaMenu.Bordo(r, scelta ? 3f : 1f, GraficaMenu.Con(scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo, (scelta ? 1f : 0.55f) * alfa));
-                if (pieno) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 70f, 70f), zaino.Oggetti[i], alfa);
+                if (pieno) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 70f, 70f), visibili[i], alfa);
             }
         return false;
     }
@@ -425,7 +497,7 @@ public class InventarioGioco : MonoBehaviour
     void DisegnaDettaglio(float alfa)
     {
         DatiOggetto oggetto = zona == Zona.Zaino
-            ? (indiceZaino >= 0 && indiceZaino < zaino.Numero ? zaino.Oggetti[indiceZaino] : null)
+            ? (indiceZaino >= 0 && indiceZaino < visibili.Count ? visibili[indiceZaino] : null)
             : OggettoInCasella(casella);
         var D = new Rect(820f, 720f, 980f, 280f);
         GraficaMenu.Cornice(D, alfa, oggetto != null);

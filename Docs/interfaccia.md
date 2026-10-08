@@ -24,6 +24,7 @@ Stile: lo stesso dei menu (`Assets/Scripts/Interfaccia/GraficaMenu.cs`): riquadr
 - Titolo "Equipaggiamento" in alto con il divisore. Il gioco sotto si scurisce.
 - **Pannello sinistro**: sagoma del personaggio con le **4 caselle** attorno (Arma e Scudo in alto, Armatura e Amuleto in basso), etichetta sopra e nome dell'oggetto sotto ogni casella; casella vuota con un trattino e "vuoto". In fondo le statistiche totali: Vita, Armatura, Danno, Critico.
 - **Pannello destro, "Zaino"**: griglia di caselle (6 per riga) con le icone degli oggetti raccolti. La casella scelta ha il bordo color fiamma e un alone.
+- **Schede dello zaino** (8 ottobre, come Elden Ring): Tutto, Armi (anche archi e balestre), Scudi, Armature, Amuleti, con il numero di oggetti accanto. Si cambiano con Q e R (LB e RB sul pad) o con un clic. Lo zaino non ha limite: si scorre con la rotellina.
 - **Dettaglio** sotto lo zaino: nome dell'oggetto (color fiamma), tipo e classe a destra, descrizione in corsivo, statistiche con il **confronto** con l'oggetto equipaggiato nella stessa casella: verde se migliora, rosso se peggiora (per i costi, più alto = rosso).
 - **Comandi**: frecce o levetta per scegliere, E (o A) per equipaggiare, Tab (o B) per chiudere; mouse: clic per scegliere, doppio clic per equipaggiare.
 - Con lo spadone a due mani la casella dello scudo si svuota (regola già in `Equipaggiamento`).

@@ -7,7 +7,8 @@ using UnityEngine.InputSystem;
 // Aspetto: se l'oggetto ha un modello 3D (fatto da Nazar) si vede quello, altrimenti un segnaposto che ruota.
 // Come montarlo: su un oggetto vuoto nella scena, poi trascinare nel campo "Oggetto" il file dell'oggetto
 // (per esempio Assets/Dati/Oggetti/Guerriero/Armi/...). Va bene anche dentro un baule o su un altare.
-public class OggettoRaccoglibile : MonoBehaviour
+// Co-op: l'oggetto lo prende il primo che lo raccoglie (lo decide l'host) e sparisce per tutti.
+public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
 {
     [SerializeField] DatiOggetto oggetto;
     [Tooltip("Distanza massima per raccogliere, in metri.")]
@@ -21,8 +22,12 @@ public class OggettoRaccoglibile : MonoBehaviour
     // Un solo oggetto per pressione di E, anche se ce ne sono diversi vicini.
     static int fotogrammaUltimaRaccolta = -1;
 
+    public int NumeroRete { get; private set; }
+    float richiestoFino;   // co-op: richiesta mandata all'host, si aspetta la risposta
+
     void Awake()
     {
+        NumeroRete = RegistroCondivisi.Iscrivi(this);
         comandoRaccogli = new InputAction("Raccogli", InputActionType.Button);
         comandoRaccogli.AddBinding("<Keyboard>/e");
         comandoRaccogli.AddBinding("<Gamepad>/buttonSouth");
@@ -30,7 +35,11 @@ public class OggettoRaccoglibile : MonoBehaviour
 
     void OnEnable() => comandoRaccogli.Enable();
     void OnDisable() => comandoRaccogli.Disable();
-    void OnDestroy() => comandoRaccogli.Dispose();
+    void OnDestroy()
+    {
+        comandoRaccogli.Dispose();
+        RegistroCondivisi.Togli(this, NumeroRete);
+    }
 
     void Start()
     {
@@ -72,10 +81,38 @@ public class OggettoRaccoglibile : MonoBehaviour
         aspetto.localRotation = Quaternion.Euler(0f, Time.time * 80f, 0f);
         aspetto.localPosition = Vector3.up * (Mathf.Sin(Time.time * 2f) * 0.06f);
 
-        if (!Vicino()) return;
+        if (Time.time < richiestoFino || !Vicino()) return;
         HudGioco.MostraAzione("E", Lingua.T("hud.raccogli") + ": " + oggetto.Nome);
         if (comandoRaccogli.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto
-            && fotogrammaUltimaRaccolta != Time.frameCount) Raccogli();
+            && fotogrammaUltimaRaccolta != Time.frameCount)
+        {
+            fotogrammaUltimaRaccolta = Time.frameCount;
+            if (MondoRete.ChiediUso(this, 1)) { richiestoFino = Time.time + 2f; return; }   // co-op: decide l'host chi lo prende
+            PresoDa(Rete.MioId);
+        }
+    }
+
+    // L'oggetto lo prende "chi": finisce nel suo zaino (sul suo PC) e sparisce per tutti.
+    void PresoDa(ulong chi)
+    {
+        if (raccolto) return;
+        MondoRete.InviaEvento(this, chi, 1);
+        if (chi == Rete.MioId) Raccogli();
+        else { raccolto = true; gameObject.SetActive(false); }
+    }
+
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto) => PresoDa(chi);
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        if (raccolto) return;
+        if (chi == Rete.MioId) Raccogli();
+        else { raccolto = true; gameObject.SetActive(false); }
+    }
+    public int StatoRete => raccolto ? 1 : 0;
+    public void StatoDaRete(int stato)
+    {
+        if (stato == 1 && !raccolto) { raccolto = true; gameObject.SetActive(false); }
     }
 
     bool Vicino()
@@ -91,9 +128,10 @@ public class OggettoRaccoglibile : MonoBehaviour
     void Raccogli()
     {
         raccolto = true;
-        fotogrammaUltimaRaccolta = Time.frameCount;
-        Zaino.Di(giocatore).Aggiungi(oggetto);
+        if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
+        if (giocatore != null) Zaino.Di(giocatore).Aggiungi(oggetto);
         MessaggiSchermo.Mostra(Lingua.T("hud.raccolto") + ": " + oggetto.Nome, 3f);
-        Destroy(gameObject);
+        // Nascosto e non distrutto: in co-op resta nell'elenco, così chi entra dopo sa che è già stato preso.
+        gameObject.SetActive(false);
     }
 }

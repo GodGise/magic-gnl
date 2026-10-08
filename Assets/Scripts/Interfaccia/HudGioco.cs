@@ -202,7 +202,7 @@ public class HudGioco : MonoBehaviour
         if (ladro && e != null && e.ArmaDistanza != null)
         {
             // il tiro con l'arco non c'è ancora: l'arco si vede, ma non si accende
-            RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, "2");
+            RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, null);   // il tasto arriverà con il tiro
             x += 130f;
         }
         else if (!ladro && e != null && e.Scudo != null)

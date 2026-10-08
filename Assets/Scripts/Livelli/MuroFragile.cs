@@ -13,7 +13,8 @@ using UnityEngine;
 //   3. Nell'Inspector clicca Add Component e scegli Muro Fragile. Le crepe si disegnano da sole
 //      quando parte il gioco; nella vista Scene il muro ha un contorno arancione.
 // Il giocatore lo colpisce con il normale attacco (tasto sinistro): non serve altro.
-public class MuroFragile : MonoBehaviour
+// Co-op: i colpi di tutti i giocatori contano insieme (li conta l'host) e il muro crolla per tutti.
+public class MuroFragile : MonoBehaviour, IOggettoCondiviso
 {
     [Tooltip("Quanti colpi servono per farlo crollare.")]
     [SerializeField] int colpiNecessari = 4;
@@ -47,6 +48,12 @@ public class MuroFragile : MonoBehaviour
     readonly List<Transform> segmentiCrepe = new List<Transform>();
     readonly List<Vector3> scaleCrepe = new List<Vector3>();
 
+    public int NumeroRete { get; private set; }
+    int statoDaRete = int.MinValue;   // co-op: stato ricevuto prima che il muro fosse pronto
+
+    void Awake() => NumeroRete = RegistroCondivisi.Iscrivi(this);
+    void OnDestroy() => RegistroCondivisi.Togli(this, NumeroRete);
+
     void Start()
     {
         posizioneBase = transform.position;
@@ -54,13 +61,42 @@ public class MuroFragile : MonoBehaviour
         misure = new Vector3(Mathf.Abs(scala.x), Mathf.Abs(scala.y), Mathf.Abs(scala.z));
         asseSpessore = misure.x <= misure.z ? 0 : 2;
         CreaCrepe();
+        if (statoDaRete != int.MinValue) StatoDaRete(statoDaRete);
     }
 
-    // Chiamato dal giocatore quando un suo colpo prende il muro.
+    // Chiamato dal giocatore quando un suo colpo prende il muro. In co-op, per chi non ospita, il colpo va all'host.
     public void RiceviColpo(Vector3 origineColpo)
     {
         if (crollato) return;
+        if (MondoRete.ChiediUso(this, 1, origineColpo)) return;
+        Colpo(origineColpo);
+        MondoRete.InviaEvento(this, Rete.MioId, colpiRicevuti, origineColpo);
+    }
 
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto) => RiceviColpo(punto);
+
+    // L'host ha contato un colpo: "valore" è il numero di colpi ricevuti finora.
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        if (crollato || crepe == null) return;
+        colpiRicevuti = valore - 1;
+        Colpo(punto);
+    }
+
+    public int StatoRete => crollato ? -1 : colpiRicevuti;
+    public void StatoDaRete(int stato)
+    {
+        if (crepe == null) { statoDaRete = stato; return; }   // non ancora pronto: lo applica Start
+        if (crollato) return;
+        if (stato < 0) { Crolla(posizioneBase - transform.forward); return; }
+        colpiRicevuti = stato;
+        AllargaCrepe();
+    }
+
+    void Colpo(Vector3 origineColpo)
+    {
+        if (crollato) return;
         colpiRicevuti++;
         Debug.Log(name + " colpito: " + colpiRicevuti + " / " + colpiNecessari);
         Suoni.Suona(Suono.ColpoMuro, posizioneBase);

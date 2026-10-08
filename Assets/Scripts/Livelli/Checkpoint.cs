@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 //   2. Nell'Inspector clicca Add Component e scegli Checkpoint.
 //   3. Nella vista Scene una sfera verde a fil di ferro mostra da quanto vicino si può accendere, e una pallina azzurra mostra
 //      dove ricompare il giocatore: tienila sul terreno libero, non dentro un muro.
+// Co-op: ogni giocatore ha il suo checkpoint (rinasce dove l'ha acceso lui): non è condiviso, di proposito.
 public class Checkpoint : MonoBehaviour
 {
     [Tooltip("Distanza (in orizzontale) dal centro del checkpoint entro cui il giocatore può accenderlo con E.")]
@@ -61,7 +62,9 @@ public class Checkpoint : MonoBehaviour
 
     void Update()
     {
-        if (PuoAccendere() && comandoInteragisci.WasPressedThisFrame()) Accendi();
+        if (!PuoAccendere()) return;
+        HudGioco.MostraAzione("E", Lingua.T("hud.checkpoint"));
+        if (comandoInteragisci.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto) Accendi();
     }
 
     // Vero se il giocatore è vivo, abbastanza vicino e questo checkpoint non è già quello acceso.
@@ -73,14 +76,6 @@ public class Checkpoint : MonoBehaviour
         Vector3 distanza = giocatore.transform.position - transform.position;
         distanza.y = 0f;
         return distanza.magnitude <= raggioAttivazione;
-    }
-
-    // Scritta in basso al centro quando il giocatore può accendere il checkpoint.
-    void OnGUI()
-    {
-        if (!PuoAccendere()) return;
-        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        GUI.Box(new Rect(Screen.width * 0.5f - 150f, Screen.height * 0.75f, 300f, 40f), "E   Accendi il checkpoint", stile);
     }
 
     void Accendi()
