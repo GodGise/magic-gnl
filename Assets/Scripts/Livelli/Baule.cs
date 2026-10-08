@@ -11,7 +11,8 @@ using UnityEngine.InputSystem;
 //   2. Add Component > Baule e scegli il Contenuto.
 //   L'aspetto del baule (legno, fasce di ferro, coperchio) si crea da solo quando parte il gioco;
 //   nella vista Scene è segnato da un riquadro marrone.
-public class Baule : MonoBehaviour
+// Co-op: il baule si apre per tutti, ma il contenuto lo riceve solo chi l'ha aperto.
+public class Baule : MonoBehaviour, IOggettoCondiviso
 {
     public enum Contenuto { BastoneMagico }
 
@@ -26,8 +27,13 @@ public class Baule : MonoBehaviour
     Transform coperchio;
     bool aperto;
 
+    public int NumeroRete { get; private set; }
+    bool richiesto;          // co-op: richiesta già mandata all'host
+    bool apertoDaRete;       // co-op: chi entra dopo trova il baule già aperto (si applica quando c'è l'aspetto)
+
     void Awake()
     {
+        NumeroRete = RegistroCondivisi.Iscrivi(this);
         comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
         comandoInteragisci.AddBinding("<Keyboard>/e");
         comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
@@ -35,28 +41,60 @@ public class Baule : MonoBehaviour
 
     void OnEnable() => comandoInteragisci.Enable();
     void OnDisable() => comandoInteragisci.Disable();
-    void OnDestroy() => comandoInteragisci.Dispose();
+    void OnDestroy()
+    {
+        comandoInteragisci.Dispose();
+        RegistroCondivisi.Togli(this, NumeroRete);
+    }
 
     void Start()
     {
         giocatore = FindFirstObjectByType<GiocatoreControllo>();
         CreaAspetto();
+        if (apertoDaRete) coperchio.localRotation = Quaternion.Euler(110f, 0f, 0f);
     }
 
     void Update()
     {
-        if (PuoAprire() && comandoInteragisci.WasPressedThisFrame()) StartCoroutine(Apri());
+        if (!PuoAprire()) return;
+        HudGioco.MostraAzione("E", Lingua.T("hud.baule"));
+        if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
+        if (MondoRete.ChiediUso(this, 1)) { richiesto = true; return; }   // co-op: lo apre l'host per tutti
+        ApriDa(Rete.MioId);
+    }
+
+    void ApriDa(ulong chi)
+    {
+        if (aperto) return;
+        StartCoroutine(Apri(chi));
+        MondoRete.InviaEvento(this, chi, 1);
+    }
+
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto) => ApriDa(chi);
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        if (!aperto && coperchio != null) StartCoroutine(Apri(chi));
+    }
+    public int StatoRete => aperto ? 1 : 0;
+    public void StatoDaRete(int stato)
+    {
+        if (stato != 1 || aperto) return;
+        aperto = true;
+        apertoDaRete = true;
+        if (coperchio != null) coperchio.localRotation = Quaternion.Euler(110f, 0f, 0f);
     }
 
     bool PuoAprire()
     {
-        if (aperto || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+        if (aperto || richiesto || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
         Vector3 distanza = giocatore.transform.position - transform.position;
         distanza.y = 0f;
         return distanza.magnitude <= raggioInterazione;
     }
 
-    IEnumerator Apri()
+    // "chi" ha aperto il baule: solo lui riceve il contenuto (da soli sei sempre tu).
+    IEnumerator Apri(ulong chi)
     {
         aperto = true;
         Suoni.Suona(Suono.BauleAperto, transform.position + Vector3.up * 0.5f);
@@ -79,7 +117,7 @@ public class Baule : MonoBehaviour
         }
         coperchio.localRotation = Quaternion.Euler(110f, 0f, 0f);
 
-        DaiContenuto();
+        if (chi == Rete.MioId) DaiContenuto();
 
         for (float t = 0f; t < 1.5f; t += Time.deltaTime)
         {
@@ -93,8 +131,9 @@ public class Baule : MonoBehaviour
         switch (contenuto)
         {
             case Contenuto.BastoneMagico:
-                giocatore.SbloccaBastone();
-                MessaggiSchermo.Mostra("Hai trovato: Bastone magico.  2 = bastone,  1 = spada", 5f);
+                if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
+                if (giocatore != null) giocatore.SbloccaBastone();
+                MessaggiSchermo.Mostra(Lingua.T("hud.trovato_bastone"), 5f);
                 break;
         }
     }
@@ -134,13 +173,6 @@ public class Baule : MonoBehaviour
         if (materiale == null) materiale = new Material(r.sharedMaterial) { color = colore };
         r.sharedMaterial = materiale;
         return materiale;
-    }
-
-    void OnGUI()
-    {
-        if (!PuoAprire()) return;
-        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        GUI.Box(new Rect(Screen.width * 0.5f - 130f, Screen.height * 0.75f, 260f, 40f), "E   Apri il baule", stile);
     }
 
     void OnDrawGizmos()

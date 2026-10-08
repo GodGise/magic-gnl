@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 // senza, compare la scritta "Serve: ..." con un suono di porta bloccata.
 // Come montarlo: sullo stesso oggetto della Porta (Add Component > Serratura) e scrivi nel campo
 // Codice lo stesso codice della Chiave. Non serve una Leva.
+// Co-op: la chiave raccolta da un giocatore ce l'hanno tutti (vedi Chiave), e la porta aperta è aperta per tutti (vedi Porta).
 [RequireComponent(typeof(Porta))]
 public class Serratura : MonoBehaviour
 {
@@ -40,7 +41,9 @@ public class Serratura : MonoBehaviour
 
     void Update()
     {
-        if (!Vicino() || !comandoInteragisci.WasPressedThisFrame()) return;
+        if (!Vicino()) return;
+        HudGioco.MostraAzione("E", Lingua.T(HaLaChiave() ? "hud.apri_chiave" : "hud.chiusa_chiave"));
+        if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
 
         if (HaLaChiave())
         {
@@ -50,7 +53,7 @@ public class Serratura : MonoBehaviour
         else
         {
             Suoni.Suona(Suono.Negato, transform.position, 0.8f);
-            MessaggiSchermo.Mostra("Serve: " + nomeChiave, 2.5f);
+            MessaggiSchermo.Mostra(Lingua.T("hud.serve") + ": " + nomeChiave, 2.5f);
         }
     }
 
@@ -68,13 +71,5 @@ public class Serratura : MonoBehaviour
     {
         Inventario inventario = Inventario.Di(giocatore);
         return inventario != null && inventario.HaChiave(codice);
-    }
-
-    void OnGUI()
-    {
-        if (!Vicino()) return;
-        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        string scritta = HaLaChiave() ? "E   Apri con la chiave" : "Chiusa a chiave";
-        GUI.Box(new Rect(Screen.width * 0.5f - 150f, Screen.height * 0.75f, 300f, 40f), scritta, stile);
     }
 }

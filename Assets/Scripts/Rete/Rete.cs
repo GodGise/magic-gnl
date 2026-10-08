@@ -51,6 +51,9 @@ public static class RegistroNemici
 
     public static Bersaglio Trova(int numero) => perNumero.TryGetValue(numero, out var b) && b != null ? b : null;
 
+    // Il numero uguale su tutti i PC per un oggetto della scena (lo usa anche RegistroCondivisi).
+    public static int NumeroDi(Transform t) => CalcolaNumero(t);
+
     static int CalcolaNumero(Transform t)
     {
         var testo = new System.Text.StringBuilder(t.gameObject.scene.name);
@@ -66,4 +69,50 @@ public static class RegistroNemici
             return (int)(h & 0x7FFFFFFF);
         }
     }
+}
+
+// Un oggetto della scena che in co-op è uguale per tutti: porte, leve, bauli, chiavi, muri crepati, oggetti da raccogliere.
+// Come funziona: chi lo usa, se non ospita, lo chiede all'host (MondoRete.ChiediUso); l'host lo usa davvero e manda
+// l'evento a tutti (MondoRete.InviaEvento). Chi entra a partita iniziata riceve lo stato di ognuno (StatoRete).
+// Da soli non cambia niente: l'oggetto si usa subito come prima.
+public interface IOggettoCondiviso
+{
+    int NumeroRete { get; }
+    // Sull'host: il giocatore "chi" chiede di usarlo (valore e punto dipendono dall'oggetto).
+    void UsaDaRete(ulong chi, int valore, Vector3 punto);
+    // Su chi non ospita: l'host ha usato l'oggetto, si mostra quello che è successo.
+    void EventoDaRete(ulong chi, int valore, Vector3 punto);
+    // Lo stato in un numero, per chi entra dopo (per esempio porta: 0 chiusa, 1 aperta).
+    int StatoRete { get; }
+    void StatoDaRete(int stato);
+}
+
+// Elenco degli oggetti condivisi della scena, con lo stesso numero su tutti i PC (come RegistroNemici).
+// Come montarlo: non si monta. Gli oggetti condivisi si iscrivono da soli in Awake.
+public static class RegistroCondivisi
+{
+    static readonly Dictionary<int, IOggettoCondiviso> perNumero = new Dictionary<int, IOggettoCondiviso>();
+    static readonly List<IOggettoCondiviso> elenco = new List<IOggettoCondiviso>();
+
+    public static IReadOnlyList<IOggettoCondiviso> Tutti => elenco;
+
+    public static int Iscrivi(MonoBehaviour oggetto)
+    {
+        var condiviso = (IOggettoCondiviso)oggetto;
+        int numero = RegistroNemici.NumeroDi(oggetto.transform) ^ oggetto.GetType().Name.Length * 7919;
+        while (perNumero.TryGetValue(numero, out var altro) && Esiste(altro) && !ReferenceEquals(altro, condiviso)) numero++;
+        perNumero[numero] = condiviso;
+        if (!elenco.Contains(condiviso)) elenco.Add(condiviso);
+        return numero;
+    }
+
+    public static void Togli(IOggettoCondiviso oggetto, int numero)
+    {
+        if (perNumero.TryGetValue(numero, out var trovato) && ReferenceEquals(trovato, oggetto)) perNumero.Remove(numero);
+        elenco.Remove(oggetto);
+    }
+
+    public static IOggettoCondiviso Trova(int numero) => perNumero.TryGetValue(numero, out var o) && Esiste(o) ? o : null;
+
+    static bool Esiste(IOggettoCondiviso o) => o != null && !(o is Object u && u == null);
 }

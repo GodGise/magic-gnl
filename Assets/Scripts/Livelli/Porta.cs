@@ -8,7 +8,9 @@ using UnityEngine;
 //      cripta: X 2, Y 2.8, Z 0.3) e mettilo nel vano della porta, con la base a terra.
 //   2. Nell'Inspector clicca Add Component e scegli Porta. Il collider del cubo blocca il passaggio.
 //   3. Per aprirla serve una Leva vicina, oppure un altro script che chiama Apri().
-public class Porta : MonoBehaviour
+// Co-op: la porta è uguale per tutti. Se la apre chi non ospita, la richiesta va all'host, che la apre per tutti
+// (vedi IOggettoCondiviso in Assets/Scripts/Rete/Rete.cs).
+public class Porta : MonoBehaviour, IOggettoCondiviso
 {
     public enum Verso { Giu, Su }
 
@@ -28,8 +30,11 @@ public class Porta : MonoBehaviour
 
     public bool Aperta => aperta;
 
+    public int NumeroRete { get; private set; }
+
     void Awake()
     {
+        NumeroRete = RegistroCondivisi.Iscrivi(this);
         posizioneChiusa = transform.position;
         float distanza = spostamento > 0f ? spostamento : Altezza();
         Vector3 direzione = verso == Verso.Giu ? Vector3.down : Vector3.up;
@@ -49,20 +54,36 @@ public class Porta : MonoBehaviour
         AggiornaPosizione();
     }
 
-    public void Apri()
+    void OnDestroy() => RegistroCondivisi.Togli(this, NumeroRete);
+
+    public void Apri() => Imposta(true);
+    public void Chiudi() => Imposta(false);
+
+    void Imposta(bool apri)
     {
-        if (aperta) return;
-        aperta = true;
-        Suoni.Suona(Suono.PortaPietra, transform.position);
-        Debug.Log(name + " si apre");
+        if (aperta == apri) return;
+        if (MondoRete.ChiediUso(this, apri ? 1 : 0)) return;   // co-op: la apre (o chiude) l'host per tutti
+        Muovi(apri);
+        MondoRete.InviaEvento(this, Rete.MioId, apri ? 1 : 0);
     }
 
-    public void Chiudi()
+    void Muovi(bool apri)
     {
-        if (!aperta) return;
-        aperta = false;
-        Suoni.Suona(Suono.PortaPietra, transform.position, 1f, 0.9f);
-        Debug.Log(name + " si chiude");
+        if (aperta == apri) return;
+        aperta = apri;
+        Suoni.Suona(Suono.PortaPietra, transform.position, 1f, apri ? 1f : 0.9f);
+        Debug.Log(name + (apri ? " si apre" : " si chiude"));
+    }
+
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto) => Imposta(valore == 1);
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto) => Muovi(valore == 1);
+    public int StatoRete => aperta ? 1 : 0;
+    public void StatoDaRete(int stato)
+    {
+        aperta = stato == 1;
+        progresso = aperta ? 1f : 0f;
+        AggiornaPosizione();
     }
 
     // SmoothStep: parte piano, accelera e rallenta alla fine, come una pietra pesante.

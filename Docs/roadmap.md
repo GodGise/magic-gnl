@@ -10,7 +10,7 @@ Le date sono una stima per tre persone part-time. I compiti della settimana sono
 | Oggetti di Guerriero e Ladro | Fatto | Stregone scritto in `Docs/oggetti-stregone.md`, da approvare da Lorenzo |
 | Interfaccia in partita (barre, inventario, pausa) | Fatto | Casella del Ladro e abilità Q aggiunte l'8 ottobre (ramo `giuseppec/interfaccia-completa`); libro dello Stregone con gli oggetti di Lorenzo |
 | Co-op in locale, senza Steam (menu Multigiocatore, nemici e combattimento in rete) | Fatto e provato in due (8 ottobre) | PR #17 |
-| Porte, leve, bauli, checkpoint condivisi in co-op | Da fare | Area di Lorenzo, domanda in `Docs/da-approvare.md` |
+| Porte, leve, bauli, chiavi, muri, oggetti condivisi in co-op | Fatto, da provare | Ramo `giuseppec/livelli-coop` (sopra `interfaccia-completa`); checkpoint personali |
 | Steam (App ID, inviti) | Dopo | Si paga quando il gioco è all'80-90% |
 | Mana e oggetti dello Stregone nel codice | Da fare | Dopo l'approvazione di Lorenzo |
 | Icone degli oggetti | Da fare | Nazar |

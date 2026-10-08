@@ -12,6 +12,8 @@ using UnityEngine;
 //   2. Nell'Inspector clicca Add Component e scegli Trappola Spuntoni.
 //   3. Nella vista Scene un riquadro rosso mostra la zona che fa scattare la trappola e
 //      quanto escono gli spuntoni. In gioco il riquadro non si vede.
+// Co-op: scatta anche quando ci passa sopra un altro giocatore (si vede su tutti i PC), ma il danno lo prende
+// solo il giocatore di questo PC, se è sopra: ogni PC controlla il suo.
 public class TrappolaSpuntoni : MonoBehaviour
 {
     [Header("Zona")]
@@ -51,9 +53,9 @@ public class TrappolaSpuntoni : MonoBehaviour
 
     void Update()
     {
-        if (inAzione || giocatore == null) return;
-        if (giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return;
-        if (GiocatoreSopra()) StartCoroutine(Scatta());
+        if (inAzione) return;
+        bool ioSopra = giocatore != null && giocatore.StatoAttuale != GiocatoreControllo.Stato.Morto && GiocatoreSopra();
+        if (ioSopra || AltroSopra()) StartCoroutine(Scatta());
     }
 
     IEnumerator Scatta()
@@ -80,7 +82,7 @@ public class TrappolaSpuntoni : MonoBehaviour
         bool colpito = false;
         for (float t = 0f; t < tempoFuori; t += Time.deltaTime)
         {
-            if (!colpito && GiocatoreSopra())
+            if (!colpito && giocatore != null && GiocatoreSopra())
             {
                 giocatore.RiceviDannoAmbiente(danno);
                 colpito = true;
@@ -102,10 +104,21 @@ public class TrappolaSpuntoni : MonoBehaviour
         inAzione = false;
     }
 
-    // Vero se il giocatore è dentro la zona della trappola (con un piccolo margine per lo spessore del corpo).
-    bool GiocatoreSopra()
+    // Vero se il giocatore di questo PC è dentro la zona della trappola.
+    bool GiocatoreSopra() => Sopra(giocatore.transform.position);
+
+    // Co-op: vero se un altro giocatore (la sua figura) è sopra la trappola.
+    bool AltroSopra()
     {
-        Vector3 relativa = Quaternion.Inverse(transform.rotation) * (giocatore.transform.position - transform.position);
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && !altro.Abbattuto && Sopra(altro.transform.position)) return true;
+        return false;
+    }
+
+    // Vero se il punto è dentro la zona della trappola (con un piccolo margine per lo spessore del corpo).
+    bool Sopra(Vector3 posizione)
+    {
+        Vector3 relativa = Quaternion.Inverse(transform.rotation) * (posizione - transform.position);
         const float margine = 0.25f;
         return Mathf.Abs(relativa.x) <= dimensioni.x * 0.5f + margine
             && Mathf.Abs(relativa.z) <= dimensioni.y * 0.5f + margine

@@ -54,7 +54,8 @@ Ordine proposto (stato all'8 ottobre):
   - i **colpi dei nemici** a un giocatore arrivano al suo PC: lì si decide se ha parato o schivato e quanto danno prende (con la sua armatura);
   - il premio dell'uccisione (mana, vita degli amuleti) va a chi ha dato l'ultimo colpo; le sfere magiche si vedono da tutti.
 - **Regole per chi scrive codice nuovo**: i nemici cercano i giocatori in `ObiettiviNemici` (non con `FindFirstObjectByType<GiocatoreControllo>`); il danno ai nemici passa sempre da `Bersaglio.RiceviColpo`; per sapere se si comanda il mondo si usa `Rete.ComandaIlMondo` (vero anche da soli); in pausa, in rete, il tempo non si ferma.
-- **Non ancora condivisi** (ognuno ha la sua copia): porte, leve, bauli, chiavi, muri crepati, trappole, oggetti raccolti, checkpoint. Vanno fatti uno per uno con Lorenzo (sono suoi, `Assets/Scripts/Livelli/`). La figura degli altri giocatori è ancora quella provvisoria a blocchi.
+- **Oggetti delle zone condivisi** (8 ottobre, ramo `giuseppec/livelli-coop`, deciso da Giuseppe): porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere sono uguali per tutti. Chi li usa, se non ospita, lo chiede all'host (`MondoRete.ChiediUso`); l'host li usa e lo dice a tutti (`MondoRete.InviaEvento`); chi entra dopo riceve il loro stato. Regole: il contenuto di un baule e un oggetto raccolto vanno a chi li prende; una chiave raccolta vale per tutto il gruppo. Le **trappole** scattano per chiunque ci passi sopra, ma ogni PC dà il danno solo al suo giocatore. I **checkpoint** restano personali (ognuno rinasce dove ha acceso il suo).
+- **Nuovi oggetti delle zone**: se qualcosa cambia lo stato del mondo (si apre, si rompe, sparisce), deve implementare `IOggettoCondiviso` (in `Assets/Scripts/Rete/Rete.cs`) come fanno `Porta` e `Leva`. La figura degli altri giocatori è ancora quella provvisoria a blocchi.
 
 ## Fonti
 

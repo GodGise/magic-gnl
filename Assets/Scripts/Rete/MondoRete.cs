@@ -6,7 +6,9 @@ using UnityEngine;
 //   - dall'host manda a tutti, 12 volte al secondo, posizione e stato di ogni nemico e l'ora del giorno;
 //   - dall'host manda gli eventi dei nemici: attacco (preavviso rosso), colpito, sbilanciato, morto, rinato, "!";
 //   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette e le esecuzioni furtive;
-//   - fa vedere a tutti le sfere magiche lanciate dagli altri (solo aspetto, il danno lo manda chi lancia).
+//   - fa vedere a tutti le sfere magiche lanciate dagli altri (solo aspetto, il danno lo manda chi lancia);
+//   - porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere (IOggettoCondiviso): chi li usa lo chiede
+//     all'host, l'host li usa e lo dice a tutti; chi entra dopo riceve il loro stato.
 // I colpi dei nemici ai giocatori non passano di qui: li porta GiocatoreRete al giocatore colpito.
 // Da soli questo oggetto non esiste e tutte le funzioni "Invia..." e "Chiedi..." non fanno niente.
 // Come montarlo: non si monta a mano. Sta nel prefab Resources/Rete/MondoRete (creato da Assets/Editor/CreaPrefabRete.cs)
@@ -100,6 +102,50 @@ public class MondoRete : NetworkBehaviour
             morti[i] = (byte)(b != null && b.Morto ? 1 : 0);
         }
         StatoRpc(numeri, vite, morti, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
+
+        var oggetti = RegistroCondivisi.Tutti;
+        var numeriOggetti = new int[oggetti.Count];
+        var stati = new int[oggetti.Count];
+        for (int i = 0; i < oggetti.Count; i++)
+        {
+            numeriOggetti[i] = oggetti[i].NumeroRete;
+            stati[i] = oggetti[i].StatoRete;
+        }
+        StatoOggettiRpc(numeriOggetti, stati, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void StatoOggettiRpc(int[] numeri, int[] stati, RpcParams parametri)
+    {
+        for (int i = 0; i < numeri.Length; i++) RegistroCondivisi.Trova(numeri[i])?.StatoDaRete(stati[i]);
+    }
+
+    // ---------- oggetti condivisi: porte, leve, bauli... (vedi IOggettoCondiviso in Rete.cs) ----------
+
+    // Chi non ospita chiede all'host di usare un oggetto. Restituisce false se non c'è rete (allora si usa subito).
+    public static bool ChiediUso(IOggettoCondiviso oggetto, int valore, Vector3 punto = default)
+    {
+        if (!SonoOspite) return false;
+        Istanza.UsoRpc(oggetto.NumeroRete, valore, punto);
+        return true;
+    }
+
+    // L'host dice a tutti che un oggetto è stato usato (da "chi").
+    public static void InviaEvento(IOggettoCondiviso oggetto, ulong chi, int valore, Vector3 punto = default)
+    {
+        if (SonoHost) Istanza.EventoRpc(oggetto.NumeroRete, chi, valore, punto);
+    }
+
+    [Rpc(SendTo.Server)]
+    void UsoRpc(int numero, int valore, Vector3 punto, RpcParams parametri = default)
+    {
+        RegistroCondivisi.Trova(numero)?.UsaDaRete(parametri.Receive.SenderClientId, valore, punto);
+    }
+
+    [Rpc(SendTo.NotServer)]
+    void EventoRpc(int numero, ulong chi, int valore, Vector3 punto)
+    {
+        RegistroCondivisi.Trova(numero)?.EventoDaRete(chi, valore, punto);
     }
 
     [Rpc(SendTo.SpecifiedInParams)]

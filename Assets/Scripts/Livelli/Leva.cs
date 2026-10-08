@@ -11,7 +11,8 @@ using UnityEngine.InputSystem;
 //      parte il gioco; nella vista Scene la leva è segnata in giallo, con il raggio in cui si usa.
 //   3. Nel campo "Porte" trascina le porte da aprire. Se lo lasci vuoto, la leva apre la Porta
 //      più vicina (entro 30 metri). Una linea gialla nella vista Scene mostra le porte collegate.
-public class Leva : MonoBehaviour
+// Co-op: la leva e le sue porte sono uguali per tutti; se la tira chi non ospita, la richiesta va all'host.
+public class Leva : MonoBehaviour, IOggettoCondiviso
 {
     [Tooltip("Porte che la leva apre. Se vuoto, usa la Porta più vicina.")]
     [SerializeField] Porta[] porte;
@@ -30,8 +31,11 @@ public class Leva : MonoBehaviour
     bool abbassata;
     float progresso; // 0 = manico su, 1 = manico giù
 
+    public int NumeroRete { get; private set; }
+
     void Awake()
     {
+        NumeroRete = RegistroCondivisi.Iscrivi(this);
         comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
         comandoInteragisci.AddBinding("<Keyboard>/e");
         comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
@@ -39,7 +43,11 @@ public class Leva : MonoBehaviour
 
     void OnEnable() => comandoInteragisci.Enable();
     void OnDisable() => comandoInteragisci.Disable();
-    void OnDestroy() => comandoInteragisci.Dispose();
+    void OnDestroy()
+    {
+        comandoInteragisci.Dispose();
+        RegistroCondivisi.Togli(this, NumeroRete);
+    }
 
     void Start()
     {
@@ -66,7 +74,9 @@ public class Leva : MonoBehaviour
             AggiornaManico();
         }
 
-        if (PuoUsare() && comandoInteragisci.WasPressedThisFrame()) Usa();
+        if (!PuoUsare()) return;
+        HudGioco.MostraAzione("E", Lingua.T("hud.leva"));
+        if (comandoInteragisci.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto) Usa();
     }
 
     // Vero se il giocatore è vivo, abbastanza vicino e la leva si può ancora usare.
@@ -82,7 +92,9 @@ public class Leva : MonoBehaviour
 
     void Usa()
     {
-        abbassata = !abbassata;
+        bool giu = !abbassata;
+        if (MondoRete.ChiediUso(this, giu ? 1 : 0)) return;   // co-op: la tira l'host per tutti
+        abbassata = giu;
         Suoni.Suona(Suono.Leva, transform.position + Vector3.up * 0.6f);
         foreach (Porta porta in porte)
         {
@@ -90,7 +102,30 @@ public class Leva : MonoBehaviour
             if (abbassata) porta.Apri();
             else porta.Chiudi();
         }
+        MondoRete.InviaEvento(this, Rete.MioId, abbassata ? 1 : 0);
         Debug.Log(name + (abbassata ? ": leva abbassata" : ": leva alzata"));
+    }
+
+    // ---------- co-op (IOggettoCondiviso) ----------
+    public void UsaDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        if (unaVoltaSola && abbassata) return;
+        if ((valore == 1) != abbassata) Usa();
+    }
+
+    // Le porte arrivano con i loro messaggi: qui si muove solo il manico.
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto)
+    {
+        abbassata = valore == 1;
+        Suoni.Suona(Suono.Leva, transform.position + Vector3.up * 0.6f);
+    }
+
+    public int StatoRete => abbassata ? 1 : 0;
+    public void StatoDaRete(int stato)
+    {
+        abbassata = stato == 1;
+        progresso = abbassata ? 1f : 0f;
+        AggiornaManico();
     }
 
     Porta PortaPiuVicina()
@@ -141,14 +176,6 @@ public class Leva : MonoBehaviour
     void AggiornaManico()
     {
         if (manico != null) manico.localRotation = Quaternion.Euler(Mathf.Lerp(-40f, 40f, progresso), 0f, 0f);
-    }
-
-    // Scritta in basso al centro quando il giocatore può usare la leva.
-    void OnGUI()
-    {
-        if (!PuoUsare()) return;
-        var stile = new GUIStyle(GUI.skin.box) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        GUI.Box(new Rect(Screen.width * 0.5f - 130f, Screen.height * 0.75f, 260f, 40f), "E   Tira la leva", stile);
     }
 
     // Disegni visibili solo nella vista Scene: la leva, il raggio in cui si usa e le porte collegate.
