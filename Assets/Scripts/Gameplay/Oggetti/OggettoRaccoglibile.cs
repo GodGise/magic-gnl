@@ -23,7 +23,7 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
     static int fotogrammaUltimaRaccolta = -1;
 
     public int NumeroRete { get; private set; }
-    bool richiesto;
+    float richiestoFino;   // co-op: richiesta mandata all'host, si aspetta la risposta
 
     void Awake()
     {
@@ -81,13 +81,13 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         aspetto.localRotation = Quaternion.Euler(0f, Time.time * 80f, 0f);
         aspetto.localPosition = Vector3.up * (Mathf.Sin(Time.time * 2f) * 0.06f);
 
-        if (richiesto || !Vicino()) return;
+        if (Time.time < richiestoFino || !Vicino()) return;
         HudGioco.MostraAzione("E", Lingua.T("hud.raccogli") + ": " + oggetto.Nome);
         if (comandoRaccogli.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto
             && fotogrammaUltimaRaccolta != Time.frameCount)
         {
             fotogrammaUltimaRaccolta = Time.frameCount;
-            if (MondoRete.ChiediUso(this, 1)) { richiesto = true; return; }   // co-op: decide l'host chi lo prende
+            if (MondoRete.ChiediUso(this, 1)) { richiestoFino = Time.time + 2f; return; }   // co-op: decide l'host chi lo prende
             PresoDa(Rete.MioId);
         }
     }
@@ -98,7 +98,7 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         if (raccolto) return;
         MondoRete.InviaEvento(this, chi, 1);
         if (chi == Rete.MioId) Raccogli();
-        else { raccolto = true; Destroy(gameObject); }
+        else { raccolto = true; gameObject.SetActive(false); }
     }
 
     // ---------- co-op (IOggettoCondiviso) ----------
@@ -107,12 +107,12 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
     {
         if (raccolto) return;
         if (chi == Rete.MioId) Raccogli();
-        else { raccolto = true; Destroy(gameObject); }
+        else { raccolto = true; gameObject.SetActive(false); }
     }
     public int StatoRete => raccolto ? 1 : 0;
     public void StatoDaRete(int stato)
     {
-        if (stato == 1 && !raccolto) { raccolto = true; Destroy(gameObject); }
+        if (stato == 1 && !raccolto) { raccolto = true; gameObject.SetActive(false); }
     }
 
     bool Vicino()
@@ -131,6 +131,7 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
         if (giocatore != null) Zaino.Di(giocatore).Aggiungi(oggetto);
         MessaggiSchermo.Mostra(Lingua.T("hud.raccolto") + ": " + oggetto.Nome, 3f);
-        Destroy(gameObject);
+        // Nascosto e non distrutto: in co-op resta nell'elenco, così chi entra dopo sa che è già stato preso.
+        gameObject.SetActive(false);
     }
 }

@@ -123,10 +123,12 @@ public class MondoRete : NetworkBehaviour
     // ---------- oggetti condivisi: porte, leve, bauli... (vedi IOggettoCondiviso in Rete.cs) ----------
 
     // Chi non ospita chiede all'host di usare un oggetto. Restituisce false se non c'è rete (allora si usa subito).
+    // Per chi non ospita restituisce sempre true: anche se il MondoRete non è ancora arrivato (appena collegati)
+    // l'oggetto non si usa da solo, così non si creano copie diverse (si riprova fra un attimo).
     public static bool ChiediUso(IOggettoCondiviso oggetto, int valore, Vector3 punto = default)
     {
-        if (!SonoOspite) return false;
-        Istanza.UsoRpc(oggetto.NumeroRete, valore, punto);
+        if (!Rete.Ospite) return false;
+        if (SonoOspite) Istanza.UsoRpc(oggetto.NumeroRete, valore, punto);
         return true;
     }
 

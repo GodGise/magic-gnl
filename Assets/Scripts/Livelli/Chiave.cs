@@ -27,7 +27,7 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
 
     // Stesso tasto di leva e checkpoint: E sulla tastiera, A (Xbox) o Croce (PS) sul pad.
     public int NumeroRete { get; private set; }
-    bool richiesta;
+    float richiestaFino;   // co-op: richiesta mandata all'host, si aspetta la risposta
 
     void Awake()
     {
@@ -62,14 +62,14 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
         if (!PuoRaccogliere()) return;
         HudGioco.MostraAzione("E", Lingua.T("hud.raccogli") + ": " + nomeVisibile);
         if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
-        if (MondoRete.ChiediUso(this, 1)) { richiesta = true; return; }   // co-op: decide l'host
+        if (MondoRete.ChiediUso(this, 1)) { richiestaFino = Time.time + 2f; return; }   // co-op: decide l'host
         Raccogli();
         MondoRete.InviaEvento(this, Rete.MioId, 1);
     }
 
     bool PuoRaccogliere()
     {
-        if (raccolta || richiesta || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+        if (raccolta || Time.time < richiestaFino || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
         Vector3 distanza = giocatore.transform.position - transform.position;
         if (Mathf.Abs(distanza.y) > 2.5f) return false;
         distanza.y = 0f;
@@ -77,7 +77,8 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
     }
 
     // La chiave va nell'inventario del giocatore di questo PC (in co-op ce l'hanno tutti).
-    void Raccogli(bool conMessaggio = true)
+    // daCompagno: l'ha raccolta un altro giocatore (il messaggio lo dice).
+    void Raccogli(bool conMessaggio = true, bool daCompagno = false)
     {
         if (raccolta) return;
         raccolta = true;
@@ -85,8 +86,8 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
         if (giocatore != null) Inventario.Di(giocatore).AggiungiChiave(codice);
         if (conMessaggio)
         {
-            Suoni.Suona(Suono.Raccolta, transform.position);
-            MessaggiSchermo.Mostra(Lingua.T("hud.raccolto") + ": " + nomeVisibile, 3f);
+            if (!daCompagno) Suoni.Suona(Suono.Raccolta, transform.position);
+            MessaggiSchermo.Mostra(Lingua.T(daCompagno ? "hud.raccolto_compagno" : "hud.raccolto") + ": " + nomeVisibile, 3f);
         }
         gameObject.SetActive(false);
     }
@@ -95,10 +96,10 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
     public void UsaDaRete(ulong chi, int valore, Vector3 punto)
     {
         if (raccolta) return;
-        Raccogli();
+        Raccogli(true, chi != Rete.MioId);
         MondoRete.InviaEvento(this, chi, 1);
     }
-    public void EventoDaRete(ulong chi, int valore, Vector3 punto) => Raccogli();
+    public void EventoDaRete(ulong chi, int valore, Vector3 punto) => Raccogli(true, chi != Rete.MioId);
     public int StatoRete => raccolta ? 1 : 0;
     public void StatoDaRete(int stato) { if (stato == 1) Raccogli(false); }
 

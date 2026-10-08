@@ -28,7 +28,7 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
     bool aperto;
 
     public int NumeroRete { get; private set; }
-    bool richiesto;          // co-op: richiesta già mandata all'host
+    float richiestoFino;     // co-op: richiesta mandata all'host, si aspetta la risposta (poi si può riprovare)
     bool apertoDaRete;       // co-op: chi entra dopo trova il baule già aperto (si applica quando c'è l'aspetto)
 
     void Awake()
@@ -59,7 +59,7 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
         if (!PuoAprire()) return;
         HudGioco.MostraAzione("E", Lingua.T("hud.baule"));
         if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
-        if (MondoRete.ChiediUso(this, 1)) { richiesto = true; return; }   // co-op: lo apre l'host per tutti
+        if (MondoRete.ChiediUso(this, 1)) { richiestoFino = Time.time + 2f; return; }   // co-op: lo apre l'host per tutti
         ApriDa(Rete.MioId);
     }
 
@@ -87,7 +87,7 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
 
     bool PuoAprire()
     {
-        if (aperto || richiesto || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
+        if (aperto || Time.time < richiestoFino || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
         Vector3 distanza = giocatore.transform.position - transform.position;
         distanza.y = 0f;
         return distanza.magnitude <= raggioInterazione;

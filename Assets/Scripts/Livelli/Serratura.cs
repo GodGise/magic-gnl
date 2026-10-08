@@ -21,6 +21,7 @@ public class Serratura : MonoBehaviour
     Porta porta;
     GiocatoreControllo giocatore;
     InputAction comandoInteragisci;
+    float prossimoTentativo;   // co-op: mentre si aspetta l'host, la porta non si riprova a ogni pressione
 
     void Awake()
     {
@@ -44,6 +45,8 @@ public class Serratura : MonoBehaviour
         if (!Vicino()) return;
         HudGioco.MostraAzione("E", Lingua.T(HaLaChiave() ? "hud.apri_chiave" : "hud.chiusa_chiave"));
         if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
+        if (Time.time < prossimoTentativo) return;
+        prossimoTentativo = Time.time + 1f;
 
         if (HaLaChiave())
         {

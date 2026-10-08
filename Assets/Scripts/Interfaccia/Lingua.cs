@@ -146,6 +146,7 @@ public static class Lingua
         ["hud.chiusa_chiave"] = new[] { "Chiusa a chiave", "Locked", "Cerrada con llave", "Fermée à clé", "Verschlossen", "Trancada", "Заперто", "已上锁" },
         ["hud.serve"] = new[] { "Serve", "You need", "Necesitas", "Il faut", "Benötigt", "Você precisa de", "Нужно", "需要" },
         ["hud.trovato_bastone"] = new[] { "Hai trovato il bastone magico: 2 per impugnarlo, 1 per tornare alla spada.", "You found the magic staff: 2 to wield it, 1 to switch back to the sword.", "Has encontrado el bastón mágico: 2 para empuñarlo, 1 para volver a la espada.", "Tu as trouvé le bâton magique : 2 pour le prendre en main, 1 pour revenir à l'épée.", "Du hast den Zauberstab gefunden: 2 zum Ausrüsten, 1 zurück zum Schwert.", "Você encontrou o cajado mágico: 2 para empunhá-lo, 1 para voltar à espada.", "Ты нашёл магический посох: 2 — взять посох, 1 — вернуться к мечу.", "你找到了魔法法杖：按 2 装备，按 1 换回剑。" },
+        ["hud.raccolto_compagno"] = new[] { "Un compagno ha raccolto", "A companion picked up", "Un compañero ha recogido", "Un compagnon a ramassé", "Ein Gefährte hat aufgehoben", "Um companheiro pegou", "Соратник подобрал", "同伴拾取了" },
         ["inv.titolo"] = new[] { "Equipaggiamento", "Equipment", "Equipo", "Équipement", "Ausrüstung", "Equipamento", "Снаряжение", "装备" },
         ["inv.zaino"] = new[] { "Zaino", "Backpack", "Mochila", "Sac", "Rucksack", "Mochila", "Рюкзак", "背包" },
         ["inv.arma"] = new[] { "Arma", "Weapon", "Arma", "Arme", "Waffe", "Arma", "Оружие", "武器" },

@@ -100,7 +100,12 @@ public static class RegistroCondivisi
     {
         var condiviso = (IOggettoCondiviso)oggetto;
         int numero = RegistroNemici.NumeroDi(oggetto.transform) ^ oggetto.GetType().Name.Length * 7919;
-        while (perNumero.TryGetValue(numero, out var altro) && Esiste(altro) && !ReferenceEquals(altro, condiviso)) numero++;
+        while (perNumero.TryGetValue(numero, out var altro) && Esiste(altro) && !ReferenceEquals(altro, condiviso))
+        {
+            // Due oggetti con lo stesso nome e quasi nello stesso punto: in co-op potrebbero scambiarsi. Meglio rinominarne uno.
+            Debug.LogWarning("[Rete] " + oggetto.name + " ha lo stesso nome e la stessa posizione di un altro oggetto: rinominalo, in co-op potrebbero confondersi.", oggetto);
+            numero++;
+        }
         perNumero[numero] = condiviso;
         if (!elenco.Contains(condiviso)) elenco.Add(condiviso);
         return numero;
