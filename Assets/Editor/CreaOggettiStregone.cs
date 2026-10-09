@@ -42,7 +42,7 @@ public static class CreaOggettiStregone
         riscrivi = false;
     }
 
-    static void Crea()
+    internal static void Crea()
     {
         int creati = 0;
         // Riferimenti: Stregone con vita 100 e mana 100; il mana si ricarica 2 s dopo l'ultimo incantesimo, 100 punti

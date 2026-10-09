@@ -139,3 +139,4 @@ Come per le altre classi: magici (bonus semplici) e arcani (effetti speciali), o
 - Velocità dei proiettili e portate sono numeri provvisori, da regolare giocando.
 - **Limite del co-op:** le evocazioni esistono solo sul PC di chi le lancia. I loro colpi arrivano a tutti, ma i nemici le vedono e le attaccano solo se lo Stregone è chi ospita la partita. Rallentamenti, blocchi e spinte invece passano dall'host e valgono per tutti.
 - Per provare una classe senza il menu principale: **magic-gnl > Prova classe > Gioca come ...**, poi Play: lo zaino si riempie con gli oggetti di quella classe.
+- Scena apposta per lo Stregone: **magic-gnl > Crea scena di prova dello Stregone** (`Assets/Scenes/Prove/ProvaStregone.unity`): manichini, branco di orchi, dirupo per l'Onda, orco gigante e boss di prova. Sceglie anche **Prova classe > Gioca come Stregone completo** (set di partenza e un incantesimo per scuola già addosso).
