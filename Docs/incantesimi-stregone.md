@@ -58,8 +58,8 @@ La durata delle evocazioni si allunga con libri e amuleti che hanno "Durata evoc
 
 ## Caselle degli incantesimi
 
-- **4 caselle** di base. Alcuni libri danno una casella in più, con un contro.
-- Si sceglie l'incantesimo con i tasti **1, 2, 3, 4** (e **5** con la casella in più); si lancia con il **tasto sinistro**.
+- **4 caselle** di base. Alcuni libri ne danno una o due in più, con un contro.
+- Si sceglie l'incantesimo con i tasti numerici, uno per casella (da **1** fino a **6** con le caselle in più); si lancia con il **tasto sinistro**.
 - In basso a destra si vede l'incantesimo scelto, con l'attesa che si svuota come una clessidra.
 - Oggi i tasti 1 e 2 cambiano fra spada e bastone: per lo Stregone diventano le caselle degli incantesimi, per Guerriero e Ladro restano come sono.
 
@@ -76,8 +76,20 @@ Non fanno danno da soli: cambiano gli incantesimi, con un pro e un contro.
 | Bastone del cimitero | Evocazioni: +25% di vita e di durata | Incantesimi che fanno danno: -20% |
 | Verga d'osso | Tutti gli incantesimi costano il 15% di mana in meno | -5% di danno; carica e recupero il 10% più lunghi |
 
+## Libri
+
+Stanno nella seconda casella, al posto dello scudo. Con il Bastone del lago (a due mani) non si usano.
+
+| Libro | Pro | Contro |
+| --- | --- | --- |
+| Libro della vecchia vita (di partenza) | +30 mana massimo | Nessuno |
+| Libro dei sussurri | +2 caselle per gli incantesimi (6 in tutto, tasti da 1 a 6) | Il mana si ricarica il 25% più piano |
+| Libro delle braci | Attesa di tutti gli incantesimi il 30% più corta | -20 mana massimo |
+| Libro dell'evocatore | Evocazioni: durano il 30% in più | Attesa di tutti gli incantesimi il 10% più lunga; il mana si ricarica il 7% più piano |
+| Libro del lago nero | +1 casella (5 in tutto) e +20 mana massimo | Ogni schivata costa 10 di resistenza in più; tutti gli incantesimi costano l'8% di mana in più |
+
 ## Ancora da decidere
 
-- Libri, vesti e amuleti con i loro pro e contro.
+- Vesti e amuleti con i loro pro e contro.
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Il danno base è più lento della spada del Guerriero (Scintilla: circa 7,5 s per l'orco sgherro contro 4,8 s): da recuperare con bastoni e amuleti, o da rivedere giocando.
