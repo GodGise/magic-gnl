@@ -88,8 +88,18 @@ Stanno nella seconda casella, al posto dello scudo. Con il Bastone del lago (a d
 | Libro dell'evocatore | Evocazioni: durano il 30% in più | Attesa di tutti gli incantesimi il 10% più lunga; il mana si ricarica il 7% più piano |
 | Libro del lago nero | +1 casella (5 in tutto) e +20 mana massimo | Ogni schivata costa 10 di resistenza in più; tutti gli incantesimi costano l'8% di mana in più |
 
+## Vesti
+
+L'armatura dello Stregone: protegge poco, il pro sta nella magia o nella schivata.
+
+| Veste | Armatura | Pro | Contro |
+| --- | --- | --- | --- |
+| Tunica stracciata (leggera, di partenza) | 3 | Ogni schivata costa 5 di resistenza in meno; il mana si ricarica il 5% più in fretta | Ogni colpo che fa danno (anche parato) toglie il 10% del mana massimo |
+| Veste dell'evocatore (media) | 6 | +10% di mana massimo; carica degli incantesimi di evocazione il 15% più corta | Corsa il 3% più lenta; incantesimi -5% di danno |
+| Manto di cenere (pesante) | 10 | +20 mana massimo; incantesimi +10% di danno | Corsa il 5% più lenta; ogni schivata costa anche 5 di mana |
+
 ## Ancora da decidere
 
-- Vesti e amuleti con i loro pro e contro.
+- Amuleti con i loro pro e contro.
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Il danno base è più lento della spada del Guerriero (Scintilla: circa 7,5 s per l'orco sgherro contro 4,8 s): da recuperare con bastoni e amuleti, o da rivedere giocando.
