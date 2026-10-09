@@ -1,7 +1,7 @@
 # Incantesimi dello Stregone
 
 Nuovo sistema dello Stregone, deciso da Lorenzo il 9 ottobre 2026 (bozza, da approvare da Giuseppe: vedi `Docs/da-approvare.md`).
-Sostituisce l'idea dei bastoni che lanciano tutti la stessa sfera (`Docs/oggetti-stregone.md`).
+Sostituisce l'idea dei bastoni che lanciano tutti la stessa sfera (`Docs/archivio/oggetti-stregone.md`). Approvato da Giuseppe il 9 ottobre 2026.
 
 ## L'idea
 
@@ -130,3 +130,12 @@ Come per le altre classi: magici (bonus semplici) e arcani (effetti speciali), o
 
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Con l'equipaggiamento di partenza (Bastone e Libro della vecchia vita) la Scintilla uccide l'orco sgherro in circa 11,5 s, contro i 4,8 s della spada del Guerriero; senza oggetti in 7 s. Le combinazioni più forti arrivano a 4,7 s. Da rivedere giocando.
+
+## Note sul codice (9 ottobre)
+
+- Script: `MagiaStregone.cs` (caselle, tasti 1-6, lancio), `EffettiNemico.cs` (rallentare, bloccare, stordire, spingere), `ZonaMagica.cs` (scia, velo, pozza, onda, gas), `Evocazione.cs` con `FuocoFatuo.cs`, `SpiritoLupo.cs`, `BambolaOssa.cs`. Dati in `Assets/Scripts/Gameplay/Oggetti/` (`DatiIncantesimo`, `DatiBastone`, `ModificatoriMagia`).
+- Gli oggetti si creano col menu **magic-gnl > Crea oggetti dello Stregone** (in `Assets/Dati/Oggetti/Stregone/`). Tutti i numeri si cambiano dall'Inspector.
+- "Larga X metri" (Pozza, Velo, gas della Bambola, scoppio della Palla) nel codice è il **raggio**: la zona è larga il doppio. Se è troppo grande, si dimezza il campo "Raggio".
+- Velocità dei proiettili e portate sono numeri provvisori, da regolare giocando.
+- **Limite del co-op:** le evocazioni esistono solo sul PC di chi le lancia. I loro colpi arrivano a tutti, ma i nemici le vedono e le attaccano solo se lo Stregone è chi ospita la partita. Rallentamenti, blocchi e spinte invece passano dall'host e valgono per tutti.
+- Per provare una classe senza il menu principale: **magic-gnl > Prova classe > Gioca come ...**, poi Play: lo zaino si riempie con gli oggetti di quella classe.

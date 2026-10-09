@@ -2,25 +2,23 @@ using UnityEngine;
 
 // Un libro dello Stregone. Sta nella seconda casella dell'equipaggiamento, quella che per il Guerriero è lo Scudo
 // (il Ladro lì mette l'arma a distanza): così le caselle restano 4 per tutte le classi.
-// A cosa serve: lo Stregone non para, quindi la mano libera tiene un libro di incantesimi che dà più mana,
-// una ricarica del mana più veloce, incantesimi più forti o evocazioni più lunghe. Un libro grosso pesa un po'
-// (schivata più cara, corsa più lenta), come uno scudo.
-// Regola delle due mani: con il bastone del lago (a due mani) il libro si toglie, come lo scudo con lo spadone.
-// Le evocazioni non ci sono ancora: il loro numero è pronto per quando si faranno.
+// A cosa serve: dà caselle in più per gli incantesimi, mana massimo, ricarica del mana e altri pro e contro
+// (sezione "Magia", vedi ModificatoriMagia). Un libro grosso pesa un po' (schivata più cara, corsa più lenta).
+// Regola delle due mani: con il Bastone del lago (a due mani) il libro si toglie, come lo scudo con lo spadone.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Libro, oppure con il menu
 // "magic-gnl > Crea oggetti dello Stregone". Per provarlo: trascinarlo nella casella Libro di Equipaggiamento.
 [CreateAssetMenu(fileName = "nuovo-libro", menuName = "magic-gnl/Oggetti/Libro")]
 public class DatiLibro : DatiOggetto
 {
-    [Header("Magia")]
-    [Tooltip("Mana massimo in più, in punti (20 = +20).")]
-    public float manaMassimo = 20f;
-    [Tooltip("Il mana si ricarica più in fretta, in percentuale (10 = +10%).")]
+    [Header("Mana")]
+    [Tooltip("Mana massimo in più o in meno, in punti (30 = +30, -25 = -25).")]
+    public float manaMassimo = 0f;
+    [Tooltip("Il mana si ricarica più in fretta o più piano, in percentuale (-25 = il 25% più piano).")]
     public float recuperoMana = 0f;
-    [Tooltip("Danno degli incantesimi in più, in percentuale (15 = +15%).")]
-    public float potenzaIncantesimi = 0f;
-    [Tooltip("Durata delle evocazioni in più, in percentuale (40 = +40%). Le evocazioni non ci sono ancora.")]
-    public float durataEvocazioni = 0f;
+
+    [Header("Magia (pro e contro)")]
+    [Tooltip("Qui anche le caselle in più per gli incantesimi (Caselle Extra).")]
+    public ModificatoriMagia magia = new ModificatoriMagia();
 
     [Header("Peso")]
     [Tooltip("Resistenza in più spesa per ogni schivata.")]
@@ -33,7 +31,5 @@ public class DatiLibro : DatiOggetto
         fonte = Nome,
         manaMassimo = manaMassimo,
         recuperoMana = recuperoMana,
-        potenzaIncantesimi = potenzaIncantesimi,
-        durataEvocazioni = durataEvocazioni,
     };
 }

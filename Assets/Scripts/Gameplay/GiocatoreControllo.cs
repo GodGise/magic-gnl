@@ -21,11 +21,13 @@ using UnityEngine.InputSystem;
 // muore sul colpo; durante l'esecuzione il giocatore non subisce danni. In basso compare l'avviso quando è possibile.
 // Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
 // spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
-// costa mana (terza barra). Il mana si ricarica da solo dopo una breve pausa dall'ultimo lancio (Docs/mana.md)
-// e un po' anche sconfiggendo i nemici.
-// Stregone: equipaggiando un bastone o una verga (DatiArma magica) il bastone si impugna da solo e i numeri della
-// sfera (danno, costo in mana, carica, recupero, portata, armatura ignorata) diventano quelli dell'arma. Libro,
-// vesti e amuleti cambiano mana massimo, ricarica e potenza degli incantesimi (vedi Statistiche).
+// costa mana (terza barra). Il mana si ricarica da solo 2 s dopo l'ultimo lancio (da 0 a 100 in 17 s, Docs/mana.md)
+// e, per chi non è Stregone, un po' anche sconfiggendo i nemici.
+// Stregone (Docs/incantesimi-stregone.md): non ha la spada. Il tasto d'attacco lancia l'incantesimo della casella
+// scelta con i tasti 1-6 (vedi MagiaStregone, che decide carica, recupero, costo ed effetto). Passo d'ombra: invisibile
+// e più veloce per qualche secondo; il primo incantesimo lanciato così fa danno moltiplicato e fa finire l'effetto
+// (poi per un attimo si va più piano). Vesti: la Tunica stracciata fa perdere mana a ogni danno ricevuto, il Manto di
+// cenere fa spendere mana a ogni schivata.
 // Abilità dell'amuleto: tasto Q / croce su del pad. Con l'amuleto Ultimo respiro il personaggio svanisce
 // nell'ombra: per qualche secondo i nemici non lo vedono, smettono di inseguirlo e non lo attaccano.
 // L'invisibilità finisce allo scadere del tempo oppure appena si attacca.
@@ -124,10 +126,10 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     [SerializeField] float preparazioneIncantesimo = 0.3f;
     [Tooltip("Secondi dopo il lancio prima di poter rifare un'azione (la schivata si può fare subito).")]
     [SerializeField] float recuperoIncantesimo = 0.45f;
-    [Tooltip("Secondi dall'ultimo lancio prima che il mana cominci a ricaricarsi da solo.")]
-    [SerializeField] float pausaRicaricaMana = 0.8f;
-    [Tooltip("Secondi per riempire tutta la barra del mana, una volta partita la ricarica (libri e amuleti la accorciano).")]
-    [SerializeField] float secondiRicaricaMana = 12.5f;
+    [Tooltip("Secondi dall'ultimo incantesimo prima che il mana cominci a ricaricarsi da solo.")]
+    [SerializeField] float pausaRicaricaMana = 2f;
+    [Tooltip("Secondi per ricaricare 100 di mana, una volta partita la ricarica (la velocità non cambia con il mana massimo; libri e amuleti la cambiano).")]
+    [SerializeField] float secondiPerCentoMana = 17f;
 
     [Header("Altro")]
     [Tooltip("Per quanti secondi un tasto premuto in anticipo resta valido.")]
@@ -165,8 +167,11 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Armi: la spada c'è sempre, il bastone magico si trova nel baule. Tasto 1 spada, tasto 2 bastone.
     public enum ArmaImpugnata { Spada, Bastone }
     public ArmaImpugnata Arma => arma;
-    // Il bastone c'è se è stato trovato nel baule della chiesetta o se è equipaggiato un bastone dello Stregone.
-    public bool HaBastone => haBastone || bastoneEquipaggiato;
+    // Il bastone c'è se è stato trovato nel baule della chiesetta; lo Stregone lancia sempre incantesimi.
+    public bool HaBastone => haBastone || Stregone;
+    // La classe scelta nel menu è lo Stregone (vedi SceltaPartita): niente spada, solo incantesimi.
+    public bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
+    public MagiaStregone Magia => magia;
     public float Mana { get; private set; }
     // Mana massimo vero: quello dell'Inspector più libro, veste e amuleto (vedi Statistiche).
     public float ManaMassimo => statistiche != null
@@ -194,12 +199,17 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     ArmaImpugnata arma = ArmaImpugnata.Spada;
     bool haBastone;
-    bool bastoneEquipaggiato;   // è equipaggiato un bastone o una verga dello Stregone
     float ultimoLancio = -10f;  // per la pausa prima della ricarica del mana
-    float[] valoriSferaBase;    // numeri della sfera scritti nell'Inspector: valgono senza bastone equipaggiato
-    float penetrazioneIncantesimo; // quota di armatura nemica ignorata dalla sfera
     float manaPerUccisione;     // amuleto arcano
     float rubaManaPercento;     // amuleto arcano
+    // Stregone
+    MagiaStregone magia;
+    bool eraStregone;
+    float preparazioneSferaBase, recuperoSferaBase;   // numeri della sfera del bastone della chiesetta
+    float manaPersoPerDannoPercento, manaPerSchivata; // vesti dello Stregone
+    // Passo d'ombra: invisibile e più veloce; lanciando un incantesimo finisce e si rallenta un attimo.
+    float passoInizio, passoFino, passoVelocita, passoMoltiplicatore, passoRallentamento, passoDurataRallentamento;
+    float rallentatoMagiaFino, rallentamentoMagia;
     bool attaccoMagico;      // l'attacco in corso è un lancio di sfera (bastone), non un colpo di spada
     bool sferaLanciata;
     Bersaglio bersaglioSfera;
@@ -267,7 +277,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         statistiche = Statistiche.Di(this);
         valoriSenzaArma = new[] { dannoAttacco, costoAttacco, preparazioneAttacco, colpoAttivo, recuperoAttacco,
             portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato, arcoParata };
-        valoriSferaBase = new[] { costoSfera, dannoSfera, portataSfera, preparazioneIncantesimo, recuperoIncantesimo, velocitaSfera };
+        preparazioneSferaBase = preparazioneIncantesimo;
+        recuperoSferaBase = recuperoIncantesimo;
         Mana = ManaMassimo;
         if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
@@ -370,9 +381,11 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         if (comandoAbilita.WasPressedThisFrame()) SvanisciNellOmbra();
         AggiornaOmbra();
         RicaricaMana(dt);
+        AggiornaClasse();
 
         // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
-        if (stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
+        // Lo Stregone non cambia arma: i tasti numerici scelgono gli incantesimi (vedi MagiaStregone).
+        if (!Stregone && stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
         {
             if (comandoArma1.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Spada);
             if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
@@ -409,6 +422,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             case Stato.Morto:
                 break;
         }
+
+        // Passo d'ombra (più veloce) o rallentato dopo averlo interrotto.
+        if (stato == Stato.Libero || stato == Stato.Parata) movimento *= MoltiplicatoreVelocitaMagia;
 
         // Nell'acqua bassa si va più piano (vedi AcquaBassa), con un passaggio graduale entrando e uscendo.
         float fattoreAcqua = AcquaBassa.FattoreVelocita(transform.position + Vector3.down * 0.9f);
@@ -559,6 +575,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     void IniziaSchivata(Vector3 direzioneInput)
     {
         resistenza.Spendi(costoSchivata + schivataExtraArmatura);
+        if (manaPerSchivata > 0f) Mana = Mathf.Max(0f, Mana - manaPerSchivata);   // Manto di cenere
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.7f);
         schivataPrenotataFino = -1f;
 
@@ -579,6 +596,12 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Con la spada serve resistenza; con il bastone serve abbastanza mana (altrimenti avvisa).
     bool PuoAttaccare()
     {
+        if (Stregone && magia != null)
+        {
+            if (magia.PuoLanciare()) return true;
+            attaccoPrenotatoFino = -1f;
+            return false;
+        }
         if (arma == ArmaImpugnata.Spada) return resistenza.HaResistenza;
         if (Mana >= costoSfera) return true;
 
@@ -595,16 +618,40 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
     void IniziaAttacco(bool concatenato = false)
     {
+        // Lanciare durante il Passo d'ombra: questo incantesimo fa il danno moltiplicato, poi l'effetto finisce
+        // e per un attimo si va più piano (se invece il Passo finisce da solo, nessun rallentamento).
+        float moltiplicatoreDaPasso = 1f;
+        if (Stregone && PassoAttivo)
+        {
+            moltiplicatoreDaPasso = passoMoltiplicatore;
+            passoFino = Time.time;
+            rallentamentoMagia = passoRallentamento;
+            rallentatoMagiaFino = Time.time + passoDurataRallentamento;
+        }
         RompiOmbra(); // attaccare (anche con il bastone o con l'esecuzione furtiva) fa tornare visibili
-        attaccoMagico = arma == ArmaImpugnata.Bastone;
+        attaccoMagico = Stregone || arma == ArmaImpugnata.Bastone;
         if (attaccoMagico)
         {
             // Bastone: la sfera parte alla fine della carica, verso il nemico scelto adesso.
             colpoCombo = 0;
             sferaLanciata = false;
-            Mana -= costoSfera;
+            if (Stregone && magia != null)
+            {
+                // Stregone: l'incantesimo della casella scelta, con i suoi tempi e il suo costo.
+                magia.IniziaLancio(moltiplicatoreDaPasso, out float costo, out float carica, out float recupero);
+                preparazioneIncantesimo = carica;
+                recuperoIncantesimo = recupero;
+                Mana = Mathf.Max(0f, Mana - costo);
+                bersaglioSfera = magia.ScegliBersaglio(magia.PortataScelta);
+            }
+            else
+            {
+                preparazioneIncantesimo = preparazioneSferaBase;
+                recuperoIncantesimo = recuperoSferaBase;
+                Mana -= costoSfera;
+                bersaglioSfera = ScegliBersaglioSfera();
+            }
             ultimoLancio = Time.time;
-            bersaglioSfera = ScegliBersaglioSfera();
             if (bersaglioSfera != null)
             {
                 Vector3 verso = bersaglioSfera.transform.position - transform.position;
@@ -662,9 +709,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             ? (obiettivo.transform.position + Vector3.up * 0.3f - partenza).normalized
             : transform.forward;
 
-        // Potenza degli incantesimi (libri, amuleti): +15 = sfera il 15% più forte.
-        float danno = dannoSfera * (1f + statistiche.PotenzaIncantesimi / 100f);
-        SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, danno, transform, penetrazioneIncantesimo);
+        float danno = dannoSfera;
+        if (Stregone && magia != null)
+        {
+            magia.Lancia(obiettivo, partenza, direzione);
+            return;
+        }
+        SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, danno, transform);
         Suoni.Suona(Suono.SferaLancio, partenza, 0.9f);
         MondoRete.InviaSfera(partenza, direzione, obiettivo, velocitaSfera); // gli altri giocatori la vedono partire
     }
@@ -710,9 +761,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     {
         if (valoriSenzaArma == null) return;
         float[] v = valoriSenzaArma;
-        // Bastoni e verghe dello Stregone non cambiano il colpo di spada: cambiano la sfera (vedi sotto).
-        bool magica = armaNuova != null && armaNuova.Magica;
-        bool a = armaNuova != null && !magica;
+        bool a = armaNuova != null;
         dannoAttacco = a ? armaNuova.danno : v[0];
         costoAttacco = a ? armaNuova.costoAttacco : v[1];
         // Velocità d'attacco delle Statistiche (amuleti): -7,5 = carica, colpo e recupero durano il 7,5% in più.
@@ -728,27 +777,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         dannoAlleSpalle = a ? armaNuova.moltiplicatoreAlleSpalle : 1f;
         // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
 
-        // Sfera magica: con un bastone o una verga equipaggiati valgono i loro numeri, altrimenti quelli dell'Inspector.
-        float[] sb = valoriSferaBase;
-        float lentezzaLancio = 1f - statistiche.VelocitaAttacco / 100f;
-        costoSfera = magica ? armaNuova.costoMana : sb[0];
-        dannoSfera = magica ? armaNuova.danno : sb[1];
-        portataSfera = magica ? armaNuova.portata : sb[2];
-        preparazioneIncantesimo = (magica ? armaNuova.preparazione : sb[3]) * lentezzaLancio;
-        recuperoIncantesimo = (magica ? armaNuova.recupero : sb[4]) * lentezzaLancio;
-        velocitaSfera = magica ? armaNuova.velocitaIncantesimo : sb[5];
-        penetrazioneIncantesimo = magica ? armaNuova.penetrazioneArmatura : 0f;
-        bool avevaBastone = bastoneEquipaggiato;
-        bastoneEquipaggiato = magica;
-        if (magica && !avevaBastone)
-        {
-            AspettoUmanoide.AggiungiBastone(gameObject);
-            ImpugnaArma(ArmaImpugnata.Bastone);
-        }
-        else if (!magica && avevaBastone && !haBastone && arma == ArmaImpugnata.Bastone)
-        {
-            ImpugnaArma(ArmaImpugnata.Spada);
-        }
+        // Vesti dello Stregone: mana perso a ogni danno ricevuto (Tunica stracciata) o a ogni schivata (Manto di cenere).
+        manaPersoPerDannoPercento = armatura != null ? armatura.manaPersoPerDannoPercento : 0f;
+        manaPerSchivata = armatura != null ? armatura.manaPerSchivata : 0f;
 
         if (scudo != null)
         {
@@ -761,10 +792,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         }
         else
         {
-            // Si para con l'arma (anche con il bastone dello Stregone, che para male).
-            bool conArma = armaNuova != null;
-            dannoAssorbitoInParata = conArma ? armaNuova.dannoAssorbitoSenzaScudo : v[9];
-            costoColpoParato = conArma ? armaNuova.costoParataSenzaScudo : v[10];
+            dannoAssorbitoInParata = a ? armaNuova.dannoAssorbitoSenzaScudo : v[9];
+            costoColpoParato = a ? armaNuova.costoParataSenzaScudo : v[10];
             arcoParata = v[11];
             finestraParataPerfetta = 0f;
         }
@@ -811,8 +840,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         invisibileFino = Time.time + durataOmbra;
         ombraProntaDa = Time.time + ricaricaOmbra;
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.8f, 0.55f);
+        Ombreggia();
+    }
 
-        // Il personaggio diventa scuro, quasi un'ombra (il giocatore deve comunque vedersi).
+    // Il personaggio diventa scuro, quasi un'ombra (il giocatore deve comunque vedersi).
+    void Ombreggia()
+    {
+        if (partiInOmbra.Count > 0) return;   // già in ombra
         partiInOmbra.Clear();
         coloriPrimaDellOmbra.Clear();
         foreach (Renderer parte in GetComponentsInChildren<Renderer>())
@@ -862,9 +896,11 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Chiamato da un nemico quando muore: con il bastone si recupera un po' di mana.
     public void NemicoSconfitto()
     {
-        Cura(vitaPerUccisione); // amuleto arcano
+        Cura(vitaPerUccisione + statistiche.VitaPerUccisione); // amuleti
         if (!HaBastone) return;
-        Mana = Mathf.Min(ManaMassimo, Mana + ManaMassimo * manaPerUccisionePercento / 100f + manaPerUccisione);
+        // Lo Stregone recupera mana solo con la ricarica e con gli amuleti; il bastone della chiesetta anche così.
+        float percento = Stregone ? 0f : manaPerUccisionePercento;
+        Mana = Mathf.Min(ManaMassimo, Mana + ManaMassimo * percento / 100f + manaPerUccisione);
     }
 
     // Chiamato da SferaMagica quando la sfera colpisce un nemico: con l'amuleto Cuore del lago nero
@@ -875,14 +911,77 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         Mana = Mathf.Min(ManaMassimo, Mana + danno * rubaManaPercento / 100f);
     }
 
-    // Il mana si ricarica da solo dopo una breve pausa dall'ultimo lancio (Docs/mana.md). Libri e amuleti
-    // con "Recupero Mana" la rendono più veloce. Da morti non si ricarica.
+    // Il mana si ricarica da solo 2 s dopo l'ultimo incantesimo, 100 punti in 17 s (Docs/incantesimi-stregone.md):
+    // la velocità non cresce con il mana massimo. Libri, vesti e amuleti con "Recupero Mana" la cambiano.
+    // Da morti non si ricarica.
     void RicaricaMana(float dt)
     {
         if (!HaBastone || stato == Stato.Morto || Mana >= ManaMassimo) return;
         if (Time.time - ultimoLancio < pausaRicaricaMana) return;
-        float alSecondo = ManaMassimo / Mathf.Max(0.1f, secondiRicaricaMana) * (1f + statistiche.RecuperoMana / 100f);
+        float alSecondo = 100f / Mathf.Max(0.1f, secondiPerCentoMana) * Mathf.Max(0f, 1f + statistiche.RecuperoMana / 100f);
         Mana = Mathf.Min(ManaMassimo, Mana + alSecondo * dt);
+    }
+
+    // ---------- Stregone ----------
+
+    // La classe si sceglie nel menu (o con il menu di prova dell'editor): se diventa Stregone serve la magia
+    // e il bastone in mano; se smette di esserlo torna la spada.
+    void AggiornaClasse()
+    {
+        bool ora = Stregone;
+        if (ora == eraStregone && (!ora || magia != null)) return;
+        eraStregone = ora;
+        if (ora)
+        {
+            if (magia == null) magia = GetComponent<MagiaStregone>();
+            if (magia == null) magia = gameObject.AddComponent<MagiaStregone>();
+            magia.enabled = true;
+            AspettoUmanoide.AggiungiBastone(gameObject);
+            ImpugnaArma(ArmaImpugnata.Bastone);
+            Mana = ManaMassimo;
+        }
+        else
+        {
+            if (magia != null) magia.enabled = false;
+            if (!haBastone) ImpugnaArma(ArmaImpugnata.Spada);
+        }
+    }
+
+    // Passo d'ombra (vedi MagiaStregone): invisibile per "durata" secondi, più veloce del "velocitaInPiu" per cento.
+    // Il primo incantesimo lanciato in quel tempo fa "moltiplicatore" volte il danno e fa finire l'effetto; dopo,
+    // per "durataRallentamento" secondi si va il "rallentamento" per cento più piano.
+    public void AttivaPassoOmbra(float durata, float velocitaInPiu, float moltiplicatore, float rallentamento, float durataRallentamento)
+    {
+        if (stato == Stato.Morto) return;
+        passoInizio = Time.time;
+        passoFino = Time.time + durata;
+        passoVelocita = velocitaInPiu;
+        passoMoltiplicatore = moltiplicatore;
+        passoRallentamento = rallentamento;
+        passoDurataRallentamento = durataRallentamento;
+        invisibileFino = passoFino;
+        Ombreggia();
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.8f, 0.55f);
+    }
+
+    public bool PassoAttivo => Time.time < passoFino && Invisibile;
+
+    // +40% di velocità già dal primo istante, poi resta; nell'ultimo mezzo secondo scende piano alla normale.
+    // Dopo aver interrotto il Passo lanciando, per un attimo si va più piano.
+    float MoltiplicatoreVelocitaMagia
+    {
+        get
+        {
+            float m = 1f;
+            if (PassoAttivo)
+            {
+                float salita = Mathf.Clamp01((Time.time - passoInizio) / 0.15f);
+                float discesa = Mathf.Clamp01((passoFino - Time.time) / 0.6f);
+                m *= 1f + passoVelocita / 100f * Mathf.Min(salita, discesa);
+            }
+            if (Time.time < rallentatoMagiaFino) m *= Mathf.Clamp01(1f - rallentamentoMagia / 100f);
+            return m;
+        }
     }
 
     bool SonoAgganciato => aggancio != null && aggancio.Agganciato;
@@ -918,6 +1017,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         {
             InseguimentoNemico nemico = c.GetComponentInParent<InseguimentoNemico>();
             if (nemico == null || !nemico.Ignaro) continue;
+            // Boss e miniboss non si possono uccidere di nascosto (Docs/oggetti-guerriero.md).
+            if (nemico.TryGetComponent(out Bersaglio corpoNemico) && corpoNemico.Boss) continue;
 
             Vector3 dalNemico = transform.position - nemico.transform.position;
             dalNemico.y = 0f;
@@ -1082,6 +1183,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     void PerdiVita(float quantita)
     {
+        // Tunica stracciata: ogni danno ricevuto, anche di 1 punto, toglie una parte del mana massimo.
+        if (quantita > 0f && manaPersoPerDannoPercento > 0f) Mana = Mathf.Max(0f, Mana - ManaMassimo * manaPersoPerDannoPercento / 100f);
         Vita = Mathf.Max(0f, Vita - quantita);
         if (Vita > 0f) return;
 

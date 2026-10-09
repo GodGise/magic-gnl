@@ -1,22 +1,28 @@
 using UnityEditor;
 using UnityEngine;
 
-// Strumento dell'editor: crea i file degli oggetti dello Stregone (uccide a distanza con la magia, è fragile:
-// poca armatura, più mana; schiva, non para). Armi magiche (bastoni, verga, bastone del lago a due mani),
-// libri (nella casella dello Scudo), vesti (leggera, media, pesante) e amuleti (magici e arcani, ognuno con
-// un bonus e un malus). Numeri di partenza da Docs/oggetti-stregone.md, regola del mana in Docs/mana.md.
-// A cosa serve: ogni oggetto è un file in Assets/Dati/Oggetti/Stregone/ (Armi, Libri, Vesti, Amuleti).
+// Strumento dell'editor: crea i file degli oggetti dello Stregone, con i numeri decisi da Lorenzo il 9 ottobre
+// (Docs/incantesimi-stregone.md): 12 incantesimi in 4 scuole (Brace, Lago Nero, Ombra, Evocazione), 6 bastoni,
+// 5 libri, 3 vesti e 6 amuleti. Bastoni, libri, vesti e amuleti non fanno danno: cambiano gli incantesimi con un pro
+// e un contro (sezione "Magia" di ogni oggetto, vedi ModificatoriMagia).
+// A cosa serve: ogni oggetto è un file in Assets/Dati/Oggetti/Stregone/ (Incantesimi, Bastoni, Libri, Vesti, Amuleti).
 // Il menu "Crea" crea solo i file che MANCANO; il menu "Aggiorna" rimette in tutti i valori scritti qui sotto
 // (tenendo icona e modello già collegati).
-// Come si usa: menu in alto "magic-gnl > Crea oggetti dello Stregone", poi selezionare il Giocatore e trascinare
-// gli oggetti nelle caselle di Equipaggiamento (il libro va nella casella Libro). Con un bastone o una verga
-// equipaggiati l'attacco lancia la sfera con i numeri dell'arma e costa mana.
-// Le evocazioni non ci sono ancora: libri e amuleti che le allungano hanno già il loro numero.
+// Come si usa: menu in alto "magic-gnl > Crea oggetti dello Stregone". Per provarli: scegliere lo Stregone (menu
+// "magic-gnl > Prova: gioca come Stregone"), poi in Play riempire lo zaino e aprire l'inventario con Tab.
 // Per aggiungere un oggetto nuovo: una riga nel metodo Crea() qui sotto, con i suoi numeri.
 public static class CreaOggettiStregone
 {
     const string Radice = "Assets/Dati/Oggetti/Stregone";
     static bool riscrivi;
+
+    static readonly Color Fuoco = new Color(1f, 0.55f, 0.2f);
+    static readonly Color FuocoForte = new Color(1f, 0.35f, 0.1f);
+    static readonly Color Ghiaccio = new Color(0.55f, 0.85f, 1f);
+    static readonly Color AcquaNera = new Color(0.08f, 0.1f, 0.18f);
+    static readonly Color Ombra = new Color(0.45f, 0.25f, 0.7f);
+    static readonly Color Nebbia = new Color(0.75f, 0.78f, 0.82f);
+    static readonly Color Spirito = new Color(0.55f, 0.8f, 1f);
 
     [MenuItem("magic-gnl/Crea oggetti dello Stregone")]
     static void MenuCrea()
@@ -39,110 +45,197 @@ public static class CreaOggettiStregone
     static void Crea()
     {
         int creati = 0;
+        // Riferimenti: Stregone con vita 100 e mana 100; il mana si ricarica 2 s dopo l'ultimo incantesimo, 100 punti
+        // in 17 s. Orco sgherro: vita 160, armatura 25.
 
-        // Riferimenti: giocatore con vita 100, mana 100, critico 10% da ×1,75; orco sgherro con vita 160,
-        // armatura 25. Lo Stregone deve uccidere l'orco in circa lo stesso tempo del Guerriero (4,8 s con la spada).
-        // Mana: si ricarica da solo dopo una breve pausa (Giocatore Controllo); il mana pieno basta per circa
-        // 20 secondi di fuoco continuo con il bastone di partenza.
+        // ---------- Incantesimi: Brace (tanto danno, anche ad area) ----------
 
-        // ---------- Armi magiche (ogni lancio costa mana, non resistenza) ----------
-
-        // Bastone: equilibrato, la base dello Stregone.
-        creati += Arma("bastone-della-vecchia-vita", "Bastone della vecchia vita", "bastone_vecchia_vita", a =>
+        creati += Incantesimo("scintilla", "Scintilla", "scintilla", i =>
         {
-            a.tipo = DatiArma.Tipo.Bastone;
-            a.danno = 22f; a.costoMana = 3f; a.costoAttacco = 0f;
-            a.preparazione = 0.3f; a.colpoAttivo = 0.1f; a.recupero = 0.3f;
-            a.portata = 22f; a.velocitaIncantesimo = 16f;
-            a.penetrazioneArmatura = 0.15f;
-            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
+            i.scuola = ScuolaMagia.Brace; i.effetto = DatiIncantesimo.Effetto.Proiettile;
+            i.costoMana = 5f; i.danno = 21f; i.carica = 0.3f; i.recupero = 0.3f; i.attesa = 0.5f;
+            i.velocita = 20f; i.portata = 22f; i.grandezza = 0.8f; i.colore = Fuoco;
         });
-        creati += Arma("bastone-di-quercia-nera", "Bastone di quercia nera", "bastone_quercia_nera", a =>
+        creati += Incantesimo("palla-di-fuoco", "Palla di fuoco", "palla_fuoco", i =>
         {
-            a.tipo = DatiArma.Tipo.Bastone;
-            a.danno = 26f; a.costoMana = 3.5f; a.costoAttacco = 0f;
-            a.preparazione = 0.32f; a.colpoAttivo = 0.1f; a.recupero = 0.32f;
-            a.portata = 22f; a.velocitaIncantesimo = 16f;
-            a.penetrazioneArmatura = 0.15f; a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
+            i.scuola = ScuolaMagia.Brace; i.effetto = DatiIncantesimo.Effetto.PallaDiFuoco;
+            i.costoMana = 18f; i.danno = 32f; i.carica = 0.7f; i.recupero = 0.5f; i.attesa = 1.3f;
+            i.raggio = 3f; i.velocita = 11f; i.portata = 22f; i.grandezza = 1.8f; i.colore = FuocoForte;
         });
-        creati += Arma("bastone-d-ossidiana", "Bastone d'ossidiana", "bastone_ossidiana", a =>
+        creati += Incantesimo("scia-di-brace", "Scia di brace", "scia_brace", i =>
         {
-            a.tipo = DatiArma.Tipo.Bastone;
-            a.danno = 30f; a.costoMana = 4f; a.costoAttacco = 0f;
-            a.preparazione = 0.35f; a.colpoAttivo = 0.1f; a.recupero = 0.35f;
-            a.portata = 24f; a.velocitaIncantesimo = 16f;
-            a.penetrazioneArmatura = 0.25f; a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
+            i.scuola = ScuolaMagia.Brace; i.effetto = DatiIncantesimo.Effetto.Scia;
+            i.costoMana = 22f; i.dannoAlSecondo = 11f; i.carica = 0.7f; i.recupero = 0.6f; i.attesa = 10f;
+            i.lunghezza = 6f; i.raggio = 1.5f; i.durata = 6f; i.colore = Fuoco;
         });
 
-        // Verga: leggera e velocissima, poco danno a colpo.
-        creati += Arma("verga-d-osso", "Verga d'osso", "verga_osso", a =>
+        // ---------- Incantesimi: Lago Nero (controllo) ----------
+
+        creati += Incantesimo("scheggia-di-ghiaccio", "Scheggia di ghiaccio", "scheggia_ghiaccio", i =>
         {
-            a.tipo = DatiArma.Tipo.Verga;
-            a.danno = 15f; a.costoMana = 2f; a.costoAttacco = 0f;
-            a.preparazione = 0.15f; a.colpoAttivo = 0.1f; a.recupero = 0.2f;
-            a.portata = 18f; a.velocitaIncantesimo = 20f;
-            a.penetrazioneArmatura = 0.1f; a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
+            i.scuola = ScuolaMagia.LagoNero; i.effetto = DatiIncantesimo.Effetto.Proiettile;
+            i.costoMana = 7f; i.danno = 15f; i.carica = 0.3f; i.recupero = 0.3f; i.attesa = 1.5f;
+            i.rallentamento = 35f; i.durataRallentamento = 1.6f;
+            i.velocita = 24f; i.portata = 22f; i.grandezza = 0.8f; i.colore = Ghiaccio;
+        });
+        creati += Incantesimo("onda-del-lago", "Onda del lago", "onda_lago", i =>
+        {
+            i.scuola = ScuolaMagia.LagoNero; i.effetto = DatiIncantesimo.Effetto.Onda;
+            i.costoMana = 20f; i.danno = 20f; i.carica = 0.5f; i.recupero = 0.6f; i.attesa = 10f;
+            i.altezza = 4f; i.lunghezza = 6f; i.raggio = 4f; i.spinta = 5f; i.stordimento = 1.5f;
+            i.rallentamento = 30f; i.durataRallentamento = 2f; i.colore = Ghiaccio;
+        });
+        creati += Incantesimo("pozza-nera", "Pozza nera", "pozza_nera", i =>
+        {
+            i.scuola = ScuolaMagia.LagoNero; i.effetto = DatiIncantesimo.Effetto.Pozza;
+            i.costoMana = 27f; i.danno = 3f; i.carica = 0.3f; i.recupero = 0.5f; i.attesa = 20f;
+            i.raggio = 4f; i.portata = 18f; i.blocco = 3.5f; i.rallentamentoDopo = 20f; i.durataRallentamentoDopo = 3f;
+            i.colore = AcquaNera;
         });
 
-        // Bastone del lago: a due mani (niente libro), lento, portata e danno altissimi.
-        creati += Arma("bastone-del-lago", "Bastone del lago", "bastone_lago", a =>
+        // ---------- Incantesimi: Ombra (colpire senza farsi vedere, scappare) ----------
+
+        creati += Incantesimo("dardo-d-ombra", "Dardo d'ombra", "dardo_ombra", i =>
         {
-            a.tipo = DatiArma.Tipo.Bastone; a.dueMani = true;
-            a.danno = 48f; a.costoMana = 8f; a.costoAttacco = 0f;
-            a.preparazione = 0.55f; a.colpoAttivo = 0.1f; a.recupero = 0.65f;
-            a.portata = 30f; a.velocitaIncantesimo = 13f;
-            a.penetrazioneArmatura = 0.35f; a.probabilitaCritico = 5f;
-            a.dannoAssorbitoSenzaScudo = 0.15f; a.costoParataSenzaScudo = 35f;
+            i.scuola = ScuolaMagia.Ombra; i.effetto = DatiIncantesimo.Effetto.Proiettile;
+            i.costoMana = 8f; i.danno = 20f; i.carica = 0.2f; i.recupero = 0.3f; i.attesa = 1f;
+            i.moltiplicatoreIgnaro = 2f; i.velocita = 30f; i.portata = 24f; i.grandezza = 0.6f; i.colore = Ombra;
+        });
+        creati += Incantesimo("passo-d-ombra", "Passo d'ombra", "passo_ombra", i =>
+        {
+            i.scuola = ScuolaMagia.Ombra; i.effetto = DatiIncantesimo.Effetto.PassoOmbra;
+            i.costoMana = 40f; i.carica = 0.1f; i.recupero = 0.2f; i.attesa = 30f;
+            i.durata = 4f; i.velocitaInPiu = 40f; i.moltiplicatoreSuccessivo = 2.5f;
+            i.rallentamentoInterruzione = 50f; i.durataRallentamentoInterruzione = 2f; i.colore = Ombra;
+        });
+        creati += Incantesimo("velo-di-nebbia", "Velo di nebbia", "velo_nebbia", i =>
+        {
+            i.scuola = ScuolaMagia.Ombra; i.effetto = DatiIncantesimo.Effetto.Velo;
+            i.costoMana = 22f; i.carica = 0.4f; i.recupero = 0.4f; i.attesa = 20f;
+            i.raggio = 5f; i.durata = 6f; i.colore = Nebbia;
+        });
+
+        // ---------- Incantesimi: Evocazione (aiutanti; l'attesa parte quando l'evocazione finisce) ----------
+
+        creati += Incantesimo("fuoco-fatuo", "Fuoco fatuo", "fuoco_fatuo", i =>
+        {
+            i.scuola = ScuolaMagia.Evocazione; i.effetto = DatiIncantesimo.Effetto.FuocoFatuo;
+            i.costoMana = 15f; i.carica = 0.7f; i.recupero = 0.4f; i.attesa = 7f;
+            i.durata = 20f; i.dannoEvocazione = 6f; i.intervalloColpi = 1.5f; i.massimoInsieme = 3; i.colore = new Color(0.6f, 0.9f, 1f);
+        });
+        creati += Incantesimo("spirito-del-lupo", "Spirito del lupo", "spirito_lupo", i =>
+        {
+            i.scuola = ScuolaMagia.Evocazione; i.effetto = DatiIncantesimo.Effetto.Lupo;
+            i.costoMana = 35f; i.carica = 2f; i.recupero = 0.6f; i.attesa = 60f;
+            i.durata = 45f; i.vitaEvocazione = 60f; i.dannoEvocazione = 14f; i.intervalloColpi = 1.2f;
+            i.vitaPerUccisione = 10f; i.lunghezzaScia = 1f; i.dannoAlSecondo = 5f; i.massimoInsieme = 1; i.colore = Spirito;
+        });
+        creati += Incantesimo("bambola-di-ossa", "Bambola di ossa", "bambola_ossa", i =>
+        {
+            i.scuola = ScuolaMagia.Evocazione; i.effetto = DatiIncantesimo.Effetto.Bambola;
+            i.costoMana = 40f; i.carica = 0.5f; i.recupero = 0.5f; i.attesa = 60f;
+            i.vitaEvocazione = 150f; i.raggioAttrazione = 8f; i.tempoTrasformazione = 20f;
+            i.raggio = 1.5f; i.rallentamento = 35f; i.durataRallentamento = 3f; i.dannoAlSecondo = 6f;
+            i.vitaScheletro = 45f; i.dannoScheletro = 11f; i.intervalloScheletro = 1.6f; i.durataScheletro = 30f;
+            i.massimoInsieme = 1; i.colore = new Color(0.86f, 0.82f, 0.7f);
+        });
+
+        // ---------- Bastoni (non fanno danno: pro e contro sugli incantesimi) ----------
+
+        creati += Bastone("bastone-della-vecchia-vita", "Bastone della vecchia vita", "bastone_vecchia_vita", b =>
+        {
+            b.magia.caricaSecondi = 0.5f;   // di partenza: nessun pro, ogni incantesimo si carica 0,5 s in più
+        });
+        creati += Bastone("bastone-di-quercia-nera", "Bastone di quercia nera", "bastone_quercia_nera", b =>
+        {
+            b.magia.brace.dannoPercento = 15f;
+            b.magia.lagoNero.durataEffettiPercento = -25f;
+        });
+        creati += Bastone("bastone-del-lago", "Bastone del lago", "bastone_lago", b =>
+        {
+            b.dueMani = true;   // niente libro
+            b.magia.lagoNero.durataEffettiPercento = 30f;
+            b.magia.lagoNero.dannoPercento = 15f;
+            b.magia.costoPercento = 17f;
+        });
+        creati += Bastone("bastone-d-ossidiana", "Bastone d'ossidiana", "bastone_ossidiana", b =>
+        {
+            b.magia.ombra.ignoraArmatura = 0.25f;
+            b.magia.costoPercento = 15f;
+        });
+        creati += Bastone("bastone-del-cimitero", "Bastone del cimitero", "bastone_cimitero", b =>
+        {
+            b.magia.vitaEvocazioniPercento = 25f;
+            b.magia.durataEvocazioniPercento = 25f;
+            b.magia.dannoPercento = -20f;   // incantesimi che fanno danno (non le evocazioni)
+        });
+        creati += Bastone("verga-d-osso", "Verga d'osso", "verga_osso", b =>
+        {
+            b.tipo = DatiBastone.Tipo.Verga;
+            b.magia.costoPercento = -15f;
+            b.magia.dannoPercento = -5f;
+            b.magia.caricaPercento = 10f;
+            b.magia.recuperoPercento = 10f;
         });
 
         // ---------- Libri (nella casella dello Scudo) ----------
 
         creati += Libro("libro-della-vecchia-vita", "Libro della vecchia vita", "libro_vecchia_vita", l =>
         {
-            l.manaMassimo = 20f;
+            l.manaMassimo = 30f;
         });
         creati += Libro("libro-dei-sussurri", "Libro dei sussurri", "libro_sussurri", l =>
         {
-            l.manaMassimo = 30f; l.recuperoMana = 10f;
+            l.magia.caselleExtra = 2;
+            l.recuperoMana = -25f;
         });
         creati += Libro("libro-delle-braci", "Libro delle braci", "libro_braci", l =>
         {
-            l.manaMassimo = 20f; l.potenzaIncantesimi = 15f;
+            l.magia.attesaPercento = -15f;
+            l.manaMassimo = -25f;
         });
         creati += Libro("libro-dell-evocatore", "Libro dell'evocatore", "libro_evocatore", l =>
         {
-            l.manaMassimo = 25f; l.durataEvocazioni = 40f;
+            l.magia.durataEvocazioniPercento = 30f;
+            l.magia.attesaPercento = 10f;
+            l.recuperoMana = -7f;
         });
         creati += Libro("libro-del-lago-nero", "Libro del lago nero", "libro_lago_nero", l =>
         {
-            l.manaMassimo = 50f; l.recuperoMana = 20f; l.potenzaIncantesimi = 10f;
-            l.costoSchivataExtra = 4f; l.moltiplicatoreVelocita = 0.99f;
+            l.magia.caselleExtra = 1;
+            l.manaMassimo = 20f;
+            l.costoSchivataExtra = 10f;
+            l.magia.costoPercento = 8f;
         });
 
-        // ---------- Vesti (pochissima armatura, più mana) ----------
+        // ---------- Vesti (pochissima armatura) ----------
 
-        creati += Veste("tunica-stracciata", "Tunica stracciata", "tunica_stracciata", b =>
+        creati += Veste("tunica-stracciata", "Tunica stracciata", "tunica_stracciata", v =>
         {
-            b.peso = DatiArmatura.Peso.Leggera;
-            b.armatura = 3f; b.manaMassimo = 0f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
+            v.peso = DatiArmatura.Peso.Leggera; v.armatura = 3f;
+            v.costoSchivataExtra = -5f;              // ogni schivata costa 5 di resistenza in meno
+            v.bonus.recuperoMana = 5f;
+            v.manaPersoPerDannoPercento = 10f;       // ogni danno ricevuto toglie il 10% del mana massimo
         });
-        creati += Veste("veste-dell-evocatore", "Veste dell'evocatore", "veste_evocatore", b =>
+        creati += Veste("veste-dell-evocatore", "Veste dell'evocatore", "veste_evocatore", v =>
         {
-            b.peso = DatiArmatura.Peso.Media;
-            b.armatura = 6f; b.manaMassimo = 15f; b.costoSchivataExtra = 0f; b.moltiplicatoreVelocita = 1f;
+            v.peso = DatiArmatura.Peso.Media; v.armatura = 6f;
+            v.bonus.manaMassimoPercento = 10f;
+            v.magia.caricaEvocazioniPercento = -15f;
+            v.moltiplicatoreVelocita = 0.97f;
+            v.magia.dannoPercento = -5f;
         });
-        creati += Veste("manto-di-cenere", "Manto di cenere", "manto_cenere", b =>
+        creati += Veste("manto-di-cenere", "Manto di cenere", "manto_cenere", v =>
         {
-            b.peso = DatiArmatura.Peso.Pesante;
-            b.armatura = 10f; b.manaMassimo = 25f; b.costoSchivataExtra = 2f; b.moltiplicatoreVelocita = 0.99f;
+            v.peso = DatiArmatura.Peso.Pesante; v.armatura = 10f;
+            v.manaMassimo = 20f;
+            v.magia.dannoPercento = 10f;
+            v.moltiplicatoreVelocita = 0.95f;
+            v.manaPerSchivata = 5f;                  // ogni schivata costa anche 5 di mana
         });
 
         // ---------- Amuleti (ognuno con un bonus e un malus) ----------
 
-        // Magici: bonus semplici alle statistiche.
         creati += Amuleto("osso-inciso", "Osso inciso", "osso_inciso", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.manaMassimo = 15f;
@@ -150,16 +243,14 @@ public static class CreaOggettiStregone
         });
         creati += Amuleto("cristallo-opaco", "Cristallo opaco", "cristallo_opaco", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.recuperoMana = 15f;
-            m.malus.velocitaAttacco = -7.5f; // lanci il 7,5% più lenti
+            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.recuperoMana = 10f;
+            m.magia.caricaPercento = 10f;            // malus: carica il 10% più lunga
         });
         creati += Amuleto("cenere-benedetta", "Cenere benedetta", "cenere_benedetta", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.potenzaIncantesimi = 12f;
+            m.tipo = DatiAmuleto.Tipo.Magico; m.magia.dannoPercento = 12f;
             m.malus.manaMassimoPercento = -10f;
         });
-
-        // Arcani: effetti speciali.
         creati += Amuleto("sigillo-del-focolare", "Sigillo del focolare", "sigillo_focolare", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.ManaPerUccisione; m.valore = 8f;
@@ -167,14 +258,16 @@ public static class CreaOggettiStregone
         });
         creati += Amuleto("occhio-del-lago", "Occhio del lago", "occhio_lago", m =>
         {
-            // Le evocazioni non ci sono ancora: il numero è pronto per quando si faranno.
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.bonus.durataEvocazioni = 50f;
-            m.malus.vitaMassimaPercento = -15f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.magia.doppiaEvocazione = true;
+            m.malus.vitaMassimaPercento = -25f;
+            m.magia.durataEvocazioniPercento = -30f;
         });
         creati += Amuleto("cuore-del-lago-nero", "Cuore del lago nero", "cuore_lago_nero", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaMana; m.valore = 5f;
-            m.malus.vitaMassimaPercento = -20f;
+            m.bonus.vitaPerUccisione = 6f;
+            m.malus.vitaMassimaPercento = -30f;
+            m.malus.recuperoMana = -10f;
         });
 
         AssetDatabase.SaveAssets();
@@ -183,8 +276,11 @@ public static class CreaOggettiStregone
             : "Oggetti dello Stregone: c'erano già tutti, nessun file cambiato.");
     }
 
-    static int Arma(string file, string nome, string chiave, System.Action<DatiArma> imposta) =>
-        Oggetto("Armi", file, nome, chiave, imposta);
+    static int Incantesimo(string file, string nome, string chiave, System.Action<DatiIncantesimo> imposta) =>
+        Oggetto("Incantesimi", file, nome, chiave, imposta);
+
+    static int Bastone(string file, string nome, string chiave, System.Action<DatiBastone> imposta) =>
+        Oggetto("Bastoni", file, nome, chiave, imposta);
 
     static int Libro(string file, string nome, string chiave, System.Action<DatiLibro> imposta) =>
         Oggetto("Libri", file, nome, chiave, imposta);

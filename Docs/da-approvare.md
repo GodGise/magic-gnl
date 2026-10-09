@@ -25,13 +25,10 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
-### 9 ottobre: nuovo sistema dello Stregone (serve l'approvazione di Giuseppe)
-Lorenzo propone di cambiare lo Stregone: invece di bastoni che lanciano tutti la stessa sfera, un **inventario di incantesimi** (12, in quattro scuole: Brace, Lago Nero, Ombra, Evocazione) da mettere in 4 caselle e scegliere con i tasti numerici. Bastoni, libri, vesti e amuleti diventano aiuti con un pro e un contro. Tutto in `Docs/incantesimi-stregone.md`; sostituirebbe `Docs/oggetti-stregone.md`.
-- **Domanda per Giuseppe:** approvi il nuovo sistema? Se sì, il Claude di Lorenzo lo programma sul ramo `lorenzoc/oggetti-stregone`.
-- Da sapere: con questi numeri l'incantesimo base (Scintilla) uccide l'orco sgherro in circa 7,5 s, contro i 4,8 s della spada del Guerriero (`Docs/mana.md` chiede tempi simili). Lorenzo preferisce recuperare la differenza con bastoni e amuleti, o rivederla giocando.
-- Per lo Stregone i tasti 1 e 2 (oggi spada e bastone) diventerebbero le caselle degli incantesimi.
-- **Altra domanda per Giuseppe (vale per tutto il co-op):** Lorenzo propone **una classe per giocatore, niente doppioni**: un gruppo di tre ha un Guerriero, un Ladro e uno Stregone. Serve anche a evitare che tre Stregoni tengano fermi i boss con blocchi e rallentamenti a catena. Approvi?
+### 9 ottobre: una classe per giocatore in co-op (serve una risposta di Giuseppe)
+Lorenzo propone **una classe per giocatore, niente doppioni**: un gruppo di tre ha un Guerriero, un Ladro e uno Stregone. Serve anche a evitare che tre Stregoni tengano fermi i boss con blocchi e rallentamenti a catena. Approvi?
 
 ## Chiuso
 
-(vuoto)
+### 9 ottobre: nuovo sistema dello Stregone, approvato da Giuseppe
+Programmato sul ramo `lorenzoc/oggetti-stregone`: 12 incantesimi in 4 caselle (fino a 6 con i libri), tasti 1-6, bastoni, libri, vesti e amuleti con pro e contro. Regole e numeri in `Docs/incantesimi-stregone.md`; `Docs/oggetti-stregone.md` spostato in `Docs/archivio/`. Limite noto del co-op: le evocazioni esistono solo sul PC di chi le lancia (sezione "Note sul codice" del documento).

@@ -29,6 +29,9 @@ public class DatiAmuleto : DatiOggetto
     [Header("Malus (il prezzo dell'amuleto): valori negativi")]
     public Statistiche.Modificatore malus = new Statistiche.Modificatore();
 
+    [Header("Magia (amuleti dello Stregone: pro e contro sugli incantesimi)")]
+    public ModificatoriMagia magia = new ModificatoriMagia();
+
     [Header("Effetto arcano")]
     public Effetto effetto = Effetto.Nessuno;
     [Tooltip("Quanto vale l'effetto (vedi l'elenco degli effetti).")]

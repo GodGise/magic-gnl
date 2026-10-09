@@ -9,7 +9,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 
 ## Decisioni prese
 - Combattimento d'azione ispirato a Elden Ring ma accessibile. Tre mosse: **parata, schivata, attacco**. Niente d20. Molte scelte per il giocatore (build, approccio, storia).
-- Tre classi, **tutte nella prima versione giocabile**: Guerriero (più vita e forza), Ladro (arco e pugnale), Stregone (attacchi a distanza ed evocazioni). Si sceglie all'inizio; l'arma si trova durante la fuga dalla prigione. Mana, oggetti e interfaccia: `Docs/mana.md`, `Docs/oggetti-guerriero.md`, `Docs/oggetti-ladro.md`, `Docs/oggetti-stregone.md`, `Docs/interfaccia.md`.
+- Tre classi, **tutte nella prima versione giocabile**: Guerriero (più vita e forza), Ladro (arco e pugnale), Stregone (attacchi a distanza ed evocazioni). Si sceglie all'inizio; l'arma si trova durante la fuga dalla prigione. Mana, oggetti e interfaccia: `Docs/mana.md`, `Docs/oggetti-guerriero.md`, `Docs/oggetti-ladro.md`, `Docs/incantesimi-stregone.md` (Stregone), `Docs/interfaccia.md`.
 - Il figlio è morto (si scopre in una tana). La reliquia dà forza e potenza. Il druido è il boss finale; la reliquia è una missione facoltativa: chi la salta trova il druido con triplo della vita (dettagli in `Docs/storia.md`).
 - Grafica retro PlayStation 2: pochi poligoni, texture 256-512 px, nebbia, atmosfera notturna e gotica. Terza persona.
 - Budget quasi zero: solo strumenti gratuiti, asset CC0 o creati da zero. Non copiare mai modelli, texture o suoni da altri giochi.

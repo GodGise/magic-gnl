@@ -18,6 +18,12 @@ public interface IObiettivoNemico
     void NemicoSconfitto();
 }
 
+// Un obiettivo che attira i nemici vicini anche se non lo vedono (la Bambola di ossa dello Stregone).
+public interface IEscaNemici : IObiettivoNemico
+{
+    float RaggioAttrazione { get; }
+}
+
 public static class ObiettiviNemici
 {
     static readonly List<IObiettivoNemico> tutti = new List<IObiettivoNemico>();
@@ -46,9 +52,27 @@ public static class ObiettiviNemici
     // Un componente distrutto non è "null" per C# ma lo è per Unity: qui si controllano tutti e due.
     public static bool Esiste(IObiettivoNemico chi) => chi != null && !(chi is Object u && u == null);
 
-    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno).
+    // L'esca (Bambola di ossa) più vicina che attira chi sta in "da", se c'è. A pari distanza ne sceglie una sola.
+    public static IObiettivoNemico Esca(Vector3 da)
+    {
+        IObiettivoNemico migliore = null;
+        float minima = float.MaxValue;
+        for (int i = tutti.Count - 1; i >= 0; i--)
+        {
+            if (!(tutti[i] is IEscaNemici esca) || !Valido(esca)) continue;
+            float d = (esca.Corpo.position - da).sqrMagnitude;
+            if (d > esca.RaggioAttrazione * esca.RaggioAttrazione || d >= minima) continue;
+            minima = d;
+            migliore = esca;
+        }
+        return migliore;
+    }
+
+    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno). Un'esca vicina viene prima di tutti.
     public static IObiettivoNemico PiuVicino(Vector3 da)
     {
+        var esca = Esca(da);
+        if (esca != null) return esca;
         IObiettivoNemico migliore = null;
         float minima = float.MaxValue;
         for (int i = tutti.Count - 1; i >= 0; i--)

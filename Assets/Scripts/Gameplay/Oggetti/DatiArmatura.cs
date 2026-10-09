@@ -2,7 +2,8 @@ using UnityEngine;
 
 // Un'armatura: per il Guerriero pesante, media o leggera; per il Ladro leggera, di cuoio o d'ombra.
 // Le armature del Ladro proteggono poco ma danno FURTIVITÀ: i nemici le notano da più vicino.
-// Le vesti dello Stregone (leggera, media, pesante) proteggono pochissimo ma danno MANA massimo.
+// Le vesti dello Stregone (leggera, media, pesante) proteggono pochissimo ma aiutano la magia: mana massimo e i
+// pro e contro della sezione "Magia" (vedi ModificatoriMagia), più due effetti speciali sul mana.
 // A cosa serve: dà armatura (meno danno dai colpi, vedi Statistiche) ma pesa: più è pesante, più la schivata
 // costa resistenza e più la corsa è lenta. Si equipaggia con Equipaggiamento.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Armatura.
@@ -25,6 +26,12 @@ public class DatiArmatura : DatiOggetto
     [Header("Mana (vesti dello Stregone)")]
     [Tooltip("Mana massimo in più, in punti (15 = +15).")]
     public float manaMassimo = 0f;
+    [Tooltip("Ogni volta che si riceve danno (anche 1 punto, anche dai danni nel tempo) si perde questa percentuale del mana massimo (Tunica stracciata: 10).")]
+    public float manaPersoPerDannoPercento = 0f;
+    [Tooltip("Mana speso per ogni schivata, oltre alla resistenza (Manto di cenere: 5).")]
+    public float manaPerSchivata = 0f;
+    [Tooltip("Pro e contro sugli incantesimi.")]
+    public ModificatoriMagia magia = new ModificatoriMagia();
 
     [Header("Peso")]
     [Tooltip("Resistenza in più spesa per ogni schivata (0 = armatura leggera).")]
@@ -51,7 +58,6 @@ public class DatiArmatura : DatiOggetto
         manaMassimo = manaMassimo + bonus.manaMassimo,
         manaMassimoPercento = bonus.manaMassimoPercento,
         recuperoMana = bonus.recuperoMana,
-        potenzaIncantesimi = bonus.potenzaIncantesimi,
-        durataEvocazioni = bonus.durataEvocazioni,
+        vitaPerUccisione = bonus.vitaPerUccisione,
     };
 }
