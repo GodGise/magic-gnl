@@ -83,8 +83,8 @@ I critici delle armi si sommano a quelli del giocatore.
 
 | # | Oggetto (chiave) | Tipo | Effetto | Revisione |
 | --- | --- | --- | --- | --- |
-| 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: scudo alzato il 5% più lento | ✔ fatta |
-| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% critico; malus: scudo alzato il 5% più lento | ✔ fatta |
+| 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: -10% di resistenza massima | ✔ fatta |
+| 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% critico; malus: -7% di vita massima | ✔ fatta |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +15 armatura; malus: attacchi il 7,5% più lenti | ✔ fatta |
 | 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso; malus: -5% danno | ✔ fatta |
 | 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce; malus: -8 armatura e -7% di vita massima | ✔ fatta |
@@ -101,12 +101,13 @@ Dopo i conti su tutte le combinazioni (armi con ogni amuleto, scudi con ogni arm
 | Brocchiere di ferro | parata perfetta entro 0,2 s | entro 0,15 s | Con l'avviso rosso dell'orco la parata perfetta era troppo facile |
 | Respiro del lago | malus -20% armatura | malus -8 armatura e -7% vita massima | Con un'armatura leggera il malus non pesava |
 | Sangue antico | 10% del danno torna come vita | 7% | Colpendo tre orchi insieme si recuperava più vita di quanta se ne perdeva |
+| Zanna di lupo | malus: scudo il 5% più lento | malus: -10% di resistenza massima | Il malus pesava solo a chi para con lo scudo |
+| Occhio di corvo | malus: scudo il 5% più lento | malus: -7% di vita massima | Come sopra |
 
 Regole decise per tutte le classi:
 - **Esecuzione furtiva**: boss e miniboss non si eseguono mai. I nemici normali sì, finché sono del nostro livello o inferiore (quando ci saranno i livelli; per ora tutti i nemici normali).
 - **Moltiplicatori di danno**: quando se ne sommano più di uno, quelli da ×2 in su perdono la parte dopo la virgola, poi si moltiplicano; quelli sotto ×2 restano come sono (stessa regola di `Docs/incantesimi-stregone.md`).
 - **Boss**: avranno regole loro per stordimento, sbilanciamento e simili.
-- Da rivedere: i malus di Zanna di lupo e Occhio di corvo (scudo più lento) non pesano per chi schiva o usa lo Spadone.
 
 ## Prossimi passi
 

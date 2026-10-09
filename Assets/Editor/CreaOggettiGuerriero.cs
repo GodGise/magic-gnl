@@ -163,12 +163,12 @@ public static class CreaOggettiGuerriero
         creati += Amuleto("zanna-di-lupo", "Zanna di lupo", "zanna_lupo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.bonusDanno = 10f;
-            m.malus.velocitaParata = -5f; // lo scudo si alza il 5% più lento
+            m.malus.resistenzaMassimaPercento = -10f; // resistenza massima -10%
         });
         creati += Amuleto("occhio-di-corvo", "Occhio di corvo", "occhio_corvo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.probabilitaCritico = 10f;
-            m.malus.velocitaParata = -5f; // come la Zanna di lupo: lo scudo si alza il 5% più lento
+            m.malus.vitaMassimaPercento = -7f; // vita massima -7%
         });
         creati += Amuleto("pietra-del-focolare", "Pietra del focolare", "pietra_focolare", m =>
         {

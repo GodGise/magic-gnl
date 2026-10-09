@@ -786,7 +786,11 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         Vita = Mathf.Min(Vita, VitaMassima);
 
         if (resistenza != null)
+        {
             resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
+            // Resistenza massima delle Statistiche (amuleti: -10 = il 10% in meno).
+            resistenza.MoltiplicatoreMassimo = 1f + statistiche.ResistenzaMassimaPercento / 100f;
+        }
     }
 
     // Tempo per alzare lo scudo, rallentato o velocizzato dalle Statistiche (-5 = il 5% più lento).

@@ -47,6 +47,7 @@ public class DatiArmatura : DatiOggetto
         velocitaAttacco = bonus.velocitaAttacco,
         vitaMassimaPercento = bonus.vitaMassimaPercento,
         furtivita = furtivita + bonus.furtivita,
+        resistenzaMassimaPercento = bonus.resistenzaMassimaPercento,
         manaMassimo = manaMassimo + bonus.manaMassimo,
         manaMassimoPercento = bonus.manaMassimoPercento,
         recuperoMana = bonus.recuperoMana,

@@ -28,6 +28,8 @@ public class Statistiche : MonoBehaviour
     [SerializeField] float vitaMassimaPercento = 0f;
     [Tooltip("Furtività, in percentuale: i nemici vedono il giocatore da più vicino (30 = vista ridotta del 30%). Di base 0.")]
     [SerializeField] float furtivita = 0f;
+    [Tooltip("Resistenza massima in più o in meno, in percentuale (-10 = il 10% in meno). Di base 0. Vale per il giocatore.")]
+    [SerializeField] float resistenzaMassimaPercento = 0f;
 
     [Header("Magia (Stregone): si sommano ai valori di Giocatore Controllo")]
     [Tooltip("Mana massimo in più, in punti (20 = +20). Di base 0: il mana di partenza è in Giocatore Controllo.")]
@@ -61,6 +63,7 @@ public class Statistiche : MonoBehaviour
     public float VitaMassimaPercento { get { float v = vitaMassimaPercento; foreach (var m in modificatori) v += m.vitaMassimaPercento; return Mathf.Max(-90f, v); } }
     public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
     public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
+    public float ResistenzaMassimaPercento { get { float v = resistenzaMassimaPercento; foreach (var m in modificatori) v += m.resistenzaMassimaPercento; return Mathf.Max(-90f, v); } }
     public float ManaMassimo { get { float v = manaMassimo; foreach (var m in modificatori) v += m.manaMassimo; return v; } }
     public float ManaMassimoPercento { get { float v = manaMassimoPercento; foreach (var m in modificatori) v += m.manaMassimoPercento; return Mathf.Max(-90f, v); } }
     public float RecuperoMana { get { float v = recuperoMana; foreach (var m in modificatori) v += m.recuperoMana; return Mathf.Max(-90f, v); } }
@@ -81,6 +84,7 @@ public class Statistiche : MonoBehaviour
         public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
         public float vitaMassimaPercento;      // punti percentuali: -15 = vita massima il 15% in meno
         public float furtivita;                // punti percentuali: 30 = i nemici ti vedono a 30% di distanza in meno
+        public float resistenzaMassimaPercento; // punti percentuali: -10 = resistenza massima il 10% in meno
         public float manaMassimo;              // punti di mana massimo in più (Stregone)
         public float manaMassimoPercento;      // punti percentuali: -10 = mana massimo il 10% in meno
         public float recuperoMana;             // punti percentuali: 15 = il mana si ricarica il 15% più in fretta
@@ -100,6 +104,7 @@ public class Statistiche : MonoBehaviour
             velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
             vitaMassimaPercento = a.vitaMassimaPercento + b.vitaMassimaPercento,
             furtivita = a.furtivita + b.furtivita,
+            resistenzaMassimaPercento = a.resistenzaMassimaPercento + b.resistenzaMassimaPercento,
             manaMassimo = a.manaMassimo + b.manaMassimo,
             manaMassimoPercento = a.manaMassimoPercento + b.manaMassimoPercento,
             recuperoMana = a.recuperoMana + b.recuperoMana,
