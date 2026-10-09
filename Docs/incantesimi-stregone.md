@@ -98,8 +98,20 @@ L'armatura dello Stregone: protegge poco, il pro sta nella magia o nella schivat
 | Veste dell'evocatore (media) | 6 | +10% di mana massimo; carica degli incantesimi di evocazione il 15% più corta | Corsa il 3% più lenta; incantesimi -5% di danno |
 | Manto di cenere (pesante) | 10 | +20 mana massimo; incantesimi +10% di danno | Corsa il 5% più lenta; ogni schivata costa anche 5 di mana |
 
+## Amuleti
+
+Come per le altre classi: magici (bonus semplici) e arcani (effetti speciali), ognuno con un malus.
+
+| Amuleto | Tipo | Bonus | Malus |
+| --- | --- | --- | --- |
+| Osso inciso | Magico | +15 mana massimo | -7% di vita massima |
+| Cristallo opaco | Magico | Il mana si ricarica il 10% più in fretta | Carica degli incantesimi il 10% più lunga |
+| Cenere benedetta | Magico | Incantesimi +12% di danno | -10% di mana massimo |
+| Sigillo del focolare | Arcano | +8 mana per ogni nemico ucciso | -5% di danno |
+| Occhio del lago | Arcano | Si possono avere due Spiriti del lupo e due Bambole di ossa insieme | -25% di vita massima; -15% di resistenza massima |
+| Cuore del lago nero | Arcano | Il 5% del danno degli incantesimi torna come mana; +6 vita per ogni nemico ucciso | -30% di vita massima; il mana si ricarica il 10% più piano |
+
 ## Ancora da decidere
 
-- Amuleti con i loro pro e contro.
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Il danno base è più lento della spada del Guerriero (Scintilla: circa 7,5 s per l'orco sgherro contro 4,8 s): da recuperare con bastoni e amuleti, o da rivedere giocando.

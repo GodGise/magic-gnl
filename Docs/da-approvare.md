@@ -25,7 +25,11 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
-(vuoto)
+### 9 ottobre: nuovo sistema dello Stregone (serve l'approvazione di Giuseppe)
+Lorenzo propone di cambiare lo Stregone: invece di bastoni che lanciano tutti la stessa sfera, un **inventario di incantesimi** (12, in quattro scuole: Brace, Lago Nero, Ombra, Evocazione) da mettere in 4 caselle e scegliere con i tasti numerici. Bastoni, libri, vesti e amuleti diventano aiuti con un pro e un contro. Tutto in `Docs/incantesimi-stregone.md`; sostituirebbe `Docs/oggetti-stregone.md`.
+- **Domanda per Giuseppe:** approvi il nuovo sistema? Se sì, il Claude di Lorenzo lo programma sul ramo `lorenzoc/oggetti-stregone`.
+- Da sapere: con questi numeri l'incantesimo base (Scintilla) uccide l'orco sgherro in circa 7,5 s, contro i 4,8 s della spada del Guerriero (`Docs/mana.md` chiede tempi simili). Lorenzo preferisce recuperare la differenza con bastoni e amuleti, o rivederla giocando.
+- Per lo Stregone i tasti 1 e 2 (oggi spada e bastone) diventerebbero le caselle degli incantesimi.
 
 ## Chiuso
 
