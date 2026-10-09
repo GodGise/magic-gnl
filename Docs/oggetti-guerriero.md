@@ -86,7 +86,7 @@ I critici delle armi si sommano a quelli del giocatore.
 | 14 | Zanna di lupo (`zanna_lupo`) | Magico | +10% danno; malus: -10% di resistenza massima | ✔ fatta |
 | 15 | Occhio di corvo (`occhio_corvo`) | Magico | +10% critico; malus: -7% di vita massima | ✔ fatta |
 | 16 | Pietra del focolare (`pietra_focolare`) | Magico | +15 armatura; malus: attacchi il 7,5% più lenti | ✔ fatta |
-| 17 | Cuore di brace (`cuore_brace`) | Arcano | +12 vita per nemico ucciso; malus: -5% danno | ✔ fatta |
+| 17 | Cuore di brace (`cuore_brace`) | Arcano | +9 vita per nemico ucciso; malus: -5% danno | ✔ fatta |
 | 18 | Respiro del lago (`respiro_lago`) | Arcano | resistenza +30% più veloce; malus: -8 armatura e -7% di vita massima | ✔ fatta |
 | 19 | Sangue antico (`sangue_antico`) | Arcano | 6% del danno inflitto torna come vita; malus: -15% di vita massima | ✔ fatta |
 
@@ -103,6 +103,7 @@ Dopo i conti su tutte le combinazioni (armi con ogni amuleto, scudi con ogni arm
 | Sangue antico | 10% del danno torna come vita | 6% | Colpendo tre orchi insieme si recuperava più vita di quanta se ne perdeva |
 | Zanna di lupo | malus: scudo il 5% più lento | malus: -10% di resistenza massima | Il malus pesava solo a chi para con lo scudo |
 | Occhio di corvo | malus: scudo il 5% più lento | malus: -7% di vita massima | Come sopra |
+| Cuore di brace | +12 vita per nemico ucciso | +9 | Sullo Stregone (amuleti in comune) curava troppo con le uccisioni delle evocazioni |
 
 Regole decise per tutte le classi:
 - **Esecuzione furtiva**: boss e miniboss non si eseguono mai. I nemici normali sì, finché sono del nostro livello o inferiore (quando ci saranno i livelli; per ora tutti i nemici normali).

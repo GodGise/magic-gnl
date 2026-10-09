@@ -63,7 +63,7 @@ Parata senza scudo: pugnale da scuoiare 15% (costo 20), ricurvo 20% (25), taglia
 | Laccio del borsaiolo | Magico | attacchi il 16% più veloci | -5% critico, -5% vita massima |
 | Ultimo respiro | Arcano | tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 s (ricarica 6 minuti) | -6% danno |
 | Fiato del predatore | Arcano | resistenza +40% più veloce | -17% vita massima |
-| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -5% critico, -7% vita massima |
+| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -10% critico, -10% vita massima |
 
 ## Bilanciamento del 9 ottobre (Lorenzo)
 
@@ -75,6 +75,7 @@ Dopo i conti su tutte le combinazioni contro l'orco sgherro (di fronte e alle sp
 | Pugnali gemelli | danno 12 | danno 11 + sanguinamento a fine combo (da fare) | Erano i peggiori in tutto, senza un'identità |
 | Laccio del borsaiolo | attacchi +10% | attacchi +16% | Con i suoi malus era peggio di nessun amuleto |
 | Fiato del predatore | -20% vita massima | -17% vita massima | Malus troppo pesante per un bonus che non aggiunge danno |
+| Goccia di sangue nero | malus -5% critico, -7% vita massima | malus -10% critico, -10% vita massima | Sul Guerriero (amuleti in comune) era migliore del suo Sangue antico |
 
 Meccaniche nuove decise (da programmare):
 - **Sanguinamento dei Pugnali gemelli**: completando la combo intera (4 colpi) il nemico sanguina per 4 s, 4 danni al secondo. Serve una combo propria per ogni arma, con le sue animazioni e il suo numero di colpi (oggi tutte le armi hanno la stessa combo da 3 colpi). Da decidere: se una seconda combo rinnova il sanguinamento o lo somma.

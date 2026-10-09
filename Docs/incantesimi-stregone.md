@@ -52,7 +52,7 @@ La durata delle evocazioni si allunga con libri e amuleti che hanno "Durata evoc
 
 | Incantesimo | Mana | Carica | Recupero | Attesa | Effetto |
 | --- | --- | --- | --- | --- | --- |
-| Fuoco fatuo (base) | 15 | 0,7 s | 0,4 s | 7 s | Luce che ti segue per 20 s e ogni 1,5 s lancia una scintilla da 8 al nemico più vicino. Al massimo 3 insieme |
+| Fuoco fatuo (base) | 15 | 0,7 s | 0,4 s | 7 s | Luce che ti segue per 20 s e ogni 1,5 s lancia una scintilla da 6 al nemico più vicino. Al massimo 3 insieme |
 | Spirito del lupo | 35 | 2 s | 0,6 s | 1 min | Lupo spettrale per 45 s: morso da 14 ogni 1,2 s, 60 di vita, +10 vita per ogni nemico ucciso da lui (solo da lui). Lascia dietro di sé una scia lunga 1 m che fa 5 di danno al secondo ai nemici che ci passano. Uno solo per giocatore |
 | Bambola di ossa | 40 | 0,5 s | 0,5 s | 1 min | 150 di vita, non attacca: i nemici entro 8 m attaccano lei. Se viene distrutta scoppia in una nube di gas larga 1,5 m: i nemici dentro rallentano del 35% e prendono 6 di danno al secondo, per 3 s. Se nessuno la distrugge in 20 s si anima in uno scheletro (45 di vita, 11 di danno ogni 1,6 s al nemico più vicino) che dura finché non lo uccidono, al massimo 30 s; lo scheletro morendo non fa gas. Una sola per giocatore |
 
@@ -64,7 +64,8 @@ La durata delle evocazioni si allunga con libri e amuleti che hanno "Durata evoc
 - **"Ignaro"** (Dardo d'ombra ×2): il nemico è in stato pacifico, non sa che ci sono nemici e non sta inseguendo nessuno, neanche una Bambola di ossa.
 - **Rallentamenti**: dopo un rallentamento lo stesso nemico ne è immune per 4 s.
 - **Onda del lago**: i nemici più bassi dell'onda vengono spinti e possono cadere dai dirupi (voluto); quelli più alti vengono solo rallentati.
-- **Uccisioni delle evocazioni**: contano come uccisioni dello Stregone (Sigillo del focolare, Cuore del lago nero).
+- **Uccisioni delle evocazioni**: contano come uccisioni dello Stregone (Sigillo del focolare, Cuore del lago nero, Cuore di brace).
+- **Furto di vita** (Sangue antico, Goccia di sangue nero): non vale per gli incantesimi né per le evocazioni, solo per i colpi d'arma.
 - **Tunica stracciata**: toglie il 10% del mana massimo a ogni danno ricevuto, anche di 1 punto e anche dai danni nel tempo (ogni volta che arriva danno).
 - **Due Bambole di ossa** (con l'Occhio del lago): ogni nemico va su quella più vicina; a pari distanza ne sceglie una sola.
 - **Boss**: non si bloccano e non si stordiscono; i rallentamenti su di loro valgono la metà.

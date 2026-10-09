@@ -186,7 +186,7 @@ public static class CreaOggettiLadro
         creati += Amuleto("goccia-di-sangue-nero", "Goccia di sangue nero", "goccia_sangue_nero", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 8f;
-            m.malus.probabilitaCritico = -5f; m.malus.vitaMassimaPercento = -7f;
+            m.malus.probabilitaCritico = -10f; m.malus.vitaMassimaPercento = -10f;
         });
 
         AssetDatabase.SaveAssets();

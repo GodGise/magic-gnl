@@ -179,7 +179,7 @@ public static class CreaOggettiGuerriero
         // Arcani: effetti speciali.
         creati += Amuleto("cuore-di-brace", "Cuore di brace", "cuore_brace", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 12f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 9f;
             m.malus.bonusDanno = -5f; // danno -5%
         });
         creati += Amuleto("respiro-del-lago", "Respiro del lago", "respiro_lago", m =>
