@@ -20,6 +20,8 @@ using UnityEngine.SceneManagement;
 // provando a equipaggiarli compare un avviso in basso.
 // Stregone: la seconda casella è il Libro (mana, ricarica, potenza degli incantesimi), sempre al posto dello Scudo
 // (Docs/oggetti-stregone.md); la scheda Scudi diventa Libri. Lo Stregone non usa scudi, i libri sono solo suoi.
+// Oggetti di altre classi (decisione di Lorenzo del 9 ottobre): armi, scudi, armature, archi e libri si equipaggiano
+// solo con la propria classe; gli amuleti sono in comune fra tutte le classi, tranne Ultimo respiro (solo Ladro).
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class InventarioGioco : MonoBehaviour
 {
@@ -185,7 +187,8 @@ public class InventarioGioco : MonoBehaviour
         string negato = oggetto is DatiScudo && Ladro ? "inv.no_scudo_ladro"
             : oggetto is DatiScudo && Stregone ? "inv.no_scudo_stregone"
             : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza"
-            : oggetto is DatiLibro && !Stregone ? "inv.no_libro" : null;
+            : oggetto is DatiLibro && !Stregone ? "inv.no_libro"
+            : ChiaveAltraClasse(oggetto);
         if (negato != null)
         {
             avviso = Lingua.T(negato);
@@ -203,6 +206,18 @@ public class InventarioGioco : MonoBehaviour
         for (int i = 0; i < 4; i++)
             if (prima[i] != null && prima[i] != OggettoInCasella(i)) zaino.Aggiungi(prima[i]);
         indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
+    }
+
+    // Avviso per un oggetto di un'altra classe: armi e armature solo della propria classe, amuleti in comune
+    // (Ultimo respiro, l'invisibilità col tasto Q, resta solo del Ladro). null = si può equipaggiare.
+    static string ChiaveAltraClasse(DatiOggetto oggetto)
+    {
+        var mia = SceltaPartita.Classe;
+        if (oggetto is DatiAmuleto amuleto)
+            return amuleto.effetto == DatiAmuleto.Effetto.SvanireNellOmbra && mia != ClasseGiocatore.Ladro ? "inv.amuleto_solo_ladro" : null;
+        if (oggetto.classe == mia) return null;
+        return oggetto.classe == ClasseGiocatore.Guerriero ? "inv.solo_guerriero"
+            : oggetto.classe == ClasseGiocatore.Ladro ? "inv.solo_ladro" : "inv.solo_stregone";
     }
 
     void Togli(int i)

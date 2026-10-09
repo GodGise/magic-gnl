@@ -708,6 +708,10 @@ public static class Lingua
             "来自被遗忘时代的血。你造成的每道伤口，都会回馈你一些。",
         },
         // ---------- Stregone: inventario, statistiche e tipi (Docs/oggetti-stregone.md) ----------
+        ["inv.solo_guerriero"] = new[] { "Questo oggetto è del Guerriero.", "This item is for the Warrior.", "Este objeto es del Guerrero.", "Cet objet est réservé au Guerrier.", "Dieser Gegenstand ist für den Krieger.", "Este item é do Guerreiro.", "Этот предмет для Воина.", "此物品属于战士。" },
+        ["inv.solo_ladro"] = new[] { "Questo oggetto è del Ladro.", "This item is for the Thief.", "Este objeto es del Ladrón.", "Cet objet est réservé au Voleur.", "Dieser Gegenstand ist für den Dieb.", "Este item é do Ladrão.", "Этот предмет для Вора.", "此物品属于盗贼。" },
+        ["inv.solo_stregone"] = new[] { "Questo oggetto è dello Stregone.", "This item is for the Sorcerer.", "Este objeto es del Hechicero.", "Cet objet est réservé au Sorcier.", "Dieser Gegenstand ist für den Zauberer.", "Este item é do Feiticeiro.", "Этот предмет для Колдуна.", "此物品属于术士。" },
+        ["inv.amuleto_solo_ladro"] = new[] { "Questo amuleto è solo del Ladro.", "This amulet is for the Thief only.", "Este amuleto es solo del Ladrón.", "Cette amulette est réservée au Voleur.", "Dieses Amulett ist nur für den Dieb.", "Este amuleto é só do Ladrão.", "Этот амулет только для Вора.", "此护符只有盗贼能用。" },
         ["inv.libro"] = new[] { "Libro", "Book", "Libro", "Livre", "Buch", "Livro", "Книга", "书" },
         ["inv.libri"] = new[] { "Libri", "Books", "Libros", "Livres", "Bücher", "Livros", "Книги", "书籍" },
         ["inv.no_scudo_stregone"] = new[] { "Lo Stregone non usa scudi.", "The Sorcerer does not use shields.", "El Hechicero no usa escudos.", "Le Sorcier n'utilise pas de bouclier.", "Der Zauberer benutzt keine Schilde.", "O Feiticeiro não usa escudos.", "Колдун не пользуется щитами.", "术士不使用盾牌。" },
