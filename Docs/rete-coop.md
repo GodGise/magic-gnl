@@ -57,6 +57,15 @@ Ordine proposto (stato all'8 ottobre):
 - **Oggetti delle zone condivisi** (8 ottobre, ramo `giuseppec/livelli-coop`, deciso da Giuseppe): porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere sono uguali per tutti. Chi li usa, se non ospita, lo chiede all'host (`MondoRete.ChiediUso`); l'host li usa e lo dice a tutti (`MondoRete.InviaEvento`); chi entra dopo riceve il loro stato. Regole: il contenuto di un baule e un oggetto raccolto vanno a chi li prende; una chiave raccolta vale per tutto il gruppo. Le **trappole** scattano per chiunque ci passi sopra, ma ogni PC dà il danno solo al suo giocatore. I **checkpoint** restano personali (ognuno rinasce dove ha acceso il suo).
 - **Nuovi oggetti delle zone**: se qualcosa cambia lo stato del mondo (si apre, si rompe, sparisce), deve implementare `IOggettoCondiviso` (in `Assets/Scripts/Rete/Rete.cs`) come fanno `Porta` e `Leva`. La figura degli altri giocatori è ancora quella provvisoria a blocchi.
 
+## Classi e difficoltà in co-op (decise da Giuseppe il 10 ottobre)
+
+- **Classi libere.** Ogni giocatore sceglie la classe che vuole, anche uguale a quella degli altri: si può giocare in 3 Stregoni o in 3 Guerrieri. La proposta "una classe per giocatore" è respinta.
+- I blocchi a catena sui boss restano gestiti dalla regola già scritta in `Docs/incantesimi-stregone.md`: i boss non si bloccano e non si stordiscono, i rallentamenti su di loro valgono la metà.
+- **La difficoltà cresce con i giocatori.** In 2 il gioco deve essere **molto più difficile** che da soli, in 3 ancora di più, per bilanciare il fatto di essere in più.
+- Cosa cresce (i numeri li decide Lorenzo, che fa il bilanciamento): vita dei nemici e dei boss, danno dei nemici, numero di nemici per gruppo. Va scelto anche se cambia l'aggressività (per esempio più nemici che attaccano insieme).
+- Il conto si fa con i giocatori **collegati in quel momento**: se uno entra o esce a metà partita, la difficoltà si adatta (i nemici già feriti tengono la stessa percentuale di vita).
+- Lo calcola l'host, come tutto quello che riguarda i nemici.
+
 ## Fonti
 
 - Netcode for GameObjects, manuale: https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@2.8/manual/index.html
