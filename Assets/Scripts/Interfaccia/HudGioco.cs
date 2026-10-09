@@ -205,6 +205,12 @@ public class HudGioco : MonoBehaviour
             RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, null);   // il tasto arriverà con il tiro
             x += 130f;
         }
+        else if (SceltaPartita.Classe == ClasseGiocatore.Stregone && e != null && e.Libro != null)
+        {
+            // Stregone: il libro sta dove gli altri tengono lo scudo
+            RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Libro, null);
+            x += 100f;
+        }
         else if (!ladro && e != null && e.Scudo != null)
         {
             RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Scudo, null);

@@ -19,11 +19,13 @@ public class SferaMagica : MonoBehaviour
     Vector3 direzione;
     float velocita;
     float danno;
+    float penetrazione;   // quota di armatura del nemico ignorata (bastoni dello Stregone)
     float tempo;
     bool esplosa;
     Light luce;
 
-    public static void Lancia(Vector3 partenza, Vector3 direzione, Bersaglio obiettivo, float velocita, float danno, Transform lanciatore)
+    // penetrazione: quota dell'armatura del nemico che la sfera ignora (0,25 = un quarto), dal bastone equipaggiato.
+    public static void Lancia(Vector3 partenza, Vector3 direzione, Bersaglio obiettivo, float velocita, float danno, Transform lanciatore, float penetrazione = 0f)
     {
         GameObject oggetto = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         oggetto.name = "Sfera magica";
@@ -49,6 +51,7 @@ public class SferaMagica : MonoBehaviour
         sfera.direzione = direzione.normalized;
         sfera.velocita = velocita;
         sfera.danno = danno;
+        sfera.penetrazione = penetrazione;
     }
 
     void Update()
@@ -102,8 +105,11 @@ public class SferaMagica : MonoBehaviour
         if (nemico != null)
         {
             Statistiche diChiLancia = lanciatore != null ? Statistiche.Di(lanciatore) : null;
-            float dannoFinale = CalcoloDanno.Calcola(danno, diChiLancia, nemico.Statistiche, out bool critico);
+            float dannoFinale = CalcoloDanno.Calcola(danno, diChiLancia, nemico.Statistiche, out bool critico, penetrazione);
             nemico.RiceviColpo(dannoFinale, transform.position - direzione, critico);
+            // Amuleto Cuore del lago nero: parte del danno torna come mana a chi ha lanciato.
+            GiocatoreControllo chiLancia = lanciatore != null ? lanciatore.GetComponent<GiocatoreControllo>() : null;
+            if (chiLancia != null) chiLancia.IncantesimoASegno(dannoFinale);
         }
         else
         {

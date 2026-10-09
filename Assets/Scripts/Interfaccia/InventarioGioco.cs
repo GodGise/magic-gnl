@@ -18,6 +18,8 @@ using UnityEngine.SceneManagement;
 // Ladro: la seconda casella è l'Arma a distanza (arco o balestra) al posto dello Scudo, così le caselle restano 4
 // (proposta di Lorenzo in Docs/oggetti-ladro.md). Il Ladro non usa scudi e le altre classi non usano archi:
 // provando a equipaggiarli compare un avviso in basso.
+// Stregone: la seconda casella è il Libro (mana, ricarica, potenza degli incantesimi), sempre al posto dello Scudo
+// (Docs/oggetti-stregone.md); la scheda Scudi diventa Libri. Lo Stregone non usa scudi, i libri sono solo suoi.
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class InventarioGioco : MonoBehaviour
 {
@@ -56,7 +58,10 @@ public class InventarioGioco : MonoBehaviour
 
     // Il Ladro ha l'arma a distanza nella seconda casella.
     static bool Ladro => SceltaPartita.Classe == ClasseGiocatore.Ladro;
-    static string ChiaveCasella(int i) => i == 1 && Ladro ? "inv.distanza" : chiaviCaselle[i];
+    // Lo Stregone ha il libro nella seconda casella.
+    static bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
+    static string ChiaveCasella(int i) => i == 1 && Ladro ? "inv.distanza" : i == 1 && Stregone ? "inv.libro" : chiaviCaselle[i];
+    static string ChiaveScheda(int i) => i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
 
     // Avviso in basso (per esempio "Il Ladro non usa scudi"), per qualche secondo.
     string avviso;
@@ -137,14 +142,14 @@ public class InventarioGioco : MonoBehaviour
         switch (i)
         {
             case 0: return equipaggiamento.Arma;
-            case 1: return Ladro ? (DatiOggetto)equipaggiamento.ArmaDistanza : equipaggiamento.Scudo;
+            case 1: return Ladro ? equipaggiamento.ArmaDistanza : Stregone ? equipaggiamento.Libro : (DatiOggetto)equipaggiamento.Scudo;
             case 2: return equipaggiamento.Armatura;
             default: return equipaggiamento.Amuleto;
         }
     }
 
     static bool NellaScheda(DatiOggetto o, int s) => s == 0
-        || (s == 1 && (o is DatiArma || o is DatiArmaDistanza)) || (s == 2 && o is DatiScudo)
+        || (s == 1 && (o is DatiArma || o is DatiArmaDistanza)) || (s == 2 && (o is DatiScudo || o is DatiLibro))
         || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto);
 
     void AggiornaVisibili()
@@ -171,14 +176,16 @@ public class InventarioGioco : MonoBehaviour
         if (visibili.Count == 0 && zona == Zona.Zaino) zona = Zona.Caselle;
     }
 
-    static int CasellaDi(DatiOggetto o) => o is DatiArma ? 0 : o is DatiScudo || o is DatiArmaDistanza ? 1 : o is DatiArmatura ? 2 : 3;
+    static int CasellaDi(DatiOggetto o) => o is DatiArma ? 0 : o is DatiScudo || o is DatiArmaDistanza || o is DatiLibro ? 1 : o is DatiArmatura ? 2 : 3;
 
     void Equipaggia(DatiOggetto oggetto)
     {
         if (oggetto == null || !zaino.Contiene(oggetto)) return;
-        // Il Ladro non usa scudi; archi e balestre sono solo del Ladro.
+        // Ladro e Stregone non usano scudi; archi e balestre sono solo del Ladro, i libri solo dello Stregone.
         string negato = oggetto is DatiScudo && Ladro ? "inv.no_scudo_ladro"
-            : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza" : null;
+            : oggetto is DatiScudo && Stregone ? "inv.no_scudo_stregone"
+            : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza"
+            : oggetto is DatiLibro && !Stregone ? "inv.no_libro" : null;
         if (negato != null)
         {
             avviso = Lingua.T(negato);
@@ -205,7 +212,11 @@ public class InventarioGioco : MonoBehaviour
         switch (i)
         {
             case 0: equipaggiamento.TogliArma(); break;
-            case 1: if (Ladro) equipaggiamento.TogliArmaDistanza(); else equipaggiamento.TogliScudo(); break;
+            case 1:
+                if (Ladro) equipaggiamento.TogliArmaDistanza();
+                else if (Stregone) equipaggiamento.TogliLibro();
+                else equipaggiamento.TogliScudo();
+                break;
             case 2: equipaggiamento.TogliArmatura(); break;
             default: equipaggiamento.TogliAmuleto(); break;
         }
@@ -382,10 +393,14 @@ public class InventarioGioco : MonoBehaviour
 
         // statistiche totali
         var arma = equipaggiamento != null ? equipaggiamento.Arma : null;
+        // lo Stregone vede il mana al posto dell'armatura (le sue vesti proteggono pochissimo)
+        string secondaEtichetta = Lingua.T(Stregone ? "stat.mana" : "stat.armatura");
+        string secondoValore = Stregone ? Mathf.RoundToInt(giocatore.ManaMassimo).ToString()
+            : statistiche != null ? Mathf.RoundToInt(statistiche.Armatura).ToString() : "—";
         string[,] righe =
         {
             { Lingua.T("stat.vita"), Mathf.CeilToInt(giocatore.VitaMassima).ToString() },
-            { Lingua.T("stat.armatura"), statistiche != null ? Mathf.RoundToInt(statistiche.Armatura).ToString() : "—" },
+            { secondaEtichetta, secondoValore },
             { Lingua.T("stat.danno"), arma != null ? Mathf.RoundToInt(arma.danno).ToString() : "—" },
             { Lingua.T("stat.critico"), statistiche != null ? Mathf.RoundToInt(statistiche.ProbabilitaCritico) + "%" : "—" },
         };
@@ -415,7 +430,7 @@ public class InventarioGioco : MonoBehaviour
                 return true;
             }
             if (scelta) GraficaMenu.FasciaLuce(new Rect(r.x + 6f, r.y, r.width - 12f, r.height), GraficaMenu.Con(GraficaMenu.Selezione, 0.22f * alfa));
-            string testo = Lingua.T(chiaviSchede[i]) + "  " + QuantiNellaScheda(i);
+            string testo = Lingua.T(ChiaveScheda(i)) + "  " + QuantiNellaScheda(i);
             var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
             GraficaMenu.Scritta(r, testo, stile, scelta ? GraficaMenu.Selezione : GraficaMenu.Spento, alfa);
         }
@@ -522,7 +537,8 @@ public class InventarioGioco : MonoBehaviour
             GraficaMenu.Scritta(new Rect(x, D.y + 150f, 230f, 28f), riga.etichetta, et, GraficaMenu.Spento, alfa);
             GraficaMenu.Scritta(new Rect(x, D.y + 186f, 230f, 34f), riga.valore, GraficaMenu.Valore, GraficaMenu.Testo, alfa);
 
-            if (righeAddosso == null || !riga.confrontabile || i >= righeAddosso.Count) continue;
+            // si confrontano solo righe uguali (un bastone e una spada stanno nella stessa casella ma hanno righe diverse)
+            if (righeAddosso == null || !riga.confrontabile || i >= righeAddosso.Count || righeAddosso[i].etichetta != riga.etichetta) continue;
             float diff = riga.numero - righeAddosso[i].numero;
             if (Mathf.Abs(diff) < 0.05f) continue;
             bool meglio = (diff > 0f) == riga.piuAltoMeglio;
@@ -534,6 +550,8 @@ public class InventarioGioco : MonoBehaviour
         }
     }
 
+    static string Percento(float v) => v > 0f ? "+" + Formatta(v) + "%" : "—";
+
     static string Formatta(float v) => Mathf.Approximately(v, Mathf.Round(v)) ? Mathf.RoundToInt(v).ToString() : v.ToString("0.#");
 
     List<Riga> Righe(DatiOggetto o)
@@ -544,6 +562,27 @@ public class InventarioGioco : MonoBehaviour
 
         switch (o)
         {
+            case DatiArma a when a.Magica:
+                // bastoni e verghe dello Stregone: l'attacco è una sfera che costa mana
+                Aggiungi("stat.danno", Formatta(a.danno), a.danno, true, true);
+                Aggiungi("stat.costo_mana", Formatta(a.costoMana), a.costoMana, true, false);
+                Aggiungi("stat.portata", Formatta(a.portata) + " m", a.portata, true, true);
+                float tempoLancio = a.preparazione + a.recupero;
+                Aggiungi("stat.velocita", Lingua.T(tempoLancio <= 0.62f ? "stat.rapida" : tempoLancio <= 0.85f ? "stat.media" : "stat.lenta"), -tempoLancio, false, true);
+                break;
+            case DatiLibro l:
+                Aggiungi("stat.mana", "+" + Formatta(l.manaMassimo), l.manaMassimo, true, true);
+                Aggiungi("stat.recupero_mana", Percento(l.recuperoMana), l.recuperoMana, true, true);
+                Aggiungi("stat.potenza", Percento(l.potenzaIncantesimi), l.potenzaIncantesimi, true, true);
+                Aggiungi("stat.evocazioni", Percento(l.durataEvocazioni), l.durataEvocazioni, true, true);
+                break;
+            case DatiArmatura v when v.classe == ClasseGiocatore.Stregone:
+                // vesti dello Stregone: poca armatura, più mana
+                Aggiungi("stat.armatura", Formatta(v.armatura), v.armatura, true, true);
+                Aggiungi("stat.mana", v.manaMassimo > 0f ? "+" + Formatta(v.manaMassimo) : "—", v.manaMassimo, true, true);
+                Aggiungi("stat.schivata", "+" + Formatta(v.costoSchivataExtra), v.costoSchivataExtra, true, false);
+                Aggiungi("stat.movimento", "-" + Mathf.RoundToInt((1f - v.moltiplicatoreVelocita) * 100f) + "%", (1f - v.moltiplicatoreVelocita) * 100f, true, false);
+                break;
             case DatiArma a:
                 Aggiungi("stat.danno", Formatta(a.danno), a.danno, true, true);
                 Aggiungi("stat.critico", a.probabilitaCritico > 0f ? "+" + Formatta(a.probabilitaCritico) + "%" : "—", a.probabilitaCritico, true, true);
@@ -590,14 +629,18 @@ public class InventarioGioco : MonoBehaviour
                     case DatiArma.Tipo.Pugnale: return Lingua.T("tipo.pugnale");
                     case DatiArma.Tipo.Stiletto: return Lingua.T("tipo.stiletto");
                     case DatiArma.Tipo.DoppiPugnali: return Lingua.T("tipo.doppi_pugnali");
+                    case DatiArma.Tipo.Bastone: return Lingua.T(a.dueMani ? "tipo.bastone_due_mani" : "tipo.bastone");
+                    case DatiArma.Tipo.Verga: return Lingua.T("tipo.verga");
                     default: return Lingua.T("tipo.mazza");
                 }
             case DatiArmaDistanza d:
                 return Lingua.T(d.tipo == DatiArmaDistanza.Tipo.ArcoCorto ? "tipo.arco_corto" : d.tipo == DatiArmaDistanza.Tipo.ArcoLungo ? "tipo.arco_lungo" : "tipo.balestra");
             case DatiScudo s:
                 return Lingua.T(s.taglia == DatiScudo.Taglia.Grande ? "tipo.scudo_grande" : s.taglia == DatiScudo.Taglia.Medio ? "tipo.scudo_medio" : "tipo.scudo_piccolo");
+            case DatiLibro _:
+                return Lingua.T("tipo.libro");
             case DatiArmatura b:
-                return Lingua.T(ChiavePeso(b.peso, "tipo.armatura_"));
+                return Lingua.T(ChiavePeso(b.peso, b.classe == ClasseGiocatore.Stregone ? "tipo.veste_" : "tipo.armatura_"));
             case DatiAmuleto c:
                 return Lingua.T(c.tipo == DatiAmuleto.Tipo.Magico ? "tipo.amuleto_magico" : "tipo.amuleto_arcano");
         }
