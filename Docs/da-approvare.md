@@ -28,6 +28,15 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 ### 9 ottobre: una classe per giocatore in co-op (serve una risposta di Giuseppe)
 Lorenzo propone **una classe per giocatore, niente doppioni**: un gruppo di tre ha un Guerriero, un Ladro e uno Stregone. Serve anche a evitare che tre Stregoni tengano fermi i boss con blocchi e rallentamenti a catena. Approvi?
 
+### 10 ottobre: nuovi comandi dell'aggancio e rotellina per gli incantesimi (informazione, serve solo un sì)
+Provando, Lorenzo ha deciso di cambiare i comandi (ramo `lorenzoc/forme-oggetti-aggancio`, pull request #24, da unire dopo la #23):
+- **Agganciare e sganciare:** clic della rotellina (come prima).
+- **Cambiare nemico:** non più girando la rotellina, ma con uno **scatto del mouse verso il nemico** che si vuole (destra, sinistra, in alto per uno più lontano). Un movimento lento non cambia niente. Sul pad: scatto della levetta destra, in qualsiasi direzione. Numeri regolabili nell'Inspector di `AggancioBersaglio` (Scatto Mouse 140 px, Dimentica Mouse, Angolo Gesto 60°).
+- **Rotellina libera:** con lo Stregone sceglie l'incantesimo (giù = casella dopo, su = casella prima), oltre ai tasti 1-6.
+- Nella stessa pull request: forme provvisorie per ogni oggetto, addosso e a terra (`FormeOggetti.cs`, `AspettoEquipaggiamento.cs`).
+- **Attenzione, conflitto su `CLAUDE.md`:** il ramo `giuseppec/regole-coop` cambia la stessa riga ("Co-op da 1 a 3 giocatori... Aggancio del bersaglio"). Riga unita proposta: "Co-op **da 1 a 3 giocatori**. **Classi libere** [...] (regole in `Docs/rete-coop.md`). Aggancio del bersaglio (lock-on): clic della rotellina per agganciare e sganciare, uno scatto del mouse verso un nemico cambia bersaglio; con lo Stregone la rotellina sceglie l'incantesimo (Lorenzo, 10 ottobre). Oggetti addosso e a terra con forme provvisorie: `FormeOggetti.cs`."
+- Sulle classi libere: la domanda qui sopra si può chiudere con la decisione di Giuseppe. Per i blocchi a catena di più Stregoni c'è già un freno: dopo un rallentamento il nemico ne è immune per 4 s, e i boss non si bloccano, non si stordiscono e non si spingono. Lorenzo lo controllerà giocando in co-op.
+
 ## Chiuso
 
 ### 9 ottobre: nuovo sistema dello Stregone, approvato da Giuseppe
