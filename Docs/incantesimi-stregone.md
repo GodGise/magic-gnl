@@ -63,8 +63,21 @@ La durata delle evocazioni si allunga con libri e amuleti che hanno "Durata evoc
 - In basso a destra si vede l'incantesimo scelto, con l'attesa che si svuota come una clessidra.
 - Oggi i tasti 1 e 2 cambiano fra spada e bastone: per lo Stregone diventano le caselle degli incantesimi, per Guerriero e Ladro restano come sono.
 
+## Bastoni
+
+Non fanno danno da soli: cambiano gli incantesimi, con un pro e un contro.
+
+| Bastone | Pro | Contro |
+| --- | --- | --- |
+| Bastone della vecchia vita (di partenza) | Nessuno | Carica di ogni incantesimo +0,5 s |
+| Bastone di quercia nera | Brace: +15% di danno | Lago Nero: effetti (rallentamenti, blocchi, stordimenti) il 25% più corti |
+| Bastone del lago (a due mani: niente libro) | Lago Nero: rallentamenti e blocchi il 30% più lunghi, +15% di danno | Niente libro; tutti gli incantesimi costano il 17% di mana in più |
+| Bastone d'ossidiana | Ombra: ignora il 25% dell'armatura nemica | Tutti gli incantesimi costano il 15% di mana in più |
+| Bastone del cimitero | Evocazioni: +25% di vita e di durata | Incantesimi che fanno danno: -20% |
+| Verga d'osso | Tutti gli incantesimi costano il 15% di mana in meno | -5% di danno; carica e recupero il 10% più lunghi |
+
 ## Ancora da decidere
 
-- Bastoni, libri, vesti e amuleti con i loro pro e contro.
+- Libri, vesti e amuleti con i loro pro e contro.
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Il danno base è più lento della spada del Guerriero (Scintilla: circa 7,5 s per l'orco sgherro contro 4,8 s): da recuperare con bastoni e amuleti, o da rivedere giocando.
