@@ -22,7 +22,7 @@ MonoBehaviour:
   dannoAssorbito: 0.3
   costoColpoParato: 25
   arcoParata: 100
-  finestraParataPerfetta: 0.2
+  finestraParataPerfetta: 0.15
   sbilanciamento: 0.8
   moltiplicatoreDannoSbilanciato: 1.5
   costoSchivataExtra: 3

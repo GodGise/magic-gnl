@@ -76,8 +76,8 @@ public static class CreaOggettiGuerriero
         creati += Arma("ascia-del-boia", "Ascia del boia", "ascia_boia", a =>
         {
             a.tipo = DatiArma.Tipo.Ascia;
-            a.danno = 42f; a.costoAttacco = 30f;
-            a.preparazione = 0.42f; a.colpoAttivo = 0.15f; a.recupero = 0.52f;
+            a.danno = 38f; a.costoAttacco = 30f;
+            a.preparazione = 0.5f; a.colpoAttivo = 0.15f; a.recupero = 0.52f;
             a.portata = 1.9f; a.raggio = 1.4f; a.arco = 150f; a.affondo = 2.5f;
             // Critico totale ×2: il giocatore parte da ×1,75, quindi l'ascia aggiunge 0,25.
             a.probabilitaCritico = 10f; a.moltiplicatoreCritico = 0.25f;
@@ -91,7 +91,7 @@ public static class CreaOggettiGuerriero
             a.danno = 28f; a.costoAttacco = 25f;
             a.preparazione = 0.36f; a.colpoAttivo = 0.15f; a.recupero = 0.45f;
             a.portata = 1.6f; a.raggio = 1.2f; a.arco = 100f; a.affondo = 2.5f;
-            a.penetrazioneArmatura = 0.3f;
+            a.penetrazioneArmatura = 0.45f;
             a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 26f;
         });
         creati += Arma("martello-di-ossa", "Martello di ossa", "martello_ossa", a =>
@@ -134,7 +134,7 @@ public static class CreaOggettiGuerriero
         {
             s.taglia = DatiScudo.Taglia.Piccolo;
             s.dannoAssorbito = 0.3f; s.costoColpoParato = 25f; s.arcoParata = 100f;
-            s.finestraParataPerfetta = 0.2f; s.sbilanciamento = 0.8f; s.moltiplicatoreDannoSbilanciato = 1.5f;
+            s.finestraParataPerfetta = 0.15f; s.sbilanciamento = 0.8f; s.moltiplicatoreDannoSbilanciato = 1.5f;
             s.costoSchivataExtra = 3f; s.moltiplicatoreVelocita = 0.98f;
         });
 
@@ -185,11 +185,11 @@ public static class CreaOggettiGuerriero
         creati += Amuleto("respiro-del-lago", "Respiro del lago", "respiro_lago", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 30f;
-            m.malus.armaturaPercento = -20f; // armatura totale -20%
+            m.malus.armatura = -8f; m.malus.vitaMassimaPercento = -7f; // -8 armatura e vita massima -7%
         });
         creati += Amuleto("sangue-antico", "Sangue antico", "sangue_antico", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 10f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 7f;
             m.malus.vitaMassimaPercento = -15f; // vita massima -15%
         });
 
