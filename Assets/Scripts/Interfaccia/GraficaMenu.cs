@@ -100,6 +100,8 @@ public static class GraficaMenu
     }
 
     public static GUIStyle Titolo, Emblema, Intestazione, NomeClasse, Sottotitolo, Voce, VoceSinistra, Descrizione, Piccolo;
+    // Crediti: lettere dritte e grandi, per leggerli bene mentre scorrono.
+    public static GUIStyle CreditiRuolo, CreditiNomi, CreditiIntestazione;
     public static GUIStyle Didascalia, Etichetta, Valore, TestoSinistra, Iniziale;
     static int linguaStili = -1;
 
@@ -150,6 +152,9 @@ public static class GraficaMenu
         TestoSinistra.alignment = TextAnchor.MiddleLeft;
         TestoSinistra.wordWrap = true;
         Iniziale = Stile(44, forte, true);
+        CreditiRuolo = Stile(40, voce, false);
+        CreditiNomi = Stile(58, forte, true);
+        CreditiIntestazione = Stile(64, forte, true);
     }
 
     // Se il carattere manca (file non trovato), si usa quello di base con grassetto o corsivo finti.
