@@ -598,13 +598,16 @@ public class MenuPrincipale : MonoBehaviour
         float comparsa = Mathf.Clamp01(tempoSchermata / Mathf.Max(0.05f, durataComparsa));
         bool schermoTitolo = schermata == Schermata.Titolo;
 
-        // titolo, con un alone caldo dietro e il divisore sotto
+        // titolo, con un alone caldo dietro e il divisore sotto (nei crediti no: occupano tutto lo schermo)
         float altoTitolo = altoTitoloVisibile;
-        GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
-        GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
-        GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
-        if (nomeProvvisorio)
-            GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
+        if (schermata != Schermata.Crediti)
+        {
+            GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
+            GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
+            GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
+            if (nomeProvvisorio)
+                GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
+        }
 
         switch (schermata)
         {
@@ -650,9 +653,11 @@ public class MenuPrincipale : MonoBehaviour
                 break;
             case Schermata.Crediti:
             {
-                var fascia = new Rect(Larghezza * 0.5f - 560f, 365f, 1120f, 520f);
-                GraficaMenu.Cornice(fascia, comparsa, false);
-                DisegnaCrediti(new Rect(fascia.x + 12f, fascia.y + 12f, fascia.width - 24f, fascia.height - 24f), comparsa);
+                // a tutto schermo, senza riquadro: lo sfondo si scurisce e i crediti scorrono su quasi tutta l'altezza
+                GUI.matrix = Matrix4x4.identity;
+                GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, 0.6f * comparsa));
+                GraficaMenu.FoglioVirtuale();
+                DisegnaCrediti(new Rect(0f, 20f, Larghezza, 870f), comparsa);
                 if (elenco.voci.Count > 0)
                 {
                     var area = new Rect(Larghezza * 0.5f - 220f, 910f, 440f, 60f);
@@ -728,17 +733,17 @@ public class MenuPrincipale : MonoBehaviour
         return false;
     }
 
-    // Crediti che scorrono dal basso verso l'alto dentro la fascia, e ricominciano alla fine.
+    // Crediti che scorrono dal basso verso l'alto su quasi tutto lo schermo, e ricominciano alla fine.
     void DisegnaCrediti(Rect fascia, float comparsa)
     {
-        const float passo = 104f, velocita = 55f;
+        const float passo = 165f, velocita = 70f, primaRiga = 220f;
         int n = TestiCrediti.Elenco.Length;
-        float lunghezza = fascia.height + 140f + n * passo;
+        float lunghezza = fascia.height + primaRiga + n * passo;
         float scorrimento = (tempoSchermata * velocita) % lunghezza;
 
         GUI.BeginGroup(fascia);
         float y = fascia.height - scorrimento;
-        Riga(ref y, Lingua.T("menu.crediti_testo"), null, fascia, comparsa, 140f);
+        Riga(ref y, Lingua.T("menu.crediti_testo"), null, fascia, comparsa, primaRiga);
         for (int i = 0; i < n; i++)
             Riga(ref y, TestiCrediti.Ruolo(i), TestiCrediti.Elenco[i].nomi, fascia, comparsa, passo);
         GUI.EndGroup();
@@ -748,15 +753,15 @@ public class MenuPrincipale : MonoBehaviour
     {
         if (y > -passo && y < fascia.height)
         {
-            // sfuma vicino ai bordi della fascia
-            float centro = y + 30f;
-            float alfa = Mathf.Clamp01(Mathf.Min(centro, fascia.height - centro) / 90f) * comparsa;
+            // sfuma vicino al bordo alto e a quello basso
+            float centro = y + 50f;
+            float alfa = Mathf.Clamp01(Mathf.Min(centro, fascia.height - centro) / 150f) * comparsa;
             if (string.IsNullOrEmpty(nomi))
-                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 60), ruolo, GraficaMenu.Voce, GraficaMenu.Selezione, alfa);
+                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 90), ruolo, GraficaMenu.CreditiIntestazione, GraficaMenu.Selezione, alfa);
             else
             {
-                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 34), ruolo, GraficaMenu.Sottotitolo, GraficaMenu.Bronzo, alfa);
-                GraficaMenu.Scritta(new Rect(0, y + 36, fascia.width, 46), nomi, GraficaMenu.Voce, GraficaMenu.Testo, alfa);
+                GraficaMenu.Scritta(new Rect(0, y, fascia.width, 48), ruolo, GraficaMenu.CreditiRuolo, GraficaMenu.Bronzo, alfa);
+                GraficaMenu.Scritta(new Rect(0, y + 52, fascia.width, 70), nomi, GraficaMenu.CreditiNomi, GraficaMenu.Testo, alfa);
             }
         }
         y += passo;
