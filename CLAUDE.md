@@ -19,7 +19,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
 - **Il gioco inizia a Villaggio Lago Nero**, la notte della razzia (il protagonista perde contro l'orco enorme), poi gattabuia sotto terra, poi ritorno al villaggio in rovina. Il villaggio serve in due versioni: notte della razzia e distrutto. Mappa: `Docs/mappe/`. Modelli per Nazar: `Docs/lista-modelli-nazar.txt`.
 - Ciclo giorno e notte: **45 minuti reali di luce** (6-18 del gioco) e **50 di notte** (18-6).
-- Co-op **da 1 a 3 giocatori**. Aggancio del bersaglio (lock-on): la rotellina del mouse cambia bersaglio.
+- Co-op **da 1 a 3 giocatori**. Aggancio del bersaglio (lock-on): clic della rotellina per agganciare e sganciare, uno scatto del mouse verso un nemico cambia bersaglio; con lo Stregone la rotellina sceglie l'incantesimo (Lorenzo, 10 ottobre). Oggetti addosso e a terra con forme provvisorie: `FormeOggetti.cs`.
 - **Lingue**: 8 (italiano, inglese, spagnolo, francese, tedesco, portoghese del Brasile, russo, cinese semplificato), scelte dal menu. Ogni testo visibile passa da `Lingua.T("chiave")` (`Assets/Scripts/Interfaccia/Lingua.cs`) con le 8 traduzioni; niente frasi scritte nel codice.
 - **Rete co-op**: Netcode for GameObjects 2.13 + trasporto SteamNetworkingSockets + Steamworks.NET (gratis, un giocatore ospita, nessun server). Per ora senza Steam: menu "Multigiocatore", ci si collega con l'indirizzo IP. I nemici pensano solo sull'host; i nemici cercano i giocatori in `ObiettiviNemici`, il danno ai nemici passa da `Bersaglio.RiceviColpo`. Regole e limiti: `Docs/rete-coop.md`.
 

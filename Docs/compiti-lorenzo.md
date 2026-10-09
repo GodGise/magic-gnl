@@ -55,7 +55,7 @@ Insegnale solo quando servono, una alla volta, facendogliele provare subito.
 
 Com'è fatta la zona nella Hierarchy: un oggetto **Zona** contiene i gruppi *Suolo*, *Sentiero*, *Piazza* (pozzo, torce, case in rovina), *Cimitero*, *Cripta*, *Bosco*, *Rocce*, *Confini* (muri invisibili sul bordo). Fuori da Zona ci sono *Giocatore*, *Cielo* (ciclo giorno e notte), *Sole*, *Luna* e i tre nemici: *Guardiano della piazza*, *Spettro del cimitero*, *Custode della cripta*.
 
-Comandi di gioco: **WASD** movimento, **mouse** camera, **Spazio** schivata, **tasto sinistro** attacco, **tasto destro** parata, **clic della rotellina** aggancio del nemico, **rotellina** cambio nemico, **T** accelera il tempo, **F2** effetto PS2 sì/no, **Esc** libera il mouse.
+Comandi di gioco: **WASD** movimento, **mouse** camera, **Spazio** schivata, **tasto sinistro** attacco, **tasto destro** parata, **clic della rotellina** aggancio del nemico, **scatto del mouse** verso un nemico per cambiarlo (con lo Stregone la **rotellina** sceglie l'incantesimo), **T** accelera il tempo, **F2** effetto PS2 sì/no, **Esc** libera il mouse.
 
 ## 4. Git per Lorenzo: tre gesti e basta
 
