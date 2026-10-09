@@ -39,7 +39,7 @@ MonoBehaviour:
     moltiplicatoreCritico: 0
     velocitaParata: 0
     velocitaAttacco: 0
-    vitaMassimaPercento: -20
+    vitaMassimaPercento: -17
     furtivita: 0
   effetto: 2
   valore: 40

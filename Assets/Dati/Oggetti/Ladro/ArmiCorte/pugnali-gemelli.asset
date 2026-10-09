@@ -20,7 +20,7 @@ MonoBehaviour:
   modello: {fileID: 0}
   tipo: 6
   dueMani: 1
-  danno: 12
+  danno: 11
   costoAttacco: 10
   preparazione: 0.1
   colpoAttivo: 0.1
