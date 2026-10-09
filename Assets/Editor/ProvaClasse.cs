@@ -7,6 +7,8 @@ using UnityEngine;
 // armi, armature, scudi, bastoni, libri e incantesimi della sua classe, più gli amuleti
 // (gli amuleti sono in comune fra le classi; "Ultimo respiro" solo per il Ladro).
 // Come si usa: menu "magic-gnl > Prova classe > Gioca come Ladro" (o Guerriero, o Stregone), poi Play e Tab.
+// "Ladro completo" fa lo stesso e in più gli mette addosso un equipaggiamento intero da Ladro furtivo
+// (Stiletto d'ombra, Arco lungo di tasso, Manto dell'ombra, Ultimo respiro): si parte già pronti.
 // La scelta resta salvata anche chiudendo Unity. "Smetti di riempire lo zaino" lascia la classe ma non aggiunge
 // più oggetti al Play. Non va montato su niente: è un comando dell'editor e non finisce nel gioco.
 [InitializeOnLoad]
@@ -14,6 +16,10 @@ public static class ProvaClasse
 {
     const string Cartella = "magic-gnl/Prova classe/";
     const string ChiaveRiempi = "magic-gnl.ProvaClasse.Riempi";
+    const string ChiaveCompleto = "magic-gnl.ProvaClasse.Completo";
+
+    // Equipaggiamento del "Ladro completo": nomi dei file in Assets/Dati/Oggetti/Ladro/.
+    static readonly string[] SetLadro = { "stiletto-d-ombra", "arco-lungo-di-tasso", "manto-dell-ombra", "ultimo-respiro" };
 
     static ProvaClasse()
     {
@@ -29,10 +35,14 @@ public static class ProvaClasse
     [MenuItem(Cartella + "Gioca come Stregone")]
     static void Stregone() => Scegli(ClasseGiocatore.Stregone);
 
+    [MenuItem(Cartella + "Gioca come Ladro completo (tutto addosso)")]
+    static void LadroCompleto() => Scegli(ClasseGiocatore.Ladro, true);
+
     [MenuItem(Cartella + "Smetti di riempire lo zaino")]
     static void Smetti()
     {
         EditorPrefs.SetBool(ChiaveRiempi, false);
+        EditorPrefs.SetBool(ChiaveCompleto, false);
         Debug.Log("Prova classe: al Play lo zaino non si riempie più. La classe resta " + SceltaPartita.Classe + ".");
     }
 
@@ -43,17 +53,21 @@ public static class ProvaClasse
     static bool SpuntaLadro() => Spunta(ClasseGiocatore.Ladro, "Gioca come Ladro");
     [MenuItem(Cartella + "Gioca come Stregone", true)]
     static bool SpuntaStregone() => Spunta(ClasseGiocatore.Stregone, "Gioca come Stregone");
+    [MenuItem(Cartella + "Gioca come Ladro completo (tutto addosso)", true)]
+    static bool SpuntaLadroCompleto() => Spunta(ClasseGiocatore.Ladro, "Gioca come Ladro completo (tutto addosso)", true);
 
-    static bool Spunta(ClasseGiocatore classe, string voce)
+    static bool Spunta(ClasseGiocatore classe, string voce, bool completo = false)
     {
-        Menu.SetChecked(Cartella + voce, SceltaPartita.Classe == classe && EditorPrefs.GetBool(ChiaveRiempi, false));
+        Menu.SetChecked(Cartella + voce, SceltaPartita.Classe == classe && EditorPrefs.GetBool(ChiaveRiempi, false)
+            && EditorPrefs.GetBool(ChiaveCompleto, false) == completo);
         return true;
     }
 
-    static void Scegli(ClasseGiocatore classe)
+    static void Scegli(ClasseGiocatore classe, bool completo = false)
     {
         SceltaPartita.Classe = classe;
         EditorPrefs.SetBool(ChiaveRiempi, true);
+        EditorPrefs.SetBool(ChiaveCompleto, completo);
         if (Application.isPlaying)
         {
             Debug.Log("Prova classe: " + classe + ". Meglio fermare e rifare Play, così il personaggio parte già con questa classe.");
@@ -97,6 +111,39 @@ public static class ProvaClasse
             messi++;
         }
         Debug.Log("Prova classe: " + classe + ", messi nello zaino " + messi + " oggetti. Premi Tab per aprire l'inventario.");
+        if (classe == ClasseGiocatore.Ladro && EditorPrefs.GetBool(ChiaveCompleto, false)) VestiLadro(giocatore, zaino);
+    }
+
+    // Toglie quello che non è da Ladro (spada, scudo) e mette addosso il set del Ladro completo.
+    // Quello che c'era addosso ed è da Ladro torna nello zaino.
+    static void VestiLadro(GiocatoreControllo giocatore, Zaino zaino)
+    {
+        var e = giocatore.GetComponent<Equipaggiamento>();
+        if (e == null)
+        {
+            Debug.LogWarning("Prova classe: il giocatore non ha l'Equipaggiamento, set del Ladro non messo.");
+            return;
+        }
+        DatiOggetto[] prima = { e.Arma, e.Scudo, e.Armatura, e.Amuleto, e.ArmaDistanza };
+        e.TogliArma(); e.TogliScudo(); e.TogliArmatura(); e.TogliAmuleto(); e.TogliArmaDistanza();
+        foreach (var vecchio in prima)
+            if (vecchio != null && Usabile(vecchio, ClasseGiocatore.Ladro) && !zaino.Contiene(vecchio)) zaino.Aggiungi(vecchio);
+
+        int messi = 0;
+        foreach (string nome in SetLadro)
+        {
+            DatiOggetto oggetto = null;
+            foreach (string guid in AssetDatabase.FindAssets(nome + " t:DatiOggetto", new[] { "Assets/Dati/Oggetti/Ladro" }))
+            {
+                string percorso = AssetDatabase.GUIDToAssetPath(guid);
+                if (System.IO.Path.GetFileNameWithoutExtension(percorso) == nome) oggetto = AssetDatabase.LoadAssetAtPath<DatiOggetto>(percorso);
+            }
+            if (oggetto == null) { Debug.LogWarning("Prova classe: non trovo " + nome + ".asset nel Ladro."); continue; }
+            zaino.Togli(oggetto);
+            e.Equipaggia(oggetto);
+            messi++;
+        }
+        Debug.Log("Prova classe: Ladro completo, " + messi + " oggetti addosso (Stiletto d'ombra, Arco lungo di tasso, Manto dell'ombra, Ultimo respiro).");
     }
 
     // Stessa regola dell'inventario: oggetti della propria classe, amuleti per tutti tranne Ultimo respiro (solo Ladro).
