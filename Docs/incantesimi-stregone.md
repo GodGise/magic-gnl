@@ -67,6 +67,7 @@ La durata delle evocazioni si allunga con libri e amuleti che hanno "Durata evoc
 - **Uccisioni delle evocazioni**: contano come uccisioni dello Stregone (Sigillo del focolare, Cuore del lago nero).
 - **Tunica stracciata**: toglie il 10% del mana massimo a ogni danno ricevuto, anche di 1 punto e anche dai danni nel tempo (ogni volta che arriva danno).
 - **Due Bambole di ossa** (con l'Occhio del lago): ogni nemico va su quella più vicina; a pari distanza ne sceglie una sola.
+- **Boss**: non si bloccano e non si stordiscono; i rallentamenti su di loro valgono la metà.
 - **Classi in co-op** (da approvare da Giuseppe): una classe per giocatore, niente doppioni. Un gruppo di tre ha un Guerriero, un Ladro e uno Stregone.
 
 ## Caselle degli incantesimi
@@ -128,4 +129,3 @@ Come per le altre classi: magici (bonus semplici) e arcani (effetti speciali), o
 
 - Velocità dei proiettili e portata di ogni incantesimo.
 - Con l'equipaggiamento di partenza (Bastone e Libro della vecchia vita) la Scintilla uccide l'orco sgherro in circa 11,5 s, contro i 4,8 s della spada del Guerriero; senza oggetti in 7 s. Le combinazioni più forti arrivano a 4,7 s. Da rivedere giocando.
-- Boss: se blocchi, stordimenti e rallentamenti valgono anche su di loro.
