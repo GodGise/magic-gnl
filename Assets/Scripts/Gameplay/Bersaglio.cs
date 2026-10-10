@@ -16,6 +16,8 @@ using UnityEngine;
 // agli altri. Sugli altri PC è una figura che segue le posizioni ricevute; i colpi dei loro giocatori vanno all'host.
 // Boss e miniboss (casella "Boss"): non subiscono l'esecuzione furtiva, né blocchi, stordimenti e spinte degli
 // incantesimi; i rallentamenti su di loro valgono la metà (vedi EffettiNemico). Stordito, non attacca.
+// Difficoltà co-op: vita, danno e frequenza degli attacchi crescono con i giocatori collegati (vedi DifficoltaCoop).
+// I numeri scritti qui sotto sono quelli "da soli"; i moltiplicatori si applicano in VitaMassima, DannoAttacco e negli intervalli.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
 // Il menu "magic-gnl > Crea scena di prova" ne mette uno già pronto.
 public class Bersaglio : MonoBehaviour
@@ -39,6 +41,7 @@ public class Bersaglio : MonoBehaviour
 
     float vita;
     bool morto;
+    float vitaMassimaApplicata;   // la vita massima con la difficoltà di adesso (serve a tenere la stessa percentuale quando cambia)
 
     // Numero uguale su tutti i PC (vedi RegistroNemici), per i messaggi di rete.
     public int NumeroRete { get; private set; }
@@ -50,11 +53,11 @@ public class Bersaglio : MonoBehaviour
     bool haPosizioneRete;
     // Il giocatore preso di mira (da InseguimentoNemico); se nessuno lo sceglie, il più vicino.
     public IObiettivoNemico Obiettivo { get; set; }
-    public float DannoAttacco => dannoAttacco;
+    public float DannoAttacco => dannoAttacco * DifficoltaCoop.DannoNemici;
 
     public bool Morto => morto;
     public bool Boss => boss;
-    public float VitaMassima => vitaMassima;
+    public float VitaMassima => vitaMassima * DifficoltaCoop.VitaNemici(boss);
     // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
     public event System.Action Colpito;
     bool staAttaccando;
@@ -95,15 +98,30 @@ public class Bersaglio : MonoBehaviour
         for (int i = 0; i < aspetto.Length; i++) coloriBase[i] = aspetto[i].material.color;
 
         corpo = GetComponent<Collider>();
-        vita = vitaMassima;
+        vitaMassimaApplicata = VitaMassima;
+        vita = vitaMassimaApplicata;
         NumeroRete = RegistroNemici.Iscrivi(this);
+        DifficoltaCoop.Cambiata += DifficoltaCambiata;
     }
 
-    void OnDestroy() => RegistroNemici.Togli(this, NumeroRete);
+    void OnDestroy()
+    {
+        DifficoltaCoop.Cambiata -= DifficoltaCambiata;
+        RegistroNemici.Togli(this, NumeroRete);
+    }
+
+    // Cambia il numero di giocatori: la vita massima cambia e il nemico tiene la stessa percentuale di vita.
+    // Su chi non ospita il valore preciso arriva subito dopo dall'host (ImpostaVitaDaRete).
+    void DifficoltaCambiata()
+    {
+        float nuova = VitaMassima;
+        if (!morto && vitaMassimaApplicata > 0.01f) vita = Mathf.Clamp01(vita / vitaMassimaApplicata) * nuova;
+        vitaMassimaApplicata = nuova;
+    }
 
     void Start()
     {
-        prossimoAttacco = Time.time + intervalloAttacchi;
+        prossimoAttacco = Time.time + IntervalloAttacchi;
     }
 
     void Update()
@@ -154,9 +172,12 @@ public class Bersaglio : MonoBehaviour
                 preso.ColpitoDaNemico(this);
         }
 
-        prossimoAttacco = Time.time + intervalloAttacchi;
+        prossimoAttacco = Time.time + IntervalloAttacchi;
         staAttaccando = false;
     }
+
+    // Il tempo fra un attacco e l'altro, accorciato dalla difficoltà co-op.
+    float IntervalloAttacchi => intervalloAttacchi / DifficoltaCoop.FrequenzaAttacchi;
 
     // Chiamato dal giocatore quando un suo colpo va a segno.
     // "danno" è già calcolato (armatura e critico compresi, vedi CalcoloDanno).
@@ -289,6 +310,12 @@ public class Bersaglio : MonoBehaviour
         Rinasci();
     }
 
+    // Su chi non ospita: l'host ha cambiato la difficoltà e manda la vita esatta di questo nemico.
+    public void ImpostaVitaDaRete(float vitaAttuale)
+    {
+        if (!morto) vita = vitaAttuale;
+    }
+
     // Chi entra a partita iniziata riceve vita e morte di tutti i nemici.
     public void StatoDaRete(float vitaAttuale, bool eMorto)
     {
@@ -337,12 +364,13 @@ public class Bersaglio : MonoBehaviour
     void Rinasci()
     {
         if (!Rete.Ospite) MondoRete.InviaRinato(this);
-        vita = vitaMassima;
+        vitaMassimaApplicata = VitaMassima;
+        vita = vitaMassimaApplicata;
         morto = false;
         RipristinaColori();
         MostraAspetto(true);
         if (corpo != null) corpo.enabled = true;
-        prossimoAttacco = Time.time + intervalloAttacchi;
+        prossimoAttacco = Time.time + IntervalloAttacchi;
     }
 
     // Colora tutte le parti dello stesso colore (rosso del preavviso, bianco quando è colpito).

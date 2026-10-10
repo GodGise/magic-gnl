@@ -4,6 +4,7 @@ using UnityEngine;
 // Il "mondo condiviso" del co-op: nemici, ora del giorno e sfere magiche.
 // A cosa serve: chi ospita (host) è l'unico su cui i nemici pensano. Questo oggetto di rete:
 //   - dall'host manda a tutti, 12 volte al secondo, posizione e stato di ogni nemico e l'ora del giorno;
+//   - dall'host manda quanti giocatori ci sono e la vita dei nemici quando la difficoltà cambia (vedi DifficoltaCoop);
 //   - dall'host manda gli eventi dei nemici: attacco (preavviso rosso), colpito, sbilanciato, morto, rinato, "!";
 //   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette, le esecuzioni furtive e gli effetti
 //     degli incantesimi (rallentamenti, blocchi, stordimenti, spinte: vedi EffettiNemico);
@@ -102,6 +103,8 @@ public class MondoRete : NetworkBehaviour
             vite[i] = b != null ? b.Vita : 0f;
             morti[i] = (byte)(b != null && b.Morto ? 1 : 0);
         }
+        // Prima quanti giocatori ci sono (la difficoltà), poi la vita esatta di ogni nemico.
+        GiocatoriRpc((byte)DifficoltaCoop.Giocatori, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
         StatoRpc(numeri, vite, morti, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
 
         var oggetti = RegistroCondivisi.Tutti;
@@ -159,6 +162,37 @@ public class MondoRete : NetworkBehaviour
             Bersaglio b = RegistroNemici.Trova(numeri[i]);
             if (b != null) b.StatoDaRete(vite[i], morti[i] != 0);
         }
+    }
+
+    // ---------- difficoltà (host -> tutti) ----------
+
+    // L'host dice a tutti quanti giocatori ci sono, con la vita nuova di ogni nemico (già ricalcolata sull'host).
+    public static void InviaDifficolta(int giocatori)
+    {
+        if (!SonoHost) return;
+        var nemici = RegistroNemici.Tutti;
+        var numeri = new int[nemici.Count];
+        var vite = new float[nemici.Count];
+        for (int i = 0; i < nemici.Count; i++)
+        {
+            numeri[i] = nemici[i] != null ? nemici[i].NumeroRete : -1;
+            vite[i] = nemici[i] != null ? nemici[i].Vita : 0f;
+        }
+        Istanza.DifficoltaRpc((byte)giocatori, numeri, vite);
+    }
+
+    [Rpc(SendTo.NotServer)]
+    void DifficoltaRpc(byte giocatori, int[] numeri, float[] vite)
+    {
+        DifficoltaCoop.ImpostaDaRete(giocatori);
+        for (int i = 0; i < numeri.Length; i++) RegistroNemici.Trova(numeri[i])?.ImpostaVitaDaRete(vite[i]);
+    }
+
+    // Per chi entra a partita iniziata: solo il numero di giocatori (la vita arriva con StatoRpc).
+    [Rpc(SendTo.SpecifiedInParams)]
+    void GiocatoriRpc(byte giocatori, RpcParams parametri)
+    {
+        DifficoltaCoop.ImpostaDaRete(giocatori);
     }
 
     // ---------- eventi dei nemici (host -> tutti) ----------

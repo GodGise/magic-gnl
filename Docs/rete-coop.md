@@ -65,6 +65,10 @@ Ordine proposto (stato all'8 ottobre):
 - Cosa cresce (i numeri li decide Lorenzo, che fa il bilanciamento): vita dei nemici e dei boss, danno dei nemici, numero di nemici per gruppo. Va scelto anche se cambia l'aggressività (per esempio più nemici che attaccano insieme).
 - Il conto si fa con i giocatori **collegati in quel momento**: se uno entra o esce a metà partita, la difficoltà si adatta (i nemici già feriti tengono la stessa percentuale di vita).
 - Lo calcola l'host, come tutto quello che riguarda i nemici.
+- **Fatto (10 ottobre, ramo `giuseppec/difficolta-coop`)**: `Assets/Scripts/Rete/DifficoltaCoop.cs`. Cambia quattro numeri, uno per giocatore in più, tutti regolabili dall'Inspector: vita dei nemici, vita dei boss, danno dei nemici e frequenza degli attacchi (il preavviso rosso resta uguale). `Bersaglio` li legge in `VitaMassima`, `DannoAttacco` e negli intervalli. L'host manda il numero di giocatori e le vite nuove a tutti (`MondoRete.InviaDifficolta`), così le barre sono uguali su ogni PC.
+- **Valori di partenza provvisori** (da Lorenzo): 1 giocatore = tutto x1; 2 giocatori = vita x2,5, danno x1,5, attacchi x1,25; 3 giocatori = vita x4, danno x2, attacchi x1,5.
+- **Per cambiare i numeri in modo permanente**: metti il componente `DifficoltaCoop` su un oggetto vuoto della scena e modifica le tre tabelle. Se non c'è, il gioco ne crea uno con i valori di partenza.
+- **Non fatto**: il numero di nemici per gruppo. I gruppi sono messi a mano nelle scene, quindi servirebbe un'idea di Lorenzo (per esempio nemici in più che compaiono solo in co-op).
 
 ## Fonti
 
