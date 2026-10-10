@@ -73,7 +73,7 @@ public static class FormeOggetti
         radice.SetParent(genitore, false);
         if (o.modello != null)
         {
-            Object.Instantiate(o.modello, radice, false);
+            Modello(o, radice);
             return radice;
         }
         switch (o)
@@ -89,6 +89,27 @@ public static class FormeOggetti
             default: P(radice, PrimitiveType.Cube, Vector3.zero, new Vector3(0.25f, 0.4f, 0.08f), Oro); break;
         }
         return radice;
+    }
+
+    // Il modello di Nazar al posto della forma. Armi e bastoni sono fatti con l'impugnatura nel punto zero e la lama
+    // in alto: qui si girano con la lama in basso, come le forme. Poi le correzioni scritte nell'oggetto e il materiale.
+    static void Modello(DatiOggetto o, Transform radice)
+    {
+        var perno = new GameObject("Modello").transform;
+        perno.SetParent(radice, false);
+        Quaternion giro = o is DatiArma || o is DatiBastone ? Quaternion.Euler(0f, 0f, 180f) : Quaternion.identity;
+        perno.localPosition = o.posizioneModello;
+        perno.localRotation = giro * Quaternion.Euler(o.rotazioneModello);
+        perno.localScale = Vector3.one * (o.scalaModello > 0f ? o.scalaModello : 1f);
+        var copia = Object.Instantiate(o.modello, perno, false);
+        foreach (var c in copia.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);   // solo da vedere
+        if (o.materialeModello == null) return;
+        foreach (var r in copia.GetComponentsInChildren<Renderer>())
+        {
+            var materiali = r.sharedMaterials;
+            for (int i = 0; i < materiali.Length; i++) materiali[i] = o.materialeModello;
+            r.sharedMaterials = materiali;
+        }
     }
 
     // La spada provvisoria di quando non si ha un'arma (uguale a quella di AspettoUmanoide).
