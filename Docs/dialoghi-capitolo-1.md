@@ -47,7 +47,7 @@ Scritti dal Claude di Giuseppe il 10 ottobre 2026 sulla base di `Docs/quest-capi
 - *(Lancia un incantesimo con {Attacca}. Ogni incantesimo costa mana.)*
 - *(Cambia incantesimo con la rotellina o con i tasti da 1 a 6.)*
 - **Edric:** Ora il ghiaccio. L'acqua del lago ha una memoria: ascolta quella.
-- *(La barra blu è il mana: si ricarica da sola poco dopo l'ultimo incantesimo.)*
+- *(La barra blu è il mana: si ricarica da solo poco dopo l'ultimo incantesimo.)*
 - *(Fai qualche passo indietro: lo Stregone resiste meglio a distanza.)*
 - **Edric:** Bene. Ricordi tutto. È come tornare a casa, vero?
 - **Edric:** Tienilo. Non so se ti servirà. Spero di no.
@@ -71,7 +71,7 @@ Scritti dal Claude di Giuseppe il 10 ottobre 2026 sulla base di `Docs/quest-capi
 - *(Premi {Interagisci} per raccogliere un oggetto.)*
 - **Ilse** *(quando le porti i fiori):* Perfetto. Ecco una pozione. Non è per ora, è per quando ne avrai bisogno.
 - *(Premi {Inventario} per aprire l'inventario. Seleziona la pozione e usala.)*
-- **Ilse:** Da bambina ho visto uscire qualcosa dal lago. A nessuno ho mai detto cosa.
+- **Ilse:** Da bambina ho visto qualcosa uscire dal lago... Non ho mai detto a nessuno che cosa fosse.
 
 ## Quest 5 - La leggenda del lago (facoltativa)
 *Tempio, poi cimitero e cripta. Una porta con leva, un baule.*

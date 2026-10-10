@@ -49,9 +49,9 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 ### 10 ottobre, sera: revisione dei dialoghi del capitolo 1 (fatta)
 Lorenzo ha rivisto `Docs/dialoghi-capitolo-1.md` (ora "bozza 2") sul ramo `lorenzoc/dialoghi-capitolo-1`. Cosa è cambiato:
 - **Tasti nei suggerimenti:** al posto di "W A S D", "tasto sinistro", "Spazio", "E", "Tab" c'è il nome dell'azione fra graffe (`{Attacca}`, `{Schiva}`, `{Interagisci}`...), come nell'enum `Azione` di `Comandi.cs`: il codice del dialogo deve mettere il tasto scelto dal giocatore. Restano fissi mouse, rotellina e 1-6.
-- **Mana dello Stregone:** "si ricarica da sola poco dopo l'ultimo incantesimo" (non "se resti fermo").
+- **Mana dello Stregone:** "si ricarica da solo poco dopo l'ultimo incantesimo" (non "se resti fermo").
 - **Aggancio:** aggiunto "Con un bersaglio agganciato, muovi il mouse verso un altro nemico per passare a lui".
-- **Ilse:** "Da bambina ho visto uscire qualcosa dal lago. A nessuno ho mai detto cosa."
+- **Ilse:** "Da bambina ho visto qualcosa uscire dal lago... Non ho mai detto a nessuno che cosa fosse."
 - **Quest 1:** aggiunto "(L'eroe si alza.)" fra le due battute di Maren.
 - **Lasciati così:** la pozione di Ilse (gli oggetti consumabili si aggiungono strada facendo) e la "cantina" di Hobb.
 - **Decisioni di Lorenzo da confermare:** in co-op la famiglia è dell'**host** ("papà" è solo l'host, gli altri sentono le stesse battute); per ora **tutti i personaggi giocabili sono uomini**.
