@@ -18,7 +18,7 @@ using UnityEngine.SceneManagement;
 // questo PC da dare agli amici. Se l'host chiude o la connessione cade, si torna qui con un avviso.
 // Sequenza di avvio: schermo scuro e titolo che sfuma; "Premi un tasto" compare dopo qualche secondo e finche' non e'
 // del tutto visibile i tasti non contano (niente spam all'avvio). Alla pressione suona un colpo, il paesaggio passa da
-// sfumato (nebbia grigia) a colorato, entra la musica e compare il menu. Dopo la prima pressione gli altri tasti non
+// sfumato (nebbia grigia) a colorato, parte subito la musica e dopo circa 4-5 secondi compare il menu. Dopo la prima pressione gli altri tasti non
 // contano. Tempi regolabili dall'Inspector (campi "Sequenza di avvio"). F2 salta la sequenza (comodo per provare il gioco).
 // Musica: parte solo durante la transizione (sulla schermata del titolo c'e' silenzio). Sale lentamente e si spegne quando
 // inizia la partita. Se il campo "Musica" e' vuoto si carica Assets/Resources/Audio/Musica/menu-principale.
@@ -69,12 +69,12 @@ public class MenuPrincipale : MonoBehaviour
     [SerializeField] float ritardoPremi = 2.5f;
     [Tooltip("Durata della dissolvenza di Premi un tasto. I tasti si accettano solo a dissolvenza finita.")]
     [SerializeField] float durataPremi = 1.5f;
-    [Tooltip("Durata della transizione dopo la pressione (da sfumato a colorato).")]
-    [SerializeField] float durataTransizione = 3.5f;
-    [Tooltip("A che punto della transizione entra la musica (0 = subito, 1 = alla fine).")]
-    [SerializeField, Range(0f, 1f)] float puntoMusica = 0.55f;
-    [Tooltip("A che punto della transizione compare il menu.")]
-    [SerializeField, Range(0f, 1f)] float puntoMenu = 0.7f;
+    [Tooltip("Secondi di attesa dopo la pressione: parte la musica e il paesaggio si colora, poi compare il menu.")]
+    [SerializeField] float durataTransizione = 4.5f;
+    [Tooltip("A che punto della transizione entra la musica (0 = subito alla pressione, 1 = alla fine).")]
+    [SerializeField, Range(0f, 1f)] float puntoMusica = 0f;
+    [Tooltip("A che punto della transizione compare il menu (1 = alla fine, dopo che la musica è già partita).")]
+    [SerializeField, Range(0f, 1f)] float puntoMenu = 1f;
     [Tooltip("Dopo quanto dalla pressione parte l'onda sonora della transizione (se c'e').")]
     [SerializeField] float ritardoSuonoTransizione = 0.5f;
     [Tooltip("F2 salta la sequenza di avvio (comodo quando provi il gioco).")]
