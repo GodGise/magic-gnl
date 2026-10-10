@@ -7,11 +7,12 @@ Decisa da Lorenzo il 10 ottobre 2026, scritta con il suo Claude. È la parte del
 - **Come ci si arriva:** l'orco della piazza non si può battere (statistiche troppo alte; dopo 3 minuti di scontro diventa invulnerabile a ogni danno e a ogni effetto). Quando si muore, invece di rinascere al checkpoint, **ci si risveglia nella gattabuia**, ognuno nella sua cella.
 - **Durata:** circa 30 minuti, anche meno.
 - **La cella:** si apre forzando una **sbarra arrugginita** (un po' di pressione e cede). La sbarra diventa la prima arma.
-- **Co-op:** celle **separate nello stesso corridoio**. **Solo l'host si libera da solo**; gli altri vengono liberati da lui.
+- **Co-op:** celle **separate nello stesso corridoio**. **Solo l'host si libera da solo**; gli altri vengono liberati da lui. Mentre aspettano, gli altri **possono muoversi dentro la loro cella** (11 ottobre).
 - **I prigionieri:** sono **tutti morti**: corpi, sangue, fosse comuni. Non si liberano.
 - **Gli orchi:** per fortuna gran parte è uscita marciando, portandosi via quasi tutte le armi. Ne restano pochi: macellai distratti, qualche pattuglia, il carceriere.
-- **Miniboss:** il **Carceriere**, nella piazzola sotterranea ai piedi della scalinata d'uscita. Statistiche e bottino da definire.
-- **Una zona della mappa esplorabile solo in quel momento.** Dopo la fuga: o **si chiude** (crollo dell'entrata), oppure **diventa il campo base** dove si torna quando ci si riposa. Da scegliere con Giuseppe.
+- **Miniboss:** il **Carceriere**, nella piazzola sotterranea ai piedi della scalinata d'uscita. È il **primo miniboss vero che si può battere**: uno scontro impegnativo ma fattibile con l'equipaggiamento povero di inizio gioco (11 ottobre). Proposta di numeri e mosse più sotto.
+- **Parassiti delle grotte:** come **ragni con 6 zampe invece di 8**, deformi e strani, **grandi la metà del personaggio** (11 ottobre).
+- **Dopo la fuga la gattabuia non è più accessibile.** Forse in futuro si potrà tornarci, ma non subito (11 ottobre). Niente campo base qui.
 
 ## Il percorso
 
@@ -32,19 +33,58 @@ La sbarra della cella è sempre disponibile. Lungo i corridoi e nella zona dei m
 
 | Arma | Dove | Com'è |
 | --- | --- | --- |
-| Sbarra arrugginita | La propria cella | Lenta, poco danno, buona portata |
-| Mannaia da macellaio | Sul tavolo degli orchi macellai | Veloce e tagliente, portata corta |
+| Sbarra arrugginita | La propria cella | Lenta, poco danno, buona portata (ancora da programmare) |
+| Mannaia del macellaio | Sul tavolo degli orchi macellai | La più forte: taglia bene, portata corta |
+| Pugnale arrugginito | Addosso a un cadavere o in un secchio | Velocissimo e poco faticoso, colpisce pochissimo |
 | Osso lungo (femore) | Fra i cadaveri del corridoio | Leggero, colpi rapidi e deboli |
-| Catena con lucchetto | Appesa al muro di una cella | Portata lunga, lenta |
+| Catenaccio (catena con lucchetto) | Appeso al muro di una cella | Portata lunga, lento |
 
-Sono armi di tutte le classi (anche lo Stregone le usa, come l'ascia della razzia). All'armeria si lasciano: da lì in poi si usa l'arma della propria classe.
+Sono armi di tutte le classi (anche lo Stregone le usa, al posto del bastone). All'armeria si lasciano: da lì in poi si usa l'arma della propria classe. Numeri esatti in `Docs/armi-improvvisate.md` (ramo `lorenzoc/armi-improvvisate`).
+
+## Il Carceriere (proposta del Claude di Lorenzo, da confermare)
+
+Obiettivo di Lorenzo: impegnativo ma fattibile con l'arma base della classe, presa da poco all'armeria. Un orco grosso e lento, con una mazza ferrata e una catena con un gancio. Tutte le mosse sono **lente da caricare e ben visibili**: si vince imparando quando schivare, non con l'equipaggiamento.
+
+Numeri da giocatore solo (in co-op li moltiplica `DifficoltaCoop`, come per tutti i boss). Riferimento: il giocatore ha 100 di vita, la spada di partenza fa 25 di danno.
+
+| Cosa | Proposta | Perché |
+| --- | --- | --- |
+| Vita | 600 | Circa 24 colpi di spada: uno scontro di 3-4 minuti |
+| Danno di un colpo | 22-35 a seconda della mossa | 3-4 colpi presi e si muore: si può sbagliare qualche volta |
+| Velocità | Più lento del giocatore a piedi | Si può prendere fiato e ricaricare la resistenza |
+| Effetti | Come i boss: niente blocchi né stordimenti, rallentamenti dimezzati | Regole già nel codice |
+
+**Mosse (fase 1, da 100% a 50% della vita):**
+1. **Mazzata:** un colpo dall'alto, 28 di danno. Carica lunga (0,8 s). Si para o si schiva.
+2. **Due colpi larghi:** due spazzate di fila, 22 di danno ciascuna. Chi para la prima deve avere resistenza anche per la seconda.
+3. **Catena con gancio:** lancia la catena in linea retta (8 m). Se prende, **tira il giocatore davanti a sé** e parte subito una Mazzata. Non si para: si schiva di lato.
+
+**Fase 2 (sotto il 50%):** si strappa la catena dal muro con un urlo (2 s in cui è scoperto, il momento per colpire forte), poi:
+4. **Schianto:** salta e batte la mazza a terra, 35 di danno in un cerchio di 3 m. Carica di 1 s, si scappa fuori dal cerchio.
+5. Le mosse 1-3 diventano un po' più veloci (tempo fra un attacco e l'altro da 3 s a 2,2 s).
+
+**Bottino (proposta):**
+- **Chiave del portone:** serve per aprire il portone in cima alla scalinata (zona 8). Così il boss non si può saltare.
+- **Un oggetto per ogni giocatore:** per esempio un amuleto in comune fra le classi ("Anello di chiavi del carceriere"). Effetto da decidere insieme, senza esagerare: siamo all'inizio del gioco.
+
+## I parassiti delle grotte (proposta, da confermare)
+
+Come li vuole Lorenzo: **ragni con 6 zampe**, deformi e strani, **alti la metà del personaggio** (circa 1 m). Idea per l'aspetto: zampe di lunghezze diverse, corpo gonfio e storto, carapace pallido come osso.
+
+| Cosa | Proposta |
+| --- | --- |
+| Vita | 30 (un colpo di catenaccio o due di spada) |
+| Danno | 8 a morso |
+| Movimento | Veloci, si muovono a scatti; escono dall'ombra e dalle pareti |
+| Attacco speciale | Un **balzo** da 4 m, visibile un attimo prima (si accucciano) |
+| Gruppi | 3-5 per volta, nelle grotte buie |
+
+Pochi danni ciascuno ma tanti insieme: insegnano a usare l'aggancio e a non farsi circondare.
 
 ## Da decidere
 
-1. **Il Carceriere:** statistiche (vita, danno, attacchi speciali) e bottino. Proposta di bottino: una chiave o un oggetto che serve nel capitolo 2, e la "Balestra del carceriere" per il Ladro.
-2. **I parassiti delle grotte:** come sono fatti (ragni con qualcosa di strano: troppi occhi, carapace d'osso, bagliore malato) e se sono legati al bosco morto fuori (lo stesso male che uccide le piante).
-3. **Dopo la fuga:** la gattabuia crolla oppure diventa il campo base (con Giuseppe).
-4. **Gli altri giocatori in co-op** possono già muoversi nella loro cella mentre aspettano l'host (consigliato), o restano svenuti finché lui non arriva?
+1. **Il Carceriere:** confermare o cambiare numeri, mosse e bottino qui sopra.
+2. **I parassiti:** confermare i numeri e decidere se sono legati al bosco morto fuori (lo stesso male che uccide le piante).
 
 ## Cosa serve fare
 
@@ -63,10 +103,10 @@ Sono armi di tutte le classi (anche lo Stregone le usa, come l'ascia della razzi
 
 **Modelli (Nazar):** quasi tutti sono già nella sua lista (parte 4, numeri 44-57: muri, sbarre, porta della cella, catene, torce, paglia, secchio, tavolo, scale, baule, leva; parte 5, numeri 58-69: rocce, stalattiti, pareti di grotta, radici, funghi, ossa, ponte, ragnatele, uscita, alberi morti). Mancano:
 - **sbarra-arrugginita-01**: una sbarra della cella staccata e piegata (è anche un'arma);
-- **mannaia-01**, **osso-lungo-01**, **catena-lucchetto-01**: le armi improvvisate;
+- **mannaia-01**, **pugnale-arrugginito-01**, **osso-lungo-01**, **catena-lucchetto-01**: le armi improvvisate;
 - **cadavere-01/02** e **mucchio-cadaveri-01**: corpi coperti da stracci, sdraiati, seduti o ammassati;
 - **tavolo-macellaio-01** e **gancio-carne-01**: la zona dei macellai;
 - **fossa-comune-01**: una buca piena di ossa;
 - **rastrelliera-vuota-01** e **baule-armi-01**: l'armeria;
 - **portone-01**: il portone in cima alla scalinata (due ante, pivot sulle cerniere);
-- più avanti, con Giuseppe: **parassita-01** (il ragno strano) e **carceriere** (personaggi con scheletro).
+- più avanti, con Giuseppe: **parassita-01** (ragno deforme a 6 zampe, alto circa 1 m) e **carceriere** (orco grosso con mazza ferrata e catena con gancio), personaggi con scheletro.
