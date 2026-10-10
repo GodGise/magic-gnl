@@ -59,9 +59,9 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
 
         // Forma provvisoria (o modello di Nazar), messa dritta: armi e bastoni con la punta in alto.
         Transform forma = FormeOggetti.Crea(oggetto, aspetto);
+        if (oggetto is DatiArma || oggetto is DatiBastone) forma.localRotation = Quaternion.Euler(0f, 0f, 180f);
         if (oggetto.modello == null)
         {
-            if (oggetto is DatiArma || oggetto is DatiBastone) forma.localRotation = Quaternion.Euler(0f, 0f, 180f);
             if (oggetto is DatiAmuleto) forma.localScale = Vector3.one * 3f;
             else if (oggetto is DatiLibro || oggetto is DatiIncantesimo) forma.localScale = Vector3.one * 1.6f;
         }
