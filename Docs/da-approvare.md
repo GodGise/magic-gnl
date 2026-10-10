@@ -32,6 +32,22 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 10 ottobre, sera: risposte sulla scaletta del capitolo 1
+Risposte di Lorenzo alle 4 domande della voce "scaletta del capitolo 1" (ramo `giuseppec/scaletta-capitolo-1`).
+1. **Percorso di giorno:** 20-30 minuti vanno bene.
+2. **Razzia a 2 ondate:** la **prima** è il tutorial (si impara a combattere contro orchi che si possono battere); la **seconda** devasta il villaggio e non si riesce a fermarla.
+3. **L'orco della piazza e la gattabuia:**
+   - L'orco enorme in piazza è un **miniboss che ritroveremo più avanti** (capitolo 2 o 3). Lo scontro è **normale**, non truccato: quando moriamo, invece di rinascere al checkpoint, **rinasciamo nella gattabuia** (risveglio in cella).
+   - **La gattabuia è una zona della mappa** esplorabile solo in quel momento. Una volta evasi ci sono due idee, da scegliere insieme:
+     a) **sparisce**: si chiude per un crollo dell'entrata (o senza spiegazione);
+     b) **diventa il campo base**: quando ci si riposa ci si teletrasporta lì.
+4. **Scena `VillaggioLagoNero.unity`:** per Lorenzo è indifferente, dipende da cosa c'è da fare. Se il percorso di giorno, i bauli e le ondate sono suoi, conviene che la scena sia sua nei momenti in cui ci lavora (da accordare nel canale come per le altre scene).
+
+**Orco della piazza, deciso da Lorenzo:** il gruppo **non può batterlo**. Ha statistiche troppo alte per essere ucciso e, se lo scontro dura, **dopo 3 minuti diventa invulnerabile a ogni danno e a ogni effetto** (rallentamenti, blocchi, stordimenti, spinte). Si muore e ci si risveglia nella gattabuia.
+
+**Punto aperto (Claude di Lorenzo):**
+- Campo base nella gattabuia: è comodo per il co-op (tutti nello stesso punto), ma va spiegato nella storia (la tana degli orchi come rifugio). Se si sceglie la a), il riposo resta ai falò e ai checkpoint.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
