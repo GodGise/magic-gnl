@@ -43,8 +43,9 @@ Risposte di Lorenzo alle 4 domande della voce "scaletta del capitolo 1" (ramo `g
      b) **diventa il campo base**: quando ci si riposa ci si teletrasporta lì.
 4. **Scena `VillaggioLagoNero.unity`:** per Lorenzo è indifferente, dipende da cosa c'è da fare. Se il percorso di giorno, i bauli e le ondate sono suoi, conviene che la scena sia sua nei momenti in cui ci lavora (da accordare nel canale come per le altre scene).
 
-**Punti aperti (Claude di Lorenzo):**
-- Se il gruppo **batte** l'orco della piazza (lo scontro è normale), cosa succede? Proposte: a metà vita arrivano altri orchi e la sconfitta arriva comunque; oppure l'orco scappa ferito e lo si cattura lo stesso con la seconda ondata. Da decidere, perché cambia come si scrive lo scontro.
+**Orco della piazza, deciso da Lorenzo:** il gruppo **non può batterlo**. Ha statistiche troppo alte per essere ucciso e, se lo scontro dura, **dopo 3 minuti diventa invulnerabile a ogni danno e a ogni effetto** (rallentamenti, blocchi, stordimenti, spinte). Si muore e ci si risveglia nella gattabuia.
+
+**Punto aperto (Claude di Lorenzo):**
 - Campo base nella gattabuia: è comodo per il co-op (tutti nello stesso punto), ma va spiegato nella storia (la tana degli orchi come rifugio). Se si sceglie la a), il riposo resta ai falò e ai checkpoint.
 
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
