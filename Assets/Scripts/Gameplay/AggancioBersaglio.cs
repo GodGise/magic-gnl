@@ -5,8 +5,11 @@ using UnityEngine.InputSystem;
 // Aggancio del bersaglio (lock-on), come in Elden Ring.
 // A cosa serve: tiene camera e personaggio puntati su un nemico.
 //   - Agganciare / sganciare: clic della rotellina del mouse, oppure premere la levetta destra del pad.
-//   - Cambiare nemico: girare la rotellina (in avanti = nemico a destra, indietro = a sinistra),
-//     oppure spostare di scatto la levetta destra del pad a destra o a sinistra.
+//   - Cambiare nemico: muovere il mouse di scatto verso il nemico che si vuole (a destra, a sinistra, in alto per
+//     uno più lontano, in basso per uno più vicino), oppure spostare di scatto la levetta destra del pad.
+//     Viene scelto il nemico che sullo schermo sta più nella direzione del gesto, partendo da quello agganciato.
+//     Un movimento lento del mouse non cambia niente: serve uno scatto più lungo di "Scatto Mouse" pixel.
+//   - La rotellina non cambia più nemico: con lo Stregone sceglie l'incantesimo (vedi MagiaStregone).
 // Si sgancia da solo se il nemico muore o si allontana troppo.
 // Sopra il nemico agganciato compare un quadratino rosso.
 // Come montarlo: sullo stesso oggetto del GiocatoreControllo (lo richiede da solo).
@@ -17,14 +20,21 @@ public class AggancioBersaglio : MonoBehaviour
     [Tooltip("Oltre questa distanza l'aggancio si toglie da solo.")]
     [SerializeField] float distanzaSgancio = 20f;
     [Tooltip("Secondi minimi tra un cambio di bersaglio e il successivo.")]
-    [SerializeField] float pausaCambioBersaglio = 0.2f;
+    [SerializeField] float pausaCambioBersaglio = 0.3f;
+    [Tooltip("Quanti pixel deve muoversi il mouse, di scatto, per passare a un altro nemico. Più alto = serve un gesto più deciso.")]
+    [SerializeField] float scattoMouse = 140f;
+    [Tooltip("Quanto in fretta si \"dimentica\" il movimento del mouse: più alto = il gesto deve essere più rapido.")]
+    [SerializeField] float dimenticaMouse = 6f;
+    [Tooltip("Il nemico scelto deve stare entro questo angolo (in gradi) dalla direzione del gesto.")]
+    [SerializeField] float angoloGesto = 60f;
 
     public Bersaglio Attuale { get; private set; }
     public bool Agganciato => Attuale != null;
 
-    InputAction comandoAggancia, comandoRotellina, comandoLevettaPad;
+    InputAction comandoAggancia, comandoMouse, comandoLevettaPad;
     float prossimoCambioPossibile;
     bool levettaANeutro = true;
+    Vector2 gestoMouse;   // movimento del mouse accumulato negli ultimi istanti
 
     void Awake()
     {
@@ -32,8 +42,8 @@ public class AggancioBersaglio : MonoBehaviour
         comandoAggancia.AddBinding("<Mouse>/middleButton");
         comandoAggancia.AddBinding("<Gamepad>/rightStickPress");
 
-        comandoRotellina = new InputAction("CambiaBersaglioRotellina", InputActionType.Value);
-        comandoRotellina.AddBinding("<Mouse>/scroll");
+        comandoMouse = new InputAction("CambiaBersaglioMouse", InputActionType.Value);
+        comandoMouse.AddBinding("<Mouse>/delta");
 
         comandoLevettaPad = new InputAction("CambiaBersaglioPad", InputActionType.Value);
         comandoLevettaPad.AddBinding("<Gamepad>/rightStick");
@@ -42,21 +52,21 @@ public class AggancioBersaglio : MonoBehaviour
     void OnEnable()
     {
         comandoAggancia.Enable();
-        comandoRotellina.Enable();
+        comandoMouse.Enable();
         comandoLevettaPad.Enable();
     }
 
     void OnDisable()
     {
         comandoAggancia.Disable();
-        comandoRotellina.Disable();
+        comandoMouse.Disable();
         comandoLevettaPad.Disable();
     }
 
     void OnDestroy()
     {
         comandoAggancia.Dispose();
-        comandoRotellina.Dispose();
+        comandoMouse.Dispose();
         comandoLevettaPad.Dispose();
     }
 
@@ -69,21 +79,30 @@ public class AggancioBersaglio : MonoBehaviour
             Attuale = Attuale != null ? null : ScegliPiuCentrale();
         }
 
-        if (Attuale == null) return;
+        if (Attuale == null) { gestoMouse = Vector2.zero; return; }
+        if (InventarioGioco.Aperto || MenuPausa.InPausa) { gestoMouse = Vector2.zero; return; }
 
-        float rotellina = comandoRotellina.ReadValue<Vector2>().y;
-        if (Mathf.Abs(rotellina) > 0.01f && Time.time >= prossimoCambioPossibile)
-            CambiaBersaglio(rotellina > 0f ? 1 : -1);
+        // Mouse: il movimento si accumula e svanisce in fretta, così conta solo uno scatto deciso.
+        // Subito dopo un cambio il movimento non conta, così uno scatto solo non salta due nemici.
+        if (Time.time < prossimoCambioPossibile) gestoMouse = Vector2.zero;
+        else gestoMouse += comandoMouse.ReadValue<Vector2>();
+        gestoMouse *= Mathf.Exp(-dimenticaMouse * Time.deltaTime);
+        if (gestoMouse.magnitude >= scattoMouse)
+        {
+            CambiaBersaglio(gestoMouse.normalized);
+            gestoMouse = Vector2.zero;
+        }
 
-        float levetta = comandoLevettaPad.ReadValue<Vector2>().x;
-        if (Mathf.Abs(levetta) < 0.3f)
+        // Pad: scatto della levetta destra in una direzione, poi va riportata al centro.
+        Vector2 levetta = comandoLevettaPad.ReadValue<Vector2>();
+        if (levetta.magnitude < 0.3f)
         {
             levettaANeutro = true;
         }
-        else if (levettaANeutro && Mathf.Abs(levetta) > 0.7f)
+        else if (levettaANeutro && levetta.magnitude > 0.7f && Time.time >= prossimoCambioPossibile)
         {
             levettaANeutro = false;
-            CambiaBersaglio(levetta > 0f ? 1 : -1);
+            CambiaBersaglio(levetta.normalized);
         }
     }
 
@@ -119,29 +138,32 @@ public class AggancioBersaglio : MonoBehaviour
         return migliore != null ? migliore : piuVicino;
     }
 
-    // verso = +1 passa al nemico più vicino sulla destra, -1 sulla sinistra.
-    void CambiaBersaglio(int verso)
+    // Passa al nemico che sullo schermo sta nella direzione del gesto (x = destra, y = in alto), partendo da quello
+    // agganciato. Fra quelli nella direzione giusta vince il più allineato e vicino sullo schermo.
+    void CambiaBersaglio(Vector2 direzione)
     {
         prossimoCambioPossibile = Time.time + pausaCambioBersaglio;
-
-        Vector3 versoAttuale = Attuale.transform.position - transform.position;
-        versoAttuale.y = 0f;
+        var camera = Camera.main;
+        if (camera == null) return;
+        Vector3 daQui = camera.WorldToScreenPoint(Attuale.transform.position);
+        if (daQui.z <= 0f) return;
 
         Bersaglio scelto = null;
-        float angoloScelto = float.MaxValue;
-
+        float migliorPunteggio = float.MaxValue;
         foreach (Bersaglio b in FindObjectsByType<Bersaglio>(FindObjectsSortMode.None))
         {
             if (b == Attuale || !Valido(b, distanzaMassimaAggancio)) continue;
-
-            Vector3 versoCandidato = b.transform.position - transform.position;
-            versoCandidato.y = 0f;
-
-            // Positivo = a destra del nemico attuale, visto dall'alto.
-            float angolo = Vector3.SignedAngle(versoAttuale, versoCandidato, Vector3.up) * verso;
-            if (angolo > 0f && angolo < angoloScelto)
+            Vector3 la = camera.WorldToScreenPoint(b.transform.position);
+            if (la.z <= 0f) continue;   // dietro la camera
+            Vector2 verso = new Vector2(la.x - daQui.x, la.y - daQui.y);
+            if (verso.sqrMagnitude < 1f) continue;
+            float angolo = Vector2.Angle(direzione, verso);
+            if (angolo > angoloGesto) continue;
+            // Più conta essere allineati che essere vicini: ogni grado pesa come 8 pixel.
+            float punteggio = verso.magnitude + angolo * 8f;
+            if (punteggio < migliorPunteggio)
             {
-                angoloScelto = angolo;
+                migliorPunteggio = punteggio;
                 scelto = b;
             }
         }

@@ -6,7 +6,8 @@ using UnityEngine.InputSystem;
 // La magia dello Stregone (Docs/incantesimi-stregone.md): caselle degli incantesimi, scelta con i tasti numerici,
 // attese, costi e lancio dei 12 incantesimi.
 // A cosa serve: lo Stregone non ha la spada. Il tasto d'attacco lancia l'incantesimo della casella scelta:
-//   - tasti 1-6 (croce sinistra e destra sul pad) scelgono la casella; le caselle sono 4, fino a 6 con certi libri;
+//   - tasti 1-6, rotellina del mouse (giù = casella dopo, su = casella prima) o croce sinistra e destra sul pad
+//     scelgono la casella; le caselle sono 4, fino a 6 con certi libri;
 //   - ogni incantesimo costa mana, ha una carica, un recupero e un'attesa prima di poterlo rilanciare;
 //   - bastone, libro, veste e amuleto cambiano questi numeri con i loro pro e contro (ModificatoriMagia, sommati
 //     da Equipaggiamento);
@@ -34,6 +35,7 @@ public class MagiaStregone : MonoBehaviour
     readonly Dictionary<DatiIncantesimo, float> prontoDa = new Dictionary<DatiIncantesimo, float>();
     readonly Dictionary<DatiIncantesimo, List<Evocazione>> evocazioni = new Dictionary<DatiIncantesimo, List<Evocazione>>();
     float prossimoAvviso;
+    float prossimaRotellina;                      // piccola pausa fra uno scatto della rotellina e l'altro
 
     public int Scelta => scelta;
     public DatiIncantesimo Scelto => equipaggiamento != null ? equipaggiamento.Incantesimo(scelta) : null;
@@ -58,6 +60,16 @@ public class MagiaStregone : MonoBehaviour
             Key[] tasti = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6 };
             for (int i = 0; i < n && i < tasti.Length; i++)
                 if (tastiera[tasti[i]].wasPressedThisFrame) Scegli(i);
+        }
+        var mouse = Mouse.current;
+        if (mouse != null && n > 0 && Time.unscaledTime >= prossimaRotellina)
+        {
+            float rotellina = mouse.scroll.ReadValue().y;
+            if (Mathf.Abs(rotellina) > 0.01f)
+            {
+                prossimaRotellina = Time.unscaledTime + 0.12f;
+                Scegli(rotellina < 0f ? (scelta + 1) % n : (scelta - 1 + n) % n);
+            }
         }
         var pad = Gamepad.current;
         if (pad != null)

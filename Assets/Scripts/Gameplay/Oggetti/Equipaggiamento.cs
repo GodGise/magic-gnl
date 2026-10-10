@@ -60,6 +60,8 @@ public class Equipaggiamento : MonoBehaviour
         giocatore = GetComponent<GiocatoreControllo>();
         statistiche = Statistiche.Di(this);
         if (incantesimi == null || incantesimi.Length != CaselleMassime) System.Array.Resize(ref incantesimi, CaselleMassime);
+        // Gli oggetti addosso si vedono sulla figura (forme provvisorie, vedi AspettoEquipaggiamento).
+        if (GetComponent<AspettoEquipaggiamento>() == null) gameObject.AddComponent<AspettoEquipaggiamento>();
     }
 
     void Start() => Applica();

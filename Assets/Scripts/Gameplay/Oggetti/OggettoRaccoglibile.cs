@@ -4,7 +4,8 @@ using UnityEngine.InputSystem;
 // Un oggetto (arma, scudo, armatura, amuleto) appoggiato nel mondo, da raccogliere con E.
 // Quando il giocatore è vicino compare "E  Raccogli: ..." in basso; premendo E (o A sul pad) l'oggetto
 // finisce nello zaino e da lì si equipaggia dall'inventario (Tab).
-// Aspetto: se l'oggetto ha un modello 3D (fatto da Nazar) si vede quello, altrimenti un segnaposto che ruota.
+// Aspetto: se l'oggetto ha un modello 3D (fatto da Nazar) si vede quello, altrimenti la sua forma provvisoria
+// (FormeOggetti), che galleggia e ruota con una piccola luce.
 // Come montarlo: su un oggetto vuoto nella scena, poi trascinare nel campo "Oggetto" il file dell'oggetto
 // (per esempio Assets/Dati/Oggetti/Guerriero/Armi/...). Va bene anche dentro un baule o su un altare.
 // Co-op: l'oggetto lo prende il primo che lo raccoglie (lo decide l'host) e sparisce per tutti.
@@ -41,6 +42,9 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         RegistroCondivisi.Togli(this, NumeroRete);
     }
 
+    // Per gli strumenti di prova: sceglie l'oggetto subito dopo AddComponent, prima che parta Start.
+    public void Imposta(DatiOggetto nuovo) => oggetto = nuovo;
+
     void Start()
     {
         giocatore = FindFirstObjectByType<GiocatoreControllo>();
@@ -51,21 +55,26 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
     {
         aspetto = new GameObject("Aspetto").transform;
         aspetto.SetParent(transform, false);
-        if (oggetto != null && oggetto.modello != null)
+        if (oggetto == null) return;
+
+        // Forma provvisoria (o modello di Nazar), messa dritta: armi e bastoni con la punta in alto.
+        Transform forma = FormeOggetti.Crea(oggetto, aspetto);
+        if (oggetto.modello == null)
         {
-            Instantiate(oggetto.modello, aspetto, false);
-            return;
+            if (oggetto is DatiArma || oggetto is DatiBastone) forma.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            if (oggetto is DatiAmuleto) forma.localScale = Vector3.one * 3f;
+            else if (oggetto is DatiLibro || oggetto is DatiIncantesimo) forma.localScale = Vector3.one * 1.6f;
+        }
+        // Centrata sopra il punto dell'oggetto, con la base a 25 cm da terra.
+        var parti = forma.GetComponentsInChildren<Renderer>();
+        if (parti.Length > 0)
+        {
+            Bounds b = parti[0].bounds;
+            foreach (var r in parti) b.Encapsulate(r.bounds);
+            Vector3 sposta = transform.position + Vector3.up * 0.25f - new Vector3(b.center.x, b.min.y, b.center.z);
+            forma.position += sposta;
         }
 
-        // segnaposto: un piccolo blocco caldo che ruota, con una luce
-        var blocco = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        blocco.name = "Segnaposto";
-        Destroy(blocco.GetComponent<Collider>());
-        blocco.transform.SetParent(aspetto, false);
-        blocco.transform.localPosition = Vector3.up * 0.5f;
-        blocco.transform.localScale = new Vector3(0.25f, 0.5f, 0.08f);
-        var renderer = blocco.GetComponent<Renderer>();
-        renderer.material.color = new Color(0.85f, 0.65f, 0.35f);
         var luce = new GameObject("Luce").AddComponent<Light>();
         luce.transform.SetParent(aspetto, false);
         luce.transform.localPosition = Vector3.up * 0.7f;
