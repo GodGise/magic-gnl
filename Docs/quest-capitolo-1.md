@@ -36,12 +36,11 @@ Bozza approvata da Giuseppe il 10 ottobre 2026 (sera). I dialoghi veri sono da s
 ## Guerriero e Ladro (Giuseppe, 10 ottobre)
 
 - Nessuna variante speciale: la quest 2 è la stessa, ma **con la propria arma**: il Guerriero con la lama, il Ladro con l'arco (bersagli di tiro accanto al manichino).
-- Per coerenza con la storia: nel tutorial si usano armi semplici da villaggio (una lama vecchia, un arco da caccia, per lo Stregone il bastone da studio). Gli orchi le rubano, e l'arma vera della classe si trova nella fuga dalla gattabuia. L'ascia da legna resta come arma di casa nelle prime scene (legna di Maren) e nello scontro con l'orco enorme: **da decidere**.
+- Per coerenza con la storia: nel tutorial si usano armi semplici da villaggio (una lama vecchia, un arco da caccia, per lo Stregone il bastone da studio). Gli orchi le rubano, e l'arma vera della classe si trova nella fuga dalla gattabuia. **Decisione di Giuseppe (10 ottobre):** durante la razzia l'eroe prende "un'arma a caso dal villaggio, magari un'ascia" (come nel racconto: corre fuori con l'ascia da legna). Vale per tutte le classi, anche per lo Stregone, ed è l'arma dello scontro con l'orco enorme.
 - I nomi dei personaggi sono approvati.
 
 ## Da decidere
 
-- L'arma dell'eroe nella razzia e contro l'orco enorme: l'arma semplice della sua classe o l'ascia da legna?
-- Tono dei dialoghi di giorno: asciutto e cupo, o caldo e un po' scherzoso per far pesare di più la perdita?
-- La quest 5 resta o si taglia per risparmiare lavoro?
+- Tono dei dialoghi di giorno: per ora scrivo caldo e un po' scherzoso in famiglia, cupo nel resto (si cambia in un attimo).
+- La quest 5 per ora resta (si taglia per prima se serve).
 - Budget: circa 80-100 righe di dialogo in tutto, 10-15 per quest.
