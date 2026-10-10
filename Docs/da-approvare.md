@@ -32,6 +32,9 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 11 ottobre: danno dei nemici in co-op più basso (solo informazione)
+Lorenzo ha deciso che il danno che ricevono i giocatori cresce meno: **x1 da soli, x1,25 in 2, x1,5 in 3** (prima x1,5 e x2). Vita e frequenza degli attacchi restano come prima. Ramo `lorenzoc/danno-coop`: cambiati solo i valori di partenza in `DifficoltaCoop.cs` e la riga in `Docs/rete-coop.md`.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
