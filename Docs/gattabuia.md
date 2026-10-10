@@ -41,31 +41,60 @@ La sbarra della cella è sempre disponibile. Lungo i corridoi e nella zona dei m
 
 Sono armi di tutte le classi (anche lo Stregone le usa, al posto del bastone). All'armeria si lasciano: da lì in poi si usa l'arma della propria classe. Numeri esatti in `Docs/armi-improvvisate.md` (ramo `lorenzoc/armi-improvvisate`).
 
-## Il Carceriere (proposta del Claude di Lorenzo, da confermare)
+## Il Carceriere
 
-Obiettivo di Lorenzo: impegnativo ma fattibile con l'arma base della classe, presa da poco all'armeria. Un orco grosso e lento, con una mazza ferrata e una catena con un gancio. Tutte le mosse sono **lente da caricare e ben visibili**: si vince imparando quando schivare, non con l'equipaggiamento.
+Il primo miniboss che si può battere. Deciso da Lorenzo l'11 ottobre (fase 1 e vita); fase 2, attacchi singoli e bottino sono proposte del suo Claude, da confermare.
 
-Numeri da giocatore solo (in co-op li moltiplica `DifficoltaCoop`, come per tutti i boss). Riferimento: il giocatore ha 100 di vita, la spada di partenza fa 25 di danno.
+**Aspetto:** un orco molto grosso e grasso, avvolto da catene strette come una camicia di forza. Arma: un grosso **tubo di metallo insanguinato** (ci ha già ucciso altri intrusi). In fase 2 spezza le catene: tubo in una mano, un pezzo di catena nell'altra, usato come frusta.
 
-| Cosa | Proposta | Perché |
+**Come combatte:** alterna le sue **combo** ad **attacchi singoli**. Tutte le mosse si caricano in modo visibile. Come tutti i boss: niente blocchi né stordimenti, rallentamenti dimezzati.
+
+### Fase 1 (da 620 a 300 di vita)
+
+| Mossa | Cosa fa | Danno |
 | --- | --- | --- |
-| Vita | 600 | Circa 24 colpi di spada: uno scontro di 3-4 minuti |
-| Danno di un colpo | 22-35 a seconda della mossa | 3-4 colpi presi e si muore: si può sbagliare qualche volta |
-| Velocità | Più lento del giocatore a piedi | Si può prendere fiato e ricaricare la resistenza |
-| Effetti | Come i boss: niente blocchi né stordimenti, rallentamenti dimezzati | Regole già nel codice |
+| Combo 1 | Mazzata dall'alto, breve recupero, poi due spazzate | 36 + 24 + 24 (84 se prendi tutto) |
+| Combo 2 | Tre spazzate rapide, poi **piroetta**: rotea 2 s su se stesso, colpisce ogni 0,6 s chi tocca, intanto si muove il 30% più lento | 24 × 3, poi 17 × 3 (123 se prendi tutto) |
+| Singolo: colpo di tubo (proposta) | Un colpo secco in avanti, carica corta | 26 |
+| Singolo: panciata (proposta) | Si butta avanti con il ventre e spinge via | 18, spinta di 3 m |
 
-**Mosse (fase 1, da 100% a 50% della vita):**
-1. **Mazzata:** un colpo dall'alto, 28 di danno. Carica lunga (0,8 s). Si para o si schiva.
-2. **Due colpi larghi:** due spazzate di fila, 22 di danno ciascuna. Chi para la prima deve avere resistenza anche per la seconda.
-3. **Catena con gancio:** lancia la catena in linea retta (8 m). Se prende, **tira il giocatore davanti a sé** e parte subito una Mazzata. Non si para: si schiva di lato.
+### Fase 2 (sotto 300 di vita)
 
-**Fase 2 (sotto il 50%):** si strappa la catena dal muro con un urlo (2 s in cui è scoperto, il momento per colpire forte), poi:
-4. **Schianto:** salta e batte la mazza a terra, 35 di danno in un cerchio di 3 m. Carica di 1 s, si scappa fuori dal cerchio.
-5. Le mosse 1-3 diventano un po' più veloci (tempo fra un attacco e l'altro da 3 s a 2,2 s).
+**Si libera:** si arrabbia e spezza le catene, animazione di **3 s** in cui **si può colpire**.
 
-**Bottino (proposta):**
-- **Chiave del portone:** serve per aprire il portone in cima alla scalinata (zona 8). Così il boss non si può saltare.
-- **Un oggetto per ogni giocatore:** per esempio un amuleto in comune fra le classi ("Anello di chiavi del carceriere"). Effetto da decidere insieme, senza esagerare: siamo all'inizio del gioco.
+| Mossa (proposte) | Cosa fa | Danno |
+| --- | --- | --- |
+| Combo 1: frusta e tubo | Frustata di catena in avanti (arriva a 5 m), passo avanti e mazzata dall'alto, poi una spazzata | 20 + 38 + 24 (82) |
+| Combo 2: turbine di catene | Piroetta con la catena tesa (raggio 4 m, più largo della fase 1) per 2,4 s, colpisce ogni 0,6 s; finisce con uno schianto del tubo a terra (cerchio di 3 m) | 15 × 4, poi 32 (92) |
+| Singolo: frustata lunga | Frustata da lontano (6 m): punisce chi resta a distanza | 18 |
+| Singolo: catena che afferra | Lancia la catena in linea (8 m): se prende, ti tira davanti a sé e segue un colpo di tubo. Non si para, si schiva di lato | 10 + 26 |
+
+### Numeri per numero di giocatori
+
+Calcolati con le regole di `DifficoltaCoop` (Giuseppe): boss vita ×2,5 con 2 giocatori e ×4 con 3; danno ×1,5 e ×2; attacchi più frequenti ×1,25 e ×1,5. Il danno è prima dell'armatura del giocatore (vita del giocatore: 100).
+
+| | 1 giocatore | 2 giocatori | 3 giocatori |
+| --- | --- | --- | --- |
+| Vita totale | 620 | 1550 | 2480 |
+| Vita per giocatore | 620 | 775 | 827 |
+| Fase 2 da (48% della vita) | 300 | 750 | 1200 |
+| Mazzata (fase 1) | 36 | 54 | 72 |
+| Spazzata | 24 | 36 | 48 |
+| Colpo della piroetta (fase 1) | 17 | 25,5 | 34 |
+| Combo 1 fase 1, tutta presa | 84 | 126 | 168 |
+| Combo 2 fase 1, tutta presa | 123 | 184,5 | 246 |
+| Mazzata (fase 2) | 38 | 57 | 76 |
+| Schianto (fase 2) | 32 | 48 | 64 |
+| Combo 1 fase 2, tutta presa | 82 | 123 | 164 |
+| Combo 2 fase 2, tutta presa | 92 | 138 | 184 |
+| Tempo fra un attacco e l'altro (se 3 s da soli) | 3 s | 2,4 s | 2 s |
+
+Nota per il codice: la fase 2 parte a una **percentuale** della vita (300 su 620, cioè circa il 48%), così vale anche in co-op.
+
+### Bottino (proposta)
+
+- **Chiave del portone:** apre il portone in cima alla scalinata (zona 8). Il boss non si può saltare.
+- **Catena spezzata del carceriere:** amuleto in comune fra le classi, uno per ogni giocatore. **+10% di vita massima** e **+15% di ricarica della resistenza**. Modesto, perché siamo all'inizio del gioco, ma aiuta tutte e tre le classi.
 
 ## I parassiti delle grotte (proposta, da confermare)
 
@@ -83,7 +112,7 @@ Pochi danni ciascuno ma tanti insieme: insegnano a usare l'aggancio e a non fars
 
 ## Da decidere
 
-1. **Il Carceriere:** confermare o cambiare numeri, mosse e bottino qui sopra.
+1. **Il Carceriere:** confermare fase 2, attacchi singoli e bottino; decidere se la piroetta della fase 1 colpisce 3 o 4 volte (vedi sopra).
 2. **I parassiti:** confermare i numeri e decidere se sono legati al bosco morto fuori (lo stesso male che uccide le piante).
 
 ## Cosa serve fare
