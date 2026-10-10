@@ -30,10 +30,9 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(AudioSource))]
 public class MenuPrincipale : MonoBehaviour
 {
-    [Header("Testi")]
-    [SerializeField] string titolo = "magic-GNL";
-    [Tooltip("Mostra la scritta \"nome provvisorio\" sotto il titolo, finché il nome del gioco non è deciso.")]
-    [SerializeField] bool nomeProvvisorio = true;
+    // Nome del gioco, deciso il 10 ottobre 2026. Sullo schermo va su due righe: "Sun of the" piccolo sopra,
+    // "Black Lake" grande sotto (tutto su una riga non entrerebbe con le lettere spaziate).
+    const string NomeSopra = "Sun of the", NomeSotto = "Black Lake";
 
     [Header("Partita")]
     [SerializeField] string scenaIniziale = "VillaggioLagoNero";
@@ -603,10 +602,10 @@ public class MenuPrincipale : MonoBehaviour
         if (schermata != Schermata.Crediti)
         {
             GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
-            GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
+            var sopra = new GUIStyle(GraficaMenu.Titolo) { fontSize = 40 };
+            GraficaMenu.Scritta(new Rect(0, altoTitolo - 6f, Larghezza, 46), GraficaMenu.Spaziato(NomeSopra.ToUpperInvariant()), sopra, GraficaMenu.Bronzo, 1f);
+            GraficaMenu.Scritta(new Rect(0, altoTitolo + 22f, Larghezza, 140), GraficaMenu.Spaziato(NomeSotto.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
             GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
-            if (nomeProvvisorio)
-                GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
         }
 
         switch (schermata)

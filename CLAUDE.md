@@ -5,7 +5,7 @@ Punto di partenza di ogni sessione di Claude. Va aggiornato quando si prende una
 Comportamento, flusso con Git, regole di Unity e convenzioni: `Docs/guida-claude.md`. Se le due fonti non coincidono, vale questo file.
 
 ## Il gioco
-Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atmosfera alla Signore degli Anelli (nomi, luoghi e personaggi inventati da noi). Gli orchi razziano di notte Villaggio Lago Nero in cerca di una reliquia; il protagonista perde la famiglia, scappa dalla tana degli orchi e cerca il figlio, fino alla scelta fra recuperare la reliquia o vendicarsi del druido. Single player e co-op, uscita su Steam in Accesso Anticipato. Storia e note di design: `Docs/storia.md`.
+Dark fantasy open world per PC, **Sun of the Black Lake** (nome deciso il 10 ottobre 2026; "magic-GNL" resta il nome della repository), atmosfera alla Signore degli Anelli (nomi, luoghi e personaggi inventati da noi). Gli orchi razziano di notte Villaggio Lago Nero in cerca di una reliquia; il protagonista perde la famiglia, scappa dalla tana degli orchi e cerca il figlio, fino alla scelta fra recuperare la reliquia o vendicarsi del druido. Single player e co-op, uscita su Steam in Accesso Anticipato. Storia e note di design: `Docs/storia.md`.
 
 ## Decisioni prese
 - Combattimento d'azione ispirato a Elden Ring ma accessibile. Tre mosse: **parata, schivata, attacco**. Niente d20. Molte scelte per il giocatore (build, approccio, storia).
@@ -28,7 +28,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 **Unity 6.3 LTS, versione 6000.3.25f1 (C#)**, uguale per tutti. Supporto fino a dicembre 2027: prima del lancio va pianificato il passaggio a un LTS più nuovo. Serializzazione asset "Force Text", controllo versione "Visible Meta Files".
 
 ## Decisioni ancora aperte
-- Nome del gioco. Nome del protagonista (o se lo sceglie il giocatore). Se serve una terza persona in aiuto (profilo più utile: un programmatore, poi suoni e musica).
+- Nome del protagonista (o se lo sceglie il giocatore). Se serve una terza persona in aiuto (profilo più utile: un programmatore, poi suoni e musica).
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.
