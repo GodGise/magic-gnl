@@ -81,6 +81,12 @@ Ordine proposto (stato all'8 ottobre):
 - **Esecuzioni furtive:** chi vede un'esecuzione entro 8 m va in allerta per 15 s (non è ignaro).
 - Rete: la classe di ogni giocatore e lo stato "a terra / spettatore" viaggiano con `GiocatoreRete`; "gruppo sconfitto" lo manda l'host con `MondoRete.InviaGruppoSconfitto`.
 
+## Personaggi e nome in co-op (decisi da Giuseppe il 10 ottobre)
+
+- Ogni giocatore ha i suoi 5 slot sul proprio PC (`Salvataggio.cs`). Prima di ospitare o entrare sceglie (o crea) il personaggio: slot, nome, classe.
+- Il nome è una `NetworkVariable<FixedString64Bytes>` scritta dal proprietario in `GiocatoreRete`; sopra la testa si vede il nome, altrimenti "Giocatore N".
+- Chi entra in una partita usa classe e nome del proprio personaggio. Il salvataggio del mondo (chi ospita) è ancora da fare.
+
 ## Fonti
 
 - Netcode for GameObjects, manuale: https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@2.8/manual/index.html

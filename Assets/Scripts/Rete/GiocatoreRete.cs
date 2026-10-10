@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -29,6 +30,8 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     readonly NetworkVariable<float> furtivita = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     // La classe del giocatore (Guerriero, Ladro, Stregone).
     readonly NetworkVariable<byte> classe = new NetworkVariable<byte>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    // Il nome del personaggio scelto nel menu (vedi Salvataggio): lo scrive il proprietario. Vuoto = "Giocatore 1, 2, 3".
+    readonly NetworkVariable<FixedString64Bytes> nome = new NetworkVariable<FixedString64Bytes>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     // Numero del giocatore (1, 2, 3): lo sceglie l'host quando lo crea.
     readonly NetworkVariable<byte> numero = new NetworkVariable<byte>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -76,8 +79,10 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     public override void OnNetworkSpawn()
     {
         if (IsServer) numero.Value = numeroIniziale;
+        nome.OnValueChanged += NomeCambiato;
         if (IsOwner)
         {
+            nome.Value = new FixedString64Bytes(Salvataggio.PulisciNome(SceltaPartita.Nome));
             if (TrovaLocale() != null)
             {
                 // Chi non ospita parte un po' di lato rispetto all'host.
@@ -105,6 +110,7 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
 
     public override void OnNetworkDespawn()
     {
+        nome.OnValueChanged -= NomeCambiato;
         Altri.Remove(this);
         ObiettiviNemici.Togli(this);
         if (figura != null) Destroy(figura);
@@ -151,9 +157,14 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
         base.OnDestroy();
     }
 
+    void NomeCambiato(FixedString64Bytes prima, FixedString64Bytes dopo) => AggiornaEtichetta();
+
+    // Il nome del personaggio; se non ne ha (scene di prova) "Giocatore 1, 2, 3".
     void AggiornaEtichetta()
     {
-        if (etichetta != null) etichetta.text = Lingua.T("rete.giocatore") + " " + Numero;
+        if (etichetta == null) return;
+        string scelto = nome.Value.ToString();
+        etichetta.text = string.IsNullOrEmpty(scelto) ? Lingua.T("rete.giocatore") + " " + Numero : scelto;
     }
 
     // ---------- ogni fotogramma ----------
