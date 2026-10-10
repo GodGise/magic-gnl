@@ -84,8 +84,10 @@ public class InventarioGioco : MonoBehaviour
     static bool Ladro => SceltaPartita.Classe == ClasseGiocatore.Ladro;
     // Lo Stregone ha il libro nella seconda casella.
     static bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
-    static string ChiaveCasella(int i) => i == 0 && Stregone ? "inv.bastone" : i == 1 && Ladro ? "inv.distanza"
+    // Prima casella dello Stregone: "Bastone", oppure "Arma" se al posto del bastone tiene un'arma improvvisata.
+    string ChiaveCasella(int i) => i == 0 && Stregone ? (StregoneConArma ? "inv.arma" : "inv.bastone") : i == 1 && Ladro ? "inv.distanza"
         : i == 1 && Stregone ? "inv.libro" : i >= 4 ? "inv.incantesimi" : chiaviCaselle[i];
+    bool StregoneConArma => equipaggiamento != null && equipaggiamento.Bastone == null && equipaggiamento.Arma != null;
     int CaselleIncantesimi => Stregone && equipaggiamento != null ? equipaggiamento.NumeroCaselle : 0;
     static string ChiaveScheda(int i) => i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
 
