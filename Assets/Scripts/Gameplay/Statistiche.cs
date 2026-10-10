@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Statistiche di combattimento di un personaggio o di un nemico: armatura, bonus al danno e colpi critici.
+// Statistiche di combattimento di un personaggio o di un nemico: armatura, bonus al danno e colpi critici
+// (e, per lo Stregone, mana massimo e ricarica del mana; il resto della magia è in ModificatoriMagia).
 // A cosa serve: ogni colpo passa da CalcoloDanno, che parte dal danno dell'arma e lo cambia in base
 // alle statistiche di chi colpisce (bonus, critico) e di chi viene colpito (armatura).
 // I valori scritti qui sono quelli "di base". Armi, amuleti, armature e livelli in futuro
@@ -27,6 +28,18 @@ public class Statistiche : MonoBehaviour
     [SerializeField] float vitaMassimaPercento = 0f;
     [Tooltip("Furtività, in percentuale: i nemici vedono il giocatore da più vicino (30 = vista ridotta del 30%). Di base 0.")]
     [SerializeField] float furtivita = 0f;
+    [Tooltip("Resistenza massima in più o in meno, in percentuale (-10 = il 10% in meno). Di base 0. Vale per il giocatore.")]
+    [SerializeField] float resistenzaMassimaPercento = 0f;
+
+    [Header("Magia (Stregone): si sommano ai valori di Giocatore Controllo")]
+    [Tooltip("Mana massimo in più, in punti (20 = +20). Di base 0: il mana di partenza è in Giocatore Controllo.")]
+    [SerializeField] float manaMassimo = 0f;
+    [Tooltip("Mana massimo in più o in meno, in percentuale (-10 = il 10% in meno). Di base 0.")]
+    [SerializeField] float manaMassimoPercento = 0f;
+    [Tooltip("Velocità di ricarica del mana, in percentuale (15 = si ricarica il 15% più in fretta). Di base 0.")]
+    [SerializeField] float recuperoMana = 0f;
+    [Tooltip("Vita recuperata per ogni nemico ucciso, in punti. Di base 0 (la danno certi amuleti).")]
+    [SerializeField] float vitaPerUccisione = 0f;
 
     readonly List<Modificatore> modificatori = new List<Modificatore>();
 
@@ -48,6 +61,11 @@ public class Statistiche : MonoBehaviour
     public float VitaMassimaPercento { get { float v = vitaMassimaPercento; foreach (var m in modificatori) v += m.vitaMassimaPercento; return Mathf.Max(-90f, v); } }
     public float VelocitaAttacco { get { float v = velocitaAttacco; foreach (var m in modificatori) v += m.velocitaAttacco; return Mathf.Max(-90f, v); } }
     public float VelocitaParata { get { float v = velocitaParata; foreach (var m in modificatori) v += m.velocitaParata; return Mathf.Max(-90f, v); } }
+    public float ResistenzaMassimaPercento { get { float v = resistenzaMassimaPercento; foreach (var m in modificatori) v += m.resistenzaMassimaPercento; return Mathf.Max(-90f, v); } }
+    public float ManaMassimo { get { float v = manaMassimo; foreach (var m in modificatori) v += m.manaMassimo; return v; } }
+    public float ManaMassimoPercento { get { float v = manaMassimoPercento; foreach (var m in modificatori) v += m.manaMassimoPercento; return Mathf.Max(-90f, v); } }
+    public float RecuperoMana { get { float v = recuperoMana; foreach (var m in modificatori) v += m.recuperoMana; return Mathf.Max(-90f, v); } }
+    public float VitaPerUccisione { get { float v = vitaPerUccisione; foreach (var m in modificatori) v += m.vitaPerUccisione; return Mathf.Max(0f, v); } }
 
     // Un pezzo di equipaggiamento (o un livello, una pozione...) che cambia le statistiche finché è attivo.
     [System.Serializable]
@@ -63,6 +81,11 @@ public class Statistiche : MonoBehaviour
         public float velocitaAttacco;          // punti percentuali: -7,5 = attacchi il 7,5% più lenti
         public float vitaMassimaPercento;      // punti percentuali: -15 = vita massima il 15% in meno
         public float furtivita;                // punti percentuali: 30 = i nemici ti vedono a 30% di distanza in meno
+        public float resistenzaMassimaPercento; // punti percentuali: -10 = resistenza massima il 10% in meno
+        public float manaMassimo;              // punti di mana massimo in più (Stregone)
+        public float manaMassimoPercento;      // punti percentuali: -10 = mana massimo il 10% in meno
+        public float recuperoMana;             // punti percentuali: 15 = il mana si ricarica il 15% più in fretta
+        public float vitaPerUccisione;         // punti di vita recuperati per ogni nemico ucciso
 
         // Somma di due modificatori (per esempio il bonus e il malus di un amuleto).
         public static Modificatore Somma(string fonte, Modificatore a, Modificatore b) => new Modificatore
@@ -77,7 +100,41 @@ public class Statistiche : MonoBehaviour
             velocitaAttacco = a.velocitaAttacco + b.velocitaAttacco,
             vitaMassimaPercento = a.vitaMassimaPercento + b.vitaMassimaPercento,
             furtivita = a.furtivita + b.furtivita,
+            resistenzaMassimaPercento = a.resistenzaMassimaPercento + b.resistenzaMassimaPercento,
+            manaMassimo = a.manaMassimo + b.manaMassimo,
+            manaMassimoPercento = a.manaMassimoPercento + b.manaMassimoPercento,
+            recuperoMana = a.recuperoMana + b.recuperoMana,
+            vitaPerUccisione = a.vitaPerUccisione + b.vitaPerUccisione,
         };
+
+        // Le righe "pro e contro" per l'inventario (vedi VoceEffetto): solo i valori diversi da zero.
+        public void Descrivi(System.Collections.Generic.List<VoceEffetto> voci)
+        {
+            Voce(voci, "mod.armatura", armatura, true, "");
+            Voce(voci, "mod.armatura_percento", armaturaPercento, true);
+            Voce(voci, "mod.danno_tutto", bonusDanno, true);
+            Voce(voci, "mod.critico", probabilitaCritico, true);
+            Voce(voci, "mod.velocita_parata", velocitaParata, true);
+            Voce(voci, "mod.velocita_attacco", velocitaAttacco, true);
+            Voce(voci, "mod.vita_massima", vitaMassimaPercento, true);
+            Voce(voci, "mod.furtivita", furtivita, true);
+            Voce(voci, "mod.resistenza_massima", resistenzaMassimaPercento, true);
+            Voce(voci, "mod.mana_massimo", manaMassimo, true, "");
+            Voce(voci, "mod.mana_massimo_percento", manaMassimoPercento, true);
+            Voce(voci, "mod.recupero_mana", recuperoMana, true);
+            Voce(voci, "mod.vita_per_uccisione", vitaPerUccisione, true, "");
+        }
+
+        static void Voce(System.Collections.Generic.List<VoceEffetto> voci, string chiave, float valore, bool piuAltoMeglio, string unita = "%")
+        {
+            if (Mathf.Abs(valore) < 0.001f) return;
+            voci.Add(new VoceEffetto
+            {
+                chiave = chiave,
+                testoValore = (valore > 0f ? "+" : "") + ModificatoriMagia.Formatta(valore) + unita,
+                positivo = (valore > 0f) == piuAltoMeglio,
+            });
+        }
     }
 
     public void AggiungiModificatore(Modificatore m) { if (m != null && !modificatori.Contains(m)) modificatori.Add(m); }

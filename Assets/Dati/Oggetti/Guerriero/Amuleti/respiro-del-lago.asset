@@ -31,13 +31,13 @@ MonoBehaviour:
     vitaMassimaPercento: 0
   malus:
     fonte: 
-    armatura: 0
-    armaturaPercento: -20
+    armatura: -8
+    armaturaPercento: 0
     bonusDanno: 0
     probabilitaCritico: 0
     moltiplicatoreCritico: 0
     velocitaParata: 0
     velocitaAttacco: 0
-    vitaMassimaPercento: 0
+    vitaMassimaPercento: -7
   effetto: 2
   valore: 30

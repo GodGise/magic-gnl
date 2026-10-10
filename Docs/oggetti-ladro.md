@@ -31,8 +31,8 @@ Riferimenti: orco sgherro con vita 160, armatura 25 e vista 18 m. "Colpi all'orc
 | Pugnale da scuoiare | Pugnale | 16 | 12 | 0,15 / 0,22 | 1,4 m / 90° | +10% | — | ×2,5 | 13 / 5 |
 | Pugnale ricurvo degli orchi | Pugnale | 22 | 14 | 0,18 / 0,27 | 1,5 m / 100° | +5% | — | ×2 | 10 / 5 |
 | Stiletto del tagliagole | Stiletto | 18 | 13 | 0,17 / 0,25 | 1,4 m / 60° | +15%, crit +0,25 | 40% | ×3 | 11 / 4 |
-| Stiletto d'ombra | Stiletto | 22 | 14 | 0,16 / 0,24 | 1,4 m / 60° | +20%, crit +0,25 | 30% | ×3 | 9 / 3 |
-| Pugnali gemelli | Doppi pugnali (2 mani) | 12 | 10 | 0,10 / 0,18 | 1,4 m / 120° | +10% | — | ×2 | 17 / 9 (ma colpi rapidissimi) |
+| Stiletto d'ombra | Stiletto | 19 | 14 | 0,16 / 0,24 | 1,4 m / 60° | +15%, crit +0,25 | 30% | ×3 | 9 / 3 |
+| Pugnali gemelli | Doppi pugnali (2 mani) | 11 | 10 | 0,10 / 0,18 | 1,4 m / 120° | +10% | — | ×2 | 17 / 9 (ma colpi rapidissimi) |
 
 Parata senza scudo: pugnale da scuoiare 15% (costo 20), ricurvo 20% (25), tagliagole 10% (26), stiletto d'ombra 15% (28), gemelli 10% (30). Il Ladro schiva, non para.
 
@@ -60,10 +60,28 @@ Parata senza scudo: pugnale da scuoiare 15% (costo 20), ricurvo 20% (25), taglia
 | --- | --- | --- | --- |
 | Piuma di civetta | Magico | +15% furtività | -7% vita massima |
 | Dente di vipera | Magico | +12% critico | attacchi il 10% più lenti |
-| Laccio del borsaiolo | Magico | attacchi il 10% più veloci | -5% critico, -5% vita massima |
+| Laccio del borsaiolo | Magico | attacchi il 16% più veloci | -5% critico, -5% vita massima |
 | Ultimo respiro | Arcano | tasto Q: svanisce nell'ombra, invisibile ai nemici per 2,5 s (ricarica 6 minuti) | -6% danno |
-| Fiato del predatore | Arcano | resistenza +40% più veloce | -20% vita massima |
-| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -5% critico, -7% vita massima |
+| Fiato del predatore | Arcano | resistenza +40% più veloce | -17% vita massima |
+| Goccia di sangue nero | Arcano | l'8% del danno torna come vita | -10% critico, -10% vita massima |
+
+## Bilanciamento del 9 ottobre (Lorenzo)
+
+Dopo i conti su tutte le combinazioni contro l'orco sgherro (di fronte e alle spalle):
+
+| Oggetto | Prima | Ora | Perché |
+| --- | --- | --- | --- |
+| Stiletto d'ombra | danno 22, critico +20% | danno 19, critico +15% | Era il migliore anche di fronte (4,7 s per l'orco); ora 5,7 s di fronte e 1,9 s alle spalle |
+| Pugnali gemelli | danno 12 | danno 11 + sanguinamento a fine combo (da fare) | Erano i peggiori in tutto, senza un'identità |
+| Laccio del borsaiolo | attacchi +10% | attacchi +16% | Con i suoi malus era peggio di nessun amuleto |
+| Fiato del predatore | -20% vita massima | -17% vita massima | Malus troppo pesante per un bonus che non aggiunge danno |
+| Goccia di sangue nero | malus -5% critico, -7% vita massima | malus -10% critico, -10% vita massima | Sul Guerriero (amuleti in comune) era migliore del suo Sangue antico |
+
+Meccaniche nuove decise (da programmare):
+- **Sanguinamento dei Pugnali gemelli**: completando la combo intera (4 colpi) il nemico sanguina per 4 s, 4 danni al secondo. Serve una combo propria per ogni arma, con le sue animazioni e il suo numero di colpi (oggi tutte le armi hanno la stessa combo da 3 colpi). Da decidere: se una seconda combo rinnova il sanguinamento o lo somma.
+- **Colpi alle spalle**: pieni sui nemici ignari; su un nemico che sta già combattendo il moltiplicatore si dimezza.
+- **Allerta** (vale per tutte le classi): un nemico che ti perde di vista (invisibilità, nebbia, furtività) resta in allerta per 15 s: ti cerca ma non è ignaro, quindi niente esecuzione furtiva e niente bonus da "ignaro". Un nemico colpito da lontano resta in allerta 15 s e va verso il punto da cui è arrivato il colpo.
+- Pugnale da scuoiare: alle spalle ×2,5 resta così (con il critico diventa ×2 per la regola dei moltiplicatori).
 
 ## Per Giuseppe
 

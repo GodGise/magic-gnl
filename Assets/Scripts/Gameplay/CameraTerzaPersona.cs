@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 // A cosa serve: segue il giocatore; si ruota con il mouse o con la levetta destra del pad.
 // Il cursore viene bloccato al centro: Esc lo libera, un clic nella finestra di gioco lo riblocca.
 // Con l'aggancio del bersaglio attivo la camera si gira da sola verso il nemico agganciato
-// e il mouse non la ruota (la rotellina serve a cambiare nemico).
+// e il mouse non la ruota (uno scatto del mouse serve a cambiare nemico, vedi AggancioBersaglio).
 // Collisione: la camera non attraversa muri, strutture e pavimento. Se qualcosa si mette tra il
 // personaggio e la camera, questa si avvicina al personaggio in modo graduale (parte un po' prima
 // del muro); quando lo spazio torna libero si allontana piano piano fino alla distanza normale.

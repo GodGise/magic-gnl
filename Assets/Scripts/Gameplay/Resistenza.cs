@@ -12,7 +12,16 @@ public class Resistenza : MonoBehaviour
     [SerializeField] float ritardoRecupero = 0.8f;
 
     public float Attuale { get; private set; }
-    public float Massimo => massimo;
+    // Massimo vero: quello dell'Inspector cambiato dalle Statistiche (amuleti: 0,9 = il 10% in meno).
+    public float Massimo => massimo * MoltiplicatoreMassimo;
+
+    // Resistenza massima in più o in meno (1 = normale, 0,9 = -10%): la cambiano gli amuleti (vedi Statistiche).
+    public float MoltiplicatoreMassimo
+    {
+        get => moltiplicatoreMassimo;
+        set { moltiplicatoreMassimo = Mathf.Max(0.1f, value); Attuale = Mathf.Min(Attuale, Massimo); }
+    }
+    float moltiplicatoreMassimo = 1f;
 
     // Come in Elden Ring: si può agire finché la barra non è vuota, anche se l'azione la manda a zero.
     public bool HaResistenza => Attuale > 0.01f;
@@ -33,7 +42,7 @@ public class Resistenza : MonoBehaviour
     void Update()
     {
         if (InPausaRecupero || Time.time < prossimoRecupero) return;
-        Attuale = Mathf.Min(massimo, Attuale + recuperoAlSecondo * MoltiplicatoreRecupero * Time.deltaTime);
+        Attuale = Mathf.Min(Massimo, Attuale + recuperoAlSecondo * MoltiplicatoreRecupero * Time.deltaTime);
     }
 
     public void Spendi(float costo)
@@ -44,6 +53,6 @@ public class Resistenza : MonoBehaviour
 
     public void Ripristina()
     {
-        Attuale = massimo;
+        Attuale = Massimo;
     }
 }

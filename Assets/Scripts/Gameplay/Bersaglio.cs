@@ -14,6 +14,8 @@ using UnityEngine;
 // Più giocatori (co-op): attacca il giocatore più vicino (vedi ObiettiviNemici), oppure quello scelto da InseguimentoNemico.
 // In rete il nemico "pensa" solo sul PC di chi ospita: lì si decidono attacchi, vita e morte, e MondoRete li manda
 // agli altri. Sugli altri PC è una figura che segue le posizioni ricevute; i colpi dei loro giocatori vanno all'host.
+// Boss e miniboss (casella "Boss"): non subiscono l'esecuzione furtiva, né blocchi, stordimenti e spinte degli
+// incantesimi; i rallentamenti su di loro valgono la metà (vedi EffettiNemico). Stordito, non attacca.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
 // Il menu "magic-gnl > Crea scena di prova" ne mette uno già pronto.
 public class Bersaglio : MonoBehaviour
@@ -23,6 +25,8 @@ public class Bersaglio : MonoBehaviour
     [SerializeField] bool rinasce = true;
     [SerializeField] float secondiPerRinascere = 2f;
     [SerializeField] float spintaQuandoColpito = 0.3f;
+    [Tooltip("Boss o miniboss: niente esecuzione furtiva, niente blocchi, stordimenti e spinte; rallentamenti a metà.")]
+    [SerializeField] bool boss = false;
 
     [Header("Attacco di prova")]
     public bool attaccaIlGiocatore = true;
@@ -49,6 +53,7 @@ public class Bersaglio : MonoBehaviour
     public float DannoAttacco => dannoAttacco;
 
     public bool Morto => morto;
+    public bool Boss => boss;
     public float VitaMassima => vitaMassima;
     // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
     public event System.Action Colpito;
@@ -114,6 +119,9 @@ public class Bersaglio : MonoBehaviour
         giocatore = ObiettiviNemici.Valido(Obiettivo) ? Obiettivo : ObiettiviNemici.PiuVicino(transform.position);
         if (giocatore == null) return;
         if (Time.time < prossimoAttacco || Time.time < sbilanciatoFino) return;
+        // Stordito da un incantesimo (vedi EffettiNemico): non attacca.
+        var effetti = EffettiNemico.Di(this);
+        if (effetti != null && effetti.Stordito) return;
 
         // Attacca solo se il giocatore è abbastanza vicino da vedere il preavviso.
         if (Vector3.Distance(transform.position, giocatore.Corpo.position) <= portataAttacco * 2f)

@@ -5,7 +5,8 @@ using UnityEngine;
 // A cosa serve: chi ospita (host) è l'unico su cui i nemici pensano. Questo oggetto di rete:
 //   - dall'host manda a tutti, 12 volte al secondo, posizione e stato di ogni nemico e l'ora del giorno;
 //   - dall'host manda gli eventi dei nemici: attacco (preavviso rosso), colpito, sbilanciato, morto, rinato, "!";
-//   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette e le esecuzioni furtive;
+//   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette, le esecuzioni furtive e gli effetti
+//     degli incantesimi (rallentamenti, blocchi, stordimenti, spinte: vedi EffettiNemico);
 //   - fa vedere a tutti le sfere magiche lanciate dagli altri (solo aspetto, il danno lo manda chi lancia);
 //   - porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere (IOggettoCondiviso): chi li usa lo chiede
 //     all'host, l'host li usa e lo dice a tutti; chi entra dopo riceve il loro stato.
@@ -216,6 +217,22 @@ public class MondoRete : NetworkBehaviour
     }
 
     public static void ChiediEsecuzione(Bersaglio b) { if (SonoOspite) Istanza.EsecuzioneRpc(b.NumeroRete); }
+
+    // Effetti degli incantesimi (rallentamento, blocco, stordimento, spinta): li applica l'host, dove il nemico pensa.
+    public static void ChiediEffetto(Bersaglio b, byte tipo, float valore, float durata, Vector3 punto)
+    {
+        if (SonoOspite) Istanza.EffettoRpc(b.NumeroRete, tipo, valore, durata, punto);
+    }
+
+    [Rpc(SendTo.Server)]
+    void EffettoRpc(int numero, byte tipo, float valore, float durata, Vector3 punto)
+    {
+        Bersaglio b = RegistroNemici.Trova(numero);
+        if (b == null || b.Morto) return;
+        var effetti = b.GetComponent<EffettiNemico>();
+        if (effetti == null) effetti = b.gameObject.AddComponent<EffettiNemico>();
+        effetti.ApplicaQui((EffettiNemico.Tipo)tipo, valore, durata, punto);
+    }
     public static void ChiediGiustizia(Bersaglio b, Vector3 daDove) { if (SonoOspite) Istanza.GiustiziaRpc(b.NumeroRete, daDove); }
 
     [Rpc(SendTo.Server)]

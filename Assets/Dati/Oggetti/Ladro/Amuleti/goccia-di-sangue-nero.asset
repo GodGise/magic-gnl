@@ -35,11 +35,11 @@ MonoBehaviour:
     armatura: 0
     armaturaPercento: 0
     bonusDanno: 0
-    probabilitaCritico: -5
+    probabilitaCritico: -10
     moltiplicatoreCritico: 0
     velocitaParata: 0
     velocitaAttacco: 0
-    vitaMassimaPercento: -7
+    vitaMassimaPercento: -10
     furtivita: 0
   effetto: 3
   valore: 8
