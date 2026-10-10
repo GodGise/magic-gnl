@@ -30,10 +30,9 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(AudioSource))]
 public class MenuPrincipale : MonoBehaviour
 {
-    [Header("Testi")]
-    [SerializeField] string titolo = "magic-GNL";
-    [Tooltip("Mostra la scritta \"nome provvisorio\" sotto il titolo, finché il nome del gioco non è deciso.")]
-    [SerializeField] bool nomeProvvisorio = true;
+    // Nome del gioco, deciso il 10 ottobre 2026. Sullo schermo va su due righe: "Sun of the" piccolo sopra,
+    // "Black Lake" grande sotto (tutto su una riga non entrerebbe con le lettere spaziate).
+    const string NomeSopra = "Sun of the", NomeSotto = "Black Lake";
 
     [Header("Partita")]
     [SerializeField] string scenaIniziale = "VillaggioLagoNero";
@@ -398,6 +397,8 @@ public class MenuPrincipale : MonoBehaviour
 
         // durante la transizione verso il menu i comandi non contano: un solo tasto avvia la sequenza
         if (inTransizione) return;
+        // la schermata dei comandi (Opzioni > Comandi) legge da sola i suoi tasti, anche Esc
+        if (MenuComandi.Aperto || MenuComandi.FotogrammaChiusura == Time.frameCount) return;
 
         if (schermata == Schermata.Titolo)
         {
@@ -592,6 +593,7 @@ public class MenuPrincipale : MonoBehaviour
         if (grigio > 0.001f)
             GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0.30f, 0.32f, 0.37f, 0.62f * grigio));
         GraficaMenu.FoglioVirtuale();
+        if (MenuComandi.Aperto) return;   // sopra c'è la schermata dei comandi: il paesaggio resta, il menu no
         elenco.InizioGUI();
         DisegnaBraci();
 
@@ -603,10 +605,10 @@ public class MenuPrincipale : MonoBehaviour
         if (schermata != Schermata.Crediti)
         {
             GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
-            GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
+            var sopra = new GUIStyle(GraficaMenu.Titolo) { fontSize = 40 };
+            GraficaMenu.Scritta(new Rect(0, altoTitolo - 6f, Larghezza, 46), GraficaMenu.Spaziato(NomeSopra.ToUpperInvariant()), sopra, GraficaMenu.Bronzo, 1f);
+            GraficaMenu.Scritta(new Rect(0, altoTitolo + 22f, Larghezza, 140), GraficaMenu.Spaziato(NomeSotto.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
             GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
-            if (nomeProvvisorio)
-                GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
         }
 
         switch (schermata)

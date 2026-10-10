@@ -32,6 +32,7 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         comandoRaccogli = new InputAction("Raccogli", InputActionType.Button);
         comandoRaccogli.AddBinding("<Keyboard>/e");
         comandoRaccogli.AddBinding("<Gamepad>/buttonSouth");
+        Comandi.Collega(comandoRaccogli, Azione.Interagisci, this);   // tasto scelto in Opzioni > Comandi
     }
 
     void OnEnable() => comandoRaccogli.Enable();

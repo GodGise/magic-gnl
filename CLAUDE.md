@@ -5,7 +5,7 @@ Punto di partenza di ogni sessione di Claude. Va aggiornato quando si prende una
 Comportamento, flusso con Git, regole di Unity e convenzioni: `Docs/guida-claude.md`. Se le due fonti non coincidono, vale questo file.
 
 ## Il gioco
-Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atmosfera alla Signore degli Anelli (nomi, luoghi e personaggi inventati da noi). Gli orchi razziano di notte Villaggio Lago Nero in cerca di una reliquia; il protagonista perde la famiglia, scappa dalla tana degli orchi e cerca il figlio, fino alla scelta fra recuperare la reliquia o vendicarsi del druido. Single player e co-op, uscita su Steam in Accesso Anticipato. Storia e note di design: `Docs/storia.md`.
+Dark fantasy open world per PC, **Sun of the Black Lake** (nome deciso il 10 ottobre 2026; "magic-GNL" resta il nome della repository), atmosfera alla Signore degli Anelli (nomi, luoghi e personaggi inventati da noi). Gli orchi razziano di notte Villaggio Lago Nero in cerca di una reliquia; il protagonista perde la famiglia, scappa dalla tana degli orchi e cerca il figlio, fino alla scelta fra recuperare la reliquia o vendicarsi del druido. Single player e co-op, uscita su Steam in Accesso Anticipato. Storia e note di design: `Docs/storia.md`.
 
 ## Decisioni prese
 - Combattimento d'azione ispirato a Elden Ring ma accessibile. Tre mosse: **parata, schivata, attacco**. Niente d20. Molte scelte per il giocatore (build, approccio, storia).
@@ -16,6 +16,8 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 - Caratteri dei menu (gratuiti, licenza SIL OFL, con la licenza accanto in `Assets/Resources/Caratteri/`): **Cinzel** e **IM Fell English** per le lingue latine, **Forum** e **Cormorant Garamond** per il russo, **ZCOOL XiaoWei** per il cinese. Stile dei menu in `Assets/Scripts/Interfaccia/GraficaMenu.cs`; il menu di pausa (`MenuPausa.cs`) si crea da solo in ogni scena di gioco, non va messo nelle scene.
 - Interfaccia in partita (disegno approvato: `Docs/interfaccia.md`): barre di vita, resistenza e mana (`HudGioco.cs`) e inventario con Tab (`InventarioGioco.cs`) si creano da soli come il menu di pausa, non vanno messi nelle scene. F1 mostra il pannello di prova. Gli oggetti stanno nello `Zaino` del giocatore; nel mondo si raccolgono con `OggettoRaccoglibile` (E). Per provare l'inventario: in Play, menu "magic-gnl > Prova: metti tutti gli oggetti nello zaino". Ogni nuovo comando con E deve ignorare il tasto se `InventarioGioco.Aperto` o `MenuPausa.InPausa`.
 - **Oggetti fra classi** (Lorenzo, 9 ottobre): armi, scudi, armature, archi e libri solo della propria classe; gli **amuleti** sono in comune, tranne Ultimo respiro (solo Ladro). Lo controlla `InventarioGioco.cs`. Bilanciamento e regole (esecuzione furtiva, allerta, moltiplicatori): `Docs/oggetti-guerriero.md`, `Docs/oggetti-ladro.md`, `Docs/incantesimi-stregone.md`.
+- **Tasti**: il giocatore li cambia in Opzioni > **Comandi** (tastiera disegnata, `MenuComandi.cs`). Elenco unico in `Comandi.cs`: ogni nuova InputAction di tastiera o mouse va collegata con `Comandi.Collega(azione, Azione.X, this)` (le azioni nuove si aggiungono all'enum `Azione`). Tasti fissi: Esc pausa, 1-6 armi e incantesimi.
+- Inventario: oggetti si trascinano sulle caselle (quello vecchio torna nello zaino); clic su una casella e poi su un oggetto lo sostituisce.
 - Il mondo sono regioni grandi collegate, non una mappa infinita.
 - **Il gioco inizia a Villaggio Lago Nero**, la notte della razzia (il protagonista perde contro l'orco enorme), poi gattabuia sotto terra, poi ritorno al villaggio in rovina. Il villaggio serve in due versioni: notte della razzia e distrutto. Mappa: `Docs/mappe/`. Modelli per Nazar: `Docs/lista-modelli-nazar.txt`.
 - Ciclo giorno e notte: **45 minuti reali di luce** (6-18 del gioco) e **50 di notte** (18-6).
@@ -28,7 +30,7 @@ Dark fantasy open world per PC (nome provvisorio "magic-GNL", da scegliere), atm
 **Unity 6.3 LTS, versione 6000.3.25f1 (C#)**, uguale per tutti. Supporto fino a dicembre 2027: prima del lancio va pianificato il passaggio a un LTS più nuovo. Serializzazione asset "Force Text", controllo versione "Visible Meta Files".
 
 ## Decisioni ancora aperte
-- Nome del gioco. Nome del protagonista (o se lo sceglie il giocatore). Se serve una terza persona in aiuto (profilo più utile: un programmatore, poi suoni e musica).
+- Nome del protagonista (o se lo sceglie il giocatore). Se serve una terza persona in aiuto (profilo più utile: un programmatore, poi suoni e musica).
 
 ## Ruoli e cartelle
 - Giuseppe: team leader, design, coordinamento, rete co-op, Steam.

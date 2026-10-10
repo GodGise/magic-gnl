@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// Inventario in partita (disegno approvato in Docs/interfaccia.md). Tab (o I, o Select sul pad) apre e chiude.
+// Inventario in partita (disegno approvato in Docs/interfaccia.md). Tab (o il tasto scelto in Opzioni > Comandi, o Select sul pad) apre e chiude.
 //   - a sinistra: la sagoma del personaggio con le 4 caselle (Arma, Scudo, Armatura, Amuleto) e le statistiche;
 //   - a destra: lo zaino, una griglia con gli oggetti raccolti;
 //   - sotto lo zaino: il dettaglio dell'oggetto scelto, con il confronto con quello che hai addosso
@@ -12,6 +12,9 @@ using UnityEngine.SceneManagement;
 // Armature, Amuleti. Si cambia scheda con Q e R (LB e RB sul pad) o con un clic sul nome della scheda.
 // Comandi: frecce, WASD o levetta per scegliere; E, Invio o A per equipaggiare (dallo zaino) o togliere
 // (da una casella); Tab, Esc o B per chiudere. Mouse: clic per scegliere, doppio clic per equipaggiare o togliere.
+// Trascinare con il mouse: un oggetto dello zaino su una casella lo equipaggia lì (quello che c'era torna nello
+// zaino); un oggetto di una casella sullo zaino lo toglie; un incantesimo su un'altra casella degli incantesimi
+// li scambia. Sostituire con due clic: clic su una casella (resta accesa), poi clic su un oggetto dello zaino.
 // Equipaggiando un oggetto, quello che c'era nella stessa casella torna nello zaino (con lo spadone a due mani
 // anche lo scudo). Gli oggetti stanno in Zaino ed Equipaggiamento, sul Giocatore.
 // Il gioco non si ferma (in co-op non potrebbe), ma i comandi del personaggio e della camera si spengono.
@@ -62,6 +65,18 @@ public class InventarioGioco : MonoBehaviour
     float ultimoClic;
     int ultimoIndiceClic = -1;
     Vector2 ultimoMouse = new Vector2(-1f, -1f);
+
+    // Trascinamento con il mouse: l'oggetto preso, da dove (casella o zaino) e se il mouse si è già mosso abbastanza.
+    DatiOggetto preso;
+    bool presoDaCasella;
+    int presoIndice;
+    Vector2 puntoPresa;
+    bool trascinando;
+    // Casella "accesa" con un clic: il prossimo clic su un oggetto adatto dello zaino lo mette lì. -1 = nessuna.
+    int casellaAccesa = -1;
+    // Posizioni delle caselle e dello zaino (dall'ultimo disegno), per capire dove si lascia l'oggetto.
+    readonly Rect[] rettCaselle = new Rect[10];
+    Rect rettZaino;
 
     static readonly string[] chiaviCaselle = { "inv.arma", "inv.scudo", "inv.armatura", "inv.amuleto" };
 
@@ -131,6 +146,9 @@ public class InventarioGioco : MonoBehaviour
     void Chiudi(bool riattiva)
     {
         Aperto = false;
+        preso = null;
+        trascinando = false;
+        casellaAccesa = -1;
         FotogrammaChiusura = Time.frameCount;
         if (riattiva) riattivaAlProssimoFotogramma = true;   // così lo stesso tasto non arriva anche alla camera
         else spenti.Clear();
@@ -194,12 +212,7 @@ public class InventarioGioco : MonoBehaviour
     void Equipaggia(DatiOggetto oggetto)
     {
         if (oggetto == null || !zaino.Contiene(oggetto)) return;
-        // Ladro e Stregone non usano scudi; archi e balestre sono solo del Ladro, i libri solo dello Stregone.
-        string negato = oggetto is DatiScudo && Ladro ? "inv.no_scudo_ladro"
-            : oggetto is DatiScudo && Stregone ? "inv.no_scudo_stregone"
-            : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza"
-            : oggetto is DatiLibro && !Stregone ? "inv.no_libro"
-            : ChiaveAltraClasse(oggetto);
+        string negato = Negato(oggetto);
         if (negato != null)
         {
             avviso = Lingua.T(negato);
@@ -222,6 +235,76 @@ public class InventarioGioco : MonoBehaviour
         for (int i = 0; i < 4; i++)
             if (prima[i] != null && prima[i] != OggettoInCasella(i)) zaino.Aggiungi(prima[i]);
         indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
+    }
+
+    // Ladro e Stregone non usano scudi; archi e balestre sono solo del Ladro, i libri solo dello Stregone;
+    // poi la regola degli oggetti delle altre classi. null = si può equipaggiare.
+    static string Negato(DatiOggetto oggetto) =>
+        oggetto is DatiScudo && Ladro ? "inv.no_scudo_ladro"
+        : oggetto is DatiScudo && Stregone ? "inv.no_scudo_stregone"
+        : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza"
+        : oggetto is DatiLibro && !Stregone ? "inv.no_libro"
+        : ChiaveAltraClasse(oggetto);
+
+    // La casella i può ricevere questo oggetto? (le caselle da 4 in su sono quelle degli incantesimi)
+    bool Accetta(int i, DatiOggetto o)
+    {
+        if (o == null) return false;
+        if (i >= 4) return o is DatiIncantesimo && i - 4 < CaselleIncantesimi;
+        return !(o is DatiIncantesimo) && CasellaDi(o) == i;
+    }
+
+    // Mette un oggetto dello zaino proprio nella casella i (trascinato lì, o dopo aver acceso la casella).
+    void MettiInCasella(int i, DatiOggetto o)
+    {
+        if (!Accetta(i, o) || !zaino.Contiene(o)) return;
+        if (i < 4) { Equipaggia(o); return; }
+        string negato = Negato(o);
+        if (negato != null) { Avvisa(negato); return; }
+        var incantesimo = (DatiIncantesimo)o;
+        int k = i - 4;
+        if (!equipaggiamento.RispettaScuole(k, incantesimo)) { Avvisa("inv.massimo_scuola"); return; }
+        zaino.Togli(incantesimo);
+        var vecchio = equipaggiamento.MettiIncantesimo(k, incantesimo);
+        if (vecchio != null) zaino.Aggiungi(vecchio);
+        ultimaCasellaIncantesimo = k;
+        zona = Zona.Caselle;
+        casella = i;
+    }
+
+    // Scambia gli incantesimi di due caselle (le scuole non cambiano, quindi la regola resta rispettata).
+    void ScambiaIncantesimi(int a, int b)
+    {
+        if (a == b) return;
+        var primo = equipaggiamento.Incantesimo(a);
+        var secondo = equipaggiamento.Incantesimo(b);
+        equipaggiamento.MettiIncantesimo(b, primo);
+        equipaggiamento.MettiIncantesimo(a, secondo);
+        zona = Zona.Caselle;
+        casella = 4 + b;
+        ultimaCasellaIncantesimo = b;
+    }
+
+    // Il mouse lascia l'oggetto trascinato nel punto p.
+    void Lascia(Vector2 p)
+    {
+        int sopra = -1;
+        for (int i = 0; i < 4 + CaselleIncantesimi; i++)
+            if (rettCaselle[i].Contains(p)) { sopra = i; break; }
+
+        if (!presoDaCasella)
+        {
+            if (sopra < 0) return;
+            if (Accetta(sopra, preso)) MettiInCasella(sopra, preso);
+            else Avvisa("inv.non_va_qui");
+            return;
+        }
+        if (sopra < 0)
+        {
+            if (rettZaino.Contains(p)) Togli(presoIndice);   // dalla casella allo zaino: si toglie
+            return;
+        }
+        if (presoIndice >= 4 && sopra >= 4) ScambiaIncantesimi(presoIndice - 4, sopra - 4);
     }
 
     // Un incantesimo va nella prima casella libera; se sono tutte piene, al posto di quello nell'ultima casella
@@ -309,8 +392,8 @@ public class InventarioGioco : MonoBehaviour
 
         var tastiera = Keyboard.current;
         var pad = Gamepad.current;
-        bool tasto = (tastiera != null && (tastiera.tabKey.wasPressedThisFrame || tastiera.iKey.wasPressedThisFrame))
-                     || (pad != null && pad.selectButton.wasPressedThisFrame);
+        // il tasto dell'inventario si sceglie in Opzioni > Comandi (Tab all'inizio)
+        bool tasto = Comandi.PremutoOra(Azione.Inventario) || (pad != null && pad.selectButton.wasPressedThisFrame);
 
         if (!Aperto)
         {
@@ -331,8 +414,10 @@ public class InventarioGioco : MonoBehaviour
         if ((tastiera != null && tastiera.rKey.wasPressedThisFrame) || (pad != null && pad.rightShoulder.wasPressedThisFrame)) CambiaScheda(scheda + 1);
         bool conferma = c.conferma || (tastiera != null && tastiera.eKey.wasPressedThisFrame);
 
-        if (c.orizzontale != 0 || c.verticale != 0) Muovi(c.orizzontale, c.verticale);
-        if (conferma) Conferma();
+        if (c.orizzontale != 0 || c.verticale != 0) { casellaAccesa = -1; Muovi(c.orizzontale, c.verticale); }
+        if (conferma) { casellaAccesa = -1; Conferma(); }
+        // pulsante lasciato fuori dalla finestra: il trascinamento si annulla
+        if (preso != null && Mouse.current != null && !Mouse.current.leftButton.isPressed && !Mouse.current.leftButton.wasReleasedThisFrame) { preso = null; trascinando = false; }
     }
 
     void Muovi(int dx, int dy)
@@ -398,6 +483,19 @@ public class InventarioGioco : MonoBehaviour
         GraficaMenu.FoglioVirtuale();
 
         var e = Event.current;
+        // trascinamento: parte dopo qualche pixel di movimento con il tasto premuto, finisce quando si lascia
+        if (preso != null && e.type == EventType.MouseDrag && !trascinando && (e.mousePosition - puntoPresa).sqrMagnitude > 64f)
+        {
+            trascinando = true;
+            casellaAccesa = -1;
+        }
+        if (preso != null && e.type == EventType.MouseUp && e.button == 0)
+        {
+            if (trascinando) Lascia(e.mousePosition);
+            preso = null;
+            trascinando = false;
+            e.Use();
+        }
         bool mouseMosso = false;
         if (e.type == EventType.Repaint)
         {
@@ -417,22 +515,52 @@ public class InventarioGioco : MonoBehaviour
         if (DisegnaZaino(comparsa, e, mouseMosso)) return;
         DisegnaDettaglio(comparsa);
 
+        // l'oggetto trascinato segue il mouse
+        if (trascinando && preso != null)
+        {
+            var m = e.mousePosition;
+            GraficaMenu.Alone(new Rect(m.x - 70f, m.y - 70f, 140f, 140f), new Color(1f, 0.5f, 0.2f, 0.25f));
+            GraficaMenu.Icona(new Rect(m.x - 40f, m.y - 40f, 80f, 80f), preso, 0.9f);
+        }
+        GraficaMenu.Scritta(new Rect(0, 1004, L, 28), Lingua.T("inv.aiuto_mouse"), GraficaMenu.Piccolo, GraficaMenu.Spento, 0.7f * comparsa);
+
         // Avviso (oggetto che questa classe non usa) al posto della riga dei comandi, per qualche secondo.
         if (Time.unscaledTime < avvisoFino && !string.IsNullOrEmpty(avviso))
-            GraficaMenu.Scritta(new Rect(0, 1030, L, 34), avviso, GraficaMenu.Piccolo, GraficaMenu.Selezione, Mathf.Clamp01(avvisoFino - Time.unscaledTime));
+            GraficaMenu.Scritta(new Rect(0, 1036, L, 34), avviso, GraficaMenu.Piccolo, GraficaMenu.Selezione, Mathf.Clamp01(avvisoFino - Time.unscaledTime));
         else
-            GraficaMenu.Scritta(new Rect(0, 1035, L, 30), Lingua.T("inv.aiuto"), GraficaMenu.Piccolo, GraficaMenu.Spento, 0.8f * comparsa);
+            GraficaMenu.Scritta(new Rect(0, 1040, L, 30), Lingua.T("inv.aiuto"), GraficaMenu.Piccolo, GraficaMenu.Spento, 0.8f * comparsa);
     }
 
     // Clic singolo sceglie, doppio clic conferma. Restituisce true se ha confermato.
+    // Il clic su una casella la accende: il clic dopo su un oggetto adatto dello zaino lo mette lì.
+    // Tenendo premuto e muovendo il mouse parte il trascinamento.
     bool Clic(Rect area, Zona z, int indice, Event e, bool mouseMosso)
     {
         if (!area.Contains(e.mousePosition)) return false;
-        if (mouseMosso) { zona = z; if (z == Zona.Caselle) casella = indice; else indiceZaino = indice; }
+        if (mouseMosso && !trascinando) { zona = z; if (z == Zona.Caselle) casella = indice; else indiceZaino = indice; }
         if (e.type != EventType.MouseDown || e.button != 0) return false;
         e.Use();
         zona = z;
         if (z == Zona.Caselle) casella = indice; else indiceZaino = indice;
+
+        var oggetto = z == Zona.Caselle ? OggettoInCasella(indice) : (indice < visibili.Count ? visibili[indice] : null);
+        if (z == Zona.Zaino && casellaAccesa >= 0 && Accetta(casellaAccesa, oggetto))
+        {
+            MettiInCasella(casellaAccesa, oggetto);
+            casellaAccesa = -1;
+            ultimoIndiceClic = -1;
+            return true;
+        }
+        if (z == Zona.Caselle) casellaAccesa = indice;
+        else casellaAccesa = -1;
+        if (oggetto != null)
+        {
+            preso = oggetto;
+            presoDaCasella = z == Zona.Caselle;
+            presoIndice = indice;
+            puntoPresa = e.mousePosition;
+            trascinando = false;
+        }
         int chiave = (z == Zona.Caselle ? 0 : 1000) + indice;
         bool doppio = chiave == ultimoIndiceClic && Time.unscaledTime - ultimoClic < 0.35f;
         ultimoIndiceClic = chiave;
@@ -440,6 +568,8 @@ public class InventarioGioco : MonoBehaviour
         if (!doppio) return false;
         Conferma();
         ultimoIndiceClic = -1;
+        casellaAccesa = -1;
+        preso = null;
         return true;
     }
 
@@ -461,8 +591,10 @@ public class InventarioGioco : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             var r = new Rect(centri[i].x - 70f, centri[i].y - 70f, 140f, 140f);
+            rettCaselle[i] = r;
             if (Clic(r, Zona.Caselle, i, e, mouseMosso)) return true;
-            bool scelta = zona == Zona.Caselle && casella == i;
+            bool scelta = (zona == Zona.Caselle && casella == i) || casellaAccesa == i;
+            AloneDestinazione(r, i, alfa);
             if (scelta) GraficaMenu.Alone(new Rect(r.x - 50f, r.y - 50f, r.width + 100f, r.height + 100f), new Color(1f, 0.5f, 0.2f, 0.18f * alfa));
             GraficaMenu.Cornice(r, alfa, scelta);
             var oggetto = OggettoInCasella(i);
@@ -480,8 +612,10 @@ public class InventarioGioco : MonoBehaviour
         {
             int indice = 4 + k;
             var r = new Rect(cx - quante * 42f + k * 84f + 7f, 826f, 70f, 70f);
+            rettCaselle[indice] = r;
             if (Clic(r, Zona.Caselle, indice, e, mouseMosso)) return true;
-            bool scelta = zona == Zona.Caselle && casella == indice;
+            bool scelta = (zona == Zona.Caselle && casella == indice) || casellaAccesa == indice;
+            AloneDestinazione(r, indice, alfa);
             if (scelta) GraficaMenu.Alone(new Rect(r.x - 30f, r.y - 30f, r.width + 60f, r.height + 60f), new Color(1f, 0.5f, 0.2f, 0.2f * alfa));
             GraficaMenu.Riempi(r, new Color(0.055f, 0.055f, 0.07f, 0.92f * alfa));
             GraficaMenu.Bordo(r, scelta ? 3f : 1f, GraficaMenu.Con(scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo, (scelta ? 1f : 0.6f) * alfa));
@@ -520,6 +654,16 @@ public class InventarioGioco : MonoBehaviour
         return false;
     }
 
+    // Mentre si trascina, le caselle dove l'oggetto può andare pulsano; la casella accesa pulsa anche lei.
+    void AloneDestinazione(Rect r, int i, float alfa)
+    {
+        bool destinazione = trascinando && preso != null
+            && (presoDaCasella ? presoIndice >= 4 && i >= 4 && i != presoIndice : Accetta(i, preso));
+        if (!destinazione && casellaAccesa != i) return;
+        float pulsa = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f);
+        GraficaMenu.Alone(new Rect(r.x - 40f, r.y - 40f, r.width + 80f, r.height + 80f), new Color(1f, 0.55f, 0.2f, (0.12f + 0.18f * pulsa) * alfa));
+    }
+
     // Le schede sopra lo zaino: nome e quanti oggetti contiene; la scelta è color fiamma. Q a sinistra, R a destra.
     bool DisegnaSchede(float alfa, Event e)
     {
@@ -554,7 +698,10 @@ public class InventarioGioco : MonoBehaviour
     bool DisegnaZaino(float alfa, Event e, bool mouseMosso)
     {
         var Z = new Rect(820f, 200f, 980f, 490f);
-        GraficaMenu.Cornice(Z, alfa, false);
+        rettZaino = Z;
+        // un oggetto preso da una casella si può lasciare nello zaino per toglierlo
+        bool lasciaQui = trascinando && preso != null && presoDaCasella;
+        GraficaMenu.Cornice(Z, alfa, lasciaQui && Z.Contains(e.mousePosition));
         var et = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 24 };
         GraficaMenu.Scritta(new Rect(Z.x + 40f, Z.y + 16f, 400f, 34f), Lingua.T("inv.zaino").ToUpperInvariant(), et, GraficaMenu.Bronzo, alfa);
 
@@ -601,7 +748,7 @@ public class InventarioGioco : MonoBehaviour
                 if (scelta) GraficaMenu.Alone(new Rect(r.x - 30f, r.y - 30f, r.width + 60f, r.height + 60f), new Color(1f, 0.5f, 0.2f, 0.22f * alfa));
                 GraficaMenu.Riempi(r, new Color(0.055f, 0.055f, 0.07f, 0.9f * alfa));
                 GraficaMenu.Bordo(r, scelta ? 3f : 1f, GraficaMenu.Con(scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo, (scelta ? 1f : 0.55f) * alfa));
-                if (pieno) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 70f, 70f), visibili[i], alfa);
+                if (pieno) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 70f, 70f), visibili[i], trascinando && !presoDaCasella && visibili[i] == preso ? alfa * 0.3f : alfa);
             }
         return false;
     }
