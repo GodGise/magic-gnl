@@ -76,11 +76,11 @@ public static class CreaOggettiLadro
         creati += Arma("stiletto-d-ombra", "Stiletto d'ombra", "stiletto_ombra", a =>
         {
             a.tipo = DatiArma.Tipo.Stiletto;
-            a.danno = 22f; a.costoAttacco = 14f;
+            a.danno = 19f; a.costoAttacco = 14f;
             a.preparazione = 0.16f; a.colpoAttivo = 0.1f; a.recupero = 0.24f;
             a.portata = 1.4f; a.raggio = 0.9f; a.arco = 60f; a.affondo = 4f;
             a.penetrazioneArmatura = 0.3f;
-            a.probabilitaCritico = 20f; a.moltiplicatoreCritico = 0.25f; a.moltiplicatoreAlleSpalle = 3f;
+            a.probabilitaCritico = 15f; a.moltiplicatoreCritico = 0.25f; a.moltiplicatoreAlleSpalle = 3f;
             a.dannoAssorbitoSenzaScudo = 0.15f; a.costoParataSenzaScudo = 28f;
         });
 
@@ -88,7 +88,7 @@ public static class CreaOggettiLadro
         creati += Arma("pugnali-gemelli", "Pugnali gemelli", "pugnali_gemelli", a =>
         {
             a.tipo = DatiArma.Tipo.DoppiPugnali; a.dueMani = true;
-            a.danno = 12f; a.costoAttacco = 10f;
+            a.danno = 11f; a.costoAttacco = 10f; // sanguinamento a fine combo: da fare (Docs/oggetti-ladro.md)
             a.preparazione = 0.1f; a.colpoAttivo = 0.1f; a.recupero = 0.18f;
             a.portata = 1.4f; a.raggio = 1.1f; a.arco = 120f; a.affondo = 3.5f;
             a.probabilitaCritico = 10f; a.moltiplicatoreAlleSpalle = 2f;
@@ -166,7 +166,7 @@ public static class CreaOggettiLadro
         });
         creati += Amuleto("laccio-del-borsaiolo", "Laccio del borsaiolo", "laccio_borsaiolo", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.velocitaAttacco = 10f;
+            m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.velocitaAttacco = 16f;
             m.malus.probabilitaCritico = -5f; m.malus.vitaMassimaPercento = -5f;
         });
 
@@ -181,12 +181,12 @@ public static class CreaOggettiLadro
         creati += Amuleto("fiato-del-predatore", "Fiato del predatore", "fiato_predatore", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 40f;
-            m.malus.vitaMassimaPercento = -20f;
+            m.malus.vitaMassimaPercento = -17f;
         });
         creati += Amuleto("goccia-di-sangue-nero", "Goccia di sangue nero", "goccia_sangue_nero", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 8f;
-            m.malus.probabilitaCritico = -5f; m.malus.vitaMassimaPercento = -7f;
+            m.malus.probabilitaCritico = -10f; m.malus.vitaMassimaPercento = -10f;
         });
 
         AssetDatabase.SaveAssets();

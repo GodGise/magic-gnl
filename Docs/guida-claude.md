@@ -25,7 +25,7 @@ Questa guida è il tuo contesto di lavoro su magic-GNL (nome provvisorio): come 
 | La storia del gioco e le note di design | `Docs/storia.md` | |
 | Rete co-op | `Docs/rete-coop.md` | |
 | Interfaccia (barre, inventario) | `Docs/interfaccia.md` | |
-| Mana e oggetti delle tre classi | `Docs/mana.md`, `Docs/oggetti-guerriero.md`, `Docs/oggetti-ladro.md`, `Docs/oggetti-stregone.md` | |
+| Mana e oggetti delle tre classi | `Docs/mana.md`, `Docs/oggetti-guerriero.md`, `Docs/oggetti-ladro.md`, `Docs/incantesimi-stregone.md` | |
 | Documenti e richieste fra i due Claude | `Docs/da-approvare.md` (si legge a inizio sessione) | |
 
 I numeri delle sezioni sono quelli della vecchia guida unica, così i rimandi nel testo restano validi.

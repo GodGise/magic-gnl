@@ -29,7 +29,7 @@ MonoBehaviour:
   raggio: 1.2
   arco: 100
   affondo: 2.5
-  penetrazioneArmatura: 0.3
+  penetrazioneArmatura: 0.45
   probabilitaCritico: 0
   moltiplicatoreCritico: 0
   dannoAssorbitoSenzaScudo: 0.3

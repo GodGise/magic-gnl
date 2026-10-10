@@ -181,6 +181,11 @@ public class HudGioco : MonoBehaviour
     void DisegnaArmi(float altezza)
     {
         float y = altezza - 150f;
+        if (giocatore.Stregone && giocatore.Magia != null)
+        {
+            DisegnaIncantesimi(y);
+            return;
+        }
         bool spada = giocatore.Arma == GiocatoreControllo.ArmaImpugnata.Spada;
         var e = equipaggiamento;
         RomboOggetto(new Vector2(110f, y), 118f, spada, e != null ? e.Arma : null, "1");
@@ -205,6 +210,12 @@ public class HudGioco : MonoBehaviour
             RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, null);   // il tasto arriverà con il tiro
             x += 130f;
         }
+        else if (SceltaPartita.Classe == ClasseGiocatore.Stregone && e != null && e.Libro != null)
+        {
+            // Stregone: il libro sta dove gli altri tengono lo scudo
+            RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Libro, null);
+            x += 100f;
+        }
         else if (!ladro && e != null && e.Scudo != null)
         {
             RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Scudo, null);
@@ -216,6 +227,42 @@ public class HudGioco : MonoBehaviour
             x += 84f;
         }
         if (giocatore.HaAbilitaOmbra) RomboAbilita(new Vector2(x + 10f, y + 16f), 70f);
+    }
+
+    // Stregone: i rombi delle caselle degli incantesimi, con il tasto (1-6). Quello scelto è più grande e acceso;
+    // sotto ogni rombo una barretta si riempie durante l'attesa e diventa color fiamma quando è pronto.
+    // Sopra la fila: il nome dell'incantesimo scelto e il suo costo in mana.
+    void DisegnaIncantesimi(float y)
+    {
+        var magia = giocatore.Magia;
+        var e = equipaggiamento;
+        if (e == null) return;
+        int n = e.NumeroCaselle;
+        float x = 110f;
+        for (int i = 0; i < n; i++)
+        {
+            var inc = e.Incantesimo(i);
+            bool scelto = i == magia.Scelta;
+            float lato = scelto ? 112f : 84f;
+            var c = new Vector2(x, y + (scelto ? 0f : 14f));
+            RomboOggetto(c, lato, scelto, inc, (i + 1).ToString());
+            if (inc != null)
+            {
+                float pronto = magia.Pronto(inc);
+                var barra = new Rect(c.x - lato * 0.3f, c.y + lato * 0.62f, lato * 0.6f, 5f);
+                GraficaMenu.Riempi(barra, new Color(0f, 0f, 0f, 0.6f));
+                GraficaMenu.Riempi(new Rect(barra.x, barra.y, barra.width * pronto, barra.height),
+                    pronto >= 1f ? GraficaMenu.Selezione : new Color(0.35f, 0.45f, 0.75f));
+            }
+            x += scelto ? 118f : 96f;
+        }
+        var attuale = magia.Scelto;
+        if (attuale != null)
+        {
+            var stile = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleLeft };
+            string testo = attuale.Nome + GraficaMenu.Separatore + Lingua.T("stat.mana") + " " + Mathf.CeilToInt(magia.Costo(attuale));
+            GraficaMenu.Scritta(new Rect(60f, y - 100f, 700f, 30f), testo, stile, giocatore.Mana >= magia.Costo(attuale) ? GraficaMenu.Testo : GraficaMenu.Spento, 1f);
+        }
     }
 
     // Abilità dell'amuleto (tasto Q): il rombo interno cresce mentre si ricarica; pronto = color fiamma,

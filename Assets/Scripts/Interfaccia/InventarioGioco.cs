@@ -18,6 +18,14 @@ using UnityEngine.SceneManagement;
 // Ladro: la seconda casella è l'Arma a distanza (arco o balestra) al posto dello Scudo, così le caselle restano 4
 // (proposta di Lorenzo in Docs/oggetti-ladro.md). Il Ladro non usa scudi e le altre classi non usano archi:
 // provando a equipaggiarli compare un avviso in basso.
+// Stregone (Docs/incantesimi-stregone.md): la prima casella è il Bastone, la seconda il Libro (al posto dello Scudo);
+// la scheda Scudi diventa Libri e c'è una scheda in più, Incantesimi. Sotto le 4 caselle c'è la fila delle caselle
+// degli incantesimi (4, fino a 6 con certi libri, tasti 1-6 in partita): un incantesimo dallo zaino va nella prima
+// casella libera, oppure, se sono tutte piene, al posto di quello nella casella scelta per ultima. Al massimo 2
+// incantesimi della stessa scuola. Per bastoni, libri, vesti e amuleti il dettaglio mostra i pro (verdi) e i contro
+// (rossi) al posto dei numeri.
+// Oggetti di altre classi (decisione di Lorenzo del 9 ottobre): armi, scudi, armature, archi e libri si equipaggiano
+// solo con la propria classe; gli amuleti sono in comune fra tutte le classi, tranne Ultimo respiro (solo Ladro).
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class InventarioGioco : MonoBehaviour
 {
@@ -37,10 +45,13 @@ public class InventarioGioco : MonoBehaviour
     Statistiche statistiche;
 
     Zona zona = Zona.Zaino;
-    int casella;          // 0 Arma, 1 Scudo, 2 Armatura, 3 Amuleto
+    int casella;          // 0 Arma, 1 Scudo, 2 Armatura, 3 Amuleto; Stregone: da 4 in su le caselle degli incantesimi
+    int ultimaCasellaIncantesimo;   // l'ultima casella degli incantesimi scelta (lì va un incantesimo se sono tutte piene)
     int indiceZaino;          // posizione nella scheda scelta (non in tutto lo zaino)
     int scheda;               // 0 Tutto, 1 Armi, 2 Scudi, 3 Armature, 4 Amuleti
-    static readonly string[] chiaviSchede = { "inv.tutto", "inv.armi", "inv.scudi", "inv.armature", "inv.amuleti" };
+    static readonly string[] chiaviSchede = { "inv.tutto", "inv.armi", "inv.scudi", "inv.armature", "inv.amuleti", "inv.incantesimi" };
+    // Lo Stregone ha la scheda Incantesimi in più.
+    static int NumeroSchede => Stregone ? 6 : 5;
     // Gli oggetti dello zaino che si vedono nella scheda scelta.
     readonly List<DatiOggetto> visibili = new List<DatiOggetto>();
     int rigaIniziale;
@@ -56,7 +67,12 @@ public class InventarioGioco : MonoBehaviour
 
     // Il Ladro ha l'arma a distanza nella seconda casella.
     static bool Ladro => SceltaPartita.Classe == ClasseGiocatore.Ladro;
-    static string ChiaveCasella(int i) => i == 1 && Ladro ? "inv.distanza" : chiaviCaselle[i];
+    // Lo Stregone ha il libro nella seconda casella.
+    static bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
+    static string ChiaveCasella(int i) => i == 0 && Stregone ? "inv.bastone" : i == 1 && Ladro ? "inv.distanza"
+        : i == 1 && Stregone ? "inv.libro" : i >= 4 ? "inv.incantesimi" : chiaviCaselle[i];
+    int CaselleIncantesimi => Stregone && equipaggiamento != null ? equipaggiamento.NumeroCaselle : 0;
+    static string ChiaveScheda(int i) => i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
 
     // Avviso in basso (per esempio "Il Ladro non usa scudi"), per qualche secondo.
     string avviso;
@@ -134,18 +150,19 @@ public class InventarioGioco : MonoBehaviour
     DatiOggetto OggettoInCasella(int i)
     {
         if (equipaggiamento == null) return null;
+        if (i >= 4) return equipaggiamento.Incantesimo(i - 4);
         switch (i)
         {
-            case 0: return equipaggiamento.Arma;
-            case 1: return Ladro ? (DatiOggetto)equipaggiamento.ArmaDistanza : equipaggiamento.Scudo;
+            case 0: return Stregone ? equipaggiamento.Bastone : (DatiOggetto)equipaggiamento.Arma;
+            case 1: return Ladro ? equipaggiamento.ArmaDistanza : Stregone ? equipaggiamento.Libro : (DatiOggetto)equipaggiamento.Scudo;
             case 2: return equipaggiamento.Armatura;
             default: return equipaggiamento.Amuleto;
         }
     }
 
     static bool NellaScheda(DatiOggetto o, int s) => s == 0
-        || (s == 1 && (o is DatiArma || o is DatiArmaDistanza)) || (s == 2 && o is DatiScudo)
-        || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto);
+        || (s == 1 && (o is DatiArma || o is DatiArmaDistanza || o is DatiBastone)) || (s == 2 && (o is DatiScudo || o is DatiLibro))
+        || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto) || (s == 5 && o is DatiIncantesimo);
 
     void AggiornaVisibili()
     {
@@ -164,26 +181,35 @@ public class InventarioGioco : MonoBehaviour
 
     void CambiaScheda(int nuova)
     {
-        scheda = (nuova + chiaviSchede.Length) % chiaviSchede.Length;
+        scheda = (nuova + NumeroSchede) % NumeroSchede;
         indiceZaino = 0;
         rigaIniziale = 0;
         AggiornaVisibili();
         if (visibili.Count == 0 && zona == Zona.Zaino) zona = Zona.Caselle;
     }
 
-    static int CasellaDi(DatiOggetto o) => o is DatiArma ? 0 : o is DatiScudo || o is DatiArmaDistanza ? 1 : o is DatiArmatura ? 2 : 3;
+    int CasellaDi(DatiOggetto o) => o is DatiIncantesimo ? 4 + ultimaCasellaIncantesimo
+        : o is DatiArma || o is DatiBastone ? 0 : o is DatiScudo || o is DatiArmaDistanza || o is DatiLibro ? 1 : o is DatiArmatura ? 2 : 3;
 
     void Equipaggia(DatiOggetto oggetto)
     {
         if (oggetto == null || !zaino.Contiene(oggetto)) return;
-        // Il Ladro non usa scudi; archi e balestre sono solo del Ladro.
+        // Ladro e Stregone non usano scudi; archi e balestre sono solo del Ladro, i libri solo dello Stregone.
         string negato = oggetto is DatiScudo && Ladro ? "inv.no_scudo_ladro"
-            : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza" : null;
+            : oggetto is DatiScudo && Stregone ? "inv.no_scudo_stregone"
+            : oggetto is DatiArmaDistanza && !Ladro ? "inv.no_distanza"
+            : oggetto is DatiLibro && !Stregone ? "inv.no_libro"
+            : ChiaveAltraClasse(oggetto);
         if (negato != null)
         {
             avviso = Lingua.T(negato);
             avvisoFino = Time.unscaledTime + 3f;
             Suoni.Suona(Suono.Negato, giocatore.transform.position + Vector3.up, 0.6f);
+            return;
+        }
+        if (oggetto is DatiIncantesimo incantesimo)
+        {
+            MettiIncantesimo(incantesimo);
             return;
         }
         var prima = new DatiOggetto[4];
@@ -198,14 +224,61 @@ public class InventarioGioco : MonoBehaviour
         indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
     }
 
+    // Un incantesimo va nella prima casella libera; se sono tutte piene, al posto di quello nell'ultima casella
+    // scelta (che torna nello zaino). Al massimo 2 della stessa scuola.
+    void MettiIncantesimo(DatiIncantesimo incantesimo)
+    {
+        int dove = equipaggiamento.CasellaLibera();
+        if (dove < 0) dove = Mathf.Clamp(ultimaCasellaIncantesimo, 0, equipaggiamento.NumeroCaselle - 1);
+        if (!equipaggiamento.RispettaScuole(dove, incantesimo))
+        {
+            Avvisa("inv.massimo_scuola");
+            return;
+        }
+        zaino.Togli(incantesimo);
+        var vecchio = equipaggiamento.MettiIncantesimo(dove, incantesimo);
+        if (vecchio != null) zaino.Aggiungi(vecchio);
+        ultimaCasellaIncantesimo = dove;
+        indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
+    }
+
+    void Avvisa(string chiave)
+    {
+        avviso = Lingua.T(chiave);
+        avvisoFino = Time.unscaledTime + 3f;
+        Suoni.Suona(Suono.Negato, giocatore.transform.position + Vector3.up, 0.6f);
+    }
+
+    // Avviso per un oggetto di un'altra classe: armi e armature solo della propria classe, amuleti in comune
+    // (Ultimo respiro, l'invisibilità col tasto Q, resta solo del Ladro). null = si può equipaggiare.
+    static string ChiaveAltraClasse(DatiOggetto oggetto)
+    {
+        var mia = SceltaPartita.Classe;
+        if (oggetto is DatiAmuleto amuleto)
+            return amuleto.effetto == DatiAmuleto.Effetto.SvanireNellOmbra && mia != ClasseGiocatore.Ladro ? "inv.amuleto_solo_ladro" : null;
+        if (oggetto.classe == mia) return null;
+        return oggetto.classe == ClasseGiocatore.Guerriero ? "inv.solo_guerriero"
+            : oggetto.classe == ClasseGiocatore.Ladro ? "inv.solo_ladro" : "inv.solo_stregone";
+    }
+
     void Togli(int i)
     {
         var oggetto = OggettoInCasella(i);
         if (oggetto == null) return;
+        if (i >= 4)
+        {
+            equipaggiamento.TogliIncantesimo(i - 4);
+            zaino.Aggiungi(oggetto);
+            return;
+        }
         switch (i)
         {
-            case 0: equipaggiamento.TogliArma(); break;
-            case 1: if (Ladro) equipaggiamento.TogliArmaDistanza(); else equipaggiamento.TogliScudo(); break;
+            case 0: if (Stregone) equipaggiamento.TogliBastone(); else equipaggiamento.TogliArma(); break;
+            case 1:
+                if (Ladro) equipaggiamento.TogliArmaDistanza();
+                else if (Stregone) equipaggiamento.TogliLibro();
+                else equipaggiamento.TogliScudo();
+                break;
             case 2: equipaggiamento.TogliArmatura(); break;
             default: equipaggiamento.TogliAmuleto(); break;
         }
@@ -249,6 +322,8 @@ public class InventarioGioco : MonoBehaviour
         if (giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) { Chiudi(true); return; }
 
         AggiornaVisibili();
+        if (casella >= 4 + CaselleIncantesimi) casella = 3;   // meno caselle di prima (libro tolto)
+        if (zona == Zona.Caselle && casella >= 4) ultimaCasellaIncantesimo = casella - 4;
         var c = comandi.LeggiComandi();
         if (tasto || c.indietro) { Chiudi(true); return; }
         // schede dello zaino: Q indietro, R avanti (LB e RB sul pad)
@@ -262,9 +337,28 @@ public class InventarioGioco : MonoBehaviour
 
     void Muovi(int dx, int dy)
     {
+        if (zona == Zona.Caselle && casella >= 4)
+        {
+            // fila delle caselle degli incantesimi (Stregone)
+            int k = casella - 4, quante = CaselleIncantesimi;
+            if (dy < 0) { casella = k < quante / 2 ? 2 : 3; return; }
+            if (dx > 0 && k == quante - 1 && visibili.Count > 0)
+            {
+                zona = Zona.Zaino;
+                indiceZaino = Mathf.Min(visibili.Count - 1, (rigaIniziale + RigheVisibili - 1) * Colonne);
+                return;
+            }
+            if (dx != 0) casella = 4 + Mathf.Clamp(k + dx, 0, quante - 1);
+            return;
+        }
         if (zona == Zona.Caselle)
         {
             int col = casella % 2, riga = casella / 2;
+            if (dy > 0 && riga == 1 && CaselleIncantesimi > 0)
+            {
+                casella = 4 + (col == 0 ? 0 : CaselleIncantesimi - 1);
+                return;
+            }
             if (dx > 0 && col == 1 && visibili.Count > 0)
             {
                 zona = Zona.Zaino;
@@ -380,13 +474,40 @@ public class InventarioGioco : MonoBehaviour
                 GraficaMenu.Didascalia, oggetto != null ? GraficaMenu.Testo : GraficaMenu.Spento, alfa);
         }
 
+        // Stregone: la fila delle caselle degli incantesimi (tasti 1-6 in partita), sotto le 4 caselle.
+        int quante = CaselleIncantesimi;
+        for (int k = 0; k < quante; k++)
+        {
+            int indice = 4 + k;
+            var r = new Rect(cx - quante * 42f + k * 84f + 7f, 826f, 70f, 70f);
+            if (Clic(r, Zona.Caselle, indice, e, mouseMosso)) return true;
+            bool scelta = zona == Zona.Caselle && casella == indice;
+            if (scelta) GraficaMenu.Alone(new Rect(r.x - 30f, r.y - 30f, r.width + 60f, r.height + 60f), new Color(1f, 0.5f, 0.2f, 0.2f * alfa));
+            GraficaMenu.Riempi(r, new Color(0.055f, 0.055f, 0.07f, 0.92f * alfa));
+            GraficaMenu.Bordo(r, scelta ? 3f : 1f, GraficaMenu.Con(scelta ? GraficaMenu.Selezione : GraficaMenu.Bronzo, (scelta ? 1f : 0.6f) * alfa));
+            var inc = equipaggiamento.Incantesimo(k);
+            if (inc != null) GraficaMenu.Icona(new Rect(r.x + 10f, r.y + 10f, 50f, 50f), inc, alfa);
+            var numero = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.UpperLeft, fontSize = 18 };
+            GraficaMenu.Scritta(new Rect(r.x + 5f, r.y + 2f, 30f, 22f), (k + 1).ToString(), numero, scelta ? GraficaMenu.Selezione : GraficaMenu.Spento, alfa);
+        }
+        if (quante > 0)
+            GraficaMenu.Scritta(new Rect(cx - 200f, 798f, 400f, 26f), Lingua.T("inv.incantesimi").ToUpperInvariant(), GraficaMenu.Etichetta,
+                zona == Zona.Caselle && casella >= 4 ? GraficaMenu.Selezione : GraficaMenu.Bronzo, alfa);
+
         // statistiche totali
         var arma = equipaggiamento != null ? equipaggiamento.Arma : null;
+        // lo Stregone vede il mana al posto del danno dell'arma (non ha armi)
+        string secondaEtichetta = Lingua.T(Stregone ? "stat.mana" : "stat.armatura");
+        string secondoValore = Stregone ? Mathf.RoundToInt(giocatore.ManaMassimo).ToString()
+            : statistiche != null ? Mathf.RoundToInt(statistiche.Armatura).ToString() : "—";
+        string terzaEtichetta = Lingua.T(Stregone ? "stat.armatura" : "stat.danno");
+        string terzoValore = Stregone ? (statistiche != null ? Mathf.RoundToInt(statistiche.Armatura).ToString() : "—")
+            : arma != null ? Mathf.RoundToInt(arma.danno).ToString() : "—";
         string[,] righe =
         {
             { Lingua.T("stat.vita"), Mathf.CeilToInt(giocatore.VitaMassima).ToString() },
-            { Lingua.T("stat.armatura"), statistiche != null ? Mathf.RoundToInt(statistiche.Armatura).ToString() : "—" },
-            { Lingua.T("stat.danno"), arma != null ? Mathf.RoundToInt(arma.danno).ToString() : "—" },
+            { secondaEtichetta, secondoValore },
+            { terzaEtichetta, terzoValore },
             { Lingua.T("stat.critico"), statistiche != null ? Mathf.RoundToInt(statistiche.ProbabilitaCritico) + "%" : "—" },
         };
         for (int i = 0; i < 4; i++)
@@ -403,8 +524,8 @@ public class InventarioGioco : MonoBehaviour
     bool DisegnaSchede(float alfa, Event e)
     {
         const float x0 = 860f, y = 160f, h = 34f, larghezza = 900f;
-        float w = larghezza / chiaviSchede.Length;
-        for (int i = 0; i < chiaviSchede.Length; i++)
+        float w = larghezza / NumeroSchede;
+        for (int i = 0; i < NumeroSchede; i++)
         {
             var r = new Rect(x0 + i * w, y, w, h);
             bool scelta = i == scheda;
@@ -415,7 +536,7 @@ public class InventarioGioco : MonoBehaviour
                 return true;
             }
             if (scelta) GraficaMenu.FasciaLuce(new Rect(r.x + 6f, r.y, r.width - 12f, r.height), GraficaMenu.Con(GraficaMenu.Selezione, 0.22f * alfa));
-            string testo = Lingua.T(chiaviSchede[i]) + "  " + QuantiNellaScheda(i);
+            string testo = Lingua.T(ChiaveScheda(i)) + "  " + QuantiNellaScheda(i);
             var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
             GraficaMenu.Scritta(r, testo, stile, scelta ? GraficaMenu.Selezione : GraficaMenu.Spento, alfa);
         }
@@ -509,6 +630,14 @@ public class InventarioGioco : MonoBehaviour
         GraficaMenu.Scritta(new Rect(D.x + D.width * 0.45f, D.y + 22f, D.width * 0.55f - 40f, 44f), Tipo(oggetto) + GraficaMenu.Separatore + NomeClasse(oggetto.classe), tipo, GraficaMenu.Spento, alfa);
         GraficaMenu.Scritta(new Rect(D.x + 40f, D.y + 70f, D.width - 80f, 64f), oggetto.Descrizione, GraficaMenu.TestoSinistra, GraficaMenu.Testo, alfa);
 
+        // Bastoni, libri, vesti dello Stregone e amuleti: pro (verdi) e contro (rossi) al posto dei numeri.
+        var voci = Voci(oggetto);
+        if (voci != null)
+        {
+            DisegnaVoci(voci, new Rect(D.x + 40f, D.y + 146f, D.width - 80f, 120f), alfa);
+            return;
+        }
+
         // confronto con quello che c'è addosso nella stessa casella (solo per gli oggetti dello zaino)
         DatiOggetto addosso = zona == Zona.Zaino ? OggettoInCasella(CasellaDi(oggetto)) : null;
         var righe = Righe(oggetto);
@@ -522,7 +651,8 @@ public class InventarioGioco : MonoBehaviour
             GraficaMenu.Scritta(new Rect(x, D.y + 150f, 230f, 28f), riga.etichetta, et, GraficaMenu.Spento, alfa);
             GraficaMenu.Scritta(new Rect(x, D.y + 186f, 230f, 34f), riga.valore, GraficaMenu.Valore, GraficaMenu.Testo, alfa);
 
-            if (righeAddosso == null || !riga.confrontabile || i >= righeAddosso.Count) continue;
+            // si confrontano solo righe uguali (un bastone e una spada stanno nella stessa casella ma hanno righe diverse)
+            if (righeAddosso == null || !riga.confrontabile || i >= righeAddosso.Count || righeAddosso[i].etichetta != riga.etichetta) continue;
             float diff = riga.numero - righeAddosso[i].numero;
             if (Mathf.Abs(diff) < 0.05f) continue;
             bool meglio = (diff > 0f) == riga.piuAltoMeglio;
@@ -534,6 +664,7 @@ public class InventarioGioco : MonoBehaviour
         }
     }
 
+
     static string Formatta(float v) => Mathf.Approximately(v, Mathf.Round(v)) ? Mathf.RoundToInt(v).ToString() : v.ToString("0.#");
 
     List<Riga> Righe(DatiOggetto o)
@@ -544,6 +675,14 @@ public class InventarioGioco : MonoBehaviour
 
         switch (o)
         {
+            case DatiIncantesimo inc:
+                // incantesimi dello Stregone: danno, mana, carica e attesa
+                Aggiungi("stat.danno", inc.danno > 0f ? Formatta(inc.danno) : inc.dannoAlSecondo > 0f ? Formatta(inc.dannoAlSecondo) + "/s"
+                    : inc.dannoEvocazione > 0f ? Formatta(inc.dannoEvocazione) : "—", inc.danno, inc.danno > 0f, true);
+                Aggiungi("stat.costo_mana", Formatta(inc.costoMana), inc.costoMana, true, false);
+                Aggiungi("stat.carica", Formatta(inc.carica) + " s", inc.carica, true, false);
+                Aggiungi("stat.attesa", Formatta(inc.attesa) + " s", inc.attesa, true, false);
+                break;
             case DatiArma a:
                 Aggiungi("stat.danno", Formatta(a.danno), a.danno, true, true);
                 Aggiungi("stat.critico", a.probabilitaCritico > 0f ? "+" + Formatta(a.probabilitaCritico) + "%" : "—", a.probabilitaCritico, true, true);
@@ -577,6 +716,102 @@ public class InventarioGioco : MonoBehaviour
         return righe;
     }
 
+    // Le voci "pro e contro" di un oggetto, oppure null se l'oggetto si mostra con i numeri (armi, scudi, armature
+    // di Guerriero e Ladro, incantesimi).
+    static List<VoceEffetto> Voci(DatiOggetto o)
+    {
+        var voci = new List<VoceEffetto>();
+        switch (o)
+        {
+            case DatiBastone st:
+                if (st.dueMani) voci.Add(new VoceEffetto { chiave = "mod.due_mani", testoValore = "", positivo = false });
+                st.magia.Descrivi(voci);
+                st.bonus.Descrivi(voci);
+                if (voci.Count == 0) voci.Add(new VoceEffetto { chiave = "mod.nessuno", testoValore = "", positivo = true });
+                return voci;
+            case DatiLibro l:
+                new Statistiche.Modificatore { manaMassimo = l.manaMassimo, recuperoMana = l.recuperoMana }.Descrivi(voci);
+                l.magia.Descrivi(voci);
+                Peso(voci, l.costoSchivataExtra, l.moltiplicatoreVelocita);
+                return voci;
+            case DatiArmatura v when v.classe == ClasseGiocatore.Stregone:
+                voci.Add(new VoceEffetto { chiave = "stat.armatura", testoValore = Formatta(v.armatura), positivo = true });
+                v.Modificatore().Descrivi(voci);
+                voci.RemoveAll(x => x.chiave == "mod.armatura");   // già scritta qui sopra
+                v.magia.Descrivi(voci);
+                if (v.manaPersoPerDannoPercento > 0f)
+                    voci.Add(new VoceEffetto { chiave = "mod.mana_per_danno", testoValore = "-" + Formatta(v.manaPersoPerDannoPercento) + "%", positivo = false });
+                if (v.manaPerSchivata > 0f)
+                    voci.Add(new VoceEffetto { chiave = "mod.mana_per_schivata", testoValore = "-" + Formatta(v.manaPerSchivata), positivo = false });
+                Peso(voci, v.costoSchivataExtra, v.moltiplicatoreVelocita);
+                return voci;
+            case DatiAmuleto c:
+                voci.Add(new VoceEffetto { chiave = c.tipo == DatiAmuleto.Tipo.Magico ? "stat.magico" : "stat.arcano", testoValore = "", positivo = true, neutro = true });
+                if (c.effetto != DatiAmuleto.Effetto.Nessuno) voci.Add(EffettoArcano(c));
+                c.Modificatore().Descrivi(voci);
+                c.magia.Descrivi(voci);
+                return voci;
+        }
+        return null;
+    }
+
+    static void Peso(List<VoceEffetto> voci, float schivata, float corsa)
+    {
+        if (Mathf.Abs(schivata) > 0.001f)
+            voci.Add(new VoceEffetto { chiave = "stat.schivata", testoValore = (schivata > 0f ? "+" : "") + Formatta(schivata), positivo = schivata < 0f });
+        if (corsa < 0.999f)
+            voci.Add(new VoceEffetto { chiave = "stat.movimento", testoValore = "-" + Mathf.RoundToInt((1f - corsa) * 100f) + "%", positivo = false });
+    }
+
+    static VoceEffetto EffettoArcano(DatiAmuleto c)
+    {
+        string v = Formatta(c.valore);
+        switch (c.effetto)
+        {
+            case DatiAmuleto.Effetto.VitaPerUccisione: return new VoceEffetto { chiave = "mod.vita_per_uccisione", testoValore = "+" + v, positivo = true };
+            case DatiAmuleto.Effetto.RecuperoResistenza: return new VoceEffetto { chiave = "mod.recupero_resistenza", testoValore = "+" + v + "%", positivo = true };
+            case DatiAmuleto.Effetto.RubaVita: return new VoceEffetto { chiave = "mod.ruba_vita", testoValore = v + "%", positivo = true };
+            case DatiAmuleto.Effetto.SvanireNellOmbra: return new VoceEffetto { chiave = "mod.svanire", testoValore = v + " s", positivo = true };
+            case DatiAmuleto.Effetto.ManaPerUccisione: return new VoceEffetto { chiave = "mod.mana_per_uccisione", testoValore = "+" + v, positivo = true };
+            default: return new VoceEffetto { chiave = "mod.ruba_mana", testoValore = v + "%", positivo = true };
+        }
+    }
+
+    // Le voci una dopo l'altra, andando a capo quando la riga è piena (al massimo 4 righe).
+    static void DisegnaVoci(List<VoceEffetto> voci, Rect area, float alfa)
+    {
+        var stile = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
+        var verde = new Color(0.47f, 0.67f, 0.35f);
+        var rosso = new Color(0.75f, 0.27f, 0.24f);
+        float x = area.x, y = area.y, riga = 30f;
+        foreach (var voce in voci)
+        {
+            string testo = (voce.scuola.HasValue ? NomeScuola(voce.scuola.Value) + GraficaMenu.Separatore : "") + Lingua.T(voce.chiave)
+                + (string.IsNullOrEmpty(voce.testoValore) ? "" : " " + voce.testoValore);
+            float w = stile.CalcSize(new GUIContent(testo)).x + 34f;
+            if (x + w > area.xMax && x > area.x)
+            {
+                x = area.x;
+                y += riga;
+                if (y + riga > area.yMax + 4f) break;
+            }
+            Color colore = voce.neutro ? GraficaMenu.Bronzo : voce.positivo ? verde : rosso;
+            GraficaMenu.Scritta(new Rect(x, y, w, riga), testo, stile, colore, alfa);
+            x += w;
+        }
+    }
+
+    static string NomeScuola(ScuolaMagia scuola)
+    {
+        switch (scuola)
+        {
+            case ScuolaMagia.Brace: return Lingua.T("scuola.brace");
+            case ScuolaMagia.LagoNero: return Lingua.T("scuola.lago_nero");
+            case ScuolaMagia.Ombra: return Lingua.T("scuola.ombra");
+            default: return Lingua.T("scuola.evocazione");
+        }
+    }
+
     static string Tipo(DatiOggetto o)
     {
         switch (o)
@@ -596,8 +831,14 @@ public class InventarioGioco : MonoBehaviour
                 return Lingua.T(d.tipo == DatiArmaDistanza.Tipo.ArcoCorto ? "tipo.arco_corto" : d.tipo == DatiArmaDistanza.Tipo.ArcoLungo ? "tipo.arco_lungo" : "tipo.balestra");
             case DatiScudo s:
                 return Lingua.T(s.taglia == DatiScudo.Taglia.Grande ? "tipo.scudo_grande" : s.taglia == DatiScudo.Taglia.Medio ? "tipo.scudo_medio" : "tipo.scudo_piccolo");
+            case DatiLibro _:
+                return Lingua.T("tipo.libro");
+            case DatiBastone st:
+                return Lingua.T(st.tipo == DatiBastone.Tipo.Verga ? "tipo.verga" : st.dueMani ? "tipo.bastone_due_mani" : "tipo.bastone");
+            case DatiIncantesimo inc:
+                return Lingua.T("tipo.incantesimo") + GraficaMenu.Separatore + NomeScuola(inc.scuola);
             case DatiArmatura b:
-                return Lingua.T(ChiavePeso(b.peso, "tipo.armatura_"));
+                return Lingua.T(ChiavePeso(b.peso, b.classe == ClasseGiocatore.Stregone ? "tipo.veste_" : "tipo.armatura_"));
             case DatiAmuleto c:
                 return Lingua.T(c.tipo == DatiAmuleto.Tipo.Magico ? "tipo.amuleto_magico" : "tipo.amuleto_arcano");
         }

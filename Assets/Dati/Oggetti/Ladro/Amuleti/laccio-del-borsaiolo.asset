@@ -27,7 +27,7 @@ MonoBehaviour:
     probabilitaCritico: 0
     moltiplicatoreCritico: 0
     velocitaParata: 0
-    velocitaAttacco: 10
+    velocitaAttacco: 16
     vitaMassimaPercento: 0
     furtivita: 0
   malus:

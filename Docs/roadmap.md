@@ -7,7 +7,7 @@ Le date sono una stima per tre persone part-time. I compiti della settimana sono
 | Cosa | Stato | Note |
 | --- | --- | --- |
 | Combattimento (parata, schivata, attacco, aggancio, esecuzione furtiva) | Fatto | Numeri regolati da Lorenzo |
-| Oggetti di Guerriero e Ladro | Fatto | Stregone scritto in `Docs/oggetti-stregone.md`, da approvare da Lorenzo |
+| Oggetti di Guerriero e Ladro | Fatto | Stregone rifatto con gli incantesimi: `Docs/incantesimi-stregone.md` (approvato il 9 ottobre) |
 | Interfaccia in partita (barre, inventario, pausa) | Fatto | Casella del Ladro e abilità Q aggiunte l'8 ottobre (ramo `giuseppec/interfaccia-completa`); libro dello Stregone con gli oggetti di Lorenzo |
 | Co-op in locale, senza Steam (menu Multigiocatore, nemici e combattimento in rete) | Fatto e provato in due (8 ottobre) | PR #17 |
 | Porte, leve, bauli, chiavi, muri, oggetti condivisi in co-op | Fatto, da provare | Ramo `giuseppec/livelli-coop` (sopra `interfaccia-completa`); checkpoint personali |

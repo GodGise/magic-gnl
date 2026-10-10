@@ -10,6 +10,8 @@ using UnityEngine;
 // resta immobile, si inarca all'indietro e muore al taglio.
 // Come montarlo: sullo stesso oggetto di un Bersaglio (per esempio un cilindro con Bersaglio).
 // Selezionando il nemico, nella vista Scene si vede il cono giallo del suo campo visivo.
+// Incantesimi dello Stregone (vedi EffettiNemico): rallentato va più piano, bloccato o stordito non si muove.
+// Una Bambola di ossa vicina (vedi ObiettiviNemici.Esca) lo attira: la insegue e la attacca al posto dei giocatori.
 // Co-op: vede e insegue il giocatore più vicino fra quelli che vede (vedi ObiettiviNemici). Pensa solo sul PC
 // di chi ospita; sugli altri PC riceve da MondoRete solo se sta inseguendo, se è sotto esecuzione e il "!".
 [RequireComponent(typeof(Bersaglio))]
@@ -41,6 +43,7 @@ public class InseguimentoNemico : MonoBehaviour
     Stato stato = Stato.Fermo;
 
     Bersaglio bersaglio;
+    EffettiNemico effetti;        // rallentamenti e blocchi degli incantesimi (si aggiunge la prima volta che servono)
     IObiettivoNemico giocatore;   // il giocatore che sta inseguendo (o l'ultimo visto)
     Collider corpo;
     Vector3 posto;
@@ -97,6 +100,24 @@ public class InseguimentoNemico : MonoBehaviour
             bersaglio.attaccaIlGiocatore = false;
             return;
         }
+        if (effetti == null) effetti = EffettiNemico.Di(this);
+
+        // Una Bambola di ossa vicina lo attira: insegue lei, anche senza vederla.
+        var esca = ObiettiviNemici.Esca(transform.position);
+        if (esca != null && !ReferenceEquals(esca, giocatore))
+        {
+            giocatore = esca;
+            bersaglio.Obiettivo = esca;
+            if (stato != Stato.Insegue)
+            {
+                MostraAllarme();
+                MondoRete.InviaAllarme(bersaglio);
+            }
+            stato = Stato.Insegue;
+            ultimaVolta = Time.time;
+            bersaglio.attaccaIlGiocatore = true;
+        }
+
         // Giocatore morto o svanito nell'ombra: chi lo inseguiva lo perde subito (se ne vede un altro, insegue quello).
         if (!ObiettiviNemici.Valido(giocatore))
         {
@@ -264,7 +285,7 @@ public class InseguimentoNemico : MonoBehaviour
 
     void Insegui(float dt)
     {
-        if (VedeGiocatore()) ultimaVolta = Time.time;
+        if (VedeGiocatore() || giocatore is IEscaNemici) ultimaVolta = Time.time;
         bool troppoLontano = Vector3.Distance(transform.position, posto) > distanzaMassimaDalPosto;
         if (Time.time - ultimaVolta > secondiPerPerderlo || troppoLontano)
         {
@@ -296,6 +317,12 @@ public class InseguimentoNemico : MonoBehaviour
         }
 
         Vector3 direzione = verso / distanza;
+        // Rallentato, bloccato o stordito da un incantesimo.
+        if (effetti != null)
+        {
+            if (effetti.Fermo) return false;
+            velocita *= effetti.MoltiplicatoreVelocita;
+        }
         float passo = Mathf.Min(velocita * dt, distanza - distanzaArrivo);
 
         // Se davanti c'è un ostacolo prova a scansarlo di lato.
