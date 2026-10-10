@@ -62,6 +62,31 @@ public static class CreaOggettiComuni
             a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
         });
 
+        // Mannaia del macellaio: la lama larga degli orchi macellai (zona 3). La più forte delle armi improvvisate:
+        // taglia bene da vicino, ma è corta e non passa l'armatura. Circa 26 di danno al secondo.
+        creati += Arma("mannaia-del-macellaio", "Mannaia del macellaio", "mannaia_macellaio", a =>
+        {
+            a.tipo = DatiArma.Tipo.Ascia;
+            a.danno = 23f; a.costoAttacco = 18f;
+            a.preparazione = 0.3f; a.colpoAttivo = 0.15f; a.recupero = 0.42f;
+            a.portata = 1.6f; a.raggio = 1f; a.arco = 110f; a.affondo = 2f;
+            a.penetrazioneArmatura = 0f;
+            a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 22f;
+        });
+
+        // Pugnale arrugginito: una lama corta e mangiata dalla ruggine. Il più veloce e il meno faticoso, ma colpisce
+        // pochissimo e bisogna stare addosso al nemico. Niente colpo alle spalle in più: non è un pugnale da Ladro.
+        // Circa 22 di danno al secondo.
+        creati += Arma("pugnale-arrugginito", "Pugnale arrugginito", "pugnale_arrugginito", a =>
+        {
+            a.tipo = DatiArma.Tipo.Pugnale;
+            a.danno = 9f; a.costoAttacco = 9f;
+            a.preparazione = 0.12f; a.colpoAttivo = 0.08f; a.recupero = 0.2f;
+            a.portata = 1.1f; a.raggio = 0.8f; a.arco = 70f; a.affondo = 3f;
+            a.penetrazioneArmatura = 0f;
+            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 25f;
+        });
+
         AssetDatabase.SaveAssets();
         Debug.Log(creati > 0 ? "Armi improvvisate: " + creati + " file in " + Radice + "." : "Armi improvvisate: c'erano già tutte.");
     }

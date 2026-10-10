@@ -586,6 +586,30 @@ public static class Lingua
             "Цепь, вырванная из стены камеры, с ещё висящим замком. Медленная и утомительная, но бьёт далеко и сметает всё вокруг.",
             "从牢房墙上扯下的锁链，挂锁还在上面。笨重费力，但攻击范围远，能横扫四周。",
         },
+        ["oggetto.mannaia_macellaio.nome"] = new[] { "Mannaia del macellaio", "Butcher's Cleaver", "Cuchilla del carnicero", "Couperet du boucher", "Fleischerbeil", "Cutelo do açougueiro", "Тесак мясника", "屠夫砍刀" },
+        ["oggetto.mannaia_macellaio.descrizione"] = new[]
+        {
+            "La lama larga degli orchi macellai, ancora sporca. Taglia bene da vicino, ma è corta e non passa le armature.",
+            "The broad blade of the orc butchers, still filthy. It cuts well up close, but it is short and does not pierce armour.",
+            "La hoja ancha de los orcos carniceros, todavía sucia. Corta bien de cerca, pero es corta y no atraviesa armaduras.",
+            "La large lame des orcs bouchers, encore souillée. Elle tranche bien de près, mais elle est courte et ne perce pas les armures.",
+            "Die breite Klinge der Ork-Schlachter, noch verschmiert. Aus der Nähe schneidet sie gut, doch sie ist kurz und durchdringt keine Rüstung.",
+            "A lâmina larga dos orcs açougueiros, ainda suja. Corta bem de perto, mas é curta e não atravessa armaduras.",
+            "Широкий клинок орков-мясников, ещё грязный. Хорошо рубит вблизи, но короткий и не пробивает доспехи.",
+            "兽人屠夫的宽刃，还沾着污秽。近身砍得狠，但刃短，破不了护甲。",
+        },
+        ["oggetto.pugnale_arrugginito.nome"] = new[] { "Pugnale arrugginito", "Rusty Dagger", "Puñal oxidado", "Dague rouillée", "Rostiger Dolch", "Punhal enferrujado", "Ржавый кинжал", "生锈匕首" },
+        ["oggetto.pugnale_arrugginito.descrizione"] = new[]
+        {
+            "Una lama corta mangiata dalla ruggine. Velocissima e poco faticosa, ma colpisce pochissimo: bisogna stare addosso al nemico.",
+            "A short blade eaten by rust. Very fast and barely tiring, but it hits very little: you must stay right on the enemy.",
+            "Una hoja corta comida por el óxido. Rapidísima y poco agotadora, pero golpea muy poco: hay que pegarse al enemigo.",
+            "Une lame courte rongée par la rouille. Très rapide et peu fatigante, mais elle frappe très peu : il faut coller à l'ennemi.",
+            "Eine kurze, von Rost zerfressene Klinge. Sehr schnell und kaum anstrengend, doch sie trifft sehr schwach: Man muss am Gegner kleben.",
+            "Uma lâmina curta comida pela ferrugem. Rapidíssima e pouco cansativa, mas bate muito pouco: é preciso ficar colado ao inimigo.",
+            "Короткий клинок, изъеденный ржавчиной. Очень быстрый и почти не утомляет, но бьёт совсем слабо: держись вплотную к врагу.",
+            "被锈蚀的短刃。极快且不费体力，但伤害极低，必须贴身作战。",
+        },
         ["oggetto.spada_capitano.nome"] = new[] { "Spada del capitano", "Captain's Sword", "Espada del capitán", "Épée du capitaine", "Schwert des Hauptmanns", "Espada do capitão", "Меч капитана", "队长之剑" },
         ["oggetto.spada_capitano.descrizione"] = new[]
         {

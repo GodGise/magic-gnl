@@ -183,6 +183,11 @@ public static class FormeOggetti
                 P(t, PrimitiveType.Cube, new Vector3(0f, -0.88f, 0f), new Vector3(0.12f, 0.12f, 0.06f), Ruggine);
                 P(t, PrimitiveType.Cylinder, new Vector3(0f, -0.79f, 0f), new Vector3(0.08f, 0.02f, 0.08f), FerroScuro, new Vector3(90f, 0f, 0f));
                 return;
+            case "mannaia-del-macellaio":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.04f, 0.2f, 0.04f), Legno);
+                P(t, PrimitiveType.Cube, new Vector3(0.05f, -0.3f, 0f), new Vector3(0.16f, 0.3f, 0.02f), Ruggine);
+                return;
+            case "pugnale-arrugginito": Pugnale(t, 0.24f, 0.045f, Ruggine, Cuoio); return;
             case "stiletto-del-tagliagole": Pugnale(t, 0.34f, 0.025f, Ferro, new Color(0.45f, 0.06f, 0.06f)); return;
         }
         switch (a.tipo)
