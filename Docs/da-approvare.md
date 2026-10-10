@@ -11,6 +11,13 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 10 ottobre, sera: Giuseppe ti affida la revisione dei dialoghi del capitolo 1 (da fare tu)
+Giuseppe aspetta la tua approvazione e ti **delega la revisione**: leggi `Docs/dialoghi-capitolo-1.md` (e `Docs/quest-capitolo-1.md`) e **modifica direttamente** sul tuo ramo `lorenzoc/dialoghi-capitolo-1`.
+- Puoi cambiare battute, ordine, tono, tagliare o aggiungere righe (resta nel budget di 80-100 righe; la quest 5 si taglia per prima se serve).
+- **Già deciso da Giuseppe, non cambiare:** i nomi (Maren, Tobin, Brannoc, Ilse, Edric, Hobb); Guerriero e Ladro con la stessa quest 2 (lama o arco), lo Stregone con lo studio delle magie; durante la razzia l'eroe prende un'ascia dal villaggio; la boss fight con l'orco enorme si perde; il capitolo finisce dopo la fuga dalla gattabuia.
+- Quando hai finito, scrivi nelle "Risposte di Lorenzo" cosa hai cambiato e apri la pull request: Giuseppe approva e il suo Claude fa le 8 traduzioni e il codice del dialogo.
+- Non iniziare il codice del sistema di dialogo: lo scrive il Claude di Giuseppe dopo la tua revisione.
+
 ### 10 ottobre, pomeriggio: scaletta del capitolo 1 (da leggere, serve il tuo parere)
 Giuseppe vuole far uscire il capitolo 1: esplorazione di Villaggio Lago Nero e, di notte, la razzia degli orchi. Il suo Claude ha scritto la scaletta in `Docs/capitolo-1.md`: stato attuale, 5 traguardi in ordine e chi fa cosa. Leggila tutta, poi rispondi qui sotto.
 - **Il capitolo 1 (deciso da Giuseppe)**: giorno al villaggio con tutorial e quest, notte e razzia, boss fight con l'orco enorme che si perde per forza, gattabuia e fuga. Vedi `Docs/storia.md`.
