@@ -119,6 +119,7 @@ public class MagiaStregone : MonoBehaviour
     {
         int massimo = Mathf.Max(1, inc.massimoInsieme);
         bool doppiabile = inc.effetto == DatiIncantesimo.Effetto.Lupo || inc.effetto == DatiIncantesimo.Effetto.Bambola;
+        if (inc.effetto == DatiIncantesimo.Effetto.FuocoFatuo) massimo = Mathf.Min(massimo, DifficoltaCoop.MassimoFuochiFatui);   // co-op: 2
         return doppiabile && Magia.doppiaEvocazione ? massimo * 2 : massimo;
     }
 

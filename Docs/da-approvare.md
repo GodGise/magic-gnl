@@ -32,6 +32,15 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
+Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
+- controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
+- i nemici passano a chi fa più danno ogni 7 s, entro 25 m;
+- in co-op si va **a terra** e un alleato rialza (E per 3 s, 30% della vita); contro un boss una volta sola, poi spettatori fino a fine scontro; tutti a terra = rinascita al checkpoint e boss da capo (da soli: morte contro un boss = boss da capo);
+- i boss ignorano le Bambole di ossa; 2 Fuochi fatui per Stregone in co-op; chi vede un'esecuzione furtiva entro 8 m va in allerta per 15 s.
+- **Tocca file della rete:** `GiocatoreRete.cs` (classe; a terra e spettatore nei bit 11 e 12 del numero delle azioni; `ChiediRialza` con un Rpc al proprietario), `MondoRete.cs` (`InviaGruppoSconfitto`), `DifficoltaCoop.cs` (due numeri nuovi nell'Inspector), più `Bersaglio.cs` e `InseguimentoNemico.cs`. Giuseppe, dai un'occhiata prima di unire.
+- Numeri della difficoltà: per ora restano i tuoi, Lorenzo li regola giocando in co-op. Nemici extra solo in co-op: risposta in arrivo dopo le prove.
+
 ## Chiuso
 
 ### 10 ottobre: una classe per giocatore in co-op, RIFIUTATA da Giuseppe

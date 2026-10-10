@@ -10,6 +10,8 @@ using UnityEngine;
 //   - Stordito: non si muove e non attacca.
 //   - Spinto: indietreggia di qualche metro; se dietro non c'è più terreno (un dirupo) cade e muore.
 //   - Boss e miniboss (Bersaglio > Boss): niente blocchi, stordimenti e spinte, e i rallentamenti valgono la metà.
+//   - Co-op: per ogni Stregone nel gruppo rallentamenti, blocchi e stordimenti durano il 30% in meno
+//     (DifficoltaCoop.MoltiplicatoreControlli; da soli niente cambia).
 // Sotto i piedi del nemico compare un anello colorato: azzurro rallentato, viola bloccato, giallo stordito.
 // Co-op: gli effetti decidono come si muove il nemico, quindi valgono sul PC di chi ospita. Chi non ospita li
 // chiede all'host (MondoRete.ChiediEffetto) e intanto li vede da sé con l'anello.
@@ -60,6 +62,7 @@ public class EffettiNemico : MonoBehaviour
         if (bersaglio == null || bersaglio.Morto || durata <= 0f && tipo != Tipo.Spingi) return;
         bool boss = bersaglio.Boss;
         float ora = Time.time;
+        if (tipo != Tipo.Spingi) durata *= DifficoltaCoop.MoltiplicatoreControlli;
         switch (tipo)
         {
             case Tipo.Rallenta:

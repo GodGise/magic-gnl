@@ -11,7 +11,11 @@ using UnityEngine;
 // Come montarlo: sullo stesso oggetto di un Bersaglio (per esempio un cilindro con Bersaglio).
 // Selezionando il nemico, nella vista Scene si vede il cono giallo del suo campo visivo.
 // Incantesimi dello Stregone (vedi EffettiNemico): rallentato va più piano, bloccato o stordito non si muove.
-// Una Bambola di ossa vicina (vedi ObiettiviNemici.Esca) lo attira: la insegue e la attacca al posto dei giocatori.
+// Una Bambola di ossa vicina (vedi ObiettiviNemici.Esca) lo attira: la insegue e la attacca al posto dei giocatori
+// (i boss no: ignorano le Bambole).
+// Mentre insegue segue il bersaglio scelto da Bersaglio: ogni 7 s passa a chi gli fa più danno, se è entro 25 m.
+// Allerta: se vede un'esecuzione furtiva entro 8 m (senza muri in mezzo) si gira a guardare e per 15 s non è ignaro:
+// niente esecuzioni furtive e niente bonus del Dardo d'ombra su di lui.
 // Co-op: vede e insegue il giocatore più vicino fra quelli che vede (vedi ObiettiviNemici). Pensa solo sul PC
 // di chi ospita; sugli altri PC riceve da MondoRete solo se sta inseguendo, se è sotto esecuzione e il "!".
 [RequireComponent(typeof(Bersaglio))]
@@ -58,7 +62,10 @@ public class InseguimentoNemico : MonoBehaviour
     const float DurataMassimaEsecuzione = 5f;
 
     // Ignaro: vivo, non sta inseguendo il giocatore e non sta già subendo un'esecuzione. Solo così si può giustiziare.
-    public bool Ignaro => !bersaglio.Morto && stato != Stato.Insegue && !inEsecuzione;
+    public bool Ignaro => !bersaglio.Morto && stato != Stato.Insegue && !inEsecuzione && Time.time >= allertaFino;
+    // In allerta (ha visto un'esecuzione furtiva lì vicino): non è ignaro, quindi niente esecuzioni e niente bonus.
+    float allertaFino;
+    public bool InAllerta => Time.time < allertaFino;
     // Letto da AnimazioneUmanoide: durante l'esecuzione il nemico si inarca all'indietro.
     public bool InEsecuzione => inEsecuzione;
     // Per MondoRete: vero mentre insegue qualcuno.
@@ -84,6 +91,7 @@ public class InseguimentoNemico : MonoBehaviour
     {
         float dt = Time.deltaTime;
         AggiornaEsclamativo();
+        if (stato == Stato.Insegue) bersaglio.SegnaInseguimento();   // per CombattimentoBoss (anche su chi non ospita)
         if (Rete.Ospite) return;    // in co-op, per chi non ospita, decide tutto l'host
         if (inEsecuzione && Time.time > fineEsecuzione)
         {
@@ -103,7 +111,7 @@ public class InseguimentoNemico : MonoBehaviour
         if (effetti == null) effetti = EffettiNemico.Di(this);
 
         // Una Bambola di ossa vicina lo attira: insegue lei, anche senza vederla.
-        var esca = ObiettiviNemici.Esca(transform.position);
+        var esca = bersaglio.Boss ? null : ObiettiviNemici.Esca(transform.position);   // i boss ignorano le Bambole
         if (esca != null && !ReferenceEquals(esca, giocatore))
         {
             giocatore = esca;
@@ -209,7 +217,7 @@ public class InseguimentoNemico : MonoBehaviour
         // Colpito alle spalle senza aver visto nessuno: insegue il giocatore più vicino.
         if (!ObiettiviNemici.Valido(giocatore) && !CercaChiVede())
         {
-            giocatore = ObiettiviNemici.PiuVicino(transform.position);
+            giocatore = ObiettiviNemici.PiuVicino(transform.position, !bersaglio.Boss);
             if (giocatore == null) return;
             bersaglio.Obiettivo = giocatore;
         }
@@ -272,6 +280,61 @@ public class InseguimentoNemico : MonoBehaviour
         bersaglio.RiceviColpoDa(chi, bersaglio.VitaMassima * 10f, daDove, false);
         inEsecuzione = false;
         stato = Stato.Torna;
+        AllertaVicini();
+    }
+
+    [Header("Allerta dopo un'esecuzione furtiva")]
+    [Tooltip("I nemici entro questi metri che vedono l'esecuzione vanno in allerta.")]
+    [SerializeField] float raggioAllerta = 8f;
+    [Tooltip("Secondi di allerta: in questo tempo non sono ignari (niente esecuzioni furtive, niente bonus del Dardo d'ombra).")]
+    [SerializeField] float durataAllerta = 15f;
+
+    // Chi vede l'esecuzione (entro "Raggio Allerta", senza muri in mezzo) va in allerta e si gira a guardare.
+    void AllertaVicini()
+    {
+        Vector3 qui = transform.position + Vector3.up;
+        foreach (var altro in RegistroNemici.Tutti)
+        {
+            if (altro == null || altro == bersaglio || altro.Morto) continue;
+            if (!altro.TryGetComponent(out InseguimentoNemico vista)) continue;
+            Vector3 la = altro.transform.position + Vector3.up;
+            if (Vector3.Distance(qui, la) > raggioAllerta || MuroInMezzo(qui, la)) continue;
+            vista.Allerta(transform.position, durataAllerta);
+        }
+    }
+
+    static bool MuroInMezzo(Vector3 da, Vector3 a)
+    {
+        foreach (var colpo in Physics.RaycastAll(da, (a - da).normalized, Vector3.Distance(da, a), ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (colpo.collider.GetComponentInParent<Bersaglio>() != null || ObiettiviNemici.EGiocatore(colpo.collider)) continue;
+            return true;
+        }
+        return false;
+    }
+
+    // In allerta: "!" sopra la testa, si gira verso il punto e per qualche secondo non è ignaro.
+    public void Allerta(Vector3 punto, float secondi)
+    {
+        if (Rete.Ospite || bersaglio.Morto) return;
+        allertaFino = Mathf.Max(allertaFino, Time.time + secondi);
+        if (stato == Stato.Insegue) return;
+        Vector3 verso = punto - transform.position;
+        verso.y = 0f;
+        if (verso.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(verso);
+        MostraAllarme();
+        MondoRete.InviaAllarme(bersaglio);
+    }
+
+    // Il gruppo è stato sconfitto contro il boss (vedi Bersaglio.Ripristina): torna tranquillo, già al suo posto.
+    public void Ripristina()
+    {
+        stato = Stato.Fermo;
+        giocatore = null;
+        allertaFino = 0f;
+        inEsecuzione = false;
+        bersaglio.attaccaIlGiocatore = false;
+        bersaglio.Obiettivo = null;
     }
 
     void Rinuncia()
@@ -285,6 +348,12 @@ public class InseguimentoNemico : MonoBehaviour
 
     void Insegui(float dt)
     {
+        // Bersaglio ha scelto un altro giocatore (quello che gli fa più danno): si insegue lui.
+        if (ObiettiviNemici.Valido(bersaglio.Obiettivo) && !ReferenceEquals(bersaglio.Obiettivo, giocatore))
+        {
+            giocatore = bersaglio.Obiettivo;
+            ultimaVolta = Time.time;
+        }
         if (VedeGiocatore() || giocatore is IEscaNemici) ultimaVolta = Time.time;
         bool troppoLontano = Vector3.Distance(transform.position, posto) > distanzaMassimaDalPosto;
         if (Time.time - ultimaVolta > secondiPerPerderlo || troppoLontano)

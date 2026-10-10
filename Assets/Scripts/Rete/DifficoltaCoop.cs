@@ -15,6 +15,10 @@ using UnityEngine;
 // Come montarlo: non serve montarlo, si crea da solo la prima volta che un nemico lo chiede (con i valori di partenza).
 // Per cambiare i numeri in modo permanente: metti il componente su un oggetto vuoto della scena (per esempio
 // "Difficolta co-op") e modifica le tre tabelle nell'Inspector. Se ci sono due oggetti, vale il primo trovato.
+// Regole contro le combinazioni troppo forti in co-op (Lorenzo, 10 ottobre; valgono solo con 2 o più giocatori):
+//   - per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti sui nemici durano il 30% in meno
+//     (si moltiplica: 1 Stregone ×0,7, 2 Stregoni ×0,49, 3 Stregoni ×0,34; vedi EffettiNemico);
+//   - ogni Stregone può avere al massimo 2 Fuochi fatui insieme (da soli 3; vedi MagiaStregone).
 // Nota: il numero di nemici per gruppo non cambia, perché i gruppi sono messi a mano nelle scene (area di Lorenzo).
 [DefaultExecutionOrder(-100)]
 public class DifficoltaCoop : MonoBehaviour
@@ -44,6 +48,12 @@ public class DifficoltaCoop : MonoBehaviour
     [SerializeField] Livello unGiocatore = new Livello(1f, 1f, 1f, 1f);
     [SerializeField] Livello dueGiocatori = new Livello(2.5f, 2.5f, 1.5f, 1.25f);
     [SerializeField] Livello treGiocatori = new Livello(4f, 4f, 2f, 1.5f);
+
+    [Header("Combinazioni troppo forti in co-op (solo con 2 o più giocatori)")]
+    [Tooltip("Per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti durano questa percentuale in meno (si moltiplica).")]
+    [SerializeField, Range(0f, 90f)] float riduzioneControlliPerStregone = 30f;
+    [Tooltip("Quanti Fuochi fatui può avere insieme ogni Stregone in co-op (da soli vale il numero dell'incantesimo).")]
+    [SerializeField, Min(1)] int fuochiFatuiInCoop = 2;
 
     // Scatta quando cambia il numero di giocatori (chi ascolta, per esempio Bersaglio, ricalcola i suoi numeri).
     public static event Action Cambiata;
@@ -89,6 +99,32 @@ public class DifficoltaCoop : MonoBehaviour
     public static float FrequenzaAttacchi => Valido(Attuale.frequenzaAttacchi);
 
     static float Valido(float v) => v > 0.01f ? v : 1f;
+
+    // Quanti Stregoni ci sono nel gruppo: questo PC più le figure degli altri giocatori (la classe arriva da GiocatoreRete).
+    public static int Stregoni
+    {
+        get
+        {
+            int n = SceltaPartita.Classe == ClasseGiocatore.Stregone ? 1 : 0;
+            foreach (var altro in GiocatoreRete.Altri)
+                if (altro != null && altro.Classe == ClasseGiocatore.Stregone) n++;
+            return n;
+        }
+    }
+
+    // Durata di rallentamenti, blocchi e stordimenti sui nemici: 1 da soli, ×0,7 per ogni Stregone in co-op.
+    public static float MoltiplicatoreControlli
+    {
+        get
+        {
+            if (Giocatori <= 1) return 1f;
+            float perStregone = 1f - Mathf.Clamp(Istanza.riduzioneControlliPerStregone, 0f, 90f) / 100f;
+            return Mathf.Pow(perStregone, Stregoni);
+        }
+    }
+
+    // Fuochi fatui insieme per ogni Stregone: in co-op al massimo "fuochiFatuiInCoop"; da soli nessun limite in più.
+    public static int MassimoFuochiFatui => Giocatori <= 1 ? int.MaxValue : Mathf.Max(1, Istanza.fuochiFatuiInCoop);
 
     void Awake()
     {

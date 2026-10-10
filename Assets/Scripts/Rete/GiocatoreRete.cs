@@ -9,6 +9,8 @@ using UnityEngine;
 // sugli altri PC è una figura umana a blocchi (AspettoUmanoide), animata come il giocatore vero, con il nome sopra.
 // Sul PC dell'host la figura è anche un bersaglio per i nemici (IObiettivoNemico): quando un nemico la colpisce,
 // il colpo viene mandato al PC del proprietario, che decide se l'ha parato o schivato e quanto danno prende.
+// Manda anche la classe (per le regole del co-op, vedi DifficoltaCoop) e se il giocatore è a terra o spettatore:
+// un alleato vicino a un giocatore a terra può rialzarlo (RianimaAlleato chiama ChiediRialza); lo spettatore non si vede.
 // Come montarlo: non si monta a mano. Sta nel prefab Resources/Rete/GiocatoreRete (creato da Assets/Editor/CreaPrefabRete.cs)
 // e lo crea ReteCoop per ogni giocatore che entra.
 public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAnimato
@@ -25,6 +27,8 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     readonly NetworkVariable<Vector4> tempiAltro = new NetworkVariable<Vector4>(new Vector4(0.3f, 0.45f, 0.7f, 1.4f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     readonly NetworkVariable<float> strettoia = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     readonly NetworkVariable<float> furtivita = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    // La classe del giocatore (Guerriero, Ladro, Stregone).
+    readonly NetworkVariable<byte> classe = new NetworkVariable<byte>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     // Numero del giocatore (1, 2, 3): lo sceglie l'host quando lo crea.
     readonly NetworkVariable<byte> numero = new NetworkVariable<byte>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -176,12 +180,14 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
         tempoPrima = locale.TempoNelloStato;
 
         azione.Value = Impacchetta(locale.StatoAttuale, locale.ColpoCombo, locale.AttaccoMagico,
-            locale.Arma == GiocatoreControllo.ArmaImpugnata.Bastone, locale.HaBastone, locale.ArmaNelFodero, locale.Invisibile, contatoreAzioni);
+            locale.Arma == GiocatoreControllo.ArmaImpugnata.Bastone, locale.HaBastone, locale.ArmaNelFodero, locale.Invisibile, contatoreAzioni,
+            locale.StatoCaduta == GiocatoreControllo.Caduta.ATerra, locale.StatoCaduta == GiocatoreControllo.Caduta.Spettatore);
         direzioneSchivata.Value = locale.DirezioneSchivata;
         tempiAttacco.Value = new Vector4(locale.DurataPreparazioneAttacco, locale.DurataColpoAttivo, locale.DurataRecuperoAttacco, locale.DurataSchivata);
         tempiAltro.Value = new Vector4(locale.DurataPreparazioneIncantesimo, locale.DurataRecuperoIncantesimo, locale.MomentoTaglio, locale.DurataEsecuzione);
         strettoia.Value = Mathf.Round(locale.Strettoia * 50f) / 50f;   // arrotondata: non serve spedirla a ogni minimo cambio
         furtivita.Value = locale.Furtivita;
+        classe.Value = (byte)SceltaPartita.Classe;
     }
 
     // Chi guarda: muove la figura verso la posizione ricevuta e aggiorna arma, fodero, ombra e tempi delle azioni.
@@ -211,6 +217,10 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
                 AspettoUmanoide.MostraArma(figura, bastone ? AspettoUmanoide.Arma.Bastone : AspettoUmanoide.Arma.Spada);
             }
             AggiornaOmbra((a & (1 << 10)) != 0);
+            // Lo spettatore (morto due volte contro un boss) non si vede finché non torna in gioco.
+            bool nascosto = (a & (1 << 12)) != 0;
+            if (figura.activeSelf == nascosto) figura.SetActive(!nascosto);
+            if (etichetta != null && etichetta.gameObject.activeSelf == nascosto) etichetta.gameObject.SetActive(!nascosto);
         }
 
         if (primoAggiornamento || (transform.position - posizione.Value).sqrMagnitude > 400f)
@@ -255,7 +265,8 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
         coloriFigura.Clear();
     }
 
-    static int Impacchetta(GiocatoreControllo.Stato stato, int combo, bool magico, bool bastoneInMano, bool haBastone, bool fodero, bool invisibile, int contatore)
+    static int Impacchetta(GiocatoreControllo.Stato stato, int combo, bool magico, bool bastoneInMano, bool haBastone, bool fodero, bool invisibile, int contatore,
+        bool aTerra, bool spettatore)
     {
         int a = (int)stato & 0xF;
         a |= (combo & 0x3) << 4;
@@ -264,6 +275,8 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
         if (haBastone) a |= 1 << 8;
         if (fodero) a |= 1 << 9;
         if (invisibile) a |= 1 << 10;
+        if (aTerra) a |= 1 << 11;
+        if (spettatore) a |= 1 << 12;
         a |= (contatore & 0xFFFF) << 16;
         return a;
     }
@@ -291,6 +304,9 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     // ---------- IObiettivoNemico: i nemici dell'host attaccano anche questa figura ----------
 
     public Transform Corpo => transform;
+    public bool ATerra => (azione.Value & (1 << 11)) != 0;
+    public bool Spettatore => (azione.Value & (1 << 12)) != 0;
+    public ClasseGiocatore Classe => (ClasseGiocatore)classe.Value;
     public bool Abbattuto => StatoAttuale == GiocatoreControllo.Stato.Morto;
     public bool Invisibile => (azione.Value & (1 << 10)) != 0;
     public float Furtivita => furtivita.Value;
@@ -306,6 +322,20 @@ public class GiocatoreRete : NetworkBehaviour, IObiettivoNemico, IPersonaggioAni
     {
         Bersaglio nemico = RegistroNemici.Trova(numeroNemico);
         if (nemico != null && TrovaLocale() != null) locale.ColpitoDaNemico(nemico);
+    }
+
+    // ---------- rianimazione (vedi RianimaAlleato) ----------
+
+    // Un alleato ha finito di rialzare questo giocatore: lo si dice al suo PC, che lo rimette in piedi.
+    public void ChiediRialza()
+    {
+        if (IsSpawned && ATerra) RialzaRpc();
+    }
+
+    [Rpc(SendTo.Owner)]
+    void RialzaRpc()
+    {
+        if (TrovaLocale() != null) locale.Rialza();
     }
 
     // Il premio dell'uccisione arriva con MondoRete.InviaSconfitto; qui non serve.

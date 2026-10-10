@@ -5,6 +5,8 @@ using UnityEngine;
 // A cosa serve: chi ospita (host) è l'unico su cui i nemici pensano. Questo oggetto di rete:
 //   - dall'host manda a tutti, 12 volte al secondo, posizione e stato di ogni nemico e l'ora del giorno;
 //   - dall'host manda quanti giocatori ci sono e la vita dei nemici quando la difficoltà cambia (vedi DifficoltaCoop);
+//   - dall'host dice a tutti quando il gruppo è tutto a terra: si rinasce ai checkpoint e i boss ricominciano
+//     (vedi CombattimentoBoss); manda anche la vita piena dei boss ricominciati;
 //   - dall'host manda gli eventi dei nemici: attacco (preavviso rosso), colpito, sbilanciato, morto, rinato, "!";
 //   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette, le esecuzioni furtive e gli effetti
 //     degli incantesimi (rallentamenti, blocchi, stordimenti, spinte: vedi EffettiNemico);
@@ -193,6 +195,25 @@ public class MondoRete : NetworkBehaviour
     void GiocatoriRpc(byte giocatori, RpcParams parametri)
     {
         DifficoltaCoop.ImpostaDaRete(giocatori);
+    }
+
+    // ---------- gruppo sconfitto (host -> tutti, vedi CombattimentoBoss) ----------
+
+    // Tutti i giocatori sono a terra o spettatori: ognuno rinasce al suo checkpoint. Le vite dei boss ricominciati
+    // arrivano a tutti con InviaDifficolta (stesso numero di giocatori, vite aggiornate).
+    public static void InviaGruppoSconfitto()
+    {
+        if (!SonoHost) return;
+        InviaDifficolta(DifficoltaCoop.Giocatori);
+        Istanza.GruppoSconfittoRpc();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    void GruppoSconfittoRpc()
+    {
+        foreach (var b in RegistroNemici.Tutti)
+            if (b != null && b.Boss) b.AzzeraScontro();
+        if (ObiettiviNemici.Locale != null) ObiettiviNemici.Locale.RinasciDopoSconfitta();
     }
 
     // ---------- eventi dei nemici (host -> tutti) ----------

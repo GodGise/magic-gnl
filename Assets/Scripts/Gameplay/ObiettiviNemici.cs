@@ -68,10 +68,20 @@ public static class ObiettiviNemici
         return migliore;
     }
 
-    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno). Un'esca vicina viene prima di tutti.
-    public static IObiettivoNemico PiuVicino(Vector3 da)
+    // Il giocatore con quel numero di rete, come obiettivo dei nemici (sul PC che ospita, o da soli). null se non c'è.
+    public static IObiettivoNemico DiGiocatore(ulong id)
     {
-        var esca = Esca(da);
+        if (id == Rete.MioId) return Locale;
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && altro.IsSpawned && altro.OwnerClientId == id) return altro;
+        return null;
+    }
+
+    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno). Un'esca vicina viene prima di tutti,
+    // tranne per i boss (ancheEsche = false): i boss ignorano le Bambole di ossa.
+    public static IObiettivoNemico PiuVicino(Vector3 da, bool ancheEsche = true)
+    {
+        var esca = ancheEsche ? Esca(da) : null;
         if (esca != null) return esca;
         IObiettivoNemico migliore = null;
         float minima = float.MaxValue;

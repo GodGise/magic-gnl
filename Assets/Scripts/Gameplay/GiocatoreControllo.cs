@@ -15,6 +15,12 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// In co-op (Lorenzo, 10 ottobre) a zero vita si va "a terra": un alleato vicino ti rialza tenendo premuto E per 3 s
+// (RianimaAlleato) e torni con il 30% della vita. Contro un boss si può andare a terra una sola volta per scontro:
+// la seconda si diventa spettatori (la camera segue un alleato) e si torna in gioco, accanto a un alleato, quando
+// lo scontro finisce. Se tutto il gruppo è a terra, si rinasce tutti al checkpoint e il boss ricomincia da capo
+// (CombattimentoBoss). Da soli, morendo contro un boss, il boss ricomincia da capo. Cadendo nel vuoto si rinasce
+// subito al checkpoint anche in co-op.
 // Acqua bassa (vedi AcquaBassa): nel lago, dove l'acqua arriva alle ginocchia, il personaggio va più piano.
 // Esecuzione furtiva: alle spalle di un nemico che non ti ha visto (vedi InseguimentoNemico), l'attacco con la
 // spada diventa un'esecuzione: il personaggio si mette dietro di lui, lo afferra e gli taglia la gola. Il nemico
@@ -283,6 +289,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
+        if (GetComponent<RianimaAlleato>() == null) gameObject.AddComponent<RianimaAlleato>();   // co-op: rialzare gli alleati
         raggioNormale = controller.radius;
         Vita = VitaMassima;
         puntoRinascita = transform.position;
@@ -385,7 +392,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         tempoNelloStato += dt;
 
         // Caduto nel vuoto: muore subito (e rinasce al checkpoint).
-        if (stato != Stato.Morto && transform.position.y < quotaVuoto) PerdiVita(Vita);
+        if (stato != Stato.Morto && transform.position.y < quotaVuoto) PerdiVita(Vita, true);
+        AggiornaCaduta();
+        ControllaGruppo();
 
         if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
         if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
@@ -1120,7 +1129,150 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // ---------- Nemici (vedi ObiettiviNemici) ----------
 
     public Transform Corpo => transform;
-    public bool Abbattuto => stato == Stato.Morto;
+    public bool Abbattuto => stato == Stato.Morto;   // morto, a terra o spettatore: i nemici lo lasciano stare
+
+    // ---------- A terra e spettatore (co-op) ----------
+
+    public enum Caduta { Nessuna, ATerra, Spettatore }
+    // Con lo stato Morto: Nessuna = morto e rinasce da solo; ATerra = aspetta un alleato; Spettatore = guarda lo scontro.
+    public Caduta StatoCaduta { get; private set; } = Caduta.Nessuna;
+    [Header("Co-op: a terra e rianimazione")]
+    [Tooltip("Vita con cui si torna in piedi quando un alleato ti rialza, in percentuale della vita massima.")]
+    [SerializeField, Range(1f, 100f)] float vitaDopoRianimazione = 30f;
+    [Tooltip("Secondi senza danni subito dopo essere stati rialzati.")]
+    [SerializeField] float protezioneDopoRianimazione = 1.5f;
+    int atterramentiBoss;          // quante volte si è andati a terra nello scontro con il boss di adesso
+    float protettoFino;
+    float gruppoATerraDa = -1f;    // solo sull'host: da quando tutto il gruppo è a terra
+    float prossimoControlloBoss;
+    CameraTerzaPersona cameraSeguita;
+
+    static bool InCoop => Rete.Attiva && DifficoltaCoop.Giocatori > 1;
+
+    // La vita è finita: da soli si muore e si rinasce; in co-op si va a terra o, contro un boss la seconda volta, spettatori.
+    void Cadi(bool nelVuoto)
+    {
+        CambiaStato(Stato.Morto);
+        bool scontroBoss = CombattimentoBoss.Vicino(transform.position) != null;
+        if (!InCoop || nelVuoto)
+        {
+            // Da soli tutto il "gruppo" è morto: il boss ricomincia da capo.
+            if (scontroBoss && !InCoop) CombattimentoBoss.Ripristina();
+            StatoCaduta = Caduta.Nessuna;
+            Invoke(nameof(Rinasci), secondiPerRinascere);
+            return;
+        }
+        if (scontroBoss && atterramentiBoss >= 1)
+        {
+            StatoCaduta = Caduta.Spettatore;
+            Seguilo(AlleatoInPiedi());
+            MessaggiSchermo.Mostra(Lingua.T("hud.spettatore"), 4f);
+            return;
+        }
+        if (scontroBoss) atterramentiBoss++;
+        StatoCaduta = Caduta.ATerra;
+        MessaggiSchermo.Mostra(Lingua.T("hud.a_terra_aiuto"), 4f);
+    }
+
+    // Un alleato ti ha rialzato (arriva da GiocatoreRete.ChiediRialza).
+    public void Rialza()
+    {
+        if (stato != Stato.Morto || StatoCaduta != Caduta.ATerra) return;
+        StatoCaduta = Caduta.Nessuna;
+        velocitaVerticale = 0f;
+        Vita = Mathf.Max(1f, VitaMassima * vitaDopoRianimazione / 100f);
+        resistenza.Ripristina();
+        protettoFino = Time.time + protezioneDopoRianimazione;
+        CambiaStato(Stato.Libero);
+        Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f, 1.2f);
+    }
+
+    // Tutto il gruppo è andato a terra (arriva dall'host, vedi MondoRete.InviaGruppoSconfitto): si rinasce al checkpoint.
+    public void RinasciDopoSconfitta()
+    {
+        if (stato != Stato.Morto) return;
+        CancelInvoke(nameof(Rinasci));
+        TornaInGioco(puntoRinascita, rotazioneRinascita);
+        MessaggiSchermo.Mostra(Lingua.T("hud.gruppo_sconfitto"), 4f);
+    }
+
+    // Spettatore e A terra: controlli fatti a ogni fotogramma.
+    void AggiornaCaduta()
+    {
+        // Gli altri sono usciti e si è rimasti soli a terra: nessuno può rialzarti, si rinasce al checkpoint.
+        if (StatoCaduta != Caduta.Nessuna && !InCoop) { TornaInGioco(puntoRinascita, rotazioneRinascita); return; }
+        if (StatoCaduta == Caduta.Spettatore)
+        {
+            // La camera segue un alleato ancora in piedi; finito lo scontro si torna in gioco accanto a lui.
+            var alleato = AlleatoInPiedi();
+            if (cameraSeguita != null && alleato != null && cameraSeguita.bersaglio != alleato.transform) Seguilo(alleato);
+            Vector3 dove = cameraSeguita != null && cameraSeguita.bersaglio != null ? cameraSeguita.bersaglio.position : transform.position;
+            if (CombattimentoBoss.Vicino(dove) == null && CombattimentoBoss.Vicino(transform.position) == null)
+            {
+                if (alleato != null) TornaInGioco(alleato.transform.position - alleato.transform.forward * 1.5f, alleato.transform.rotation);
+                else TornaInGioco(puntoRinascita, rotazioneRinascita);
+            }
+            return;
+        }
+        if (stato == Stato.Morto || Time.time < prossimoControlloBoss) return;
+        // In piedi e lontano da ogni boss: lo scontro è finito, il conto degli atterramenti ricomincia.
+        prossimoControlloBoss = Time.time + 1f;
+        if (atterramentiBoss > 0 && CombattimentoBoss.Vicino(transform.position) == null) atterramentiBoss = 0;
+    }
+
+    // Solo sull'host in co-op: se tutti sono a terra (o spettatori) da 1,5 s, il gruppo è sconfitto.
+    void ControllaGruppo()
+    {
+        if (!InCoop || !Rete.ComandaIlMondo) { gruppoATerraDa = -1f; return; }
+        bool tutti = stato == Stato.Morto && StatoCaduta != Caduta.Nessuna;
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && !(altro.ATerra || altro.Spettatore)) tutti = false;
+        if (!tutti) { gruppoATerraDa = -1f; return; }
+        if (gruppoATerraDa < 0f) { gruppoATerraDa = Time.time; return; }
+        if (Time.time - gruppoATerraDa < 1.5f) return;
+        gruppoATerraDa = -1f;
+        CombattimentoBoss.Ripristina();
+        MondoRete.InviaGruppoSconfitto();
+    }
+
+    // Il primo alleato in piedi (la sua figura su questo PC), o null.
+    static GiocatoreRete AlleatoInPiedi()
+    {
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && altro.IsSpawned && !altro.Abbattuto && !altro.Spettatore) return altro;
+        return null;
+    }
+
+    // Spettatore: la camera segue l'alleato e la propria figura sparisce.
+    void Seguilo(GiocatoreRete alleato)
+    {
+        if (cameraSeguita == null && Camera.main != null) cameraSeguita = Camera.main.GetComponent<CameraTerzaPersona>();
+        if (cameraSeguita != null && alleato != null) cameraSeguita.bersaglio = alleato.transform;
+        MostraFigura(false);
+    }
+
+    void MostraFigura(bool mostra)
+    {
+        foreach (Renderer parte in GetComponentsInChildren<Renderer>(true))
+            parte.forceRenderingOff = !mostra;   // non tocca "enabled": la capsula nascosta da AspettoUmanoide resta nascosta
+    }
+
+    // Di nuovo in piedi in un punto, con la vita piena (fine dello scontro o gruppo sconfitto).
+    void TornaInGioco(Vector3 dove, Quaternion rotazione)
+    {
+        if (cameraSeguita != null) cameraSeguita.bersaglio = transform;
+        MostraFigura(true);
+        StatoCaduta = Caduta.Nessuna;
+        atterramentiBoss = 0;
+        puntoTemporaneo = dove;
+        rotazioneTemporanea = rotazione;
+        usaPuntoTemporaneo = true;
+        Rinasci();
+    }
+
+    Vector3 puntoTemporaneo;
+    Quaternion rotazioneTemporanea;
+    bool usaPuntoTemporaneo;
     public float Furtivita => statistiche != null ? statistiche.Furtivita : 0f;
 
     // Il colpo di un nemico arriva (anche da un nemico dell'host, in co-op): il danno si calcola qui,
@@ -1147,7 +1299,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // niente danno, niente resistenza persa, e il nemico (attaccante) resta sbilanciato.
     public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false, Bersaglio attaccante = null)
     {
-        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
@@ -1192,7 +1344,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         }
     }
 
-    void PerdiVita(float quantita)
+    void PerdiVita(float quantita, bool nelVuoto = false)
     {
         // Tunica stracciata: ogni danno ricevuto, anche di 1 punto, toglie una parte del mana massimo.
         if (quantita > 0f && manaPersoPerDannoPercento > 0f) Mana = Mathf.Max(0f, Mana - ManaMassimo * manaPersoPerDannoPercento / 100f);
@@ -1201,16 +1353,18 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
         Debug.Log("Sei morto.");
         Suoni.Suona(Suono.Morte, transform.position + Vector3.up);
-        CambiaStato(Stato.Morto);
-        Invoke(nameof(Rinasci), secondiPerRinascere);
+        Cadi(nelVuoto);
     }
 
     void Rinasci()
     {
         // Il CharacterController va spento per un attimo, altrimenti non lascia spostare il personaggio di colpo.
         controller.enabled = false;
-        transform.SetPositionAndRotation(puntoRinascita, rotazioneRinascita);
+        if (usaPuntoTemporaneo) transform.SetPositionAndRotation(puntoTemporaneo, rotazioneTemporanea);
+        else transform.SetPositionAndRotation(puntoRinascita, rotazioneRinascita);
+        usaPuntoTemporaneo = false;
         controller.enabled = true;
+        StatoCaduta = Caduta.Nessuna;
 
         velocitaVerticale = 0f;
         armaNelFodero = false;   // si rinasce con l'arma in mano
@@ -1234,7 +1388,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Danno dall'ambiente (trappole, fuoco...): non si può parare, ma la schivata fatta al momento giusto lo evita.
     public void RiceviDannoAmbiente(float danno)
     {
-        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
             Debug.Log("Schivato!");

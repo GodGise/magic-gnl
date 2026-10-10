@@ -16,6 +16,11 @@ using UnityEngine;
 // agli altri. Sugli altri PC è una figura che segue le posizioni ricevute; i colpi dei loro giocatori vanno all'host.
 // Boss e miniboss (casella "Boss"): non subiscono l'esecuzione furtiva, né blocchi, stordimenti e spinte degli
 // incantesimi; i rallentamenti su di loro valgono la metà (vedi EffettiNemico). Stordito, non attacca.
+// Chi fa più danno si prende i colpi: ogni "Cambio Bersaglio Ogni" secondi (7) il nemico passa al giocatore che gli ha
+// fatto più danno negli ultimi secondi (il danno "vecchio" svanisce in circa 5 s), se è entro "Raggio Cambio Bersaglio"
+// metri (25). Così in co-op uno non può fare da scudo mentre gli altri colpiscono tranquilli (Lorenzo, 10 ottobre).
+// I boss ignorano le Bambole di ossa. Se tutto il gruppo va a terra durante lo scontro, il boss ricomincia da capo
+// (Ripristina: torna al suo posto con la vita piena, vedi CombattimentoBoss).
 // Difficoltà co-op: vita, danno e frequenza degli attacchi crescono con i giocatori collegati (vedi DifficoltaCoop).
 // I numeri scritti qui sotto sono quelli "da soli"; i moltiplicatori si applicano in VitaMassima, DannoAttacco e negli intervalli.
 // Come montarlo: su qualunque oggetto con un Collider (per esempio un cilindro).
@@ -30,6 +35,12 @@ public class Bersaglio : MonoBehaviour
     [Tooltip("Boss o miniboss: niente esecuzione furtiva, niente blocchi, stordimenti e spinte; rallentamenti a metà.")]
     [SerializeField] bool boss = false;
 
+    [Header("Chi prendere di mira")]
+    [Tooltip("Ogni quanti secondi passa al giocatore che gli fa più danno.")]
+    [SerializeField] float cambioBersaglioOgni = 7f;
+    [Tooltip("Il giocatore che fa più danno viene preso di mira solo se è entro questi metri.")]
+    [SerializeField] float raggioCambioBersaglio = 25f;
+
     [Header("Attacco di prova")]
     public bool attaccaIlGiocatore = true;
     [SerializeField] float intervalloAttacchi = 3f;
@@ -42,6 +53,21 @@ public class Bersaglio : MonoBehaviour
     float vita;
     bool morto;
     float vitaMassimaApplicata;   // la vita massima con la difficoltà di adesso (serve a tenere la stessa percentuale quando cambia)
+
+    // Danno ricevuto da ogni giocatore, che svanisce col tempo (per scegliere chi fa più danno).
+    struct Minaccia { public float danno; public float tempo; }
+    readonly Dictionary<ulong, Minaccia> minacce = new Dictionary<ulong, Minaccia>();
+    const float SvanisceMinaccia = 5f;   // secondi: il danno fatto 5 s fa conta circa un terzo
+    float prossimoCambioBersaglio;
+    Vector3 posizioneIniziale;
+    Quaternion rotazioneIniziale;
+    // L'ultima volta che è stato colpito (anche su chi non ospita): serve a capire se c'è uno scontro con un boss.
+    public float UltimoColpo { get; private set; } = -100f;
+    // L'ultima volta che inseguiva qualcuno (lo segna InseguimentoNemico, su tutti i PC).
+    public float UltimoInseguimento { get; private set; } = -100f;
+    public void SegnaInseguimento() => UltimoInseguimento = Time.time;
+    // Dopo il ripristino lo scontro è finito anche per chi non ospita (vedi MondoRete.InviaGruppoSconfitto).
+    public void AzzeraScontro() { UltimoColpo = -100f; UltimoInseguimento = -100f; }
 
     // Numero uguale su tutti i PC (vedi RegistroNemici), per i messaggi di rete.
     public int NumeroRete { get; private set; }
@@ -98,6 +124,8 @@ public class Bersaglio : MonoBehaviour
         for (int i = 0; i < aspetto.Length; i++) coloriBase[i] = aspetto[i].material.color;
 
         corpo = GetComponent<Collider>();
+        posizioneIniziale = transform.position;
+        rotazioneIniziale = transform.rotation;
         vitaMassimaApplicata = VitaMassima;
         vita = vitaMassimaApplicata;
         NumeroRete = RegistroNemici.Iscrivi(this);
@@ -134,7 +162,8 @@ public class Bersaglio : MonoBehaviour
         }
 
         if (morto || staAttaccando || !attaccaIlGiocatore) return;
-        giocatore = ObiettiviNemici.Valido(Obiettivo) ? Obiettivo : ObiettiviNemici.PiuVicino(transform.position);
+        CambiaBersaglioSeServe();
+        giocatore = ObiettiviNemici.Valido(Obiettivo) ? Obiettivo : ObiettiviNemici.PiuVicino(transform.position, !boss);
         if (giocatore == null) return;
         if (Time.time < prossimoAttacco || Time.time < sbilanciatoFino) return;
         // Stordito da un incantesimo (vedi EffettiNemico): non attacca.
@@ -146,6 +175,61 @@ public class Bersaglio : MonoBehaviour
             StartCoroutine(Attacca());
         else
             prossimoAttacco = Time.time + 0.5f;
+    }
+
+    // Ogni "cambioBersaglioOgni" secondi prende di mira chi gli ha fatto più danno (se è vicino). Le esche no: se sta
+    // inseguendo una Bambola di ossa resta su di lei.
+    void CambiaBersaglioSeServe()
+    {
+        if (Time.time < prossimoCambioBersaglio) return;
+        prossimoCambioBersaglio = Time.time + Mathf.Max(1f, cambioBersaglioOgni);
+        if (Obiettivo is IEscaNemici && ObiettiviNemici.Valido(Obiettivo)) return;
+        var pericoloso = PiuPericoloso(raggioCambioBersaglio);
+        if (pericoloso != null) Obiettivo = pericoloso;
+    }
+
+    // Il giocatore che gli sta facendo più danno, entro "raggio" metri (null se nessuno lo ha colpito di recente).
+    public IObiettivoNemico PiuPericoloso(float raggio)
+    {
+        IObiettivoNemico migliore = null;
+        float massimo = 0.5f;
+        foreach (var coppia in minacce)
+        {
+            float valore = coppia.Value.danno * Mathf.Exp(-(Time.time - coppia.Value.tempo) / SvanisceMinaccia);
+            if (valore <= massimo) continue;
+            var chi = ObiettiviNemici.DiGiocatore(coppia.Key);
+            if (!ObiettiviNemici.Valido(chi) || Vector3.Distance(chi.Corpo.position, transform.position) > raggio) continue;
+            massimo = valore;
+            migliore = chi;
+        }
+        return migliore;
+    }
+
+    void RicordaDanno(ulong chi, float danno)
+    {
+        float valore = 0f;
+        if (minacce.TryGetValue(chi, out var vecchia))
+            valore = vecchia.danno * Mathf.Exp(-(Time.time - vecchia.tempo) / SvanisceMinaccia);
+        minacce[chi] = new Minaccia { danno = valore + Mathf.Max(0f, danno), tempo = Time.time };
+    }
+
+    // Il gruppo è stato sconfitto durante lo scontro: il boss torna al suo posto, con la vita piena e tranquillo.
+    // Solo sull'host (o da soli); le vite arrivano agli altri con MondoRete.InviaGruppoSconfitto.
+    public void Ripristina()
+    {
+        if (morto) return;
+        StopAllCoroutines();
+        staAttaccando = false;
+        RipristinaColori();
+        vitaMassimaApplicata = VitaMassima;
+        vita = vitaMassimaApplicata;
+        minacce.Clear();
+        Obiettivo = null;
+        sbilanciatoFino = 0f;
+        transform.SetPositionAndRotation(posizioneIniziale, rotazioneIniziale);
+        if (TryGetComponent(out InseguimentoNemico vista)) vista.Ripristina();
+        AzzeraScontro();
+        prossimoAttacco = Time.time + IntervalloAttacchi;
     }
 
     IEnumerator Attacca()
@@ -198,6 +282,8 @@ public class Bersaglio : MonoBehaviour
     {
         if (morto) return;
         ultimoColpitore = chi;
+        UltimoColpo = Time.time;
+        RicordaDanno(chi, danno);
 
         if (Sbilanciato) danno *= dannoDaSbilanciato;
         vita -= danno;
@@ -285,6 +371,7 @@ public class Bersaglio : MonoBehaviour
     {
         if (morto) return;
         vita = vitaRimasta;
+        UltimoColpo = Time.time;
         Colpito?.Invoke();
         if (!staAttaccando) StartCoroutine(Lampeggia(critico));
     }

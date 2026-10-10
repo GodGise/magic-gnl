@@ -70,6 +70,17 @@ Ordine proposto (stato all'8 ottobre):
 - **Per cambiare i numeri in modo permanente**: metti il componente `DifficoltaCoop` su un oggetto vuoto della scena e modifica le tre tabelle. Se non c'è, il gioco ne crea uno con i valori di partenza.
 - **Non fatto**: il numero di nemici per gruppo. I gruppi sono messi a mano nelle scene, quindi servirebbe un'idea di Lorenzo (per esempio nemici in più che compaiono solo in co-op).
 
+## Combinazioni troppo forti in co-op (decise da Lorenzo il 10 ottobre)
+
+- **Controlli e Stregoni:** per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti sui nemici durano il 30% in meno (si moltiplica: 1 Stregone ×0,7, 2 ×0,49, 3 ×0,34). Da soli non cambia niente. Numero nell'Inspector di `DifficoltaCoop`.
+- **Chi fa più danno si prende i colpi:** ogni 7 s un nemico passa al giocatore che gli fa più danno, se è entro 25 m (`Bersaglio`, "Cambio Bersaglio Ogni" e "Raggio Cambio Bersaglio").
+- **A terra e rianimazione:** in co-op chi arriva a zero vita va a terra; un alleato lo rialza tenendo premuto E per 3 s e torna con il 30% della vita (`RianimaAlleato`, `GiocatoreControllo`). Cadendo nel vuoto si rinasce al checkpoint.
+- **Boss:** in uno scontro con un boss si va a terra una volta sola; la seconda si diventa spettatori (la camera segue un alleato) e si torna in gioco accanto a lui a fine scontro. Se tutto il gruppo è a terra, tutti rinascono al checkpoint e il boss torna al suo posto con la vita piena (`CombattimentoBoss`). Da soli, morendo contro un boss, il boss ricomincia da capo.
+- **Bambole di ossa:** i boss le ignorano.
+- **Fuochi fatui:** in co-op al massimo 2 per Stregone (da soli 3).
+- **Esecuzioni furtive:** chi vede un'esecuzione entro 8 m va in allerta per 15 s (non è ignaro).
+- Rete: la classe di ogni giocatore e lo stato "a terra / spettatore" viaggiano con `GiocatoreRete`; "gruppo sconfitto" lo manda l'host con `MondoRete.InviaGruppoSconfitto`.
+
 ## Fonti
 
 - Netcode for GameObjects, manuale: https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@2.8/manual/index.html
