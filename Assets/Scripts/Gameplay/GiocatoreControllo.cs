@@ -366,6 +366,17 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         comandoAbilita = new InputAction("Abilita", InputActionType.Button);
         comandoAbilita.AddBinding("<Keyboard>/q");
         comandoAbilita.AddBinding("<Gamepad>/dpad/up");
+
+        // Tasti scelti dal giocatore in Opzioni > Comandi (vedi Comandi.cs): sostituiscono quelli scritti sopra.
+        Comandi.Collega(comandoMuovi, Azione.Avanti, this);
+        Comandi.Collega(comandoMuovi, Azione.Indietro, this);
+        Comandi.Collega(comandoMuovi, Azione.Sinistra, this);
+        Comandi.Collega(comandoMuovi, Azione.Destra, this);
+        Comandi.Collega(comandoSchiva, Azione.Schiva, this);
+        Comandi.Collega(comandoAttacca, Azione.Attacca, this);
+        Comandi.Collega(comandoPara, Azione.Para, this);
+        Comandi.Collega(comandoSprint, Azione.Corsa, this);
+        Comandi.Collega(comandoAbilita, Azione.Abilita, this);
     }
 
     void Update()
@@ -433,7 +444,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
         // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
         vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
-        if (vittimaPossibile != null) HudGioco.MostraAzione(Lingua.T("hud.tasto_attacco"), Lingua.T("hud.esecuzione"));
+        if (vittimaPossibile != null) HudGioco.MostraAzione(Comandi.NomeTasto(Azione.Attacca), Lingua.T("hud.esecuzione"));
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
 

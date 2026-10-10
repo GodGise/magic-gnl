@@ -37,7 +37,7 @@ public static class Impostazioni
             effetto.attivo = retro;
     }
 
-    // Aggiunge all'elenco le voci delle opzioni (lingua, volumi, schermo intero, effetto retro) e "Indietro".
+    // Aggiunge all'elenco le voci delle opzioni (lingua, volumi, schermo intero, effetto retro, comandi) e "Indietro".
     public static void AggiungiVoci(ElencoMenu elenco, System.Action indietro)
     {
         elenco.voci.Add(new VoceMenu
@@ -75,6 +75,8 @@ public static class Impostazioni
             conferma = () => EffettoRetro = !EffettoRetro,
             regola = d => EffettoRetro = !EffettoRetro,
         });
+        // Comandi: apre la schermata con la tastiera e il cambio dei tasti (MenuComandi)
+        elenco.Aggiungi(() => Lingua.T("menu.comandi"), MenuComandi.Apri);
         elenco.Aggiungi(() => Lingua.T("menu.indietro"), indietro);
     }
 

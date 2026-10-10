@@ -181,6 +181,8 @@ public class MenuPausa : MonoBehaviour
             return;
         }
         if (nelMenuIniziale) return;
+        // la schermata dei comandi legge da sola i suoi tasti (anche Esc)
+        if (MenuComandi.Aperto || MenuComandi.FotogrammaChiusura == Time.frameCount) return;
 
         var tastiera = Keyboard.current;
         var pad = Gamepad.current;
@@ -209,7 +211,7 @@ public class MenuPausa : MonoBehaviour
 
     void OnGUI()
     {
-        if (schermata == Schermata.Chiuso) return;
+        if (schermata == Schermata.Chiuso || MenuComandi.Aperto) return;
         GUI.depth = -100;   // sopra a tutte le altre scritte del gioco
 
         GraficaMenu.PreparaStili();

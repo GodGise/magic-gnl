@@ -41,6 +41,7 @@ public class AggancioBersaglio : MonoBehaviour
         comandoAggancia = new InputAction("Aggancia", InputActionType.Button);
         comandoAggancia.AddBinding("<Mouse>/middleButton");
         comandoAggancia.AddBinding("<Gamepad>/rightStickPress");
+        Comandi.Collega(comandoAggancia, Azione.Aggancia, this);   // tasto scelto in Opzioni > Comandi
 
         comandoMouse = new InputAction("CambiaBersaglioMouse", InputActionType.Value);
         comandoMouse.AddBinding("<Mouse>/delta");

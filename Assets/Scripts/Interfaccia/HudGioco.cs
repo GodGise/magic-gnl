@@ -29,6 +29,8 @@ public class HudGioco : MonoBehaviour
 
     public static void MostraAzione(string tasto, string testo)
     {
+        // "E" è il tasto per interagire: si mostra quello scelto dal giocatore in Opzioni > Comandi.
+        if (tasto == "E") tasto = Comandi.NomeTasto(Azione.Interagisci);
         azioneTasto = tasto;
         azioneTesto = testo;
         azioneFotogramma = Time.frameCount;
@@ -319,14 +321,27 @@ public class HudGioco : MonoBehaviour
     void DisegnaAzione(float larghezza, float altezza)
     {
         if (Time.frameCount - azioneFotogramma > 1 || string.IsNullOrEmpty(azioneTesto)) return;
-        float w = Mathf.Clamp(GraficaMenu.TestoSinistra.CalcSize(new GUIContent(azioneTesto)).x + 110f, 360f, 900f);
+        // il tasto: una lettera sta nel rombo; un nome lungo (per esempio "Mouse sinistro") in un riquadro
+        float kw = GraficaMenu.Etichetta.CalcSize(new GUIContent(azioneTasto)).x;
+        bool lungo = kw > 30f;
+        float spazioTasto = lungo ? kw + 44f : 72f;
+        float w = Mathf.Clamp(GraficaMenu.TestoSinistra.CalcSize(new GUIContent(azioneTesto)).x + spazioTasto + 38f, 360f, 1100f);
         var r = new Rect(larghezza * 0.5f - w * 0.5f, altezza - 100f, w, 56f);
         GraficaMenu.Cornice(r, 0.95f, false);
-        var c = new Vector2(r.x + 40f, r.center.y);
-        GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
-        GraficaMenu.Scritta(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
+        if (lungo)
+        {
+            var k = new Rect(r.x + 14f, r.y + 12f, kw + 16f, r.height - 24f);
+            GraficaMenu.Riempi(k, GraficaMenu.Bronzo);
+            GraficaMenu.Scritta(k, azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
+        }
+        else
+        {
+            var c = new Vector2(r.x + 40f, r.center.y);
+            GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
+            GraficaMenu.Scritta(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
+        }
         var testo = new GUIStyle(GraficaMenu.TestoSinistra) { wordWrap = false };
-        GraficaMenu.Scritta(new Rect(r.x + 72f, r.y, r.width - 90f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
+        GraficaMenu.Scritta(new Rect(r.x + spazioTasto, r.y, r.width - spazioTasto - 18f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
     }
 
     void DisegnaOra(float larghezza)

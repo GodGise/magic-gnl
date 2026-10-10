@@ -397,6 +397,8 @@ public class MenuPrincipale : MonoBehaviour
 
         // durante la transizione verso il menu i comandi non contano: un solo tasto avvia la sequenza
         if (inTransizione) return;
+        // la schermata dei comandi (Opzioni > Comandi) legge da sola i suoi tasti, anche Esc
+        if (MenuComandi.Aperto || MenuComandi.FotogrammaChiusura == Time.frameCount) return;
 
         if (schermata == Schermata.Titolo)
         {
@@ -591,6 +593,7 @@ public class MenuPrincipale : MonoBehaviour
         if (grigio > 0.001f)
             GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0.30f, 0.32f, 0.37f, 0.62f * grigio));
         GraficaMenu.FoglioVirtuale();
+        if (MenuComandi.Aperto) return;   // sopra c'è la schermata dei comandi: il paesaggio resta, il menu no
         elenco.InizioGUI();
         DisegnaBraci();
 

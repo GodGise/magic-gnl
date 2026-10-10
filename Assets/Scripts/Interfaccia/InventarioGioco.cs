@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// Inventario in partita (disegno approvato in Docs/interfaccia.md). Tab (o I, o Select sul pad) apre e chiude.
+// Inventario in partita (disegno approvato in Docs/interfaccia.md). Tab (o il tasto scelto in Opzioni > Comandi, o Select sul pad) apre e chiude.
 //   - a sinistra: la sagoma del personaggio con le 4 caselle (Arma, Scudo, Armatura, Amuleto) e le statistiche;
 //   - a destra: lo zaino, una griglia con gli oggetti raccolti;
 //   - sotto lo zaino: il dettaglio dell'oggetto scelto, con il confronto con quello che hai addosso
@@ -392,8 +392,8 @@ public class InventarioGioco : MonoBehaviour
 
         var tastiera = Keyboard.current;
         var pad = Gamepad.current;
-        bool tasto = (tastiera != null && (tastiera.tabKey.wasPressedThisFrame || tastiera.iKey.wasPressedThisFrame))
-                     || (pad != null && pad.selectButton.wasPressedThisFrame);
+        // il tasto dell'inventario si sceglie in Opzioni > Comandi (Tab all'inizio)
+        bool tasto = Comandi.PremutoOra(Azione.Inventario) || (pad != null && pad.selectButton.wasPressedThisFrame);
 
         if (!Aperto)
         {
@@ -417,7 +417,7 @@ public class InventarioGioco : MonoBehaviour
         if (c.orizzontale != 0 || c.verticale != 0) { casellaAccesa = -1; Muovi(c.orizzontale, c.verticale); }
         if (conferma) { casellaAccesa = -1; Conferma(); }
         // pulsante lasciato fuori dalla finestra: il trascinamento si annulla
-        if (preso != null && Mouse.current != null && !Mouse.current.leftButton.isPressed) { preso = null; trascinando = false; }
+        if (preso != null && Mouse.current != null && !Mouse.current.leftButton.isPressed && !Mouse.current.leftButton.wasReleasedThisFrame) { preso = null; trascinando = false; }
     }
 
     void Muovi(int dx, int dy)

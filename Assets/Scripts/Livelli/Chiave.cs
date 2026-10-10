@@ -35,6 +35,7 @@ public class Chiave : MonoBehaviour, IOggettoCondiviso
         comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
         comandoInteragisci.AddBinding("<Keyboard>/e");
         comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
+        Comandi.Collega(comandoInteragisci, Azione.Interagisci, this);   // tasto scelto in Opzioni > Comandi
     }
 
     void OnEnable() => comandoInteragisci.Enable();
