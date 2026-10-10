@@ -15,6 +15,7 @@ using UnityEngine;
 // Come montarlo: non serve montarlo, si crea da solo la prima volta che un nemico lo chiede (con i valori di partenza).
 // Per cambiare i numeri in modo permanente: metti il componente su un oggetto vuoto della scena (per esempio
 // "Difficolta co-op") e modifica le tre tabelle nell'Inspector. Se ci sono due oggetti, vale il primo trovato.
+// Danno dei nemici deciso da Lorenzo l'11 ottobre: x1 da soli, x1,25 in 2, x1,5 in 3.
 // Regole contro le combinazioni troppo forti in co-op (Lorenzo, 10 ottobre; valgono solo con 2 o più giocatori):
 //   - per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti sui nemici durano il 30% in meno
 //     (si moltiplica: 1 Stregone ×0,7, 2 Stregoni ×0,49, 3 Stregoni ×0,34; vedi EffettiNemico);
@@ -46,8 +47,8 @@ public class DifficoltaCoop : MonoBehaviour
 
     [Header("Moltiplicatori per numero di giocatori (valori provvisori)")]
     [SerializeField] Livello unGiocatore = new Livello(1f, 1f, 1f, 1f);
-    [SerializeField] Livello dueGiocatori = new Livello(2.5f, 2.5f, 1.5f, 1.25f);
-    [SerializeField] Livello treGiocatori = new Livello(4f, 4f, 2f, 1.5f);
+    [SerializeField] Livello dueGiocatori = new Livello(2.5f, 2.5f, 1.25f, 1.25f);
+    [SerializeField] Livello treGiocatori = new Livello(4f, 4f, 1.5f, 1.5f);
 
     [Header("Combinazioni troppo forti in co-op (solo con 2 o più giocatori)")]
     [Tooltip("Per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti durano questa percentuale in meno (si moltiplica).")]
