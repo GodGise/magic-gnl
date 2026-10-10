@@ -32,6 +32,11 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 10 ottobre, sera: la gattabuia (da leggere)
+Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gattabuia`). In breve: si arriva morendo contro l'orco della piazza; circa 30 minuti; la cella si apre forzando una sbarra arrugginita; in co-op celle separate nello stesso corridoio, solo l'host si libera da solo e apre le celle degli altri; i prigionieri sono tutti morti; un miniboss nelle grotte è l'ultimo scontro prima dell'uscita.
+- **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo all'uscita) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
+- **Per Nazar:** tre modelli nuovi in fondo al documento (sbarra arrugginita, mucchio del bottino, prigionieri morti); il resto è già nella sua lista.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
