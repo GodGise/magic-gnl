@@ -84,11 +84,12 @@ public class MenuPrincipale : MonoBehaviour
     [Tooltip("Quante braci salgono dal basso dello schermo.")]
     [SerializeField] int numeroBraci = 46;
 
-    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento }
+    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento, Difficolta, ConfermaDifficolta }
 
     // Come parte la partita dopo la scelta della classe: da soli, ospitando gli amici, o entrando da un amico.
     enum Modo { DaSolo, Ospita, Entra }
     Modo modo = Modo.DaSolo;
+    LivelloDifficolta difficoltaDaConfermare;   // il livello scelto, in attesa del "Sì, sono sicuro"
     const string ChiaveIndirizzo = "UltimoIndirizzoHost";
     string indirizzo = "127.0.0.1";
     List<string> indirizziMiei = new List<string>();
@@ -220,7 +221,33 @@ public class MenuPrincipale : MonoBehaviour
                 break;
 
             case Schermata.Opzioni:
-                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Principale));
+                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Principale), () => VaiA(Schermata.Difficolta));
+                break;
+
+            // Difficoltà: si può cambiare una volta sola, quindi prima c'è la conferma (vedi Difficolta.cs).
+            case Schermata.Difficolta:
+                for (int i = 0; i < Difficolta.Chiavi.Length; i++)
+                {
+                    var livello = (LivelloDifficolta)i;
+                    elenco.Aggiungi(() => Difficolta.Nome(livello), () =>
+                    {
+                        if (livello == Difficolta.Livello) { VaiA(Schermata.Opzioni); return; }
+                        difficoltaDaConfermare = livello;
+                        VaiA(Schermata.ConfermaDifficolta);
+                    });
+                }
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Opzioni));
+                elenco.selezione = (int)Difficolta.Livello;
+                break;
+
+            case Schermata.ConfermaDifficolta:
+                elenco.Aggiungi(() => Lingua.T("comune.si"), () =>
+                {
+                    Difficolta.Scegli(difficoltaDaConfermare);
+                    VaiA(Schermata.Opzioni);
+                });
+                elenco.Aggiungi(() => Lingua.T("comune.no"), () => VaiA(Schermata.Difficolta));
+                elenco.selezione = 1;   // di partenza su "No": il cambio è per sempre
                 break;
 
             case Schermata.Crediti:
@@ -260,6 +287,8 @@ public class MenuPrincipale : MonoBehaviour
             case Schermata.Opzioni:
             case Schermata.Crediti:
             case Schermata.Multigiocatore: VaiA(Schermata.Principale); break;
+            case Schermata.Difficolta: VaiA(Schermata.Opzioni); break;
+            case Schermata.ConfermaDifficolta: VaiA(Schermata.Difficolta); break;
             case Schermata.Indirizzo: VaiA(Schermata.Multigiocatore); break;
             case Schermata.Collegamento: AnnullaCollegamento(); break;
         }
@@ -649,6 +678,21 @@ public class MenuPrincipale : MonoBehaviour
             }
             case Schermata.Opzioni:
                 if (elenco.DisegnaOpzioni(370f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.Difficolta:
+            {
+                GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("difficolta.titolo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(420f, 640f, comparsa, Bloccato)) return;
+                int scelto = elenco.selezione;   // sotto, due righe su cosa cambia nel livello puntato
+                if (scelto >= 0 && scelto < Difficolta.ChiaviDescrizione.Length)
+                    GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 560f, 790f, 1120f, 120f), Lingua.T(Difficolta.ChiaviDescrizione[scelto]), GraficaMenu.Descrizione, GraficaMenu.Spento, comparsa);
+                break;
+            }
+            case Schermata.ConfermaDifficolta:
+                GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("difficolta.sicuro"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                GraficaMenu.Scritta(new Rect(0, 405, Larghezza, 60), Lingua.T("opzioni.difficolta") + ":  " + Difficolta.Nome(difficoltaDaConfermare), GraficaMenu.Voce, GraficaMenu.Bronzo, comparsa);
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 560f, 475f, 1120f, 120f), Lingua.T("difficolta.avviso"), GraficaMenu.Descrizione, GraficaMenu.Selezione, comparsa);
+                if (elenco.DisegnaElenco(630f, 520f, comparsa, Bloccato)) return;
                 break;
             case Schermata.Classe:
                 if (DisegnaClassi(comparsa)) return;

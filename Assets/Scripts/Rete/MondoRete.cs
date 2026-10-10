@@ -104,7 +104,7 @@ public class MondoRete : NetworkBehaviour
             morti[i] = (byte)(b != null && b.Morto ? 1 : 0);
         }
         // Prima quanti giocatori ci sono (la difficoltà), poi la vita esatta di ogni nemico.
-        GiocatoriRpc((byte)DifficoltaCoop.Giocatori, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
+        GiocatoriRpc((byte)DifficoltaCoop.Giocatori, (byte)DifficoltaCoop.LivelloAttuale, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
         StatoRpc(numeri, vite, morti, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
 
         var oggetti = RegistroCondivisi.Tutti;
@@ -166,8 +166,8 @@ public class MondoRete : NetworkBehaviour
 
     // ---------- difficoltà (host -> tutti) ----------
 
-    // L'host dice a tutti quanti giocatori ci sono, con la vita nuova di ogni nemico (già ricalcolata sull'host).
-    public static void InviaDifficolta(int giocatori)
+    // L'host dice a tutti quanti giocatori ci sono e il livello di difficoltà, con la vita nuova di ogni nemico (già ricalcolata sull'host).
+    public static void InviaDifficolta(int giocatori, int livello)
     {
         if (!SonoHost) return;
         var nemici = RegistroNemici.Tutti;
@@ -178,21 +178,21 @@ public class MondoRete : NetworkBehaviour
             numeri[i] = nemici[i] != null ? nemici[i].NumeroRete : -1;
             vite[i] = nemici[i] != null ? nemici[i].Vita : 0f;
         }
-        Istanza.DifficoltaRpc((byte)giocatori, numeri, vite);
+        Istanza.DifficoltaRpc((byte)giocatori, (byte)livello, numeri, vite);
     }
 
     [Rpc(SendTo.NotServer)]
-    void DifficoltaRpc(byte giocatori, int[] numeri, float[] vite)
+    void DifficoltaRpc(byte giocatori, byte livello, int[] numeri, float[] vite)
     {
-        DifficoltaCoop.ImpostaDaRete(giocatori);
+        DifficoltaCoop.ImpostaDaRete(giocatori, livello);
         for (int i = 0; i < numeri.Length; i++) RegistroNemici.Trova(numeri[i])?.ImpostaVitaDaRete(vite[i]);
     }
 
-    // Per chi entra a partita iniziata: solo il numero di giocatori (la vita arriva con StatoRpc).
+    // Per chi entra a partita iniziata: solo giocatori e livello (la vita arriva con StatoRpc).
     [Rpc(SendTo.SpecifiedInParams)]
-    void GiocatoriRpc(byte giocatori, RpcParams parametri)
+    void GiocatoriRpc(byte giocatori, byte livello, RpcParams parametri)
     {
-        DifficoltaCoop.ImpostaDaRete(giocatori);
+        DifficoltaCoop.ImpostaDaRete(giocatori, livello);
     }
 
     // ---------- eventi dei nemici (host -> tutti) ----------

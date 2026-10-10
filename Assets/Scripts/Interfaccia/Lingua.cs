@@ -294,6 +294,18 @@ public static class Lingua
         ["comune.si"] = new[] { "Sì", "Yes", "Sí", "Oui", "Ja", "Sim", "Да", "是" },
         ["comune.no"] = new[] { "No", "No", "No", "Non", "Nein", "Não", "Нет", "否" },
 
+        // Difficoltà: Normale, Difficile, Estremo (Difficolta.cs), scelta e conferma nel menu iniziale.
+        ["opzioni.difficolta"] = new[] { "Difficoltà", "Difficulty", "Dificultad", "Difficulté", "Schwierigkeit", "Dificuldade", "Сложность", "难度" },
+        ["difficolta.normale"] = new[] { "Normale", "Normal", "Normal", "Normal", "Normal", "Normal", "Нормальная", "普通" },
+        ["difficolta.difficile"] = new[] { "Difficile", "Hard", "Difícil", "Difficile", "Schwer", "Difícil", "Трудная", "困难" },
+        ["difficolta.estremo"] = new[] { "Estremo", "Extreme", "Extremo", "Extrême", "Extrem", "Extremo", "Экстремальная", "极端" },
+        ["difficolta.titolo"] = new[] { "Scegli la difficoltà", "Choose the difficulty", "Elige la dificultad", "Choisis la difficulté", "Wähle den Schwierigkeitsgrad", "Escolha a dificuldade", "Выбери сложность", "选择难度" },
+        ["difficolta.sicuro"] = new[] { "Sei sicuro?", "Are you sure?", "¿Estás seguro?", "Es-tu sûr ?", "Bist du sicher?", "Tem certeza?", "Ты уверен?", "你确定吗？" },
+        ["difficolta.avviso"] = new[] { "Se cambi questa impostazione non potrai più cambiarla in seguito.", "If you change this setting, you will not be able to change it again later.", "Si cambias este ajuste, no podrás volver a cambiarlo más adelante.", "Si tu changes ce réglage, tu ne pourras plus le modifier par la suite.", "Wenn du diese Einstellung änderst, kannst du sie später nicht mehr ändern.", "Se você mudar esta configuração, não poderá mais mudá-la depois.", "Если ты изменишь эту настройку, потом её нельзя будет изменить.", "如果更改此设置，之后将无法再次更改。" },
+        ["difficolta.desc_normale"] = new[] { "La sfida di base del gioco.", "The game's standard challenge.", "El desafío base del juego.", "Le défi de base du jeu.", "Die Standardherausforderung des Spiels.", "O desafio básico do jogo.", "Базовое испытание игры.", "游戏的基础挑战。" },
+        ["difficolta.desc_difficile"] = new[] { "Nemici più resistenti, che colpiscono più forte e attaccano più spesso.", "Tougher enemies that hit harder and attack more often.", "Enemigos más resistentes que golpean más fuerte y atacan con más frecuencia.", "Des ennemis plus résistants, qui frappent plus fort et attaquent plus souvent.", "Zähere Gegner, die härter zuschlagen und häufiger angreifen.", "Inimigos mais resistentes, que batem mais forte e atacam com mais frequência.", "Враги крепче, бьют сильнее и атакуют чаще.", "敌人更坚韧，攻击更猛烈，出手更频繁。" },
+        ["difficolta.desc_estremo"] = new[] { "Per chi cerca la prova più dura: nemici molto più forti e aggressivi.", "For those who want the hardest test: far stronger, more aggressive enemies.", "Para quien busca la prueba más dura: enemigos mucho más fuertes y agresivos.", "Pour ceux qui cherchent l'épreuve la plus dure : des ennemis bien plus forts et agressifs.", "Für alle, die die härteste Prüfung suchen: viel stärkere und aggressivere Gegner.", "Para quem busca o teste mais duro: inimigos muito mais fortes e agressivos.", "Для тех, кто ищет самое трудное испытание: куда более сильные и агрессивные враги.", "为追求最严峻考验的玩家：敌人强大得多，也更具攻击性。" },
+
         // Oggetti del Guerriero (chiavi usate da DatiOggetto: oggetto.<chiave>.nome e oggetto.<chiave>.descrizione).
         // ---------- oggetti del Ladro (Docs/oggetti-ladro.md) ----------
         ["oggetto.pugnale_scuoiare.nome"] = new[] { "Pugnale da scuoiare", "Skinning Knife", "Cuchillo de desollar", "Couteau à dépecer", "Häutemesser", "Faca de esfolar", "Нож для свежевания", "剥皮匕首" },

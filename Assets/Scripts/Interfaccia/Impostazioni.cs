@@ -37,8 +37,10 @@ public static class Impostazioni
             effetto.attivo = retro;
     }
 
-    // Aggiunge all'elenco le voci delle opzioni (lingua, volumi, schermo intero, effetto retro, comandi) e "Indietro".
-    public static void AggiungiVoci(ElencoMenu elenco, System.Action indietro)
+    // Aggiunge all'elenco le voci delle opzioni (lingua, volumi, schermo intero, effetto retro, difficoltà, comandi) e "Indietro".
+    // "apriDifficolta": cosa fare per cambiare la difficoltà (il menu iniziale apre la scelta con la conferma).
+    // Se è vuoto (menu di pausa) la voce mostra la difficoltà ma è spenta; spenta anche dopo il cambio, che è definitivo.
+    public static void AggiungiVoci(ElencoMenu elenco, System.Action indietro, System.Action apriDifficolta = null)
     {
         elenco.voci.Add(new VoceMenu
         {
@@ -75,6 +77,8 @@ public static class Impostazioni
             conferma = () => EffettoRetro = !EffettoRetro,
             regola = d => EffettoRetro = !EffettoRetro,
         });
+        elenco.Aggiungi(() => Lingua.T("opzioni.difficolta") + ":  " + Difficolta.Nome(Difficolta.Livello), apriDifficolta).attiva =
+            apriDifficolta != null && !Difficolta.Bloccata;
         // Comandi: apre la schermata con la tastiera e il cambio dei tasti (MenuComandi)
         elenco.Aggiungi(() => Lingua.T("menu.comandi"), MenuComandi.Apri);
         elenco.Aggiungi(() => Lingua.T("menu.indietro"), indietro);

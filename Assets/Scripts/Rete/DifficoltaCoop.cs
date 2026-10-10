@@ -12,6 +12,8 @@ using UnityEngine;
 // nemici già feriti tengono la stessa percentuale di vita. Lo calcola l'host (come tutto sui nemici) e lo manda agli
 // altri (vedi MondoRete.InviaDifficolta), così la barra della vita di un nemico è uguale su tutti i PC.
 // Da soli e nel menu il numero è 1 e tutti i moltiplicatori valgono 1: niente cambia.
+// Oltre ai giocatori conta il livello scelto dal giocatore (Normale, Difficile, Estremo: vedi Difficolta.cs):
+// i due moltiplicatori si moltiplicano fra loro. Normale vale 1. In co-op conta il livello di chi ospita.
 // Come montarlo: non serve montarlo, si crea da solo la prima volta che un nemico lo chiede (con i valori di partenza).
 // Per cambiare i numeri in modo permanente: metti il componente su un oggetto vuoto della scena (per esempio
 // "Difficolta co-op") e modifica le tre tabelle nell'Inspector. Se ci sono due oggetti, vale il primo trovato.
@@ -45,11 +47,19 @@ public class DifficoltaCoop : MonoBehaviour
     [SerializeField] Livello dueGiocatori = new Livello(2.5f, 2.5f, 1.5f, 1.25f);
     [SerializeField] Livello treGiocatori = new Livello(4f, 4f, 2f, 1.5f);
 
-    // Scatta quando cambia il numero di giocatori (chi ascolta, per esempio Bersaglio, ricalcola i suoi numeri).
+    [Header("Moltiplicatori per livello di difficoltà (si moltiplicano a quelli dei giocatori; valori provvisori)")]
+    [SerializeField] Livello normale = new Livello(1f, 1f, 1f, 1f);
+    [SerializeField] Livello difficile = new Livello(1.5f, 1.5f, 1.5f, 1.25f);
+    [SerializeField] Livello estremo = new Livello(2.5f, 2.5f, 2.5f, 1.5f);
+
+    // Scatta quando cambia il numero di giocatori o il livello (chi ascolta, per esempio Bersaglio, ricalcola i suoi numeri).
     public static event Action Cambiata;
 
     // Quanti giocatori ci sono adesso (da 1 a ReteCoop.GiocatoriMassimi).
     public static int Giocatori { get; private set; } = 1;
+
+    // Il livello in uso adesso (da soli: quello scelto nel menu; in co-op: quello dell'host).
+    public static LivelloDifficolta LivelloAttuale { get; private set; } = LivelloDifficolta.Normale;
 
     static DifficoltaCoop istanza;
     float prossimoControllo;
@@ -69,17 +79,27 @@ public class DifficoltaCoop : MonoBehaviour
         }
     }
 
+    // I moltiplicatori di adesso: quelli per i giocatori per quelli del livello.
     static Livello Attuale
     {
         get
         {
             var d = Istanza;
+            Livello g, l;
             switch (Giocatori)
             {
-                case 1: return d.unGiocatore;
-                case 2: return d.dueGiocatori;
-                default: return d.treGiocatori;
+                case 1: g = d.unGiocatore; break;
+                case 2: g = d.dueGiocatori; break;
+                default: g = d.treGiocatori; break;
             }
+            switch (LivelloAttuale)
+            {
+                case LivelloDifficolta.Difficile: l = d.difficile; break;
+                case LivelloDifficolta.Estremo: l = d.estremo; break;
+                default: l = d.normale; break;
+            }
+            return new Livello(Valido(g.vitaNemici) * Valido(l.vitaNemici), Valido(g.vitaBoss) * Valido(l.vitaBoss),
+                Valido(g.dannoNemici) * Valido(l.dannoNemici), Valido(g.frequenzaAttacchi) * Valido(l.frequenzaAttacchi));
         }
     }
 
@@ -93,6 +113,8 @@ public class DifficoltaCoop : MonoBehaviour
     void Awake()
     {
         if (istanza == null) istanza = this;
+        // Da soli (o prima di collegarsi) vale la scelta fatta nel menu.
+        if (!Rete.Attiva) LivelloAttuale = Difficolta.Livello;
     }
 
     void OnDestroy()
@@ -106,21 +128,23 @@ public class DifficoltaCoop : MonoBehaviour
         prossimoControllo = Time.unscaledTime + 0.5f;
 
         // Fuori dalla rete si è soli. Chi non ospita aspetta il numero dall'host (vedi ImpostaDaRete).
-        if (!Rete.Attiva) Imposta(1);
-        else if (Rete.ComandaIlMondo) Imposta(1 + GiocatoreRete.Altri.Count);
+        if (!Rete.Attiva) Imposta(1, Difficolta.Livello);
+        else if (Rete.ComandaIlMondo) Imposta(1 + GiocatoreRete.Altri.Count, Difficolta.Livello);
     }
 
-    // Su chi non ospita: l'host ha mandato quanti giocatori ci sono (vedi MondoRete).
-    public static void ImpostaDaRete(int giocatori) => Imposta(giocatori);
+    // Su chi non ospita: l'host ha mandato quanti giocatori ci sono e il livello di difficoltà (vedi MondoRete).
+    public static void ImpostaDaRete(int giocatori, int livello) =>
+        Imposta(giocatori, (LivelloDifficolta)Mathf.Clamp(livello, 0, Difficolta.Chiavi.Length - 1));
 
-    static void Imposta(int giocatori)
+    static void Imposta(int giocatori, LivelloDifficolta livello)
     {
         giocatori = Mathf.Clamp(giocatori, 1, ReteCoop.GiocatoriMassimi);
-        if (giocatori == Giocatori) return;
+        if (giocatori == Giocatori && livello == LivelloAttuale) return;
         Giocatori = giocatori;
-        Debug.Log("[Difficoltà] Giocatori: " + giocatori);
+        LivelloAttuale = livello;
+        Debug.Log("[Difficoltà] Giocatori: " + giocatori + ", livello: " + livello);
         Cambiata?.Invoke();
         // L'host dice a tutti le nuove vite dei nemici (già ricalcolate da Cambiata).
-        if (Rete.Attiva && Rete.ComandaIlMondo) MondoRete.InviaDifficolta(giocatori);
+        if (Rete.Attiva && Rete.ComandaIlMondo) MondoRete.InviaDifficolta(giocatori, (int)livello);
     }
 }
