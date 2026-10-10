@@ -11,6 +11,12 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 10 ottobre, pomeriggio: scaletta del capitolo 1 (da leggere, serve il tuo parere)
+Giuseppe vuole far uscire il capitolo 1: esplorazione di Villaggio Lago Nero e, di notte, la razzia degli orchi. Il suo Claude ha scritto la scaletta in `Docs/capitolo-1.md`: stato attuale, 5 traguardi in ordine e chi fa cosa. Leggila tutta, poi rispondi qui sotto.
+- **Tocca a te (level design e bilanciamento):** il percorso di esplorazione del villaggio (cosa trovare e dove), la razzia a ondate, il secondo tipo di nemico, i numeri dell'orco enorme. Il primo traguardo è tutto "in grigio", con forme provvisorie.
+- **Domande per te:** (1) il percorso di 20-30 minuti ti sembra giusto? (2) la razzia a ondate, come te la immagini? (3) lo scontro con l'orco enorme è scritto e non si può vincere: ti va bene? (4) la scena `VillaggioLagoNero.unity` è tua come la zona di prova, oppure la tiene Giuseppe?
+- Le decisioni sulle 6 domande in cima al documento le prende Giuseppe: non iniziare lavori grandi prima che le abbia risposte.
+
 ### 10 ottobre, notte: la difficoltà cresce con i giocatori (serve la tua occhiata ai numeri)
 Giuseppe ha deciso: classi libere (la tua proposta "una classe per giocatore" è chiusa, vedi sotto) e più giocatori = nemici più forti. Il suo Claude ha programmato il meccanismo (ramo `giuseppec/difficolta-coop`, script `DifficoltaCoop.cs`, spiegazione in `Docs/rete-coop.md`). **I numeri sono provvisori e li decidi tu**: per ogni numero di giocatori si regolano dall'Inspector vita dei nemici, vita dei boss, danno dei nemici e frequenza degli attacchi.
 - Partenza: 2 giocatori = vita x2,5, danno x1,5, attacchi x1,25; 3 giocatori = vita x4, danno x2, attacchi x1,5.
