@@ -84,11 +84,12 @@ public class MenuPrincipale : MonoBehaviour
     [Tooltip("Quante braci salgono dal basso dello schermo.")]
     [SerializeField] int numeroBraci = 46;
 
-    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento }
+    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento, ConfermaEsci }
 
     // Come parte la partita dopo la scelta della classe: da soli, ospitando gli amici, o entrando da un amico.
     enum Modo { DaSolo, Ospita, Entra }
     Modo modo = Modo.DaSolo;
+    Impostazioni.Sezione sezioneOpzioni = Impostazioni.Sezione.Principale;   // quale pagina delle opzioni è aperta
     const string ChiaveIndirizzo = "UltimoIndirizzoHost";
     string indirizzo = "127.0.0.1";
     List<string> indirizziMiei = new List<string>();
@@ -203,9 +204,9 @@ public class MenuPrincipale : MonoBehaviour
                 elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => { modo = Modo.DaSolo; VaiA(Schermata.Classe); });
                 elenco.Aggiungi(() => Lingua.T("menu.multigiocatore"), () => VaiA(Schermata.Multigiocatore));
                 elenco.Aggiungi(() => Lingua.T("menu.continua"), null).attiva = false;
-                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
+                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => { sezioneOpzioni = Impostazioni.Sezione.Principale; VaiA(Schermata.Opzioni); });
                 elenco.Aggiungi(() => Lingua.T("menu.crediti"), () => VaiA(Schermata.Crediti));
-                elenco.Aggiungi(() => Lingua.T("menu.esci"), Esci);
+                elenco.Aggiungi(() => Lingua.T("menu.esci"), () => VaiA(Schermata.ConfermaEsci));
                 break;
 
             case Schermata.Classe:
@@ -220,7 +221,13 @@ public class MenuPrincipale : MonoBehaviour
                 break;
 
             case Schermata.Opzioni:
-                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Principale));
+                Impostazioni.AggiungiVoci(elenco, sezioneOpzioni, s => { sezioneOpzioni = s; VaiA(Schermata.Opzioni); }, IndietroOpzioni);
+                break;
+
+            // Uscire dal gioco: prima la conferma, di partenza su "No".
+            case Schermata.ConfermaEsci:
+                elenco.Aggiungi(() => Lingua.T("comune.no"), () => VaiA(Schermata.Principale));
+                elenco.Aggiungi(() => Lingua.T("comune.si"), Esci);
                 break;
 
             case Schermata.Crediti:
@@ -257,12 +264,24 @@ public class MenuPrincipale : MonoBehaviour
                 else if (modo == Modo.Entra) VaiA(Schermata.Indirizzo);
                 else VaiA(Schermata.Principale);
                 break;
-            case Schermata.Opzioni:
+            case Schermata.Opzioni: IndietroOpzioni(); break;
             case Schermata.Crediti:
+            case Schermata.ConfermaEsci:
             case Schermata.Multigiocatore: VaiA(Schermata.Principale); break;
             case Schermata.Indirizzo: VaiA(Schermata.Multigiocatore); break;
             case Schermata.Collegamento: AnnullaCollegamento(); break;
         }
+    }
+
+    // Indietro nelle opzioni: da una sezione (Audio, Video, Controlli) si torna alla pagina principale delle opzioni,
+    // con la selezione sulla sezione appena lasciata; dalla pagina principale si torna al menu.
+    void IndietroOpzioni()
+    {
+        if (sezioneOpzioni == Impostazioni.Sezione.Principale) { VaiA(Schermata.Principale); return; }
+        var da = sezioneOpzioni;
+        sezioneOpzioni = Impostazioni.Sezione.Principale;
+        VaiA(Schermata.Opzioni);
+        elenco.selezione = (int)da;   // le sezioni sono le voci 1, 2, 3 della pagina principale
     }
 
     // ---------- multigiocatore ----------
@@ -541,7 +560,7 @@ public class MenuPrincipale : MonoBehaviour
     {
         if (clip == null || effetti == null) return;
         effetti.pitch = variaTono ? 1f + Random.Range(-variazioneTono, variazioneTono) : 1f;
-        effetti.PlayOneShot(clip, volume);
+        effetti.PlayOneShot(clip, volume * Impostazioni.VolumeEffetti);   // il volume effetti scelto in Opzioni > Audio
     }
 
     // I comandi non contano durante la transizione e mentre parte la partita.
@@ -649,6 +668,10 @@ public class MenuPrincipale : MonoBehaviour
             }
             case Schermata.Opzioni:
                 if (elenco.DisegnaOpzioni(370f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.ConfermaEsci:
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 360f, 1200f, 100f), Lingua.T("menu.conferma_esci"), GraficaMenu.Descrizione, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(480f, 440f, comparsa, Bloccato)) return;
                 break;
             case Schermata.Classe:
                 if (DisegnaClassi(comparsa)) return;
