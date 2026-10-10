@@ -33,9 +33,9 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 ## Risposte di Lorenzo
 
 ### 10 ottobre, sera: la gattabuia (da leggere)
-Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gattabuia`). In breve: si arriva morendo contro l'orco della piazza; circa 30 minuti; la cella si apre forzando una sbarra arrugginita; in co-op celle separate nello stesso corridoio, solo l'host si libera da solo e apre le celle degli altri; i prigionieri sono tutti morti; un miniboss nelle grotte è l'ultimo scontro prima dell'uscita.
-- **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo all'uscita) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
-- **Per Nazar:** tre modelli nuovi in fondo al documento (sbarra arrugginita, mucchio del bottino, prigionieri morti); il resto è già nella sua lista.
+Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gattabuia`). In breve: si arriva morendo contro l'orco della piazza; circa 30 minuti in 8 zone: celle (sbarra arrugginita che diventa la prima arma; in co-op celle separate nello stesso corridoio, solo l'host si libera e apre le altre), corridoio delle celle con i cadaveri, orchi macellai da superare con armi improvvisate, armeria quasi vuota con le armi base della classe e un checkpoint, sotterranei con fosse comuni e pattuglie, grotte buie con parassiti simili a ragni, piazzola con il **Carceriere** (miniboss) ai piedi della scalinata, portone e bosco morto.
+- **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo al portone) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
+- **Per Nazar:** i modelli nuovi sono in fondo al documento; il resto è già nella sua lista.
 
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
