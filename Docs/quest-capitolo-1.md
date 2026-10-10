@@ -4,7 +4,7 @@ Bozza approvata da Giuseppe il 10 ottobre 2026 (sera). I dialoghi veri sono da s
 
 ## Personaggi (nomi provvisori)
 
-| Nome | Ruolo |
+| Nome (approvati) | Ruolo |
 | --- | --- |
 | Maren | La moglie. Ride forte |
 | Tobin | Il figlio piccolo, segue l'eroe e fa domande |
@@ -18,7 +18,7 @@ Bozza approvata da Giuseppe il 10 ottobre 2026 (sera). I dialoghi veri sono da s
 | N. | Quest | Cosa si impara | Note |
 | --- | --- | --- | --- |
 | 1 | Un'altra mattina | Movimento, camera, tasto E | Maren chiede la legna dal capanno, Tobin vuole venire |
-| 2 | Prova la lama (Stregone: Lo studio delle magie) | Attacco, parata, schivata, aggancio | Guerriero e Ladro dal fabbro, Stregone dal vecchio Edric: vedi sotto |
+| 2 | Prova la lama (Stregone: Lo studio delle magie) | Attacco, parata, schivata, aggancio | Guerriero e Ladro dal fabbro (lama o arco), Stregone dal vecchio Edric: vedi sotto |
 | 3 | Ratti nel granaio | Primo vero combattimento, resistenza | Pochi ratti giganti, facili. In co-op ne arrivano di più (difficoltà per giocatori) |
 | 4 | Le erbe di Ilse | Oggetti, zaino, uso dall'inventario | Tre erbe vicino al lago, in cambio una pozione |
 | 5 | La leggenda del lago (facoltativa) | Esplorazione, chiave, leva, baule | Edric manda alla cripta del cimitero: porta con leva e baule con un amuleto |
@@ -33,10 +33,15 @@ Bozza approvata da Giuseppe il 10 ottobre 2026 (sera). I dialoghi veri sono da s
 - Quest 5 (cripta): al posto dell'amuleto, o in aggiunta, il baule può contenere un **incantesimo nuovo** (gli incantesimi sono oggetti del mondo).
 - Coerenza con la storia: gli orchi rubano il bastone da studio e il libro; l'arma vera della classe si trova nel bottino, durante la fuga dalla gattabuia.
 
+## Guerriero e Ladro (Giuseppe, 10 ottobre)
+
+- Nessuna variante speciale: la quest 2 è la stessa, ma **con la propria arma**: il Guerriero con la lama, il Ladro con l'arco (bersagli di tiro accanto al manichino).
+- Per coerenza con la storia: nel tutorial si usano armi semplici da villaggio (una lama vecchia, un arco da caccia, per lo Stregone il bastone da studio). Gli orchi le rubano, e l'arma vera della classe si trova nella fuga dalla gattabuia. L'ascia da legna resta come arma di casa nelle prime scene (legna di Maren) e nello scontro con l'orco enorme: **da decidere**.
+- I nomi dei personaggi sono approvati.
+
 ## Da decidere
 
-- Anche per Guerriero e Ladro la quest 2 ha una variante (per esempio il Ladro con arco da caccia e bersagli, invece del manichino)?
-- I nomi provvisori, soprattutto Maren e Tobin.
+- L'arma dell'eroe nella razzia e contro l'orco enorme: l'arma semplice della sua classe o l'ascia da legna?
 - Tono dei dialoghi di giorno: asciutto e cupo, o caldo e un po' scherzoso per far pesare di più la perdita?
 - La quest 5 resta o si taglia per risparmiare lavoro?
 - Budget: circa 80-100 righe di dialogo in tutto, 10-15 per quest.
