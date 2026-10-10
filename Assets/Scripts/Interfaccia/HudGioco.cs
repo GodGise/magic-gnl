@@ -286,11 +286,21 @@ public class HudGioco : MonoBehaviour
     }
 
     // Da morti: "Sei morto" grande al centro, rosso cupo, finché si rinasce.
+    // In co-op: "A terra" (aspetta un alleato) oppure, da spettatore, solo una riga in alto.
     void DisegnaMorte(float larghezza, float altezza)
     {
         if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Morto) return;
-        GraficaMenu.Riempi(new Rect(0f, altezza * 0.5f - 90f, larghezza, 180f), new Color(0f, 0f, 0f, 0.55f));
-        string testo = Lingua.T("hud.morto").ToUpperInvariant();
+        if (giocatore.StatoCaduta == GiocatoreControllo.Caduta.Spettatore)
+        {
+            GraficaMenu.Riempi(new Rect(0f, 40f, larghezza, 60f), new Color(0f, 0f, 0f, 0.5f));
+            GraficaMenu.Scritta(new Rect(0f, 40f, larghezza, 60f), Lingua.T("hud.spettatore"), GraficaMenu.Voce, GraficaMenu.Testo, 1f);
+            return;
+        }
+        bool aTerra = giocatore.StatoCaduta == GiocatoreControllo.Caduta.ATerra;
+        GraficaMenu.Riempi(new Rect(0f, altezza * 0.5f - 90f, larghezza, aTerra ? 240f : 180f), new Color(0f, 0f, 0f, 0.55f));
+        if (aTerra)
+            GraficaMenu.Scritta(new Rect(0f, altezza * 0.5f + 80f, larghezza, 50f), Lingua.T("hud.a_terra_aiuto"), GraficaMenu.Voce, GraficaMenu.Testo, 1f);
+        string testo = Lingua.T(aTerra ? "hud.a_terra" : "hud.morto").ToUpperInvariant();
         if (Lingua.Indice < 6) testo = GraficaMenu.Spaziato(testo);
         GraficaMenu.Scritta(new Rect(0f, altezza * 0.5f - 70f, larghezza, 140f), testo, GraficaMenu.Titolo, new Color(0.62f, 0.1f, 0.08f), 1f);
     }
