@@ -170,6 +170,19 @@ public static class FormeOggetti
                 Pugnale(t, 0.36f, 0.022f, Ombra * 0.6f, Nero);
                 P(t, PrimitiveType.Sphere, new Vector3(0f, 0.11f, 0f), Vector3.one * 0.04f, Ombra, luce: true);
                 return;
+            // Armi improvvisate della gattabuia (tutte le classi)
+            case "osso-lungo":
+                P(t, PrimitiveType.Sphere, new Vector3(0f, 0.04f, 0f), new Vector3(0.1f, 0.08f, 0.08f), Osso);
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.22f, 0f), new Vector3(0.05f, 0.46f, 0.05f), Osso);
+                P(t, PrimitiveType.Sphere, new Vector3(0.02f, -0.48f, 0f), new Vector3(0.12f, 0.1f, 0.09f), Osso);
+                return;
+            case "catenaccio":
+                for (int i = 0; i < 7; i++)
+                    P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f - i * 0.11f, 0f), new Vector3(0.05f, 0.09f, 0.02f), FerroScuro,
+                        new Vector3(0f, i % 2 == 0 ? 0f : 90f, 0f));
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.88f, 0f), new Vector3(0.12f, 0.12f, 0.06f), Ruggine);
+                P(t, PrimitiveType.Cylinder, new Vector3(0f, -0.79f, 0f), new Vector3(0.08f, 0.02f, 0.08f), FerroScuro, new Vector3(90f, 0f, 0f));
+                return;
             case "stiletto-del-tagliagole": Pugnale(t, 0.34f, 0.025f, Ferro, new Color(0.45f, 0.06f, 0.06f)); return;
         }
         switch (a.tipo)

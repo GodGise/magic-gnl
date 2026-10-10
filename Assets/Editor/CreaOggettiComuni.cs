@@ -1,0 +1,117 @@
+using UnityEditor;
+using UnityEngine;
+
+// Strumento dell'editor: crea le armi improvvisate della gattabuia (Docs/gattabuia.md), che possono usare tutte le
+// classi senza distinzioni (casella "Tutte Le Classi" di DatiOggetto). Sono armi raccolte da terra: solo danno e
+// numeri fissi, niente critico in più, niente colpo alle spalle, niente bonus.
+// I file vanno in Assets/Dati/Oggetti/Comuni/Armi. Il menu crea solo quelli che mancano; "Aggiorna" rimette in tutti
+// i valori scritti qui sotto (tenendo icona e modello).
+// Lo Stregone le tiene al posto del bastone e combatte corpo a corpo finché non rimette un bastone.
+// Come si usa: menu in alto "magic-gnl > Crea armi improvvisate".
+public static class CreaOggettiComuni
+{
+    const string Radice = "Assets/Dati/Oggetti/Comuni/Armi";
+    static bool riscrivi;
+
+    [MenuItem("magic-gnl/Crea armi improvvisate")]
+    static void MenuCrea()
+    {
+        riscrivi = false;
+        Crea();
+    }
+
+    [MenuItem("magic-gnl/Aggiorna armi improvvisate (riscrive i valori)")]
+    static void MenuAggiorna()
+    {
+        if (!EditorUtility.DisplayDialog("Armi improvvisate",
+            "Rimettere nelle armi improvvisate i valori scritti in CreaOggettiComuni.cs? Le modifiche fatte a mano nell'Inspector andranno perse (icona e modello restano).",
+            "Aggiorna", "Annulla")) return;
+        riscrivi = true;
+        Crea();
+        riscrivi = false;
+    }
+
+    static void Crea()
+    {
+        int creati = 0;
+        // Riferimento: la Spada della vecchia vita fa 25 di danno, costa 20 di resistenza e un colpo dura 0,75 s
+        // (circa 33 di danno al secondo). Le armi improvvisate devono essere chiaramente peggiori delle armi vere.
+
+        // Osso lungo: un femore raccolto fra i cadaveri. Corto e leggero, colpi rapidi ma deboli; si para male.
+        // Circa 23 di danno al secondo, costa poca resistenza. Un po' di penetrazione perché è una botta, non un taglio.
+        creati += Arma("osso-lungo", "Osso lungo", "osso_lungo", a =>
+        {
+            a.tipo = DatiArma.Tipo.Mazza;
+            a.danno = 14f; a.costoAttacco = 13f;
+            a.preparazione = 0.2f; a.colpoAttivo = 0.12f; a.recupero = 0.28f;
+            a.portata = 1.5f; a.raggio = 1f; a.arco = 100f; a.affondo = 2.5f;
+            a.penetrazioneArmatura = 0.1f;
+            a.dannoAssorbitoSenzaScudo = 0.2f; a.costoParataSenzaScudo = 22f;
+        });
+
+        // Catenaccio: una catena con un lucchetto in fondo, strappata dal muro di una cella. Lenta e faticosa, ma
+        // arriva lontano e spazza un arco largo (prende più nemici). Il lucchetto di ferro passa un po' l'armatura.
+        // Con una catena non si para quasi niente. Circa 19 di danno al secondo, ma su più nemici.
+        creati += Arma("catenaccio", "Catenaccio", "catenaccio", a =>
+        {
+            a.tipo = DatiArma.Tipo.Mazza;
+            a.danno = 22f; a.costoAttacco = 22f;
+            a.preparazione = 0.42f; a.colpoAttivo = 0.2f; a.recupero = 0.55f;
+            a.portata = 2.4f; a.raggio = 1.3f; a.arco = 160f; a.affondo = 1.5f;
+            a.penetrazioneArmatura = 0.2f;
+            a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 30f;
+        });
+
+        AssetDatabase.SaveAssets();
+        Debug.Log(creati > 0 ? "Armi improvvisate: " + creati + " file in " + Radice + "." : "Armi improvvisate: c'erano già tutte.");
+    }
+
+    // Crea il file se manca (1) o, con "Aggiorna", gli rimette i valori di questo script (1); altrimenti niente (0).
+    static int Arma(string file, string nome, string chiave, System.Action<DatiArma> imposta)
+    {
+        CreaCartelle(Radice);
+        string percorso = Radice + "/" + file + ".asset";
+        var esistente = AssetDatabase.LoadAssetAtPath<DatiArma>(percorso);
+        if (esistente != null && !riscrivi) return 0;
+
+        var arma = ScriptableObject.CreateInstance<DatiArma>();
+        arma.nomeDiLavoro = nome;
+        arma.chiaveNome = "oggetto." + chiave + ".nome";
+        arma.chiaveDescrizione = "oggetto." + chiave + ".descrizione";
+        arma.classe = ClasseGiocatore.Guerriero;   // non conta: la usano tutte le classi
+        arma.tutteLeClassi = true;
+        arma.probabilitaCritico = 0f;
+        arma.moltiplicatoreCritico = 0f;
+        arma.moltiplicatoreAlleSpalle = 1f;
+        imposta(arma);
+
+        if (esistente == null)
+        {
+            AssetDatabase.CreateAsset(arma, percorso);
+            return 1;
+        }
+        arma.icona = esistente.icona;
+        arma.modello = esistente.modello;
+        arma.materialeModello = esistente.materialeModello;
+        arma.rotazioneModello = esistente.rotazioneModello;
+        arma.posizioneModello = esistente.posizioneModello;
+        arma.scalaModello = esistente.scalaModello;
+        EditorUtility.CopySerialized(arma, esistente);
+        esistente.name = file;
+        EditorUtility.SetDirty(esistente);
+        Object.DestroyImmediate(arma);
+        return 1;
+    }
+
+    static void CreaCartelle(string percorso)
+    {
+        string[] parti = percorso.Split('/');
+        string attuale = parti[0];
+        for (int i = 1; i < parti.Length; i++)
+        {
+            string prossima = attuale + "/" + parti[i];
+            if (!AssetDatabase.IsValidFolder(prossima)) AssetDatabase.CreateFolder(attuale, parti[i]);
+            attuale = prossima;
+        }
+    }
+}

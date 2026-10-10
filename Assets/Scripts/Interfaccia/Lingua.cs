@@ -561,6 +561,31 @@ public static class Lingua
             "Меч, который ты повесил на стену. Ты думал, что больше никогда не возьмёшь его в руки.",
             "你早已挂在墙上的剑。你以为再也不必握起它。",
         },
+        // ---------- armi improvvisate della gattabuia (tutte le classi, Docs/gattabuia.md) ----------
+        ["oggetto.osso_lungo.nome"] = new[] { "Osso lungo", "Long Bone", "Hueso largo", "Os long", "Langer Knochen", "Osso longo", "Длинная кость", "长骨" },
+        ["oggetto.osso_lungo.descrizione"] = new[]
+        {
+            "Un femore raccolto fra i corpi della gattabuia. Leggero e veloce, ma colpisce poco e para male.",
+            "A thighbone picked up among the bodies in the jail. Light and quick, but it hits weakly and blocks poorly.",
+            "Un fémur recogido entre los cuerpos de la mazmorra. Ligero y rápido, pero golpea poco y bloquea mal.",
+            "Un fémur ramassé parmi les corps de la geôle. Léger et rapide, mais il frappe peu et pare mal.",
+            "Ein Oberschenkelknochen aus dem Kerker, zwischen den Leichen aufgelesen. Leicht und schnell, doch er trifft schwach und blockt schlecht.",
+            "Um fêmur recolhido entre os corpos da masmorra. Leve e rápido, mas bate pouco e defende mal.",
+            "Бедренная кость, подобранная среди тел в темнице. Лёгкая и быстрая, но бьёт слабо и плохо защищает.",
+            "从牢中尸堆里捡来的一根大腿骨。轻巧迅速，但伤害低，格挡也差。",
+        },
+        ["oggetto.catenaccio.nome"] = new[] { "Catenaccio", "Padlock Chain", "Cadena con candado", "Chaîne cadenassée", "Kettenschloss", "Corrente com cadeado", "Цепь с замком", "锁链" },
+        ["oggetto.catenaccio.descrizione"] = new[]
+        {
+            "Una catena strappata dal muro di una cella, con il lucchetto ancora attaccato. Lenta e faticosa, ma arriva lontano e spazza tutto intorno.",
+            "A chain torn from a cell wall, its padlock still attached. Slow and tiring, but it reaches far and sweeps all around.",
+            "Una cadena arrancada del muro de una celda, con el candado aún puesto. Lenta y agotadora, pero llega lejos y barre todo alrededor.",
+            "Une chaîne arrachée au mur d'une cellule, le cadenas encore accroché. Lente et épuisante, mais elle porte loin et balaie tout autour.",
+            "Eine aus der Zellenwand gerissene Kette, das Schloss hängt noch daran. Langsam und kräftezehrend, doch sie reicht weit und fegt alles ringsum.",
+            "Uma corrente arrancada da parede de uma cela, com o cadeado ainda preso. Lenta e cansativa, mas alcança longe e varre tudo em volta.",
+            "Цепь, вырванная из стены камеры, с ещё висящим замком. Медленная и утомительная, но бьёт далеко и сметает всё вокруг.",
+            "从牢房墙上扯下的锁链，挂锁还在上面。笨重费力，但攻击范围远，能横扫四周。",
+        },
         ["oggetto.spada_capitano.nome"] = new[] { "Spada del capitano", "Captain's Sword", "Espada del capitán", "Épée du capitaine", "Schwert des Hauptmanns", "Espada do capitão", "Меч капитана", "队长之剑" },
         ["oggetto.spada_capitano.descrizione"] = new[]
         {
@@ -780,6 +805,7 @@ public static class Lingua
         // ---------- Stregone: inventario, statistiche e tipi (Docs/incantesimi-stregone.md) ----------
         ["inv.solo_guerriero"] = new[] { "Questo oggetto è del Guerriero.", "This item is for the Warrior.", "Este objeto es del Guerrero.", "Cet objet est réservé au Guerrier.", "Dieser Gegenstand ist für den Krieger.", "Este item é do Guerreiro.", "Этот предмет для Воина.", "此物品属于战士。" },
         ["inv.solo_ladro"] = new[] { "Questo oggetto è del Ladro.", "This item is for the Thief.", "Este objeto es del Ladrón.", "Cet objet est réservé au Voleur.", "Dieser Gegenstand ist für den Dieb.", "Este item é do Ladrão.", "Этот предмет для Вора.", "此物品属于盗贼。" },
+        ["inv.tutte_classi"] = new[] { "Tutte le classi", "All classes", "Todas las clases", "Toutes les classes", "Alle Klassen", "Todas as classes", "Все классы", "所有职业" },
         ["inv.solo_stregone"] = new[] { "Questo oggetto è dello Stregone.", "This item is for the Sorcerer.", "Este objeto es del Hechicero.", "Cet objet est réservé au Sorcier.", "Dieser Gegenstand ist für den Zauberer.", "Este item é do Feiticeiro.", "Этот предмет для Колдуна.", "此物品属于术士。" },
         ["inv.amuleto_solo_ladro"] = new[] { "Questo amuleto è solo del Ladro.", "This amulet is for the Thief only.", "Este amuleto es solo del Ladrón.", "Cette amulette est réservée au Voleur.", "Dieses Amulett ist nur für den Dieb.", "Este amuleto é só do Ladrão.", "Этот амулет только для Вора.", "此护符只有盗贼能用。" },
         ["inv.libro"] = new[] { "Libro", "Book", "Libro", "Livre", "Buch", "Livro", "Книга", "书" },
