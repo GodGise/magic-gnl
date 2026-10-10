@@ -25,6 +25,7 @@ public class MenuPausa : MonoBehaviour
     readonly ElencoMenu elenco = new ElencoMenu();
     readonly List<Behaviour> spenti = new List<Behaviour>();
     Schermata schermata = Schermata.Chiuso;
+    Impostazioni.Sezione sezioneOpzioni = Impostazioni.Sezione.Principale;   // quale pagina delle opzioni è aperta
     float tempoSchermata;
     bool nelMenuIniziale;
     bool riprendiAlProssimoFotogramma;
@@ -141,6 +142,17 @@ public class MenuPausa : MonoBehaviour
 #endif
     }
 
+    // Indietro nelle opzioni: da una sezione (Audio, Video, Controlli) alla pagina principale delle opzioni
+    // (con la selezione sulla sezione appena lasciata); dalla pagina principale alla pausa.
+    void IndietroOpzioni()
+    {
+        if (sezioneOpzioni == Impostazioni.Sezione.Principale) { VaiA(Schermata.Pausa); return; }
+        var da = sezioneOpzioni;
+        sezioneOpzioni = Impostazioni.Sezione.Principale;
+        VaiA(Schermata.Opzioni);
+        elenco.selezione = (int)da;   // le sezioni sono le voci 1, 2, 3 della pagina principale
+    }
+
     // ---------- schermate ----------
 
     void VaiA(Schermata nuova)
@@ -152,12 +164,12 @@ public class MenuPausa : MonoBehaviour
         {
             case Schermata.Pausa:
                 elenco.Aggiungi(() => Lingua.T("pausa.riprendi"), Riprendi);
-                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
+                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => { sezioneOpzioni = Impostazioni.Sezione.Principale; VaiA(Schermata.Opzioni); });
                 elenco.Aggiungi(() => Lingua.T("pausa.menu_principale"), () => VaiA(Schermata.ConfermaMenu));
                 elenco.Aggiungi(() => Lingua.T("pausa.esci_gioco"), () => VaiA(Schermata.ConfermaEsci));
                 break;
             case Schermata.Opzioni:
-                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Pausa));
+                Impostazioni.AggiungiVoci(elenco, sezioneOpzioni, s => { sezioneOpzioni = s; VaiA(Schermata.Opzioni); }, IndietroOpzioni);
                 break;
             case Schermata.ConfermaMenu:
                 elenco.Aggiungi(() => Lingua.T("comune.no"), () => VaiA(Schermata.Pausa));
@@ -201,6 +213,7 @@ public class MenuPausa : MonoBehaviour
         if (c.indietro || start)
         {
             if (schermata == Schermata.Pausa) Riprendi();
+            else if (schermata == Schermata.Opzioni) IndietroOpzioni();
             else VaiA(Schermata.Pausa);
             return;
         }

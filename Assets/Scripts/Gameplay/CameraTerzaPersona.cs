@@ -133,11 +133,14 @@ public class CameraTerzaPersona : MonoBehaviour
         }
         else
         {
-            Vector2 mouse = Cursor.lockState == CursorLockMode.Locked ? guardaMouse.ReadValue<Vector2>() * sensibilitaMouse : Vector2.zero;
-            Vector2 pad = guardaPad.ReadValue<Vector2>() * (sensibilitaPad * Time.deltaTime);
+            // La sensibilità e l'asse verticale invertito si scelgono in Opzioni > Controlli (vedi Impostazioni).
+            float scelta = Impostazioni.SensibilitaCamera;
+            float segnoVerticale = Impostazioni.AsseVerticaleInvertito ? -1f : 1f;
+            Vector2 mouse = Cursor.lockState == CursorLockMode.Locked ? guardaMouse.ReadValue<Vector2>() * (sensibilitaMouse * scelta) : Vector2.zero;
+            Vector2 pad = guardaPad.ReadValue<Vector2>() * (sensibilitaPad * scelta * Time.deltaTime);
 
             rotazioneOrizzontale += mouse.x + pad.x;
-            inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y), inclinazioneMinima, inclinazioneMassima);
+            inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y) * segnoVerticale, inclinazioneMinima, inclinazioneMassima);
         }
 
         AllineaNellaStrettoia();

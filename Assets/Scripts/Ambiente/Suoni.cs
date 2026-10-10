@@ -43,7 +43,7 @@ public static class Suoni
         AudioSource sorgente = ProssimaSorgente();
         sorgente.transform.position = posizione;
         sorgente.clip = clip;
-        sorgente.volume = Mathf.Clamp01(volume * VolumeGenerale);
+        sorgente.volume = Mathf.Clamp01(volume * VolumeGenerale * Impostazioni.VolumeEffetti);   // anche il volume effetti scelto in Opzioni > Audio
         sorgente.pitch = tono * Random.Range(0.94f, 1.06f);
         sorgente.Play();
     }
