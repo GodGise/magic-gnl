@@ -62,6 +62,15 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 11 ottobre, sera: inizio del prologo e quest 1, con un sistema delle missioni (serve un'occhiata di Giuseppe)
+Lorenzo ha iniziato il prologo (ramo `lorenzoc/prologo-quest-1`, contiene anche `lorenzoc/orario-prologo`). **Il sistema delle missioni lo fa il Claude di Lorenzo**, così il Claude di Giuseppe non lo rifà: sono pezzi generici in `Assets/Scripts/Livelli/` da collegare con gli eventi dell'Inspector.
+- `Missioni.cs`: obiettivo a schermo (in alto a destra, sotto l'ora) e suggerimenti del tutorial in fila (con `MessaggiSchermo`); `QuestFinita(n)` avvisa `OrarioPrologo`.
+- `DialogoAutomatico.cs` (dialogo che parte da solo, all'avvio o da un evento), `PuntoInterazione.cs` ("E  Prendi la legna" con un evento), `ZonaArrivo.cs` ("sei arrivato dal fabbro"), `SeguiGiocatore.cs` (Tobin che ti segue), `DissolvenzaIniziale.cs` (schermo che si schiarisce all'inizio).
+- Comando `magic-gnl > Prologo: prepara la quest 1` (`Assets/Editor/CreaPrologoQuest1.cs`): nella scena `VillaggioLagoNero` (di Lorenzo) costruisce la casa dell'eroe vuota dentro, Maren, Tobin, il capanno e collega tutta la quest 1.
+- **Tocca un file di tutti:** `ProjectSettings/EditorBuildSettings.asset`, aggiunta la scena `VillaggioLagoNero` (serve perché "Nuova partita" la carichi; prima caricava `ZonaProva`). Attenzione: anche "Ospita" ora carica il villaggio; con la decisione del co-op dalla gattabuia, va bloccato nel menu (area di Giuseppe).
+- Due chiavi nuove in `Lingua.cs`: `hud.prendi_legna`, `hud.metti_legna` (8 lingue).
+- Script creati con il loro `.meta`, come chiesto.
+
 ### 11 ottobre: prologo obbligatorio, tempo a tappe, co-op dalla gattabuia (serve la conferma di Giuseppe)
 Decisioni di Lorenzo sul giorno a Villaggio Lago Nero:
 1. **Tutte e 6 le quest sono obbligatorie** (anche la 5, la leggenda del lago, che era facoltativa). La razzia parte solo quando è finita la quest 6.
