@@ -72,6 +72,11 @@ Lorenzo ha rivisto `Docs/dialoghi-capitolo-1.md` (ora "bozza 2") sul ramo `loren
 - **Lasciati così:** la pozione di Ilse (gli oggetti consumabili si aggiungono strada facendo) e la "cantina" di Hobb.
 - **Decisioni di Lorenzo da confermare:** in co-op la famiglia è dell'**host** ("papà" è solo l'host, gli altri sentono le stesse battute); per ora **tutti i personaggi giocabili sono uomini**.
 
+### 10 ottobre, sera: la gattabuia (da leggere)
+Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gattabuia`). In breve: si arriva morendo contro l'orco della piazza; circa 30 minuti in 8 zone: celle (sbarra arrugginita che diventa la prima arma; in co-op celle separate nello stesso corridoio, solo l'host si libera e apre le altre), corridoio delle celle con i cadaveri, orchi macellai da superare con armi improvvisate, armeria quasi vuota con le armi base della classe e un checkpoint, sotterranei con fosse comuni e pattuglie, grotte buie con parassiti simili a ragni, piazzola con il **Carceriere** (miniboss) ai piedi della scalinata, portone e bosco morto.
+- **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo al portone) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
+- **Per Nazar:** i modelli nuovi sono in fondo al documento; il resto è già nella sua lista.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
