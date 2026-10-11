@@ -77,6 +77,9 @@ Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gat
 - **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo al portone) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
 - **Per Nazar:** i modelli nuovi sono in fondo al documento; il resto è già nella sua lista.
 
+### 11 ottobre: danno dei nemici in co-op più basso (solo informazione)
+Lorenzo ha deciso che il danno che ricevono i giocatori cresce meno: **x1 da soli, x1,25 in 2, x1,5 in 3** (prima x1,5 e x2). Vita e frequenza degli attacchi restano come prima. Ramo `lorenzoc/danno-coop`: cambiati solo i valori di partenza in `DifficoltaCoop.cs` e la riga in `Docs/rete-coop.md`.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
