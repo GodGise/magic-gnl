@@ -62,6 +62,9 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 11 ottobre, notte: testi poco leggibili, da cambiare carattere e grandezza (richiesta per Giuseppe)
+Provando il prologo, Lorenzo trova i testi **poco leggibili**: chiede di **cambiare il carattere (font) e la grandezza** dei testi in partita (dialoghi, suggerimenti, obiettivo, scritte delle azioni). Stile e caratteri stanno in `Assets/Scripts/Interfaccia/GraficaMenu.cs` (area di Giuseppe). La prova del prologo e della quest 1 è andata bene.
+
 ### 11 ottobre, sera: inizio del prologo e quest 1, con un sistema delle missioni (serve un'occhiata di Giuseppe)
 Lorenzo ha iniziato il prologo (ramo `lorenzoc/prologo-quest-1`, contiene anche `lorenzoc/orario-prologo`). **Il sistema delle missioni lo fa il Claude di Lorenzo**, così il Claude di Giuseppe non lo rifà: sono pezzi generici in `Assets/Scripts/Livelli/` da collegare con gli eventi dell'Inspector.
 - `Missioni.cs`: obiettivo a schermo (in alto a destra, sotto l'ora) e suggerimenti del tutorial in fila (con `MessaggiSchermo`); `QuestFinita(n)` avvisa `OrarioPrologo`.
