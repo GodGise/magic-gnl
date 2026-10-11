@@ -105,14 +105,14 @@ Regola di Lorenzo (11 ottobre): **ogni nemico e ogni boss ha il suo bottino**, c
 
 - **Sempre:** la **chiave del portone** (apre il portone della zona 8; il boss non si può saltare).
 - **Sempre, la cosa forte:** **Catena del carceriere**, **armatura media del Guerriero** (deciso da Lorenzo l'11 ottobre). Le catene che lo stringevano, avvolte sul petto: armatura 30, schivata +6 di resistenza, velocità -5% (poco meglio della Cotta di maglia rattoppata: 25 / +6,5 / -5%). Una sola; serve solo al Guerriero.
-- **A caso, 3 fra queste:**
+- **A caso, 3 fra queste 5** (deciso da Lorenzo l'11 ottobre: alla sconfitta il Carceriere ne lascia 3 scelte a caso, le altre 2 no):
   - **Mazza chiodata:** arma improvvisata di tutte le classi, 24 di danno, 0,90 s a colpo;
   - **Mannaia affilata:** arma improvvisata di tutte le classi, 26 di danno, un po' più lenta della mazza (0,98 s a colpo);
   - **Dente d'orco:** amuleto debole, 3 di vita per ogni nemico ucciso;
   - **Lacci di cuoio:** amuleto debole, +10% di ricarica della resistenza;
   - **Pietra torbida del lago:** amuleto debole, 3 di mana per ogni nemico ucciso (utile allo Stregone).
 
-Numeri delle armi in `Docs/armi-improvvisate.md`. Le tre cose oggi sono programmate come oggetti (menu "Crea armi improvvisate" e "Crea oggetti del Guerriero"); i tre amuleti deboli e il sistema del bottino per nemico sono ancora da fare.
+Numeri delle armi in `Docs/armi-improvvisate.md`. Tutti gli oggetti sono già programmati (menu "Crea armi improvvisate", che fa anche i tre amuleti deboli, e "Crea oggetti del Guerriero"). Gli amuleti deboli per ora non hanno malus. Da fare: il sistema del bottino per nemico (oggetti fissi più N a caso, uguali per tutti i giocatori in co-op), da programmare insieme al Carceriere.
 
 ## I parassiti delle grotte (proposta, da confermare)
 
