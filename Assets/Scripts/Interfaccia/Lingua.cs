@@ -610,6 +610,42 @@ public static class Lingua
             "Короткий клинок, изъеденный ржавчиной. Очень быстрый и почти не утомляет, но бьёт совсем слабо: держись вплотную к врагу.",
             "被锈蚀的短刃。极快且不费体力，但伤害极低，必须贴身作战。",
         },
+        ["oggetto.mazza_chiodata.nome"] = new[] { "Mazza chiodata", "Spiked Club", "Maza con clavos", "Massue cloutée", "Nagelkeule", "Clava cravejada", "Шипастая дубина", "钉头棒" },
+        ["oggetto.mazza_chiodata.descrizione"] = new[]
+        {
+            "Un bastone pesante pieno di chiodi storti. Il Carceriere la teneva per gli intrusi più testardi.",
+            "A heavy club studded with bent nails. The Jailer kept it for the most stubborn intruders.",
+            "Un garrote pesado lleno de clavos torcidos. El Carcelero la guardaba para los intrusos más tercos.",
+            "Un lourd gourdin hérissé de clous tordus. Le Geôlier la gardait pour les intrus les plus têtus.",
+            "Eine schwere Keule voller krummer Nägel. Der Kerkermeister hob sie für die stursten Eindringlinge auf.",
+            "Um porrete pesado cheio de pregos tortos. O Carcereiro a guardava para os intrusos mais teimosos.",
+            "Тяжёлая дубина, утыканная кривыми гвоздями. Тюремщик берёг её для самых упрямых незваных гостей.",
+            "一根钉满弯钉的沉重木棒。狱卒专门留着对付最顽固的闯入者。",
+        },
+        ["oggetto.mannaia_affilata.nome"] = new[] { "Mannaia affilata", "Sharpened Cleaver", "Cuchilla afilada", "Couperet affûté", "Geschärftes Hackbeil", "Cutelo afiado", "Заточенный тесак", "磨利砍刀" },
+        ["oggetto.mannaia_affilata.descrizione"] = new[]
+        {
+            "Una mannaia da macellaio ripassata sulla pietra. Taglia più a fondo, ma pesa e va caricata con calma.",
+            "A butcher's cleaver run over the whetstone. It cuts deeper, but it is heavy and slow to swing.",
+            "Una cuchilla de carnicero pasada por la piedra. Corta más hondo, pero pesa y hay que cargarla con calma.",
+            "Un couperet de boucher repassé sur la pierre. Il tranche plus profond, mais il pèse et se lève lentement.",
+            "Ein Fleischerbeil, frisch am Stein geschärft. Es schneidet tiefer, ist aber schwer und langsam im Schwung.",
+            "Um cutelo de açougueiro passado na pedra. Corta mais fundo, mas pesa e precisa de calma para golpear.",
+            "Тесак мясника, заточенный на камне. Рубит глубже, но тяжёлый и замахивается медленно.",
+            "在磨石上磨过的屠夫砍刀。砍得更深，但沉重，挥动缓慢。",
+        },
+        ["oggetto.catena_carceriere.nome"] = new[] { "Catena del carceriere", "Jailer's Chains", "Cadenas del carcelero", "Chaînes du geôlier", "Ketten des Kerkermeisters", "Correntes do carcereiro", "Цепи тюремщика", "狱卒锁链" },
+        ["oggetto.catena_carceriere.descrizione"] = new[]
+        {
+            "Le catene che stringevano il Carceriere, avvolte sul petto come un'armatura. Pesano, ma fermano i colpi.",
+            "The chains that bound the Jailer, wrapped around the chest like armour. Heavy, but they stop blows.",
+            "Las cadenas que ataban al Carcelero, enrolladas en el pecho como una armadura. Pesan, pero detienen los golpes.",
+            "Les chaînes qui entravaient le Geôlier, enroulées sur la poitrine comme une armure. Lourdes, mais elles arrêtent les coups.",
+            "Die Ketten, die den Kerkermeister fesselten, wie eine Rüstung um die Brust gewickelt. Schwer, doch sie halten Schläge auf.",
+            "As correntes que prendiam o Carcereiro, enroladas no peito como uma armadura. Pesam, mas detêm os golpes.",
+            "Цепи, сковывавшие Тюремщика, обмотанные вокруг груди как доспех. Тяжёлые, но держат удары.",
+            "曾束缚狱卒的锁链，缠在胸前如同铠甲。沉重，却能挡住攻击。",
+        },
         ["oggetto.spada_capitano.nome"] = new[] { "Spada del capitano", "Captain's Sword", "Espada del capitán", "Épée du capitaine", "Schwert des Hauptmanns", "Espada do capitão", "Меч капитана", "队长之剑" },
         ["oggetto.spada_capitano.descrizione"] = new[]
         {

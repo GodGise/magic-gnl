@@ -87,6 +87,30 @@ public static class CreaOggettiComuni
             a.dannoAssorbitoSenzaScudo = 0.1f; a.costoParataSenzaScudo = 25f;
         });
 
+        // Bottino del Carceriere (a caso, Docs/gattabuia.md): due armi di fortuna un po' migliori di quelle della gattabuia.
+        // Mazza chiodata: un bastone pesante pieno di chiodi. Circa 27 di danno al secondo; i chiodi passano un po' l'armatura.
+        creati += Arma("mazza-chiodata", "Mazza chiodata", "mazza_chiodata", a =>
+        {
+            a.tipo = DatiArma.Tipo.Mazza;
+            a.danno = 24f; a.costoAttacco = 19f;
+            a.preparazione = 0.32f; a.colpoAttivo = 0.15f; a.recupero = 0.43f;
+            a.portata = 1.8f; a.raggio = 1.1f; a.arco = 120f; a.affondo = 2f;
+            a.penetrazioneArmatura = 0.15f;
+            a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 22f;
+        });
+
+        // Mannaia affilata: come la mannaia del macellaio ma ripassata sulla pietra. Più danno, un po' più lenta della
+        // mazza chiodata (0,98 s contro 0,90 s a colpo). Circa 27 di danno al secondo, niente penetrazione.
+        creati += Arma("mannaia-affilata", "Mannaia affilata", "mannaia_affilata", a =>
+        {
+            a.tipo = DatiArma.Tipo.Ascia;
+            a.danno = 26f; a.costoAttacco = 20f;
+            a.preparazione = 0.35f; a.colpoAttivo = 0.16f; a.recupero = 0.47f;
+            a.portata = 1.6f; a.raggio = 1f; a.arco = 110f; a.affondo = 2f;
+            a.penetrazioneArmatura = 0f;
+            a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 22f;
+        });
+
         AssetDatabase.SaveAssets();
         Debug.Log(creati > 0 ? "Armi improvvisate: " + creati + " file in " + Radice + "." : "Armi improvvisate: c'erano già tutte.");
     }

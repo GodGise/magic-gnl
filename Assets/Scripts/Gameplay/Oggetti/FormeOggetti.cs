@@ -187,6 +187,17 @@ public static class FormeOggetti
                 P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.04f, 0.2f, 0.04f), Legno);
                 P(t, PrimitiveType.Cube, new Vector3(0.05f, -0.3f, 0f), new Vector3(0.16f, 0.3f, 0.02f), Ruggine);
                 return;
+            case "mazza-chiodata":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.06f, 0.6f, 0.06f), Legno);
+                P(t, PrimitiveType.Cylinder, new Vector3(0f, -0.62f, 0f), new Vector3(0.13f, 0.14f, 0.13f), Legno);
+                for (int i = 0; i < 6; i++)   // chiodi
+                    P(t, PrimitiveType.Cube, Quaternion.Euler(0f, i * 60f, 0f) * new Vector3(0.08f, 0f, 0f) + new Vector3(0f, -0.6f + (i % 2) * 0.08f, 0f),
+                        new Vector3(0.06f, 0.015f, 0.015f), FerroScuro, new Vector3(0f, i * 60f, 0f));
+                return;
+            case "mannaia-affilata":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.04f, 0.2f, 0.04f), Legno);
+                P(t, PrimitiveType.Cube, new Vector3(0.05f, -0.3f, 0f), new Vector3(0.16f, 0.3f, 0.02f), Ferro);
+                return;
             case "pugnale-arrugginito": Pugnale(t, 0.24f, 0.045f, Ruggine, Cuoio); return;
             case "stiletto-del-tagliagole": Pugnale(t, 0.34f, 0.025f, Ferro, new Color(0.45f, 0.06f, 0.06f)); return;
         }
@@ -300,6 +311,12 @@ public static class FormeOggetti
                 P(t, PrimitiveType.Cube, new Vector3(0.12f, 0.1f, 0.19f), new Vector3(0.14f, 0.12f, 0.01f), Cuoio);
                 P(t, PrimitiveType.Cube, new Vector3(-0.14f, -0.15f, 0.19f), new Vector3(0.1f, 0.1f, 0.01f), Cuoio);
                 Gonna(t, 0.22f, Ferro * 0.85f);
+                return;
+            case "catena-del-carceriere":
+                Busto(t, Cuoio * 0.7f, 0.015f);
+                for (int i = 0; i < 4; i++)   // catene avvolte di traverso sul busto
+                    P(t, PrimitiveType.Cube, new Vector3(0f, 0.22f - i * 0.15f, 0.19f), new Vector3(0.42f, 0.035f, 0.02f), FerroScuro,
+                        new Vector3(0f, 0f, i % 2 == 0 ? 20f : -20f));
                 return;
             case "corazza-di-piastre-annerite":
                 Busto(t, FerroScuro, 0.04f);

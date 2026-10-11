@@ -13,5 +13,7 @@ Decise da Lorenzo il 10 ottobre 2026. Armi raccolte da terra durante la fuga dal
 | Catenaccio | 22 | 22 | 0,42 / 0,20 / 0,55 | 2,4 m / 1,3 m / 160° | 20% | 10% / 30 | ~19 (su più nemici) | Catena con lucchetto strappata dal muro: lenta e faticosa, arriva lontano e spazza un arco largo |
 | Mannaia del macellaio | 23 | 18 | 0,30 / 0,15 / 0,42 | 1,6 m / 1 m / 110° | 0% | 25% / 22 | ~26 | Lama larga degli orchi macellai (zona 3): la più forte, corta, non passa l'armatura |
 | Pugnale arrugginito | 9 | 9 | 0,12 / 0,08 / 0,20 | 1,1 m / 0,8 m / 70° | 0% | 10% / 25 | ~22 | Lama corta e arrugginita: velocissima e poco faticosa, colpisce pochissimo, niente bonus alle spalle |
+| Mazza chiodata | 24 | 19 | 0,32 / 0,15 / 0,43 | 1,8 m / 1,1 m / 120° | 15% | 25% / 22 | ~27 | Bottino a caso del Carceriere: bastone pesante pieno di chiodi |
+| Mannaia affilata | 26 | 20 | 0,35 / 0,16 / 0,47 | 1,6 m / 1 m / 110° | 0% | 25% / 22 | ~27 | Bottino a caso del Carceriere: più danno della mazza, un po' più lenta (0,98 s a colpo contro 0,90) |
 
 Mannaia e pugnale aggiunti da Lorenzo l'11 ottobre (numeri proposti dal suo Claude). Da fare più avanti: la sbarra arrugginita (l'arma della cella).
