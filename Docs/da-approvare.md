@@ -62,6 +62,19 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 11 ottobre: prologo obbligatorio, tempo a tappe, co-op dalla gattabuia (serve la conferma di Giuseppe)
+Decisioni di Lorenzo sul giorno a Villaggio Lago Nero:
+1. **Tutte e 6 le quest sono obbligatorie** (anche la 5, la leggenda del lago, che era facoltativa). La razzia parte solo quando è finita la quest 6.
+2. **Il tempo nel prologo non scorre da solo**, altrimenti la notte (e la razzia) potrebbe arrivare prima di finire le quest. Proposta già programmata (ramo `lorenzoc/orario-prologo`, script nuovo `Assets/Scripts/Livelli/OrarioPrologo.cs`, nessun file di Giuseppe toccato): si parte alle 7; ogni quest finita fa avanzare il sole piano piano (9, 11, 13, 15, poi tramonto alle 18 per la quest in taverna); finita la sesta cala la notte (21) e parte la razzia; da lì il tempo torna normale. L'ordine delle quest 2-5 non conta: conta quante ne hai finite. Ogni quest chiama `OrarioPrologo.QuestFinita(numero)` alla fine (per esempio dall'evento "Al Termine" dell'`Interlocutore`); quando ci sarà il sistema delle quest, basta chiamarlo da lì.
+3. **Il co-op si apre solo dalla gattabuia in poi.** Il prologo (giorno, razzia, orco enorme) si gioca **da soli**; ci si risveglia in gattabuia e da lì si può giocare in co-op.
+
+**Cosa cambia (da controllare, Claude di Giuseppe):**
+- Il menu "Multigiocatore" e l'ingresso degli amici vanno legati al punto della storia: nel prologo niente co-op, dalla gattabuia sì (rete e menu sono di Giuseppe).
+- **Domanda:** un amico che entra in gattabuia deve aver già fatto il prologo con il suo personaggio, oppure può entrare anche con un personaggio nuovo (si sveglia in cella senza aver visto il prologo)? Proposta di Lorenzo da confermare: può entrare anche nuovo.
+- Diventano inutili le regole co-op del prologo: famiglia "dell'host" e battute sentite da tutti, ratti in più in co-op (quest 3), razzia e orco enorme bilanciati per 2 e 3 giocatori.
+- In gattabuia resta com'era: celle separate nello stesso corridoio, l'host si libera da solo e libera gli altri.
+- Se approvato: riga di `CLAUDE.md` sul co-op ("Co-op da 1 a 3 giocatori... disponibile dalla gattabuia in poi") e `Docs/quest-capitolo-1.md` (quest 5 non più facoltativa).
+
 ### 10 ottobre, sera: risposte sulla scaletta del capitolo 1
 Risposte di Lorenzo alle 4 domande della voce "scaletta del capitolo 1" (ramo `giuseppec/scaletta-capitolo-1`).
 1. **Percorso di giorno:** 20-30 minuti vanno bene.
