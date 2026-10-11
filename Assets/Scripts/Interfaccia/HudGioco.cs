@@ -185,7 +185,13 @@ public class HudGioco : MonoBehaviour
         float y = altezza - 150f;
         if (giocatore.Stregone && giocatore.Magia != null)
         {
-            DisegnaIncantesimi(y);
+            if (giocatore.StregoneCorpoACorpo)
+            {
+                // Stregone con un'arma improvvisata: l'arma in evidenza, gli incantesimi piccoli e grigi (non si usano).
+                RomboOggetto(new Vector2(110f, y), 118f, true, equipaggiamento != null ? equipaggiamento.Arma : null, null);
+                DisegnaIncantesimi(y + 16f, 240f, true);
+            }
+            else DisegnaIncantesimi(y);
             return;
         }
         bool spada = giocatore.Arma == GiocatoreControllo.ArmaImpugnata.Spada;
@@ -234,16 +240,24 @@ public class HudGioco : MonoBehaviour
     // Stregone: i rombi delle caselle degli incantesimi, con il tasto (1-6). Quello scelto è più grande e acceso;
     // sotto ogni rombo una barretta si riempie durante l'attesa e diventa color fiamma quando è pronto.
     // Sopra la fila: il nome dell'incantesimo scelto e il suo costo in mana.
-    void DisegnaIncantesimi(float y)
+    // Con "spenti" (Stregone che combatte con un'arma improvvisata) i rombi sono tutti piccoli e grigi, senza barrette né nome.
+    void DisegnaIncantesimi(float y, float x = 110f, bool spenti = false)
     {
         var magia = giocatore.Magia;
         var e = equipaggiamento;
         if (e == null) return;
         int n = e.NumeroCaselle;
-        float x = 110f;
         for (int i = 0; i < n; i++)
         {
             var inc = e.Incantesimo(i);
+            if (spenti)
+            {
+                var cs = new Vector2(x, y);
+                RomboOggetto(cs, 64f, false, inc, null);
+                GraficaMenu.Rombo(cs, 64f, new Color(0.08f, 0.08f, 0.1f, 0.65f));   // velo grigio sopra
+                x += 74f;
+                continue;
+            }
             bool scelto = i == magia.Scelta;
             float lato = scelto ? 112f : 84f;
             var c = new Vector2(x, y + (scelto ? 0f : 14f));
@@ -259,7 +273,7 @@ public class HudGioco : MonoBehaviour
             x += scelto ? 118f : 96f;
         }
         var attuale = magia.Scelto;
-        if (attuale != null)
+        if (attuale != null && !spenti)
         {
             var stile = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleLeft };
             string testo = attuale.Nome + GraficaMenu.Separatore + Lingua.T("stat.mana") + " " + Mathf.CeilToInt(magia.Costo(attuale));

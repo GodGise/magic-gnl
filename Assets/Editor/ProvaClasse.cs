@@ -169,6 +169,6 @@ public static class ProvaClasse
     {
         if (oggetto is DatiAmuleto amuleto)
             return amuleto.effetto != DatiAmuleto.Effetto.SvanireNellOmbra || classe == ClasseGiocatore.Ladro;
-        return oggetto.classe == classe;
+        return oggetto.classe == classe || oggetto.tutteLeClassi;
     }
 }
