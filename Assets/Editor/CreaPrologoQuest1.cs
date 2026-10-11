@@ -61,7 +61,7 @@ public static class CreaPrologoQuest1
         // ---------- la casa vuota al posto del blocco pieno ----------
         Transform tc = casa.transform;
         Vector3 scala = tc.lossyScale;
-        float W = Mathf.Max(scala.x, 8f), D = Mathf.Max(scala.z, 7f), H = Mathf.Max(scala.y, 3.2f);
+        float W = Mathf.Max(scala.x, 7f), D = Mathf.Max(scala.z, 6f), H = Mathf.Max(scala.y, 3.2f);
         float s = 1f, portaX = 0f;
         Transform porta = tc.Find("Porta");
         if (porta != null && porta.gameObject.activeSelf)
@@ -127,7 +127,7 @@ public static class CreaPrologoQuest1
 
         // ---------- registro delle missioni, orario, dissolvenza ----------
         var missioni = Undo.AddComponent<Missioni>(Vuoto("Missioni", gruppo));
-        if (UnityEngine.Object.FindFirstObjectByType<OrarioPrologo>(FindObjectsInactive.Include) == null)
+        if (UnityEngine.Object.FindFirstObjectByType<OrarioPrologo>() == null)
             Undo.AddComponent<OrarioPrologo>(Vuoto("Orario del prologo", gruppo));
         Undo.AddComponent<DissolvenzaIniziale>(Vuoto("Dissolvenza dal nero", gruppo));
 
@@ -185,6 +185,9 @@ public static class CreaPrologoQuest1
         UnityEventTools.AddStringPersistentListener(fineParla, missioni.ImpostaObiettivo, "ob.q1.legna");
         UnityEventTools.AddBoolPersistentListener(fineParla, Abilita(segui), true);
         UnityEventTools.AddBoolPersistentListener(fineParla, puntoLegna.SetActive, true);
+        // Presa la legna, Maren non risponde più al tasto: altrimenti al camino (vicino a lei) il tasto farebbe
+        // partire la sua riga ripetuta invece di "Metti la legna nel fuoco".
+        UnityEventTools.AddBoolPersistentListener(Evento(prendi, "alPremere"), Abilita(parlaMaren), false);
 
         // Risveglio: parte da solo dopo la dissolvenza; poi i suggerimenti per muoversi e per parlare.
         var risveglio = Undo.AddComponent<DialogoAutomatico>(Vuoto("Dialogo: risveglio", gruppo));
