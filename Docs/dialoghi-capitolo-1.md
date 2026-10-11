@@ -102,3 +102,8 @@ Scritti dal Claude di Giuseppe il 10 ottobre 2026 sulla base di `Docs/quest-capi
 - Le battute di Ilse e di Edric anticipano il mistero del lago senza spiegarlo.
 - Il protagonista non ha battute: serve decidere se parla (e come si chiama).
 - **Pozione (quest 4):** gli oggetti da usare e consumare non esistono ancora nel codice; si aggiungono strada facendo (Lorenzo, 10 ottobre).
+
+
+## Chiavi in `Lingua.cs` (stato al 11 ottobre)
+
+Tradotti nelle 8 lingue: i nomi dei personaggi (`pg.maren`, `pg.tobin`, `pg.brannoc`, `pg.edric`, `pg.hobb`, `pg.ilse`) e tutta la **quest 1** (`dlg.q1.01` a `dlg.q1.09`, suggerimenti `tip.q1.muovi` e `tip.q1.parla`, obiettivi `ob.q1.legna` e `ob.q1.fabbro`). L'ordine delle righe del dialogo in casa è `dlg.q1.01` a `dlg.q1.07`; `dlg.q1.08` è Tobin al capanno e `dlg.q1.09` Maren al ritorno con la legna. Le quest 2-6 si traducono dopo.
