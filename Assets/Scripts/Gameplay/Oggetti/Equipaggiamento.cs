@@ -82,6 +82,8 @@ public class Equipaggiamento : MonoBehaviour
             case DatiArma a:
                 arma = a;
                 if (a.dueMani) scudo = null;
+                // Lo Stregone con un'arma di tutte le classi la tiene al posto del bastone (casella 0 dell'inventario).
+                if (a.tutteLeClassi && SceltaPartita.Classe == ClasseGiocatore.Stregone) bastone = null;
                 break;
             case DatiScudo s:
                 scudo = s;
@@ -92,6 +94,7 @@ public class Equipaggiamento : MonoBehaviour
             case DatiArmaDistanza d: armaDistanza = d; break;
             case DatiBastone st:
                 bastone = st;
+                if (arma != null && arma.tutteLeClassi && SceltaPartita.Classe == ClasseGiocatore.Stregone) arma = null;
                 if (st.dueMani) libro = null;
                 break;
             case DatiLibro l:

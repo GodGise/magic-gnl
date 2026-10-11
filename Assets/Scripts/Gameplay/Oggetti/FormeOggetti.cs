@@ -170,6 +170,35 @@ public static class FormeOggetti
                 Pugnale(t, 0.36f, 0.022f, Ombra * 0.6f, Nero);
                 P(t, PrimitiveType.Sphere, new Vector3(0f, 0.11f, 0f), Vector3.one * 0.04f, Ombra, luce: true);
                 return;
+            // Armi improvvisate della gattabuia (tutte le classi)
+            case "osso-lungo":
+                P(t, PrimitiveType.Sphere, new Vector3(0f, 0.04f, 0f), new Vector3(0.1f, 0.08f, 0.08f), Osso);
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.22f, 0f), new Vector3(0.05f, 0.46f, 0.05f), Osso);
+                P(t, PrimitiveType.Sphere, new Vector3(0.02f, -0.48f, 0f), new Vector3(0.12f, 0.1f, 0.09f), Osso);
+                return;
+            case "catenaccio":
+                for (int i = 0; i < 7; i++)
+                    P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f - i * 0.11f, 0f), new Vector3(0.05f, 0.09f, 0.02f), FerroScuro,
+                        new Vector3(0f, i % 2 == 0 ? 0f : 90f, 0f));
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.88f, 0f), new Vector3(0.12f, 0.12f, 0.06f), Ruggine);
+                P(t, PrimitiveType.Cylinder, new Vector3(0f, -0.79f, 0f), new Vector3(0.08f, 0.02f, 0.08f), FerroScuro, new Vector3(90f, 0f, 0f));
+                return;
+            case "mannaia-del-macellaio":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.04f, 0.2f, 0.04f), Legno);
+                P(t, PrimitiveType.Cube, new Vector3(0.05f, -0.3f, 0f), new Vector3(0.16f, 0.3f, 0.02f), Ruggine);
+                return;
+            case "mazza-chiodata":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.06f, 0.6f, 0.06f), Legno);
+                P(t, PrimitiveType.Cylinder, new Vector3(0f, -0.62f, 0f), new Vector3(0.13f, 0.14f, 0.13f), Legno);
+                for (int i = 0; i < 6; i++)   // chiodi
+                    P(t, PrimitiveType.Cube, Quaternion.Euler(0f, i * 60f, 0f) * new Vector3(0.08f, 0f, 0f) + new Vector3(0f, -0.6f + (i % 2) * 0.08f, 0f),
+                        new Vector3(0.06f, 0.015f, 0.015f), FerroScuro, new Vector3(0f, i * 60f, 0f));
+                return;
+            case "mannaia-affilata":
+                P(t, PrimitiveType.Cube, new Vector3(0f, -0.06f, 0f), new Vector3(0.04f, 0.2f, 0.04f), Legno);
+                P(t, PrimitiveType.Cube, new Vector3(0.05f, -0.3f, 0f), new Vector3(0.16f, 0.3f, 0.02f), Ferro);
+                return;
+            case "pugnale-arrugginito": Pugnale(t, 0.24f, 0.045f, Ruggine, Cuoio); return;
             case "stiletto-del-tagliagole": Pugnale(t, 0.34f, 0.025f, Ferro, new Color(0.45f, 0.06f, 0.06f)); return;
         }
         switch (a.tipo)
@@ -283,6 +312,12 @@ public static class FormeOggetti
                 P(t, PrimitiveType.Cube, new Vector3(-0.14f, -0.15f, 0.19f), new Vector3(0.1f, 0.1f, 0.01f), Cuoio);
                 Gonna(t, 0.22f, Ferro * 0.85f);
                 return;
+            case "catena-del-carceriere":
+                Busto(t, Cuoio * 0.7f, 0.015f);
+                for (int i = 0; i < 4; i++)   // catene avvolte di traverso sul busto
+                    P(t, PrimitiveType.Cube, new Vector3(0f, 0.22f - i * 0.15f, 0.19f), new Vector3(0.42f, 0.035f, 0.02f), FerroScuro,
+                        new Vector3(0f, 0f, i % 2 == 0 ? 20f : -20f));
+                return;
             case "corazza-di-piastre-annerite":
                 Busto(t, FerroScuro, 0.04f);
                 Spallacci(t, FerroScuro, 0.2f);
@@ -385,6 +420,11 @@ public static class FormeOggetti
                 Gemma(t, LagoNero, 0.055f, true);
                 P(t, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.085f, 0.005f, 0.085f), Ferro, new Vector3(90f, 0f, 0f));
                 return;
+            case "dente-d-orco": Dente(t, new Color(0.7f, 0.62f, 0.35f)); return;
+            case "lacci-di-cuoio":
+                P(t, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.08f, 0.01f, 0.08f), Cuoio, new Vector3(90f, 0f, 0f));
+                return;
+            case "pietra-torbida-del-lago": P(t, PrimitiveType.Sphere, Vector3.zero, new Vector3(0.06f, 0.05f, 0.04f), LagoNero * 0.6f); return;
             case "cuore-del-lago-nero": Gemma(t, new Color(0.1f, 0.15f, 0.45f), 0.07f, true); return;
         }
         Gemma(t, am.tipo == DatiAmuleto.Tipo.Arcano ? Ombra : Oro, 0.06f, am.tipo == DatiAmuleto.Tipo.Arcano);

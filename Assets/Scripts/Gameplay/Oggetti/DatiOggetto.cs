@@ -18,6 +18,8 @@ public abstract class DatiOggetto : ScriptableObject
     public string chiaveDescrizione = "";
     [Tooltip("Classe che può usare l'oggetto.")]
     public ClasseGiocatore classe = ClasseGiocatore.Guerriero;
+    [Tooltip("Lo possono usare tutte le classi, senza distinzioni (per esempio le armi improvvisate della gattabuia). La classe sopra allora non conta.")]
+    public bool tutteLeClassi;
 
     [Header("Aspetto (da collegare quando Nazar avrà fatto il modello)")]
     [Tooltip("Immagine dell'oggetto per l'inventario.")]

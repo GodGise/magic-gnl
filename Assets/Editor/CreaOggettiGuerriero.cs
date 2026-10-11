@@ -155,6 +155,13 @@ public static class CreaOggettiGuerriero
             b.peso = DatiArmatura.Peso.Pesante;
             b.armatura = 45f; b.costoSchivataExtra = 12f; b.moltiplicatoreVelocita = 0.88f;
         });
+        // Bottino fisso del Carceriere (Docs/gattabuia.md): le catene che lo stringevano, avvolte come un'armatura.
+        // Media: un po' più armatura della cotta di maglia rattoppata, ma più pesante (schivata e passo). Cosa forte assicurata.
+        creati += Armatura("catena-del-carceriere", "Catena del carceriere", "catena_carceriere", b =>
+        {
+            b.peso = DatiArmatura.Peso.Media;
+            b.armatura = 31f; b.costoSchivataExtra = 9f; b.moltiplicatoreVelocita = 0.93f;
+        });
 
         // ---------- Amuleti ----------
 

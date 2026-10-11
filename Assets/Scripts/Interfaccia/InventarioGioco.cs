@@ -84,8 +84,10 @@ public class InventarioGioco : MonoBehaviour
     static bool Ladro => SceltaPartita.Classe == ClasseGiocatore.Ladro;
     // Lo Stregone ha il libro nella seconda casella.
     static bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
-    static string ChiaveCasella(int i) => i == 0 && Stregone ? "inv.bastone" : i == 1 && Ladro ? "inv.distanza"
+    // Prima casella dello Stregone: "Bastone", oppure "Arma" se al posto del bastone tiene un'arma improvvisata.
+    string ChiaveCasella(int i) => i == 0 && Stregone ? (StregoneConArma ? "inv.arma" : "inv.bastone") : i == 1 && Ladro ? "inv.distanza"
         : i == 1 && Stregone ? "inv.libro" : i >= 4 ? "inv.incantesimi" : chiaviCaselle[i];
+    bool StregoneConArma => equipaggiamento != null && equipaggiamento.Bastone == null && equipaggiamento.Arma != null;
     int CaselleIncantesimi => Stregone && equipaggiamento != null ? equipaggiamento.NumeroCaselle : 0;
     static string ChiaveScheda(int i) => i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
 
@@ -171,7 +173,8 @@ public class InventarioGioco : MonoBehaviour
         if (i >= 4) return equipaggiamento.Incantesimo(i - 4);
         switch (i)
         {
-            case 0: return Stregone ? equipaggiamento.Bastone : (DatiOggetto)equipaggiamento.Arma;
+            // Lo Stregone tiene il bastone, oppure un'arma di tutte le classi (le armi improvvisate della gattabuia).
+            case 0: return Stregone ? (equipaggiamento.Bastone != null ? equipaggiamento.Bastone : (DatiOggetto)equipaggiamento.Arma) : equipaggiamento.Arma;
             case 1: return Ladro ? equipaggiamento.ArmaDistanza : Stregone ? equipaggiamento.Libro : (DatiOggetto)equipaggiamento.Scudo;
             case 2: return equipaggiamento.Armatura;
             default: return equipaggiamento.Amuleto;
@@ -339,7 +342,7 @@ public class InventarioGioco : MonoBehaviour
         var mia = SceltaPartita.Classe;
         if (oggetto is DatiAmuleto amuleto)
             return amuleto.effetto == DatiAmuleto.Effetto.SvanireNellOmbra && mia != ClasseGiocatore.Ladro ? "inv.amuleto_solo_ladro" : null;
-        if (oggetto.classe == mia) return null;
+        if (oggetto.classe == mia || oggetto.tutteLeClassi) return null;
         return oggetto.classe == ClasseGiocatore.Guerriero ? "inv.solo_guerriero"
             : oggetto.classe == ClasseGiocatore.Ladro ? "inv.solo_ladro" : "inv.solo_stregone";
     }
@@ -356,7 +359,7 @@ public class InventarioGioco : MonoBehaviour
         }
         switch (i)
         {
-            case 0: if (Stregone) equipaggiamento.TogliBastone(); else equipaggiamento.TogliArma(); break;
+            case 0: if (Stregone && equipaggiamento.Bastone != null) equipaggiamento.TogliBastone(); else equipaggiamento.TogliArma(); break;
             case 1:
                 if (Ladro) equipaggiamento.TogliArmaDistanza();
                 else if (Stregone) equipaggiamento.TogliLibro();
@@ -774,7 +777,7 @@ public class InventarioGioco : MonoBehaviour
         var nome = new GUIStyle(GraficaMenu.NomeClasse) { alignment = TextAnchor.MiddleLeft };
         GraficaMenu.Scritta(new Rect(D.x + 40f, D.y + 22f, D.width * 0.6f, 44f), oggetto.Nome.ToUpperInvariant(), nome, GraficaMenu.Selezione, alfa);
         var tipo = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleRight };
-        GraficaMenu.Scritta(new Rect(D.x + D.width * 0.45f, D.y + 22f, D.width * 0.55f - 40f, 44f), Tipo(oggetto) + GraficaMenu.Separatore + NomeClasse(oggetto.classe), tipo, GraficaMenu.Spento, alfa);
+        GraficaMenu.Scritta(new Rect(D.x + D.width * 0.45f, D.y + 22f, D.width * 0.55f - 40f, 44f), Tipo(oggetto) + GraficaMenu.Separatore + (oggetto.tutteLeClassi ? Lingua.T("inv.tutte_classi") : NomeClasse(oggetto.classe)), tipo, GraficaMenu.Spento, alfa);
         GraficaMenu.Scritta(new Rect(D.x + 40f, D.y + 70f, D.width - 80f, 64f), oggetto.Descrizione, GraficaMenu.TestoSinistra, GraficaMenu.Testo, alfa);
 
         // Bastoni, libri, vesti dello Stregone e amuleti: pro (verdi) e contro (rossi) al posto dei numeri.

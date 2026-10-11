@@ -177,6 +177,20 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     public bool HaBastone => haBastone || Stregone;
     // La classe scelta nel menu è lo Stregone (vedi SceltaPartita): niente spada, solo incantesimi.
     public bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
+    // Stregone senza bastone ma con un'arma di tutte le classi (armi improvvisate della gattabuia): combatte corpo a corpo.
+    public bool StregoneCorpoACorpo
+    {
+        get
+        {
+            if (!Stregone) return false;
+            if (equipaggiamento == null) equipaggiamento = GetComponent<Equipaggiamento>();
+            return equipaggiamento != null && equipaggiamento.Bastone == null && equipaggiamento.Arma != null;
+        }
+    }
+    Equipaggiamento equipaggiamento;
+    // Lo Stregone usa gli incantesimi (non quando combatte con un'arma improvvisata).
+    bool UsaMagia => Stregone && magia != null && !StregoneCorpoACorpo;
+    bool eraCorpoACorpo;
     public MagiaStregone Magia => magia;
     public float Mana { get; private set; }
     // Mana massimo vero: quello dell'Inspector più libro, veste e amuleto (vedi Statistiche).
@@ -616,7 +630,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Con la spada serve resistenza; con il bastone serve abbastanza mana (altrimenti avvisa).
     bool PuoAttaccare()
     {
-        if (Stregone && magia != null)
+        if (UsaMagia)
         {
             if (magia.PuoLanciare()) return true;
             attaccoPrenotatoFino = -1f;
@@ -641,7 +655,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         // Lanciare durante il Passo d'ombra: questo incantesimo fa il danno moltiplicato, poi l'effetto finisce
         // e per un attimo si va più piano (se invece il Passo finisce da solo, nessun rallentamento).
         float moltiplicatoreDaPasso = 1f;
-        if (Stregone && PassoAttivo)
+        if (UsaMagia && PassoAttivo)
         {
             moltiplicatoreDaPasso = passoMoltiplicatore;
             passoFino = Time.time;
@@ -649,13 +663,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             rallentatoMagiaFino = Time.time + passoDurataRallentamento;
         }
         RompiOmbra(); // attaccare (anche con il bastone o con l'esecuzione furtiva) fa tornare visibili
-        attaccoMagico = Stregone || arma == ArmaImpugnata.Bastone;
+        attaccoMagico = UsaMagia || (!StregoneCorpoACorpo && arma == ArmaImpugnata.Bastone);
         if (attaccoMagico)
         {
             // Bastone: la sfera parte alla fine della carica, verso il nemico scelto adesso.
             colpoCombo = 0;
             sferaLanciata = false;
-            if (Stregone && magia != null)
+            if (UsaMagia)
             {
                 // Stregone: l'incantesimo della casella scelta, con i suoi tempi e il suo costo.
                 magia.IniziaLancio(moltiplicatoreDaPasso, out float costo, out float carica, out float recupero);
@@ -730,7 +744,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             : transform.forward;
 
         float danno = dannoSfera;
-        if (Stregone && magia != null)
+        if (UsaMagia)
         {
             magia.Lancia(obiettivo, partenza, direzione);
             return;
@@ -948,6 +962,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // e il bastone in mano; se smette di esserlo torna la spada.
     void AggiornaClasse()
     {
+        // Stregone che prende o lascia un'arma improvvisata: in mano la spada provvisoria (con la forma dell'arma) o il bastone.
+        bool corpoACorpo = StregoneCorpoACorpo;
+        if (Stregone && magia != null && corpoACorpo != eraCorpoACorpo && stato != Stato.Attacco)
+        {
+            eraCorpoACorpo = corpoACorpo;
+            ImpugnaArma(corpoACorpo ? ArmaImpugnata.Spada : ArmaImpugnata.Bastone);
+        }
         bool ora = Stregone;
         if (ora == eraStregone && (!ora || magia != null)) return;
         eraStregone = ora;
