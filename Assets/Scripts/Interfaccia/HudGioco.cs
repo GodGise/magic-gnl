@@ -356,16 +356,24 @@ public class HudGioco : MonoBehaviour
         {
             var k = new Rect(r.x + 14f, r.y + 12f, kw + 16f, r.height - 24f);
             GraficaMenu.Riempi(k, GraficaMenu.Bronzo);
-            GraficaMenu.Scritta(k, azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
+            ScrittaSenzaOmbra(k, azioneTasto);
         }
         else
         {
             var c = new Vector2(r.x + 40f, r.center.y);
             GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
-            GraficaMenu.Scritta(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
+            ScrittaSenzaOmbra(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto);
         }
         var testo = new GUIStyle(GraficaMenu.TestoSinistra) { wordWrap = false };
         GraficaMenu.Scritta(new Rect(r.x + spazioTasto, r.y, r.width - spazioTasto - 18f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
+    }
+
+    // Il tasto è scuro su fondo bronzo: con l'ombra nera di GraficaMenu.Scritta sembrava una lettera doppia.
+    static void ScrittaSenzaOmbra(Rect area, string testo)
+    {
+        GUI.color = new Color(0.05f, 0.05f, 0.06f);
+        GUI.Label(area, testo, GraficaMenu.Etichetta);
+        GUI.color = Color.white;
     }
 
     void DisegnaOra(float larghezza)
