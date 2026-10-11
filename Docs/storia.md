@@ -36,7 +36,7 @@ Il gioco **non** comincia con la razzia: comincia **di giorno**, con il villaggi
 2. **La notte e la razzia.** Cala la sera e arrivano gli orchi: il villaggio brucia, la famiglia dell'eroe viene perduta (come nel racconto).
 3. **Lo scontro con l'orco enorme: si perde.** È la boss fight del capitolo, scritta per essere persa: l'eroe cade (in co-op cadono tutti).
 4. **La gattabuia.** L'eroe si risveglia nella cella, sotto terra, nella tana degli orchi.
-5. **La fuga dalla gattabuia.** Corridoi, sotterranei, grotte; lungo la strada si trova l'arma della propria classe nel bottino degli orchi. Si esce all'aria aperta.
+5. **La fuga dalla gattabuia.** Corridoi, sotterranei, grotte; lungo la strada si trova l'arma della propria classe nel bottino degli orchi. Si esce all'aria aperta. Appena fuori, la gattabuia **crolla** alle spalle dell'eroe: una vendetta contro gli orchi (decisione di Giuseppe, 11 ottobre).
 6. **Fine del capitolo 1.** Il ritorno al villaggio in rovina e tutto il resto sono dal capitolo 2.
 
 ## Note di design

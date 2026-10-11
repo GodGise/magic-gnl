@@ -15,14 +15,20 @@ Scritta il 10 ottobre 2026 dal Claude di Giuseppe, guardando il codice e i docum
 
 **Già prese da Giuseppe (10 ottobre):** il capitolo comincia di giorno al villaggio; la boss fight con l'orco enorme si perde; il capitolo finisce dopo la fuga dalla gattabuia (il ritorno al villaggio in rovina è nel capitolo 2).
 
-**Ancora da decidere (Giuseppe):**
+**Decise da Giuseppe l'11 ottobre:**
 
-1. **Che cosa vuol dire "uscire"?** Una build da far provare agli amici, una demo su Steam, oppure il gioco intero? Cambia tutto il lavoro di rifinitura e di Steam. Proposta: prima una build per gli amici (traguardo 4), poi la demo.
-2. **Quanto dura la parte di giorno?** Proposta: 20-30 minuti tra tutorial, quest ed esplorazione, poi il tramonto e la razzia. Il ciclo del gioco ha già 45 minuti di luce.
-3. **Come cade l'eroe contro l'orco enorme?** Proposta: si combatte davvero; a un certo punto l'orco diventa invincibile o cala un colpo scenico. In co-op cadono tutti e tre.
-4. **Quanto è lunga la fuga?** Proposta: 15-25 minuti, con celle, corridoi con guardie, grotte, un paio di scontri e il ritrovamento dell'arma.
-5. **Chi scrive i dialoghi e le quest?** Servono 8 traduzioni per ogni riga: meno righe, meno lavoro. Proposta: massimo 80-100 righe in tutto il capitolo e 4-6 quest brevi.
-6. **Il suono.** Oggi tutti i suoni sono provvisori generati dal codice e c'è solo la musica del menu. Serve qualcuno per musica e suoni (profilo già segnato come "terza persona" in `CLAUDE.md`), oppure si usano solo asset CC0.
+- **"Uscire" = una demo su Steam** con il capitolo 1 (o un po' meno), per avere qualcosa di concreto e tenere alto il morale. Il gioco completo viene dopo. La durata minima di 2 ore (limite del rimborso su Steam) vale per il gioco venduto, non per la demo.
+- **Giorno e notte:** già decisi, 45 minuti di giorno e 50 di notte.
+- **Come cade l'eroe:** scontro normale contro l'orco della piazza, che dopo 3 minuti diventa invulnerabile; chi muore si risveglia nella gattabuia (proposta di Lorenzo, approvata).
+- **Gattabuia dopo la fuga:** **crolla**, come una vendetta contro gli orchi.
+- **Dialoghi e sonoro:** li fa Giuseppe (i dialoghi li rivede anche Lorenzo).
+- **Scena `VillaggioLagoNero.unity`:** la gestisce Lorenzo, perché Giuseppe sta finendo le impostazioni e altre cose.
+
+**Ancora da decidere:**
+
+1. **Quanto è lunga la fuga?** Proposta: 15-25 minuti, con celle, corridoi con guardie, grotte, un paio di scontri e il ritrovamento dell'arma.
+2. **Quanto dura la parte di giorno?** Lorenzo propone 20-30 minuti di percorso, da confermare giocando.
+3. **Quanto lunga deve essere la demo?** Capitolo 1 intero o una parte; si decide dopo la prima build per gli amici.
 
 ## A che punto siamo
 

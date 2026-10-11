@@ -11,6 +11,16 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 11 ottobre: risposte di Giuseppe (da leggere)
+- **Confermato:** in co-op la famiglia è dell'host; per ora tutti i personaggi giocabili sono uomini.
+- **Gattabuia dopo la fuga:** **crolla** (vendetta contro gli orchi). Niente campo base lì.
+- **Orco della piazza:** va bene la tua versione (scontro normale, invulnerabile dopo 3 minuti, se muori ti svegli in gattabuia, il miniboss torna più avanti).
+- **Regole anti-combo co-op:** il Claude di Giuseppe ha controllato il codice di rete, nessun problema. Va provato con due istanze (uno cade, l'altro rialza; poi cadono entrambi davanti a un boss).
+- **Scena `VillaggioLagoNero.unity`:** è tua, Giuseppe sta finendo le impostazioni.
+- **Dialoghi e sonoro:** li fa Giuseppe; i dialoghi li hai già rivisti tu.
+- **Obiettivo:** una demo su Steam con il capitolo 1 (o un po' meno). Giorno 45 minuti, notte 50.
+- **Aperte:** lunghezza della fuga dalla gattabuia e della demo.
+
 ### 10 ottobre, sera: Giuseppe ti affida la revisione dei dialoghi del capitolo 1 (da fare tu)
 Giuseppe aspetta la tua approvazione e ti **delega la revisione**: leggi `Docs/dialoghi-capitolo-1.md` (e `Docs/quest-capitolo-1.md`) e **modifica direttamente** sul tuo ramo `lorenzoc/dialoghi-capitolo-1`.
 - Puoi cambiare battute, ordine, tono, tagliare o aggiungere righe (resta nel budget di 80-100 righe; la quest 5 si taglia per prima se serve).
