@@ -1,4 +1,4 @@
-# Storia del gioco (bozza 2)
+# Storia del gioco (bozza 3)
 
 Testo di Giuseppe, sistemato con Claude. È la storia da raccontare: le scelte di gioco che ne derivano sono in fondo, nella sezione "Note di design".
 
@@ -28,6 +28,17 @@ Così il nostro eroe si trovò davanti alla scelta più difficile della sua vita
 
 Due strade, due destini diversi. E a scegliere, questa volta, sarai tu.
 
+## Il capitolo 1 (deciso da Giuseppe il 10 ottobre)
+
+Il gioco **non** comincia con la razzia: comincia **di giorno**, con il villaggio ancora vivo. Il primo capitolo è questa sequenza, in quest'ordine:
+
+1. **Il giorno a Villaggio Lago Nero.** Si appare al villaggio, di giorno. Qui c'è il **tutorial**: i principi del combattimento (parata, schivata, attacco, aggancio), le prime quest, la gente da conoscere, l'esplorazione del villaggio e dei dintorni. Si combatte con l'ascia da legna.
+2. **La notte e la razzia.** Cala la sera e arrivano gli orchi: il villaggio brucia, la famiglia dell'eroe viene perduta (come nel racconto).
+3. **Lo scontro con l'orco enorme: si perde.** È la boss fight del capitolo, scritta per essere persa: l'eroe cade (in co-op cadono tutti).
+4. **La gattabuia.** L'eroe si risveglia nella cella, sotto terra, nella tana degli orchi.
+5. **La fuga dalla gattabuia.** Corridoi, sotterranei, grotte; lungo la strada si trova l'arma della propria classe nel bottino degli orchi. Si esce all'aria aperta.
+6. **Fine del capitolo 1.** Il ritorno al villaggio in rovina e tutto il resto sono dal capitolo 2.
+
 ## Note di design
 
 ### Classi e armi
@@ -39,14 +50,18 @@ Due strade, due destini diversi. E a scegliere, questa volta, sarai tu.
   - Guerriero: spada e scudo.
   - Ladro: arco e pugnale.
   - Stregone: bastone incantato e libro.
-- Prima di trovarla combatte con l'ascia da legna (o a mani nude).
+- Prima di trovarla combatte con l'ascia da legna (o a mani nude): è l'arma del tutorial al villaggio e della boss fight persa.
 
 ### Ordine delle regioni
-0. **La gattabuia**: tana sotterranea degli orchi, fuga e tutorial.
-1. **Villaggio Lago Nero**: rovine, sopravvissuti, base a cui tornare.
-2. e 3. **Le due tane degli orchi**: nell'ordine che sceglie il giocatore.
-4. **La tana principale**: dove viene portata la reliquia (solo nella strada A).
-5. **Le montagne innevate**: il druido.
+Capitolo 1:
+1. **Villaggio Lago Nero (intatto, di giorno)**: tutorial, prime quest, esplorazione. Poi, di notte, la razzia e la boss fight persa.
+2. **La gattabuia**: tana sotterranea degli orchi, cella, sotterranei, grotte; la fuga, l'arma della classe, l'uscita.
+
+Dopo il capitolo 1:
+3. **Villaggio Lago Nero (in rovina)**: sopravvissuti, base a cui tornare.
+4. e 5. **Le due tane degli orchi**: nell'ordine che sceglie il giocatore.
+6. **La tana principale**: dove viene portata la reliquia (solo nella strada A).
+7. **Le montagne innevate**: il druido.
 
 ### La scelta finale
 - **Il druido è il boss finale**: affrontarlo è sempre l'ultimo scontro della storia.
