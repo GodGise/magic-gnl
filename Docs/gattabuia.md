@@ -104,13 +104,15 @@ Nota per il codice: la fase 2 parte a una **percentuale** della vita (300 su 620
 Regola di Lorenzo (11 ottobre): **ogni nemico e ogni boss ha il suo bottino**, che non deve per forza servire a tutti i giocatori. Il Carceriere lascia **una sola cosa forte, sempre la stessa**, più qualche cosa debole a caso (roba da poco ma utile all'inizio).
 
 - **Sempre:** la **chiave del portone** (apre il portone della zona 8; il boss non si può saltare).
-- **Sempre, la cosa forte (proposta):** **Catena del carceriere**, amuleto in comune fra le classi: +15% di vita massima e il 5% del danno inflitto torna come vita. Una sola: in co-op la prende uno.
-- **A caso, 2 fra queste (proposta):**
-  - **Mannaia affilata:** arma improvvisata di tutte le classi, come la mannaia del macellaio ma 27 di danno;
-  - **Sbarra chiodata:** arma improvvisata di tutte le classi, lenta, 30 di danno, buona portata;
+- **Sempre, la cosa forte:** **Catena del carceriere**, **armatura media del Guerriero** (deciso da Lorenzo l'11 ottobre). Le catene che lo stringevano, avvolte sul petto: armatura 30, schivata +6 di resistenza, velocità -5% (poco meglio della Cotta di maglia rattoppata: 25 / +6,5 / -5%). Una sola; serve solo al Guerriero.
+- **A caso, 3 fra queste:**
+  - **Mazza chiodata:** arma improvvisata di tutte le classi, 24 di danno, 0,90 s a colpo;
+  - **Mannaia affilata:** arma improvvisata di tutte le classi, 26 di danno, un po' più lenta della mazza (0,98 s a colpo);
   - **Dente d'orco:** amuleto debole, 3 di vita per ogni nemico ucciso;
   - **Lacci di cuoio:** amuleto debole, +10% di ricarica della resistenza;
   - **Pietra torbida del lago:** amuleto debole, 3 di mana per ogni nemico ucciso (utile allo Stregone).
+
+Numeri delle armi in `Docs/armi-improvvisate.md`. Le tre cose oggi sono programmate come oggetti (menu "Crea armi improvvisate" e "Crea oggetti del Guerriero"); i tre amuleti deboli e il sistema del bottino per nemico sono ancora da fare.
 
 ## I parassiti delle grotte (proposta, da confermare)
 
@@ -128,8 +130,7 @@ Pochi danni ciascuno ma tanti insieme: insegnano a usare l'aggancio e a non fars
 
 ## Da decidere
 
-1. **Il Carceriere:** confermare la cosa forte e le cose a caso del bottino.
-2. **I parassiti:** confermare i numeri e decidere se sono legati al bosco morto fuori (lo stesso male che uccide le piante).
+1. **I parassiti:** confermare i numeri e decidere se sono legati al bosco morto fuori (lo stesso male che uccide le piante).
 
 ## Cosa serve fare
 
