@@ -8594,6 +8594,7 @@ MonoBehaviour:
   costoColpoParato: 20
   dannoAssorbitoInParata: 0.9
   arcoParata: 120
+  tempoAlzataScudo: 0.1
   durataGuardiaRotta: 1
   costoAttacco: 20
   dannoAttacco: 25
@@ -8604,6 +8605,10 @@ MonoBehaviour:
   portataColpo: 1.8
   arcoAttacco: 120
   velocitaAffondo: 3
+  distanzaEsecuzione: 2
+  arcoAlleSpalle: 120
+  durataEsecuzione: 1.4
+  momentoTaglio: 0.7
   manaMassimo: 100
   costoSfera: 20
   manaPerUccisionePercento: 15
@@ -12028,6 +12033,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bersaglio
   vitaMassima: 100
+  rinasce: 1
   secondiPerRinascere: 2
   spintaQuandoColpito: 0.3
   attaccaIlGiocatore: 1
@@ -29102,6 +29108,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bersaglio
   vitaMassima: 100
+  rinasce: 1
   secondiPerRinascere: 2
   spintaQuandoColpito: 0.3
   attaccaIlGiocatore: 1
@@ -43969,6 +43976,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bersaglio
   vitaMassima: 100
+  rinasce: 1
   secondiPerRinascere: 2
   spintaQuandoColpito: 0.3
   attaccaIlGiocatore: 0
@@ -51909,6 +51917,10 @@ MonoBehaviour:
   inclinazioneMassima: 60
   inclinazioneAggancio: 15
   velocitaAggancio: 10
+  velocitaAllineamentoStrettoia: 4
+  inclinazioneStrettoia: 12
+  raggioMinimo: 0.06
+  tagliaVicinoMinimo: 0.03
 --- !u!81 &1738313728
 AudioListener:
   m_ObjectHideFlags: 0
