@@ -104,7 +104,7 @@ Nota per il codice: la fase 2 parte a una **percentuale** della vita (300 su 620
 Regola di Lorenzo (11 ottobre): **ogni nemico e ogni boss ha il suo bottino**, che non deve per forza servire a tutti i giocatori. Il Carceriere lascia **una sola cosa forte, sempre la stessa**, più qualche cosa debole a caso (roba da poco ma utile all'inizio).
 
 - **Sempre:** la **chiave del portone** (apre il portone della zona 8; il boss non si può saltare).
-- **Sempre, la cosa forte:** **Catena del carceriere**, **armatura media del Guerriero** (deciso da Lorenzo l'11 ottobre). Le catene che lo stringevano, avvolte sul petto: armatura 30, schivata +6 di resistenza, velocità -5% (poco meglio della Cotta di maglia rattoppata: 25 / +6,5 / -5%). Una sola; serve solo al Guerriero.
+- **Sempre, la cosa forte:** **Catena del carceriere**, **armatura media del Guerriero** (deciso da Lorenzo l'11 ottobre). Le catene che lo stringevano, avvolte sul petto: armatura 31, schivata +9 di resistenza, velocità -7% (più armatura della Cotta di maglia rattoppata, 25 / +6,5 / -5%, ma più pesante). Una sola; serve solo al Guerriero.
 - **A caso, 3 fra queste 5** (deciso da Lorenzo l'11 ottobre: alla sconfitta il Carceriere ne lascia 3 scelte a caso, le altre 2 no):
   - **Mazza chiodata:** arma improvvisata di tutte le classi, 24 di danno, 0,90 s a colpo;
   - **Mannaia affilata:** arma improvvisata di tutte le classi, 26 di danno, un po' più lenta della mazza (0,98 s a colpo);
