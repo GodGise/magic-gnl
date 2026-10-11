@@ -62,6 +62,24 @@ Risposte di Lorenzo alle 4 domande della voce "scaletta del capitolo 1" (ramo `g
 **Punto aperto (Claude di Lorenzo):**
 - Campo base nella gattabuia: è comodo per il co-op (tutti nello stesso punto), ma va spiegato nella storia (la tana degli orchi come rifugio). Se si sceglie la a), il riposo resta ai falò e ai checkpoint.
 
+### 10 ottobre, sera: revisione dei dialoghi del capitolo 1 (fatta)
+Lorenzo ha rivisto `Docs/dialoghi-capitolo-1.md` (ora "bozza 2") sul ramo `lorenzoc/dialoghi-capitolo-1`. Cosa è cambiato:
+- **Tasti nei suggerimenti:** al posto di "W A S D", "tasto sinistro", "Spazio", "E", "Tab" c'è il nome dell'azione fra graffe (`{Attacca}`, `{Schiva}`, `{Interagisci}`...), come nell'enum `Azione` di `Comandi.cs`: il codice del dialogo deve mettere il tasto scelto dal giocatore. Restano fissi mouse, rotellina e 1-6.
+- **Mana dello Stregone:** "si ricarica da solo poco dopo l'ultimo incantesimo" (non "se resti fermo").
+- **Aggancio:** aggiunto "Con un bersaglio agganciato, muovi il mouse verso un altro nemico per passare a lui".
+- **Ilse:** "Da bambina ho visto qualcosa uscire dal lago... Non ho mai detto a nessuno che cosa fosse."
+- **Quest 1:** aggiunto "(L'eroe si alza.)" fra le due battute di Maren.
+- **Lasciati così:** la pozione di Ilse (gli oggetti consumabili si aggiungono strada facendo) e la "cantina" di Hobb.
+- **Decisioni di Lorenzo da confermare:** in co-op la famiglia è dell'**host** ("papà" è solo l'host, gli altri sentono le stesse battute); per ora **tutti i personaggi giocabili sono uomini**.
+
+### 10 ottobre, sera: la gattabuia (da leggere)
+Lorenzo ha deciso la gattabuia: tutto in `Docs/gattabuia.md` (ramo `lorenzoc/gattabuia`). In breve: si arriva morendo contro l'orco della piazza; circa 30 minuti in 8 zone: celle (sbarra arrugginita che diventa la prima arma; in co-op celle separate nello stesso corridoio, solo l'host si libera e apre le altre), corridoio delle celle con i cadaveri, orchi macellai da superare con armi improvvisate, armeria quasi vuota con le armi base della classe e un checkpoint, sotterranei con fosse comuni e pattuglie, grotte buie con parassiti simili a ragni, piazzola con il **Carceriere** (miniboss) ai piedi della scalinata, portone e bosco morto.
+- **Per Giuseppe:** le scene scritte (risveglio, fine del capitolo al portone) sono del tuo Claude; e resta da scegliere insieme se dopo la fuga la gattabuia crolla o diventa il campo base.
+- **Per Nazar:** i modelli nuovi sono in fondo al documento; il resto è già nella sua lista.
+
+### 11 ottobre: danno dei nemici in co-op più basso (solo informazione)
+Lorenzo ha deciso che il danno che ricevono i giocatori cresce meno: **x1 da soli, x1,25 in 2, x1,5 in 3** (prima x1,5 e x2). Vita e frequenza degli attacchi restano come prima. Ramo `lorenzoc/danno-coop`: cambiati solo i valori di partenza in `DifficoltaCoop.cs` e la riga in `Docs/rete-coop.md`.
+
 ### 10 ottobre: regole contro le combinazioni troppo forti in co-op (serve un controllo di Giuseppe sulla rete)
 Con le classi libere, Lorenzo ha deciso queste regole (ramo `lorenzoc/equilibrio-coop`, dettagli in `Docs/rete-coop.md`, sezione "Combinazioni troppo forti"):
 - controlli (rallentamenti, blocchi, stordimenti) -30% per ogni Stregone nel gruppo, solo in co-op;
