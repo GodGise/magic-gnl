@@ -11,6 +11,9 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 11 ottobre: sistema dei dialoghi (solo informazione, ramo `giuseppec/sistema-dialoghi`)
+Il Claude di Giuseppe ha scritto il sistema dei dialoghi: `Assets/Scripts/Interfaccia/Dialogo.cs` (riquadro in basso, testo lettera per lettera, tasto Interagisci per andare avanti) e `Assets/Scripts/Livelli/Interlocutore.cs` (componente da mettere sui personaggi: "E  Parla: Maren"; righe, righe ripetute e un evento "Al Termine" per avviare quest). Le righe sono chiavi di `Lingua`, con `{Interagisci}`, `{Attacca}` ecc. al posto dei tasti. Mentre si parla il personaggio sta fermo (toccati `GiocatoreControllo.cs`, `MagiaStregone.cs`, `AggancioBersaglio.cs` con un controllo in più). **Fai Pull di `main` prima di toccare quei file.** In co-op ognuno parla per conto suo. Per provarlo: oggetto vuoto vicino al giocatore, componente `Interlocutore`, `Nome Chiave` = `pg.prova`, due righe con parlante `pg.prova` e testo `dlg.prova.1` e `dlg.prova.2`.
+
 ### 11 ottobre: risposte di Giuseppe (da leggere)
 - **Confermato:** in co-op la famiglia è dell'host; per ora tutti i personaggi giocabili sono uomini.
 - **Gattabuia dopo la fuga:** **crolla** (vendetta contro gli orchi). Niente campo base lì.

@@ -410,9 +410,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         AggiornaCaduta();
         ControllaGruppo();
 
-        if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
-        if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
-        if (comandoAbilita.WasPressedThisFrame()) SvanisciNellOmbra();
+        if (comandoSchiva.WasPressedThisFrame() && !Dialogo.InCorso) schivataPrenotataFino = Time.time + memoriaComandi;
+        if (comandoAttacca.WasPressedThisFrame() && !Dialogo.InCorso) attaccoPrenotatoFino = Time.time + memoriaComandi;
+        if (comandoAbilita.WasPressedThisFrame() && !Dialogo.InCorso) SvanisciNellOmbra();
         AggiornaOmbra();
         RicaricaMana(dt);
         AggiornaClasse();
@@ -425,7 +425,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
         }
 
-        Vector3 direzioneInput = DirezioneDaInput(comandoMuovi.ReadValue<Vector2>());
+        // Mentre si parla (vedi Dialogo) il personaggio sta fermo.
+        Vector3 direzioneInput = DirezioneDaInput(Dialogo.InCorso ? Vector2.zero : comandoMuovi.ReadValue<Vector2>());
         Vector3 movimento = Vector3.zero;
         AggiornaStrettoia(direzioneInput, dt);
 
@@ -503,7 +504,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             return Vector3.zero;
         }
 
-        bool vuoleParare = comandoPara.IsPressed();
+        bool vuoleParare = comandoPara.IsPressed() && !Dialogo.InCorso;
         if (vuoleParare && stato == Stato.Libero) CambiaStato(Stato.Parata);
         else if (!vuoleParare && stato == Stato.Parata) CambiaStato(Stato.Libero);
 
@@ -563,7 +564,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Parte solo con un po' di resistenza e si ferma quando la barra è vuota.
     void AggiornaSprint(bool inMovimento)
     {
-        bool vuoleSprint = comandoSprint.IsPressed() && inMovimento && stato == Stato.Libero;
+        bool vuoleSprint = comandoSprint.IsPressed() && !Dialogo.InCorso && inMovimento && stato == Stato.Libero;
 
         if (!vuoleSprint) staSprintando = false;
         else if (!staSprintando && resistenza.Attuale >= resistenzaMinimaSprint) staSprintando = true;

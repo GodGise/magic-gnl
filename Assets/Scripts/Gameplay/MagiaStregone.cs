@@ -52,7 +52,7 @@ public class MagiaStregone : MonoBehaviour
 
     void Update()
     {
-        if (InventarioGioco.Aperto || MenuPausa.InPausa || equipaggiamento == null) return;
+        if (InventarioGioco.Aperto || MenuPausa.InPausa || Dialogo.InCorso || equipaggiamento == null) return;
         var tastiera = Keyboard.current;
         int n = equipaggiamento.NumeroCaselle;
         if (tastiera != null)

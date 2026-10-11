@@ -81,7 +81,7 @@ public class AggancioBersaglio : MonoBehaviour
         }
 
         if (Attuale == null) { gestoMouse = Vector2.zero; return; }
-        if (InventarioGioco.Aperto || MenuPausa.InPausa) { gestoMouse = Vector2.zero; return; }
+        if (InventarioGioco.Aperto || MenuPausa.InPausa || Dialogo.InCorso) { gestoMouse = Vector2.zero; return; }
 
         // Mouse: il movimento si accumula e svanisce in fretta, così conta solo uno scatto deciso.
         // Subito dopo un cambio il movimento non conta, così uno scatto solo non salta due nemici.
