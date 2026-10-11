@@ -420,6 +420,11 @@ public static class FormeOggetti
                 Gemma(t, LagoNero, 0.055f, true);
                 P(t, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.085f, 0.005f, 0.085f), Ferro, new Vector3(90f, 0f, 0f));
                 return;
+            case "dente-d-orco": Dente(t, new Color(0.7f, 0.62f, 0.35f)); return;
+            case "lacci-di-cuoio":
+                P(t, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.08f, 0.01f, 0.08f), Cuoio, new Vector3(90f, 0f, 0f));
+                return;
+            case "pietra-torbida-del-lago": P(t, PrimitiveType.Sphere, Vector3.zero, new Vector3(0.06f, 0.05f, 0.04f), LagoNero * 0.6f); return;
             case "cuore-del-lago-nero": Gemma(t, new Color(0.1f, 0.15f, 0.45f), 0.07f, true); return;
         }
         Gemma(t, am.tipo == DatiAmuleto.Tipo.Arcano ? Ombra : Oro, 0.06f, am.tipo == DatiAmuleto.Tipo.Arcano);

@@ -646,6 +646,42 @@ public static class Lingua
             "Цепи, сковывавшие Тюремщика, обмотанные вокруг груди как доспех. Тяжёлые, но держат удары.",
             "曾束缚狱卒的锁链，缠在胸前如同铠甲。沉重，却能挡住攻击。",
         },
+        ["oggetto.dente_orco.nome"] = new[] { "Dente d'orco", "Orc Tooth", "Diente de orco", "Dent d'orc", "Orkzahn", "Dente de orc", "Зуб орка", "兽人之牙" },
+        ["oggetto.dente_orco.descrizione"] = new[]
+        {
+            "Un dente giallo legato a uno spago. Ogni nemico abbattuto ti ridà un po' di vita.",
+            "A yellow tooth tied to a string. Every enemy you fell gives you back a little health.",
+            "Un diente amarillo atado a un cordel. Cada enemigo abatido te devuelve un poco de vida.",
+            "Une dent jaune nouée à une ficelle. Chaque ennemi abattu te rend un peu de vie.",
+            "Ein gelber Zahn an einer Schnur. Jeder besiegte Feind gibt dir ein wenig Leben zurück.",
+            "Um dente amarelo amarrado a um barbante. Cada inimigo abatido devolve um pouco de vida.",
+            "Жёлтый зуб на бечёвке. Каждый поверженный враг возвращает немного здоровья.",
+            "一颗系在细绳上的黄牙。每击倒一名敌人，回复少许生命。",
+        },
+        ["oggetto.lacci_cuoio.nome"] = new[] { "Lacci di cuoio", "Leather Laces", "Cordones de cuero", "Lacets de cuir", "Lederschnüre", "Cordões de couro", "Кожаные шнурки", "皮革系带" },
+        ["oggetto.lacci_cuoio.descrizione"] = new[]
+        {
+            "Lacci intrecciati stretti al polso. Ti aiutano a riprendere fiato un po' più in fretta.",
+            "Laces braided tight around the wrist. They help you catch your breath a little faster.",
+            "Cordones trenzados apretados a la muñeca. Te ayudan a recuperar el aliento un poco más rápido.",
+            "Des lacets tressés serrés au poignet. Ils t'aident à reprendre ton souffle un peu plus vite.",
+            "Fest ums Handgelenk geflochtene Schnüre. Sie helfen dir, etwas schneller zu Atem zu kommen.",
+            "Cordões trançados apertados no pulso. Ajudam a recuperar o fôlego um pouco mais rápido.",
+            "Шнурки, туго сплетённые на запястье. Помогают чуть быстрее перевести дух.",
+            "紧紧编在手腕上的系带。让你恢复体力稍快一些。",
+        },
+        ["oggetto.pietra_torbida.nome"] = new[] { "Pietra torbida del lago", "Murky Lake Stone", "Piedra turbia del lago", "Pierre trouble du lac", "Trüber Seestein", "Pedra turva do lago", "Мутный камень с озера", "浑浊湖石" },
+        ["oggetto.pietra_torbida.descrizione"] = new[]
+        {
+            "Un sasso scuro raccolto sulla riva del Lago Nero. Ogni nemico abbattuto ti ridà un po' di mana.",
+            "A dark pebble picked up on the shore of the Black Lake. Every enemy you fell gives you back a little mana.",
+            "Una piedra oscura recogida en la orilla del Lago Negro. Cada enemigo abatido te devuelve un poco de maná.",
+            "Un caillou sombre ramassé sur la rive du Lac Noir. Chaque ennemi abattu te rend un peu de mana.",
+            "Ein dunkler Kiesel vom Ufer des Schwarzen Sees. Jeder besiegte Feind gibt dir ein wenig Mana zurück.",
+            "Uma pedra escura recolhida na margem do Lago Negro. Cada inimigo abatido devolve um pouco de mana.",
+            "Тёмный камешек с берега Чёрного озера. Каждый поверженный враг возвращает немного маны.",
+            "在黑湖岸边拾得的暗色石子。每击倒一名敌人，回复少许法力。",
+        },
         ["oggetto.spada_capitano.nome"] = new[] { "Spada del capitano", "Captain's Sword", "Espada del capitán", "Épée du capitaine", "Schwert des Hauptmanns", "Espada do capitão", "Меч капитана", "队长之剑" },
         ["oggetto.spada_capitano.descrizione"] = new[]
         {

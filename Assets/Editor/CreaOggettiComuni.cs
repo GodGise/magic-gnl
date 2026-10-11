@@ -1,7 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-// Strumento dell'editor: crea le armi improvvisate della gattabuia (Docs/gattabuia.md), che possono usare tutte le
+// Strumento dell'editor: crea le armi improvvisate della gattabuia (Docs/gattabuia.md) e gli amuleti deboli del
+// bottino del Carceriere (in Assets/Dati/Oggetti/Comuni/Amuleti). Le armi improvvisate possono usare tutte le
 // classi senza distinzioni (casella "Tutte Le Classi" di DatiOggetto). Sono armi raccolte da terra: solo danno e
 // numeri fissi, niente critico in più, niente colpo alle spalle, niente bonus.
 // I file vanno in Assets/Dati/Oggetti/Comuni/Armi. Il menu crea solo quelli che mancano; "Aggiorna" rimette in tutti
@@ -111,6 +112,21 @@ public static class CreaOggettiComuni
             a.dannoAssorbitoSenzaScudo = 0.25f; a.costoParataSenzaScudo = 22f;
         });
 
+        // Amuleti deboli del bottino a caso del Carceriere: roba da poco ma utile all'inizio. Gli amuleti sono già in
+        // comune fra le classi. Sono deboli, quindi per ora senza malus.
+        creati += Amuleto("dente-d-orco", "Dente d'orco", "dente_orco", m =>
+        {
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 3f;
+        });
+        creati += Amuleto("lacci-di-cuoio", "Lacci di cuoio", "lacci_cuoio", m =>
+        {
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 10f;
+        });
+        creati += Amuleto("pietra-torbida-del-lago", "Pietra torbida del lago", "pietra_torbida", m =>
+        {
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.ManaPerUccisione; m.valore = 3f;
+        });
+
         AssetDatabase.SaveAssets();
         Debug.Log(creati > 0 ? "Armi improvvisate: " + creati + " file in " + Radice + "." : "Armi improvvisate: c'erano già tutte.");
     }
@@ -149,6 +165,36 @@ public static class CreaOggettiComuni
         esistente.name = file;
         EditorUtility.SetDirty(esistente);
         Object.DestroyImmediate(arma);
+        return 1;
+    }
+
+    // Come Arma, per gli amuleti comuni (Assets/Dati/Oggetti/Comuni/Amuleti).
+    static int Amuleto(string file, string nome, string chiave, System.Action<DatiAmuleto> imposta)
+    {
+        const string cartella = "Assets/Dati/Oggetti/Comuni/Amuleti";
+        CreaCartelle(cartella);
+        string percorso = cartella + "/" + file + ".asset";
+        var esistente = AssetDatabase.LoadAssetAtPath<DatiAmuleto>(percorso);
+        if (esistente != null && !riscrivi) return 0;
+
+        var amuleto = ScriptableObject.CreateInstance<DatiAmuleto>();
+        amuleto.nomeDiLavoro = nome;
+        amuleto.chiaveNome = "oggetto." + chiave + ".nome";
+        amuleto.chiaveDescrizione = "oggetto." + chiave + ".descrizione";
+        amuleto.classe = ClasseGiocatore.Guerriero;   // non conta: gli amuleti sono di tutte le classi
+        imposta(amuleto);
+
+        if (esistente == null)
+        {
+            AssetDatabase.CreateAsset(amuleto, percorso);
+            return 1;
+        }
+        amuleto.icona = esistente.icona;
+        amuleto.modello = esistente.modello;
+        EditorUtility.CopySerialized(amuleto, esistente);
+        esistente.name = file;
+        EditorUtility.SetDirty(esistente);
+        Object.DestroyImmediate(amuleto);
         return 1;
     }
 
