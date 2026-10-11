@@ -11,6 +11,9 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 11 ottobre: manca il `.meta` di `Assets/Editor/CreaOggettiComuni.cs` (promemoria)
+Lo script era su `main` senza il suo `.meta`, e il Unity di Giuseppe ne ha creato uno. Il Claude di Giuseppe ha aggiunto il `.meta` (ramo `giuseppec/meta-oggetti`). **Regola di `CLAUDE.md`: quando si crea uno script (o una cartella) si crea nello stesso commit anche il suo `.meta`** (`fileFormatVersion: 2` e un `guid` di 32 caratteri esadecimali). Il tuo Claude lo ricordi a ogni nuovo script. Prima del Pull, se GitHub Desktop mostra un `CreaOggettiComuni.cs.meta` fra le tue modifiche, scartalo (clic destro → *Discard changes*), così usi quello di `main`.
+
 ### 11 ottobre: sistema dei dialoghi (solo informazione, ramo `giuseppec/sistema-dialoghi`)
 Il Claude di Giuseppe ha scritto il sistema dei dialoghi: `Assets/Scripts/Interfaccia/Dialogo.cs` (riquadro in basso, testo lettera per lettera, tasto Interagisci per andare avanti) e `Assets/Scripts/Livelli/Interlocutore.cs` (componente da mettere sui personaggi: "E  Parla: Maren"; righe, righe ripetute e un evento "Al Termine" per avviare quest). Le righe sono chiavi di `Lingua`, con `{Interagisci}`, `{Attacca}` ecc. al posto dei tasti. Mentre si parla il personaggio sta fermo (toccati `GiocatoreControllo.cs`, `MagiaStregone.cs`, `AggancioBersaglio.cs` con un controllo in più). **Fai Pull di `main` prima di toccare quei file.** In co-op ognuno parla per conto suo. Per provarlo: oggetto vuoto vicino al giocatore, componente `Interlocutore`, `Nome Chiave` = `pg.prova`, due righe con parlante `pg.prova` e testo `dlg.prova.1` e `dlg.prova.2`.
 
