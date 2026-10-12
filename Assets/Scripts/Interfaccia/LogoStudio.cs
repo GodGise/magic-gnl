@@ -3,9 +3,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // L'apertura con il logo dello studio: "GNL STUDIO presenta".
-// A cosa serve: all'avvio del gioco, prima della schermata del titolo, su fondo nero i pezzi del sigillo (quattro archi
-// dell'anello, il rombo e la spada) arrivano da fuori e si compongono; un lampo e una scintillio chiudono la composizione,
-// poi compaiono "GNL STUDIO" (le lettere si stringono) e sotto, piccolo, "presenta"; infine tutto si spegne e parte il menu.
+// A cosa serve: all'avvio del gioco, prima della schermata del titolo, su fondo nero (3 secondi) il sigillo si compone GRANDE
+// AL CENTRO dello schermo: il filo esterno, i quattro archi dell'anello, le rune che si accendono una dopo l'altra, il rombo;
+// poi la spada cala dall'alto e si pianta nel lago (lampo, onde, scintille, braci). Il sigillo sale e rimpicciolisce e al centro
+// compaiono "GNL STUDIO" (le lettere si stringono) e sotto, piccolo, "presenta"; infine tutto si spegne e parte il menu.
 // Non si salta (il logo dello studio è sacro): solo nell'editor di Unity, per chi lo prova spesso, F2 lo salta.
 // Si vede una volta sola a ogni avvio del gioco.
 // Suono: se nella cartella Assets/Resources/Audio/Effetti c'è un file "logo-studio" (ogg o wav) parte da solo quando
@@ -19,14 +20,22 @@ public class LogoStudio : MonoBehaviour
     const float AttesaNera = 3.0f;
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
-    const float InizioAnelli = 0.0f, DurataAnelli = 2.0f;     // i quattro archi arrivano da fuori, uno dopo l'altro
-    const float InizioRombo = 1.5f, DurataRombo = 1.3f;       // il rombo si apre e si gira in posizione
-    const float InizioSpada = 2.4f, DurataSpada = 0.9f;       // la spada cala dall'alto
-    const float MomentoLampo = 3.3f;                          // la spada tocca: lampo, onda e scintille
-    const float InizioNome = 3.7f, DurataNome = 1.9f;         // "GNL STUDIO"
-    const float InizioPresenta = 5.3f, DurataPresenta = 1.0f; // "presenta"
-    const float InizioSpegni = 7.3f, DurataSpegni = 1.0f;     // dissolvenza al nero
+    const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
+    const float InizioAnelli = 0.3f, DurataAnelli = 1.8f;     // i quattro archi arrivano da fuori, uno dopo l'altro
+    const float InizioRune = 1.3f, PassoRune = 0.045f;        // le 28 rune si accendono in giro, una dopo l'altra
+    const float InizioRombo = 1.7f, DurataRombo = 1.2f;       // il rombo si apre e si gira in posizione
+    const float InizioSpada = 2.3f, DurataSpada = 1.0f;       // la spada cala dall'alto, sempre più veloce
+    const float MomentoLampo = 3.3f;                          // la punta entra nel lago: lampo, onde, scintille
+    const float InizioSposta = 4.5f, DurataSposta = 1.1f;     // il sigillo sale e rimpicciolisce
+    const float InizioNome = 5.0f, DurataNome = 1.9f;         // "GNL STUDIO" al centro
+    const float InizioPresenta = 6.5f, DurataPresenta = 1.0f; // "presenta"
+    const float InizioSpegni = 8.5f, DurataSpegni = 1.0f;     // dissolvenza al nero
     const float AttesaFinale = 0.35f;                         // nero prima del menu
+
+    // Il sigillo: grandezza e posizione (in pixel del foglio virtuale 1920x1080)
+    const float LatoGrande = 770f, LatoPiccolo = 440f;
+    const float YCentro = 540f, YAlto = 262f;
+    const float PuntaSpada = 566f;   // dove sta la punta nel disegno 1024x1024 (centro del lago = 512)
 
     // Una volta per avvio del gioco (nell'editor con "Reload Domain" spento si azzera da solo).
     static bool giaMostrato;
@@ -49,7 +58,8 @@ public class LogoStudio : MonoBehaviour
 
     MenuPrincipale menu;
     Texture2D[] anelli = new Texture2D[4];
-    Texture2D rombo, spada;
+    Texture2D[] rune = new Texture2D[7];
+    Texture2D rombo, spada, esterno, onda, raggi;
     AudioSource sorgente;
     // Orologio del logo: conta solo i fotogrammi veri. I primi caricamenti (caratteri, scena, suoni) possono bloccare il gioco
     // anche per un secondo: quel tempo non conta, altrimenti il nero iniziale si accorcia o sparisce.
@@ -59,15 +69,24 @@ public class LogoStudio : MonoBehaviour
     float saltatoA = -1f;       // solo nell'editor: l'orologio quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
-    readonly List<Scintilla> scintille = new List<Scintilla>();
+    readonly List<Particella> particelle = new List<Particella>();
 
-    struct Scintilla { public Vector2 direzione; public float velocita, vita, taglia; }
+    // Una particella: nasce a un certo momento in un punto del disegno (coordinate 1024x1024, centro 512,512),
+    // parte in una direzione, rallenta e svanisce. "tipo" 0 = scintilla, 1 = brace che sale, 2 = scintilla con alone.
+    struct Particella { public Vector2 origine, direzione; public float nascita, velocita, vita, taglia, salita; public int tipo; }
+
+    // Angolo (gradi, 0 = destra, senso orario sullo schermo) della runa i del quarto k: uguale allo script che disegna i pezzi.
+    static float AngoloRuna(int k, int i) => k * 90f - 90f + 8f + i * (74f / 6f);
 
     void Start()
     {
         for (int i = 0; i < 4; i++) anelli[i] = Resources.Load<Texture2D>("Logo/anello-" + (i + 1));
+        for (int i = 0; i < 7; i++) rune[i] = Resources.Load<Texture2D>("Logo/runa-" + (i + 1));
         rombo = Resources.Load<Texture2D>("Logo/rombo");
         spada = Resources.Load<Texture2D>("Logo/spada");
+        esterno = Resources.Load<Texture2D>("Logo/anello-esterno");
+        onda = Resources.Load<Texture2D>("Logo/onda");
+        raggi = Resources.Load<Texture2D>("Logo/raggi");
         Cursor.visible = false;
 
         Impostazioni.Applica();
@@ -79,16 +98,52 @@ public class LogoStudio : MonoBehaviour
         if (suono != null) { sorgente.clip = suono; }
 
         var caso = new System.Random(7);
-        for (int i = 0; i < 46; i++)
+        float R() => (float)caso.NextDouble();
+        Vector2 Dir(float a) => new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+
+        // 1) quando un arco si posa, una manciata di scintille sul suo bordo
+        int[] ordine = { 0, 2, 1, 3 };
+        for (int i = 0; i < 4; i++)
         {
-            float a = (float)(caso.NextDouble() * Mathf.PI * 2f);
-            scintille.Add(new Scintilla
+            int k = ordine[i];
+            float quando = InizioAnelli + i * 0.16f + DurataAnelli * 0.72f;
+            for (int n = 0; n < 16; n++)
             {
-                direzione = new Vector2(Mathf.Cos(a), Mathf.Sin(a)),
-                velocita = 140f + (float)caso.NextDouble() * 520f,
-                vita = 0.9f + (float)caso.NextDouble() * 1.2f,
-                taglia = 2f + (float)caso.NextDouble() * 4f,
-            });
+                float ang = (k * 90f - 90f + 8f + R() * 74f) * Mathf.Deg2Rad;
+                particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * 478f, direzione = Dir(ang + (R() - 0.5f) * 1.6f),
+                    nascita = quando + R() * 0.12f, velocita = 40f + R() * 150f, vita = 0.5f + R() * 0.7f, taglia = 3f + R() * 4f, salita = 20f, tipo = n % 4 == 0 ? 2 : 0 });
+            }
+        }
+        // 2) ogni runa, accendendosi, getta qualche scintilla
+        for (int k = 0; k < 4; k++)
+            for (int i = 0; i < 7; i++)
+            {
+                float ang = AngoloRuna(k, i) * Mathf.Deg2Rad;
+                float quando = InizioRune + (k * 7 + i) * PassoRune;
+                for (int n = 0; n < 4; n++)
+                    particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * 425f, direzione = Dir(ang + (R() - 0.5f) * 2.4f),
+                        nascita = quando + R() * 0.15f, velocita = 20f + R() * 90f, vita = 0.5f + R() * 0.8f, taglia = 2.5f + R() * 3.5f, salita = 30f, tipo = 0 });
+            }
+        // 3) l'impatto: grande scoppio dalla punta della spada nel lago
+        for (int n = 0; n < 260; n++)
+        {
+            float ang = R() * Mathf.PI * 2f;
+            particelle.Add(new Particella { origine = new Vector2(512f, 540f), direzione = Dir(ang),
+                nascita = MomentoLampo + R() * 0.06f, velocita = 160f + R() * 900f, vita = 0.9f + R() * 1.6f, taglia = 2f + R() * 6f, salita = 40f + R() * 60f, tipo = n % 5 == 0 ? 2 : 0 });
+        }
+        // 4) gocce d'acqua luminose che schizzano verso l'alto dal lago
+        for (int n = 0; n < 50; n++)
+        {
+            float ang = -Mathf.PI * 0.5f + (R() - 0.5f) * 1.5f;
+            particelle.Add(new Particella { origine = new Vector2(512f + (R() - 0.5f) * 60f, 520f), direzione = Dir(ang),
+                nascita = MomentoLampo + R() * 0.12f, velocita = 200f + R() * 520f, vita = 1.0f + R() * 1.0f, taglia = 3f + R() * 4f, salita = -120f, tipo = 2 });
+        }
+        // 5) braci che salgono piano dal sigillo, dall'accensione fino alla fine
+        for (int n = 0; n < 150; n++)
+        {
+            float ang = R() * Mathf.PI * 2f, raggio = Mathf.Sqrt(R()) * 470f;
+            particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = new Vector2((R() - 0.5f) * 0.6f, -1f),
+                nascita = 0.8f + R() * 7.2f, velocita = 18f + R() * 38f, vita = 2.2f + R() * 2.4f, taglia = 2f + R() * 3.5f, salita = 0f, tipo = 1 });
         }
     }
 
@@ -126,9 +181,9 @@ public class LogoStudio : MonoBehaviour
         Destroy(gameObject);
     }
 
-    static float Fluido(float x) => Mathf.Clamp01(x);
     static float Uscita(float x) { x = Mathf.Clamp01(x); return 1f - Mathf.Pow(1f - x, 4f); }       // frena alla fine
     static float UscitaForte(float x) { x = Mathf.Clamp01(x); return 1f - Mathf.Pow(1f - x, 5f); }
+    static float Entrata(float x) { x = Mathf.Clamp01(x); return Mathf.Pow(x, 2.4f); }              // accelera (caduta)
     static float Morbido(float x) { x = Mathf.Clamp01(x); return x * x * (3f - 2f * x); }
 
     // ---------- disegno ----------
@@ -149,59 +204,140 @@ public class LogoStudio : MonoBehaviour
         float luce = 1f - Morbido(Mathf.Clamp01((t - tSpegni) / dSpegni));   // 1 = tutto acceso, 0 = nero
         if (luce <= 0f) return;
 
-        const float lato = 500f;
-        var centro = new Vector2(GraficaMenu.Larghezza * 0.5f, 360f);
+        // dove sta il sigillo adesso: grande al centro, poi sale e si rimpicciolisce
+        float sposta = Morbido((t - InizioSposta) / DurataSposta);
+        float lato = Mathf.Lerp(LatoGrande, LatoPiccolo, sposta);
+        float u = lato / 1024f;   // un pixel del disegno in pixel dello schermo
+        float dopo = t - MomentoLampo;
+        float tremito = dopo >= 0f ? Mathf.Exp(-dopo * 8f) * 9f : 0f;
+        var centro = new Vector2(GraficaMenu.Larghezza * 0.5f, Mathf.Lerp(YCentro, YAlto, sposta))
+                   + new Vector2(Mathf.Sin(t * 83f), Mathf.Cos(t * 71f)) * tremito;
         var r = new Rect(centro.x - lato * 0.5f, centro.y - lato * 0.5f, lato, lato);
 
         // bagliore caldo dietro il sigillo: cresce mentre si compone, respira alla fine
         float cresce = Morbido((t - InizioAnelli) / (MomentoLampo - InizioAnelli));
-        float respiro = t > MomentoLampo + 1f ? 0.85f + 0.15f * Mathf.Sin(t * 1.8f) : 1f;
-        float lampo = Mathf.Exp(-Mathf.Max(0f, t - MomentoLampo) * 3.2f) * (t >= MomentoLampo ? 1f : 0f);
-        Bagliore(centro, 980f + 260f * lampo, new Color(1f, 0.5f, 0.18f), (0.10f * cresce * respiro + 0.55f * lampo) * luce);
+        float respiro = dopo > 1f ? 0.85f + 0.15f * Mathf.Sin(t * 1.8f) : 1f;
+        float lampo = dopo >= 0f ? Mathf.Exp(-dopo * 3.2f) : 0f;
+        Bagliore(centro, lato * 1.35f + 300f * lampo, new Color(1f, 0.5f, 0.18f), (0.11f * cresce * respiro + 0.60f * lampo) * luce);
+        if (t < MomentoLampo)   // prima dell'impatto: un punto di luce al centro che cresce
+            Bagliore(centro, 60f + 340f * Morbido(t / MomentoLampo), new Color(1f, 0.7f, 0.35f), 0.35f * Morbido(t / 1.0f) * luce);
 
         // colore del sigillo: spento mentre arriva, si accende al lampo e si assesta su un bronzo caldo
         Color spento = new Color(0.50f, 0.40f, 0.26f), caldo = new Color(1f, 0.86f, 0.62f), riposo = new Color(0.84f, 0.69f, 0.44f);
         Color colore = t < MomentoLampo ? Color.Lerp(spento, riposo, Morbido((t - InizioAnelli) / (MomentoLampo - InizioAnelli)))
-                                        : Color.Lerp(caldo, riposo, Morbido((t - MomentoLampo) / 1.6f));
+                                        : Color.Lerp(caldo, riposo, Morbido(dopo / 1.6f));
+
+        // raggi di luce dietro al sigillo: si aprono al lampo e poi girano pianissimo
+        if (dopo >= 0f)
+        {
+            float a = Mathf.Clamp01(dopo / 0.35f) * (0.20f + 0.35f * lampo) * luce;
+            float s = 1.45f + 0.55f * Uscita(dopo / 2.2f);
+            Strato(raggi, r, Vector2.zero, dopo * 2.5f, s, Con(new Color(1f, 0.72f, 0.38f), a));
+        }
+
+        // il filo esterno: si accende subito e gira piano per tutta la durata
+        float pe = Morbido((t - InizioEsterno) / DurataEsterno);
+        if (pe > 0f) Strato(esterno, r, Vector2.zero, t * 4f, 1f + 0.06f * (1f - pe), Con(colore, pe * 0.9f * luce));
 
         // i quattro archi: ognuno arriva da fuori, ruotando, in un momento suo
         int[] ordine = { 0, 2, 1, 3 };
         for (int i = 0; i < 4; i++)
         {
             int k = ordine[i];
-            float p = Uscita((t - (InizioAnelli + i * 0.18f)) / DurataAnelli);
+            float p = Uscita((t - (InizioAnelli + i * 0.16f)) / DurataAnelli);
             if (p <= 0f) continue;
             float angolo = Mathf.Deg2Rad * (k * 90f - 90f + 45f);
             var direzione = new Vector2(Mathf.Cos(angolo), Mathf.Sin(angolo));
-            float lontano = 720f * (1f - p);
-            Strato(anelli[k], r, direzione * lontano, (k % 2 == 0 ? -1f : 1f) * 55f * (1f - p), 1f + 0.35f * (1f - p), Con(colore, Mathf.Clamp01(p * 2.2f) * luce));
+            float lontano = 760f * u * (1f - p);
+            Strato(anelli[k], r, direzione * lontano, (k % 2 == 0 ? -1f : 1f) * 60f * (1f - p), 1f + 0.4f * (1f - p), Con(colore, Mathf.Clamp01(p * 2.2f) * luce));
         }
 
         // il rombo: si apre dal centro girando
         float pr = UscitaForte((t - InizioRombo) / DurataRombo);
         if (pr > 0f) Strato(rombo, r, Vector2.zero, -90f * (1f - pr), 0.45f + 0.55f * pr, Con(colore, Mathf.Clamp01(pr * 1.6f) * luce));
 
-        // la spada: cala dall'alto e si ferma al suo posto
-        float ps = Uscita((t - InizioSpada) / DurataSpada);
-        if (ps > 0f) Strato(spada, r, new Vector2(0f, -380f * (1f - ps)), 0f, 1f, Con(colore, Mathf.Clamp01(ps * 3f) * luce));
+        // le rune: si accendono una dopo l'altra, in giro; al lampo si illuminano tutte insieme e poi restano accese, con un'onda di luce
+        DisegnaRune(centro, u, t, dopo, lampo, luce);
 
-        // al lampo: l'anello si allarga come un'onda, poi le scintille
-        if (t >= MomentoLampo)
+        // onde del lago: dalla punta della spada si allargano cerchi
+        if (dopo >= 0f)
         {
-            float dt = t - MomentoLampo;
-            float onda = Uscita(dt / 1.1f);
-            float alfaOnda = (1f - onda) * 0.8f * luce;
+            for (int n = 0; n < 4; n++)
+            {
+                float d = (dopo - n * 0.16f) / 1.5f;
+                if (d <= 0f || d >= 1f) continue;
+                float e = Uscita(d);
+                Strato(onda, r, Vector2.zero, 0f, 0.08f + 0.92f * e, Con(caldo, (1f - d) * (1f - d) * (n == 0 ? 0.85f : 0.55f) * luce));
+            }
+            // l'anello più grande, veloce: l'onda d'urto
+            float os = Uscita(dopo / 0.9f);
             for (int k = 0; k < 4; k++)
-                Strato(anelli[k], r, Vector2.zero, 0f, 1f + 0.55f * onda, Con(caldo, alfaOnda));
-            DisegnaScintille(centro, dt, luce);
+                Strato(anelli[k], r, Vector2.zero, 0f, 1f + 0.5f * os, Con(caldo, (1f - os) * 0.75f * luce));
         }
 
+        // la spada: cala dall'alto sempre più veloce, entra nel lago; un rimbalzo piccolo e si assesta
+        float ps = Entrata((t - InizioSpada) / DurataSpada);
+        if (ps > 0f)
+        {
+            float entra = dopo >= 0f ? 14f * Mathf.Exp(-dopo * 7f) * Mathf.Cos(dopo * 22f) : 0f;   // oscilla di qualche pixel dopo il colpo
+            float y = -(1f - ps) * 820f * u + entra * u;
+            Color cSpada = Color.Lerp(colore, caldo, Mathf.Clamp01(ps) * (dopo < 0f ? 0.6f : 0f));
+            Strato(spada, r, new Vector2(0f, y), 0f, 1f, Con(cSpada, Mathf.Clamp01((t - InizioSpada) * 5f) * luce));
+            // scia di luce lungo la lama mentre cala
+            if (dopo < 0f) Bagliore(centro + new Vector2(0f, y + 40f * u), 120f * u + 60f, caldo, 0.35f * ps * luce);
+        }
+
+        // lampo su tutto lo schermo, breve
+        if (dopo >= 0f && dopo < 0.5f) { GUI.color = new Color(1f, 0.85f, 0.6f, (1f - dopo / 0.5f) * (1f - dopo / 0.5f) * 0.28f * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), GraficaMenu.Pixel); GUI.color = Color.white; }
+
+        DisegnaParticelle(t, luce);
         DisegnaNome(t, luce);
     }
 
-    // Lettere con la spaziatura che si stringe: partono larghe e quasi invisibili, si raccolgono nel nome.
+    // Le 28 rune: ogni runa ha il suo momento di accensione. Brillano forte, poi calano a una luce calda;
+    // al lampo si accendono tutte insieme, poi una piccola onda di luce gira intorno all'anello.
+    void DisegnaRune(Vector2 centro, float u, float t, float dopo, float lampo, float luce)
+    {
+        float lunga = 62f * u;   // grandezza della runa in pixel di schermo (circa 62 nel disegno)
+        for (int k = 0; k < 4; k++)
+        {
+            // l'arco deve essere arrivato: la runa non appare prima del suo arco
+            int posizione = k == 0 ? 0 : k == 2 ? 1 : k == 1 ? 2 : 3;
+            float arrivo = InizioAnelli + posizione * 0.16f + DurataAnelli * 0.35f;
+            for (int i = 0; i < 7; i++)
+            {
+                float quando = Mathf.Max(InizioRune + (k * 7 + i) * PassoRune, arrivo);
+                float da = t - quando;
+                if (da < 0f) continue;
+                float lampeggio = Mathf.Exp(-da * 5f);                         // forte all'accensione
+                float base_luce = 0.50f + 0.50f * Morbido(da / 0.6f);          // poi resta accesa
+                float giro = 0f;
+                if (dopo > 0.5f) giro = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(t * 2.2f - (k * 7 + i) * 0.22f)), 3f) * 0.35f;
+                float forza = Mathf.Clamp01(base_luce * 0.75f + lampeggio * 0.6f + lampo * 0.9f + giro);
+                float ang = AngoloRuna(k, i);
+                float rad = ang * Mathf.Deg2Rad;
+                Vector2 pos = centro + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * 425f * u;
+                Color calda = Color.Lerp(new Color(0.95f, 0.62f, 0.26f), new Color(1f, 0.95f, 0.78f), forza);
+                // alone dietro la runa
+                Bagliore(pos, lunga * (1.9f + 0.9f * forza), new Color(1f, 0.55f, 0.2f), forza * 0.6f * luce);
+                var rr = new Rect(pos.x - lunga * 0.5f, pos.y - lunga * 0.5f, lunga, lunga);
+                var tex = rune[(i + k * 3) % 7];
+                if (tex == null) continue;
+                // la punta della runa guarda fuori dal cerchio
+                GUI.matrix = base_ * Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0f), Quaternion.Euler(0f, 0f, ang + 90f), Vector3.one)
+                                   * Matrix4x4.TRS(new Vector3(-pos.x, -pos.y, 0f), Quaternion.identity, Vector3.one);
+                GUI.color = Con(calda, Mathf.Clamp01(0.35f + forza) * luce);
+                GUI.DrawTexture(rr, tex, ScaleMode.StretchToFill, true);
+                GUI.matrix = base_;
+                GUI.color = Color.white;
+            }
+        }
+    }
+
+    // Lettere con la spaziatura che si stringe: partono larghe e quasi invisibili, si raccolgono nel nome. Al centro dello schermo.
     void DisegnaNome(float t, float luce)
     {
+        const float yNome = 520f;   // alto del nome (corpo 92): il nome sta circa a metà schermo
         float p = Morbido((t - InizioNome) / DurataNome);
         if (p > 0f)
         {
@@ -235,15 +371,18 @@ public class LogoStudio : MonoBehaviour
                 stile.fontSize = corpo[parte];
                 float ritardo = indice * 0.07f;   // le lettere si accendono una dopo l'altra
                 float a = Morbido((t - InizioNome - ritardo) / 0.9f) * luce;
-                GraficaMenu.Scritta(new Rect(x, 620f, w, 120f), c, stile, colori[parte], a);
+                float sale = (1f - Morbido((t - InizioNome - ritardo) / 0.9f)) * 18f;   // salgono leggere mentre si accendono
+                // un chiarore caldo dietro la lettera mentre compare
+                Bagliore(new Vector2(x + w * 0.5f, yNome + 60f), 150f, new Color(1f, 0.6f, 0.25f), 0.22f * Mathf.Sin(Mathf.Clamp01((t - InizioNome - ritardo) / 0.9f) * Mathf.PI) * luce);
+                GraficaMenu.Scritta(new Rect(x, yNome + sale, w, 120f), c, stile, colori[parte], a);
                 x += w + spazio;
                 if (i + 1 < lettere.Count && lettere[i + 1].parte != parte) x += spazioParole;
                 indice++;
             }
             // filo di luce sotto il nome, si allunga con le lettere
-            float lunghezza = Mathf.Lerp(0f, 520f, Uscita((t - InizioNome - 0.3f) / (DurataNome * 0.9f)));
-            GraficaMenu.Riempi(new Rect(GraficaMenu.Larghezza * 0.5f - lunghezza * 0.5f, 752f, lunghezza, 2f), GraficaMenu.Con(GraficaMenu.Bronzo, 0.9f * luce));
-            GraficaMenu.Rombo(new Vector2(GraficaMenu.Larghezza * 0.5f, 753f), 11f * Mathf.Clamp01(lunghezza / 520f), GraficaMenu.Con(GraficaMenu.Selezione, luce));
+            float lunghezza = Mathf.Lerp(0f, 560f, Uscita((t - InizioNome - 0.3f) / (DurataNome * 0.9f)));
+            GraficaMenu.Riempi(new Rect(GraficaMenu.Larghezza * 0.5f - lunghezza * 0.5f, yNome + 132f, lunghezza, 2f), GraficaMenu.Con(GraficaMenu.Bronzo, 0.9f * luce));
+            GraficaMenu.Rombo(new Vector2(GraficaMenu.Larghezza * 0.5f, yNome + 133f), 11f * Mathf.Clamp01(lunghezza / 560f), GraficaMenu.Con(GraficaMenu.Selezione, luce));
         }
 
         float pp = Morbido((t - InizioPresenta) / DurataPresenta);
@@ -252,21 +391,40 @@ public class LogoStudio : MonoBehaviour
             string testo = Lingua.T("logo.presenta");
             if (Lingua.Indice != 7) testo = GraficaMenu.Spaziato(testo);
             var stile = new GUIStyle(GraficaMenu.Voce) { fontSize = 28 };
-            GraficaMenu.Scritta(new Rect(0f, 780f, GraficaMenu.Larghezza, 50f), testo, stile, new Color(0.62f, 0.58f, 0.5f), pp * luce);
+            GraficaMenu.Scritta(new Rect(0f, yNome + 160f, GraficaMenu.Larghezza, 50f), testo, stile, new Color(0.62f, 0.58f, 0.5f), pp * luce);
         }
     }
 
-    void DisegnaScintille(Vector2 centro, float dt, float luce)
+    // Tutte le particelle: scintille (quadratini), con alone (scintille più grandi con un chiarore), braci che salgono.
+    void DisegnaParticelle(float t, float luce)
     {
-        foreach (var s in scintille)
+        // le particelle restano dove sono nate sullo schermo (il sigillo grande al centro), anche quando poi il sigillo sale
+        foreach (var s in particelle)
         {
-            if (dt > s.vita) continue;
+            float dt = t - s.nascita;
+            if (dt < 0f || dt > s.vita) continue;
             float k = dt / s.vita;
-            // schizzano fuori e rallentano; salgono piano come braci
-            float distanza = s.velocita * (1f - Mathf.Pow(1f - Mathf.Clamp01(dt / 0.9f), 2f)) * 0.9f;
-            Vector2 pos = centro + s.direzione * (200f + distanza) + new Vector2(0f, -40f * k * k - 30f * dt);
-            float alfa = (1f - k) * (1f - k) * luce;
-            GraficaMenu.Riempi(new Rect(pos.x - s.taglia * 0.5f, pos.y - s.taglia * 0.5f, s.taglia, s.taglia), new Color(1f, 0.72f, 0.34f, alfa));
+            float corsa = s.velocita * (1f - Mathf.Pow(1f - Mathf.Clamp01(dt / Mathf.Min(0.9f, s.vita)), 2f)) * 0.9f;
+            if (s.tipo == 1) corsa = s.velocita * dt;   // le braci salgono piano e costanti
+            Vector2 p = s.origine + s.direzione * corsa;
+            p.y -= s.salita * dt * (s.tipo == 1 ? 0f : 1f) * (1f - 0.4f * k);
+            // posizione sullo schermo con il sigillo nel posto iniziale (grande, al centro)
+            Vector2 schermo = new Vector2(GraficaMenu.Larghezza * 0.5f, YCentro) - new Vector2(512f, 512f) * (LatoGrande / 1024f) + p * (LatoGrande / 1024f);
+            float alfa;
+            if (s.tipo == 1) alfa = Mathf.Sin(k * Mathf.PI) * 0.7f * (0.75f + 0.25f * Mathf.Sin(t * 9f + s.nascita * 13f));
+            else alfa = (1f - k) * (1f - k);
+            alfa *= luce;
+            if (alfa <= 0.01f) continue;
+            float taglia = s.taglia * (s.tipo == 1 ? 1f : (1f - 0.5f * k));
+            if (s.tipo == 2) Bagliore(schermo, taglia * 7f, new Color(1f, 0.6f, 0.25f), alfa * 0.5f);
+            Color c = s.tipo == 1 ? new Color(1f, 0.62f, 0.28f, alfa) : new Color(1f, 0.78f, 0.42f, alfa);
+            GraficaMenu.Riempi(new Rect(schermo.x - taglia * 0.5f, schermo.y - taglia * 0.5f, taglia, taglia), c);
+            // le scintille veloci lasciano una piccola coda
+            if (s.tipo != 1 && dt < 0.4f)
+            {
+                Vector2 coda = schermo - s.direzione * (s.velocita * 0.035f);
+                GraficaMenu.Riempi(new Rect(coda.x - taglia * 0.35f, coda.y - taglia * 0.35f, taglia * 0.7f, taglia * 0.7f), new Color(1f, 0.55f, 0.2f, alfa * 0.6f));
+            }
         }
     }
 
