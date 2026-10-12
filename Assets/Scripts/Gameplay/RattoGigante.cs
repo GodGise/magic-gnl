@@ -3,7 +3,8 @@ using UnityEngine;
 // Il ratto gigante (quest 3, il granaio di Hobb): un nemico piccolo e veloce che attacca a balzi.
 // Come combatte: si avvicina fino a qualche metro e gira intorno al giocatore; quando è il suo momento si acquatta
 // (si schiaccia e diventa rosso: è il preavviso), balza addosso al giocatore mordendo e graffiando, poi indietreggia
-// e ricomincia. Un attacco ogni "Intervallo Attacchi" secondi (4 da soli). Il danno è quello di Bersaglio
+// e ricomincia. Un attacco ogni "Intervallo Attacchi" secondi (4 da soli); due ratti non balzano mai insieme
+// (fra un balzo e l'altro passano almeno "Stacco Fra Ratti" secondi). Il danno è quello di Bersaglio
 // ("Danno Attacco", 11 per il ratto) e passa da GiocatoreControllo: si para e si schiva come gli altri colpi.
 // Vita, morte, aggancio e difficoltà co-op sono quelli di Bersaglio (il ratto ha "Attacca Il Giocatore" spento:
 // gli attacchi li fa questo componente). Stordito o bloccato dagli incantesimi non si muove; rallentato va più piano.
@@ -34,6 +35,10 @@ public class RattoGigante : MonoBehaviour
     [SerializeField] float velocita = 4.5f;
     [Tooltip("Altezza da terra del centro del ratto.")]
     [SerializeField] float altezzaDaTerra = 0.3f;
+    [Tooltip("Secondi minimi fra il balzo di un ratto e quello di un altro (così non balzano tutti insieme).")]
+    [SerializeField] float staccoFraRatti = 1.2f;
+
+    static float ultimoAttaccoGruppo = -100f;   // quando un ratto qualsiasi ha iniziato ad acquattarsi
 
     enum Fase { Avvicina, Acquatta, Balza, Indietreggia }
 
@@ -59,6 +64,7 @@ public class RattoGigante : MonoBehaviour
     void OnEnable()
     {
         prossimoAttacco = Time.time + ritardoPrimoAttacco;
+        if (ultimoAttaccoGruppo > Time.time) ultimoAttaccoGruppo = -100f;   // valore rimasto da un Play precedente
         Cambia(Fase.Avvicina);
     }
 
@@ -100,7 +106,11 @@ public class RattoGigante : MonoBehaviour
                 else if (distanza < distanzaAttesa - 1f) passo = -verso.normalized;
                 passo += Vector3.Cross(Vector3.up, verso.normalized) * girare * 0.6f;
                 Muovi(passo.normalized * velocita * lento * Time.deltaTime);
-                if (Time.time >= prossimoAttacco && distanza <= portataBalzo) Cambia(Fase.Acquatta);
+                if (Time.time >= prossimoAttacco && distanza <= portataBalzo && Time.time >= ultimoAttaccoGruppo + staccoFraRatti)
+                {
+                    ultimoAttaccoGruppo = Time.time;
+                    Cambia(Fase.Acquatta);
+                }
                 break;
 
             case Fase.Acquatta:
