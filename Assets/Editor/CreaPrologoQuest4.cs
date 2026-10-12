@@ -136,17 +136,18 @@ public static class CreaPrologoQuest4
                 Decoro("Erbe appese", bottega, new Vector3(x, H - 0.55f, k * 1.6f + 0.3f * (i % 2)), new Vector3(0.18f, 0.6f, 0.18f), (i + k) % 2 == 0 ? verde : verdeSecco);
         }
         // calderone in un angolo in fondo, con il vapore verde
-        Vector3 calderone = new Vector3(W / 2f - 1.3f, 0f, -s * (D / 2f - 1.6f));
+        // (gli arredi stanno attaccati ai muri: niente angolini in cui infilarsi)
+        Vector3 calderone = new Vector3(W / 2f - t - 0.75f, 0f, -s * (D / 2f - t - 0.75f));
         Forma(PrimitiveType.Cylinder, "Calderone", bottega, calderone + Vector3.up * 0.4f, new Vector3(1f, 0.4f, 1f), AiutiPrologo.Ferro, true);
         Decoro("Infuso", bottega, calderone + Vector3.up * 0.79f, new Vector3(0.85f, 0.02f, 0.85f), pozioneVerde);
         Decoro("Brace sotto il calderone", bottega, calderone + Vector3.up * 0.06f, new Vector3(0.7f, 0.08f, 0.7f), Fuoco);
         Luce("Luce del calderone", bottega, calderone + Vector3.up * 1.4f, new Color(0.45f, 1f, 0.5f), 6f, 1.3f);
         // tavolo da lavoro e ceste di erbe vicino alla porta
-        Vector3 tavolo = new Vector3(-(W / 2f - 1.2f), 0f, s * 0.9f);
+        Vector3 tavolo = new Vector3(-(W / 2f - t - 0.5f), 0f, s * 0.9f);
         Blocco("Tavolo da lavoro", bottega, tavolo + Vector3.up * 0.4f, new Vector3(1f, 0.8f, 1.8f), Legno);
         Decoro("Erbe sul tavolo", bottega, tavolo + new Vector3(0f, 0.84f, 0.3f), new Vector3(0.5f, 0.08f, 0.6f), verde);
         Forma(PrimitiveType.Cylinder, "Ampolla", bottega, tavolo + new Vector3(0.1f, 0.95f, -0.5f), new Vector3(0.2f, 0.15f, 0.2f), vetro);
-        foreach (var p in new[] { new Vector3(W / 2f - 1f, 0f, s * (D / 2f - 1f)), new Vector3(W / 2f - 1.9f, 0f, s * (D / 2f - 0.9f)) })
+        foreach (var p in new[] { new Vector3(W / 2f - t - 0.36f, 0f, s * (D / 2f - t - 0.36f)), new Vector3(W / 2f - t - 0.36f, 0f, s * (D / 2f - t - 1.1f)) })
         {
             Forma(PrimitiveType.Cylinder, "Cesta", bottega, p + Vector3.up * 0.25f, new Vector3(0.7f, 0.25f, 0.7f), Paglia, true);
             Decoro("Erbe nella cesta", bottega, p + Vector3.up * 0.52f, new Vector3(0.55f, 0.1f, 0.55f), verde);
@@ -157,6 +158,7 @@ public static class CreaPrologoQuest4
         Imposta(zonaBottega, "distanzaMassima", Mathf.Min(W, D) * 0.45f);
         Imposta(zonaBottega, "inclinazioneMassima", 28f);
         SgomberaAlberi(scena, bottega, Vector3.zero, new Vector3(W + 2f, 0f, D + 3f));
+        SgomberaCase(scena, bottega, Vector3.zero, new Vector3(W, 0f, D));   // una casa vicina entrava nella bottega
 
         // ---------- Ilse dietro il bancone ----------
         var ilse = Personaggio("Ilse", bottega, new Vector3(0f, 0.1f, -s * 1.9f), 1.55f, new Color(0.3f, 0.32f, 0.22f), true);
