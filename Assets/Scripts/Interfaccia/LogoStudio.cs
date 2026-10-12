@@ -6,7 +6,8 @@ using UnityEngine.InputSystem;
 // A cosa serve: all'avvio del gioco, prima della schermata del titolo, su fondo nero i pezzi del sigillo (quattro archi
 // dell'anello, il rombo e la spada) arrivano da fuori e si compongono; un lampo e una scintillio chiudono la composizione,
 // poi compaiono "GNL STUDIO" (le lettere si stringono) e sotto, piccolo, "presenta"; infine tutto si spegne e parte il menu.
-// Si salta con un tasto qualsiasi dopo il primo secondo. Si vede una volta sola a ogni avvio del gioco.
+// Non si salta (il logo dello studio è sacro): solo nell'editor di Unity, per chi lo prova spesso, F2 lo salta.
+// Si vede una volta sola a ogni avvio del gioco.
 // Suono: se nella cartella Assets/Resources/Audio/Effetti c'è un file "logo-studio" (ogg o wav) parte da solo a tempo zero.
 // I momenti dell'animazione (per far combaciare il suono) sono in Docs/logo-studio.md e nelle costanti qui sotto.
 // I pezzi del logo sono in Assets/Resources/Logo (si rifanno con Docs/logo-studio/genera_logo.py).
@@ -22,7 +23,6 @@ public class LogoStudio : MonoBehaviour
     const float InizioPresenta = 6.0f, DurataPresenta = 1.0f; // "presenta"
     const float InizioSpegni = 8.0f, DurataSpegni = 1.0f;     // dissolvenza al nero
     const float AttesaFinale = 0.35f;                         // nero prima del menu
-    const float PrimoTastoDopo = 1.0f;                        // da qui si può saltare
 
     // Una volta per avvio del gioco (nell'editor con "Reload Domain" spento si azzera da solo).
     static bool giaMostrato;
@@ -48,7 +48,7 @@ public class LogoStudio : MonoBehaviour
     Texture2D rombo, spada;
     AudioSource sorgente;
     float inizio = -1f;
-    float saltatoA = -1f;       // quando si è premuto un tasto (per saltare)
+    float saltatoA = -1f;       // solo nell'editor: quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
     readonly List<Scintilla> scintille = new List<Scintilla>();
@@ -88,7 +88,7 @@ public class LogoStudio : MonoBehaviour
 
     float Tempo => inizio < 0f ? 0f : Time.unscaledTime - inizio;
 
-    // Con un tasto premuto dopo il primo secondo, la dissolvenza al nero parte subito (più veloce).
+    // Solo nell'editor, con F2: la dissolvenza al nero parte subito (più veloce).
     float TempoSpegni => saltatoA >= 0f ? Mathf.Min(InizioSpegni, saltatoA - inizio) : InizioSpegni;
     float DurataSpegniAttuale => saltatoA >= 0f ? 0.6f : DurataSpegni;
 
@@ -96,14 +96,8 @@ public class LogoStudio : MonoBehaviour
     {
         if (finito) return;
         float t = Tempo;
-        if (saltatoA < 0f && t >= PrimoTastoDopo)
-        {
-            var tastiera = Keyboard.current; var mouse = Mouse.current; var pad = Gamepad.current;
-            bool premuto = (tastiera != null && tastiera.anyKey.wasPressedThisFrame)
-                || (mouse != null && mouse.leftButton.wasPressedThisFrame)
-                || (pad != null && (pad.buttonSouth.wasPressedThisFrame || pad.startButton.wasPressedThisFrame));
-            if (premuto && t < InizioSpegni) saltatoA = Time.unscaledTime;
-        }
+        if (Application.isEditor && saltatoA < 0f && t < InizioSpegni && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
+            saltatoA = Time.unscaledTime;
         float fine = (saltatoA >= 0f ? saltatoA - inizio + 0.6f : InizioSpegni + DurataSpegni) + AttesaFinale;
         if (saltatoA >= 0f && sorgente != null && sorgente.isPlaying) sorgente.volume = Mathf.MoveTowards(sorgente.volume, 0f, Time.unscaledDeltaTime / 0.5f);
         if (t >= fine) Concludi();

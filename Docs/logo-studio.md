@@ -32,8 +32,8 @@ Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** 
 5. **4,0: l'impatto** (colpo di campana/incudine con una coda lunga). È il momento più forte.
 6. 4,4 - 7,0: la coda dell'impatto con un accordo scuro sostenuto; un lieve brillio quando compare "presenta".
 7. 8,0 - 9,0: dissolvenza della coda.
-Se si salta con un tasto, il suono sfuma da solo in mezzo secondo.
+Se nell'editor si salta con F2, il suono sfuma da solo in mezzo secondo.
 
 ## Cosa cambia nel codice
 
-`Assets/Scripts/Interfaccia/LogoStudio.cs` si crea da solo all'avvio, solo se la scena è `Menu`: ferma `MenuPrincipale` (non parte né la musica né la sequenza del titolo) fino a logo finito. I tempi sono costanti all'inizio del file. In "Opzioni" non c'è modo di spegnerlo; per le prove nell'editor basta partire da un'altra scena o saltarlo con un tasto.
+`Assets/Scripts/Interfaccia/LogoStudio.cs` si crea da solo all'avvio, solo se la scena è `Menu`: ferma `MenuPrincipale` (non parte né la musica né la sequenza del titolo) fino a logo finito. I tempi sono costanti all'inizio del file. In "Opzioni" non c'è modo di spegnerlo; per le prove nell'editor basta partire da un'altra scena o premere F2.
