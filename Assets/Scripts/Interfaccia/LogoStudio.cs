@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 // L'apertura con il logo dello studio: "GNL STUDIO presenta".
 // A cosa serve: all'avvio del gioco, prima della schermata del titolo, su fondo nero (3 secondi) il sigillo si compone GRANDE
 // AL CENTRO dello schermo: il filo esterno, i quattro archi dell'anello, le rune che si accendono una dopo l'altra, il rombo;
-// poi la spada cala dall'alto e si pianta nel lago (lampo, onde, scintille, braci). Il sigillo sale e rimpicciolisce e al centro
+// poi una scintilla cala dall'alto e cade nel lago: la runa centrale si accende (lampo, onde, scintille, braci). Il sigillo sale e rimpicciolisce e al centro
 // compaiono "GNL STUDIO" (le lettere si stringono) e sotto, piccolo, "presenta"; infine tutto si spegne e parte il menu.
 // Non si salta (il logo dello studio è sacro): solo nell'editor di Unity, per chi lo prova spesso, F2 lo salta.
 // Si vede una volta sola a ogni avvio del gioco.
@@ -24,8 +24,8 @@ public class LogoStudio : MonoBehaviour
     const float InizioAnelli = 0.3f, DurataAnelli = 1.8f;     // i quattro archi arrivano da fuori, uno dopo l'altro
     const float InizioRune = 1.3f, PassoRune = 0.045f;        // le 28 rune si accendono in giro, una dopo l'altra
     const float InizioRombo = 1.7f, DurataRombo = 1.2f;       // il rombo si apre e si gira in posizione
-    const float InizioSpada = 2.3f, DurataSpada = 1.0f;       // la spada cala dall'alto, sempre più veloce
-    const float MomentoLampo = 3.3f;                          // la punta entra nel lago: lampo, onde, scintille
+    const float InizioCometa = 2.3f, DurataCometa = 1.0f;     // la scintilla cala dall'alto, sempre più veloce
+    const float MomentoLampo = 3.3f;                          // la scintilla tocca il lago: la runa si accende, lampo, onde, scintille
     const float InizioSposta = 4.5f, DurataSposta = 1.1f;     // il sigillo sale e rimpicciolisce
     const float InizioNome = 5.0f, DurataNome = 1.9f;         // "GNL STUDIO" al centro
     const float InizioPresenta = 6.5f, DurataPresenta = 1.0f; // "presenta"
@@ -35,7 +35,6 @@ public class LogoStudio : MonoBehaviour
     // Il sigillo: grandezza e posizione (in pixel del foglio virtuale 1920x1080)
     const float LatoGrande = 770f, LatoPiccolo = 440f;
     const float YCentro = 540f, YAlto = 262f;
-    const float PuntaSpada = 566f;   // dove sta la punta nel disegno 1024x1024 (centro del lago = 512)
 
     // Una volta per avvio del gioco (nell'editor con "Reload Domain" spento si azzera da solo).
     static bool giaMostrato;
@@ -59,7 +58,7 @@ public class LogoStudio : MonoBehaviour
     MenuPrincipale menu;
     Texture2D[] anelli = new Texture2D[4];
     Texture2D[] rune = new Texture2D[7];
-    Texture2D rombo, spada, esterno, onda, raggi;
+    Texture2D rombo, runaCentrale, esterno, onda, raggi;
     AudioSource sorgente;
     // Orologio del logo: conta solo i fotogrammi veri. I primi caricamenti (caratteri, scena, suoni) possono bloccare il gioco
     // anche per un secondo: quel tempo non conta, altrimenti il nero iniziale si accorcia o sparisce.
@@ -83,7 +82,7 @@ public class LogoStudio : MonoBehaviour
         for (int i = 0; i < 4; i++) anelli[i] = Resources.Load<Texture2D>("Logo/anello-" + (i + 1));
         for (int i = 0; i < 7; i++) rune[i] = Resources.Load<Texture2D>("Logo/runa-" + (i + 1));
         rombo = Resources.Load<Texture2D>("Logo/rombo");
-        spada = Resources.Load<Texture2D>("Logo/spada");
+        runaCentrale = Resources.Load<Texture2D>("Logo/runa-centrale");
         esterno = Resources.Load<Texture2D>("Logo/anello-esterno");
         onda = Resources.Load<Texture2D>("Logo/onda");
         raggi = Resources.Load<Texture2D>("Logo/raggi");
@@ -124,18 +123,18 @@ public class LogoStudio : MonoBehaviour
                     particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * 425f, direzione = Dir(ang + (R() - 0.5f) * 2.4f),
                         nascita = quando + R() * 0.15f, velocita = 20f + R() * 90f, vita = 0.5f + R() * 0.8f, taglia = 2.5f + R() * 3.5f, salita = 30f, tipo = 0 });
             }
-        // 3) l'impatto: grande scoppio dalla punta della spada nel lago
+        // 3) l'impatto: grande scoppio dal centro del lago
         for (int n = 0; n < 260; n++)
         {
             float ang = R() * Mathf.PI * 2f;
-            particelle.Add(new Particella { origine = new Vector2(512f, 540f), direzione = Dir(ang),
+            particelle.Add(new Particella { origine = new Vector2(512f, 512f), direzione = Dir(ang),
                 nascita = MomentoLampo + R() * 0.06f, velocita = 160f + R() * 900f, vita = 0.9f + R() * 1.6f, taglia = 2f + R() * 6f, salita = 40f + R() * 60f, tipo = n % 5 == 0 ? 2 : 0 });
         }
         // 4) gocce d'acqua luminose che schizzano verso l'alto dal lago
         for (int n = 0; n < 50; n++)
         {
             float ang = -Mathf.PI * 0.5f + (R() - 0.5f) * 1.5f;
-            particelle.Add(new Particella { origine = new Vector2(512f + (R() - 0.5f) * 60f, 520f), direzione = Dir(ang),
+            particelle.Add(new Particella { origine = new Vector2(512f + (R() - 0.5f) * 60f, 500f), direzione = Dir(ang),
                 nascita = MomentoLampo + R() * 0.12f, velocita = 200f + R() * 520f, vita = 1.0f + R() * 1.0f, taglia = 3f + R() * 4f, salita = -120f, tipo = 2 });
         }
         // 5) braci che salgono piano dal sigillo, dall'accensione fino alla fine
@@ -275,16 +274,30 @@ public class LogoStudio : MonoBehaviour
                 Strato(anelli[k], r, Vector2.zero, 0f, 1f + 0.5f * os, Con(caldo, (1f - os) * 0.75f * luce));
         }
 
-        // la spada: cala dall'alto sempre più veloce, entra nel lago; un rimbalzo piccolo e si assesta
-        float ps = Entrata((t - InizioSpada) / DurataSpada);
-        if (ps > 0f)
+        // la runa centrale: prima appena visibile (spenta), al lampo si accende forte e poi pulsa piano
+        float vista = Morbido((t - InizioRombo - 0.3f) / 0.8f);
+        float accesa = dopo >= 0f ? 1f : 0f;
+        float forzaRuna = dopo >= 0f ? Mathf.Clamp01(0.62f + 0.38f * Mathf.Exp(-dopo * 2.2f) + 0.12f * Mathf.Sin(t * 2.4f)) : 0f;
+        if (vista > 0f)
         {
-            float entra = dopo >= 0f ? 14f * Mathf.Exp(-dopo * 7f) * Mathf.Cos(dopo * 22f) : 0f;   // oscilla di qualche pixel dopo il colpo
-            float y = -(1f - ps) * 820f * u + entra * u;
-            Color cSpada = Color.Lerp(colore, caldo, Mathf.Clamp01(ps) * (dopo < 0f ? 0.6f : 0f));
-            Strato(spada, r, new Vector2(0f, y), 0f, 1f, Con(cSpada, Mathf.Clamp01((t - InizioSpada) * 5f) * luce));
-            // scia di luce lungo la lama mentre cala
-            if (dopo < 0f) Bagliore(centro + new Vector2(0f, y + 40f * u), 120f * u + 60f, caldo, 0.35f * ps * luce);
+            if (accesa > 0f)
+            {
+                Bagliore(centro, lato * 0.42f, new Color(1f, 0.55f, 0.2f), (0.25f + 0.55f * Mathf.Exp(-dopo * 2.5f)) * forzaRuna * luce);
+                Strato(runaCentrale, r, Vector2.zero, 0f, 1f + 0.1f * Mathf.Exp(-dopo * 4f), Con(Color.Lerp(riposo, new Color(1f, 0.95f, 0.78f), forzaRuna), luce));
+            }
+            else Strato(runaCentrale, r, Vector2.zero, 0f, 1f, Con(spento, 0.28f * vista * luce));
+        }
+
+        // la scintilla: cala dall'alto sempre più veloce e cade nel lago, con una scia di luce
+        float pc = Entrata((t - InizioCometa) / DurataCometa);
+        if (pc > 0f && dopo < 0f)
+        {
+            float y = -(1f - pc) * 700f * u;
+            for (int n = 0; n < 7; n++)
+                Bagliore(centro + new Vector2(0f, y - n * 26f * u * (0.4f + pc)), (110f - n * 10f) * u + 30f, new Color(1f, 0.72f - n * 0.04f, 0.38f), (0.75f - n * 0.1f) * pc * luce);
+            Bagliore(centro + new Vector2(0f, y), 70f * u + 20f, new Color(1f, 0.97f, 0.85f), 0.95f * luce);
+            float coda = 360f * u * pc;
+            GraficaMenu.Riempi(new Rect(centro.x - 1.5f, centro.y + y - coda, 3f, coda), new Color(1f, 0.85f, 0.55f, 0.55f * luce));
         }
 
         // lampo su tutto lo schermo, breve
