@@ -68,6 +68,15 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 12 ottobre, sera: quest 2 del prologo, tiro con l'arco, quest 1 migliorata (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/quest-2`, provato in Unity sul PC di Lorenzo con le tre classi.
+- **Quest 2** (comando `magic-gnl > Prologo: prepara la quest 2`): cortile della fucina con forgia, tettoia, steccato, Brannoc, manichino e sagome di tiro (solo Ladro); cortile di studio accanto al tempio con Edric e bersagli (solo Stregone). Brannoc dà Spada e Scudo della vecchia vita (Guerriero) o Pugnale da scuoiare e Arco corto da caccia (Ladro) e manda lo Stregone da Edric (Bastone e Libro della vecchia vita, Scintilla, Scheggia di ghiaccio). Allenamento con l'elenco delle mosse a schermo (`AllenamentoMosse`): finita ogni mossa almeno una volta, la quest finisce e il sole avanza. Dialoghi della quest 2 in 8 lingue (`dlg.q2.*`, `dlg.q2s.*`).
+- **Tiro con l'arco** (`TiroConLArco.cs`, nuovo): tasto 2 per prendere l'arco, tenere premuto Attacco per tendere, lasciare per tirare; usa i numeri degli archi già decisi. **Tocca file di tutti:** `GiocatoreControllo.cs` (con l'arco in mano niente colpi corpo a corpo), `HudGioco.cs` (rombo dell'arco acceso con il tasto 2), `DatiArmaDistanza.cs` (solo il commento).
+- **Camera nelle stanze piccole** (`ZonaCamera.cs`, nuovo): dentro casa e nel capanno la camera sta più vicina e non guarda dall'alto. **Tocca** `CameraTerzaPersona.cs` (legge i limiti della zona, passaggio morbido; fuori dalle zone niente cambia).
+- **Quest 1 migliorata:** casa più spaziosa e arredata (tetto a due falde, finestre, lettino di Tobin, cesto della legna, legna in braccio), capanno più alto con tetto solido, Tobin rifà la strada del giocatore invece di attraversare i muri, alberi tolti dove toccavano casa e cortili.
+- Comandi per le prove: `magic-gnl > Prova prologo > Vai da ...` porta il giocatore ai punti delle quest durante il Play.
+- **`LogoStudio.cs.meta` mancava su `main`:** l'ha creato il Unity di Lorenzo ed è caricato in questo ramo; se Giuseppe ne ha già uno, tenere il suo.
+
 ### 12 ottobre: bussola in alto per gli obiettivi (solo informazione)
 Lorenzo ha chiesto una bussola a schermo (ramo `lorenzoc/bussola`): striscia in alto al centro con i punti cardinali (tradotti, chiavi `hud.nord/est/sud/ovest`) e un rombo color fiamma sull'obiettivo, con la distanza in metri. Si vede solo nelle scene con `Missioni` (non nella zona di prova). Script nuovi in `Assets/Scripts/Livelli/`: `Bussola.cs` (si crea da sola, come l'interfaccia) e `MetaObiettivo.cs` (il punto da indicare, si attiva dagli eventi delle quest); `Missioni.cs` ha `ImpostaMeta`. Usa lo stile di `GraficaMenu`: se Giuseppe cambia caratteri e grandezze, la bussola li segue.
 

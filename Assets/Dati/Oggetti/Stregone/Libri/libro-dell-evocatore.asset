@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26b075f4df688f340bb15247b9e9ad70, type: 3}
+  m_Name: libro-dell-evocatore
+  m_EditorClassIdentifier: Assembly-CSharp::DatiLibro
+  nomeDiLavoro: Libro dell'evocatore
+  chiaveNome: oggetto.libro_evocatore.nome
+  chiaveDescrizione: oggetto.libro_evocatore.descrizione
+  classe: 2
+  tutteLeClassi: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  manaMassimo: 0
+  recuperoMana: -7
+  magia:
+    caricaSecondi: 0
+    caricaPercento: 0
+    recuperoPercento: 0
+    attesaPercento: 10
+    costoPercento: 0
+    dannoPercento: 0
+    brace:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    lagoNero:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    ombra:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    evocazione:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    vitaEvocazioniPercento: 0
+    durataEvocazioniPercento: 30
+    caricaEvocazioniPercento: 0
+    doppiaEvocazione: 0
+    caselleExtra: 0
+  costoSchivataExtra: 0
+  moltiplicatoreVelocita: 1

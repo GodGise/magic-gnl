@@ -34,7 +34,7 @@ public static class CreaOggettiGuerriero
         riscrivi = false;
     }
 
-    static void Crea()
+    internal static void Crea()
     {
         int creati = 0;
 
