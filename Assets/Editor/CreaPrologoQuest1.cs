@@ -27,8 +27,26 @@ using UnityEngine.SceneManagement;
 // Se il gruppo esiste già, chiede se rifarlo da capo (le modifiche fatte a mano a quel gruppo si perdono).
 // Come si usa: aprire Assets/Scenes/VillaggioLagoNero.unity, poi menu "magic-gnl > Prologo: prepara la quest 1".
 // Non va montato su niente: è un comando dell'editor e non finisce nel gioco.
+[InitializeOnLoad]
 public static class CreaPrologoQuest1
 {
+    // Prima di ogni Play: se la scena ha la quest 1 ma non ancora le mete della bussola, le aggiunge da sola
+    // (così non serve ricordarsi il comando "aggiungi la bussola"). Poi la scena va salvata con Ctrl+S.
+    static CreaPrologoQuest1()
+    {
+        EditorApplication.playModeStateChanged += stato =>
+        {
+            if (stato != PlayModeStateChange.ExitingEditMode) return;
+            Scene scena = SceneManager.GetActiveScene();
+            var gruppo = Trova(scena, NomeGruppo);
+            if (gruppo == null || gruppo.GetComponentInChildren<MetaObiettivo>(true) != null) return;
+            int nuovi = AggiungiBussola(scena);
+            if (nuovi == 0) return;
+            EditorSceneManager.MarkSceneDirty(scena);
+            Debug.Log("Prologo: aggiunte da sole le mete della bussola alla quest 1 (" + nuovi + "). Dopo il Play salva la scena (Ctrl+S).");
+        };
+    }
+
     const string NomeGruppo = "Prologo - quest 1";
     const string Cartella = "Assets/Segnaposto/Prologo";
 
