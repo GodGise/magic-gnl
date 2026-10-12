@@ -22,6 +22,11 @@ public class LogoStudio : MonoBehaviour
     // Per far combaciare il suono con le immagini: secondi di spostamento dell'inizio del suono rispetto all'inizio dell'animazione.
     // Positivo = il suono parte PIÙ TARDI (se il colpo si sente troppo presto); negativo = parte PRIMA (se il colpo si sente in ritardo).
     // Esempio: il colpo arriva 1 secondo prima della runa -> CorrezioneSuono = 1.0f.
+    // Se il gioco non riesce a leggere il file per trovare il silenzio iniziale (succede con alcuni mp3), salta questi secondi.
+    // Il silenzio vero all'inizio del file di Giuseppe: se il suono parte in ritardo di X secondi, qui va X.
+    const float SilenzioDiRiserva = 5.0f;
+    // Secondi in più da saltare nel file (per ritocchi fini, dopo il salto automatico o di riserva).
+    const float SaltoExtra = 0.0f;
     const float CorrezioneSuono = 1.3f;   // = InizioRune: il suono parte quando le rune cominciano ad accendersi sull'anello
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
@@ -113,7 +118,7 @@ public class LogoStudio : MonoBehaviour
         if (suono != null)
         {
             sorgente.clip = suono;
-            inizioSuono = SilenzioIniziale(suono);
+            inizioSuono = SilenzioIniziale(suono) + SaltoExtra;
         }
 
         var caso = new System.Random(7);
@@ -177,12 +182,25 @@ public class LogoStudio : MonoBehaviour
         try
         {
             var campioni = new float[clip.samples * clip.channels];
-            if (!clip.GetData(campioni, 0)) return 0f;
+            if (!clip.GetData(campioni, 0))
+            {
+                Debug.LogWarning("[Logo] Non riesco a leggere il file audio per cercare il silenzio: uso SilenzioDiRiserva = " + SilenzioDiRiserva + " s");
+                return SilenzioDiRiserva;
+            }
             for (int i = 0; i < campioni.Length; i++)
                 if (Mathf.Abs(campioni[i]) > 0.003f)
-                    return Mathf.Max(0f, (float)(i / clip.channels) / clip.frequency - 0.02f);
+                {
+                    float quando = Mathf.Max(0f, (float)(i / clip.channels) / clip.frequency - 0.02f);
+                    Debug.Log("[Logo] Il suono parte a " + quando.ToString("0.00") + " s dall'inizio del file (durata " + clip.length.ToString("0.00") + " s)");
+                    return quando;
+                }
+            Debug.LogWarning("[Logo] Il file audio sembra tutto silenzio (soglia 0,003).");
         }
-        catch (System.Exception) { }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning("[Logo] Errore nel leggere il file audio (" + e.Message + "): uso SilenzioDiRiserva = " + SilenzioDiRiserva + " s");
+            return SilenzioDiRiserva;
+        }
         return 0f;
     }
 
