@@ -242,9 +242,11 @@ public class LogoStudio : MonoBehaviour
         // Solo nell'editor: F3 = suono 0,1 s più presto, F4 = 0,1 s più tardi (vale dalla prova successiva), F5 = azzera
         if (Application.isEditor && Keyboard.current != null)
         {
+            // passo: 0,1 s; con Maiusc premuto 0,01 s (un centesimo); con Ctrl premuto 0,5 s
+            float grandezza = Keyboard.current.shiftKey.isPressed ? 0.01f : Keyboard.current.ctrlKey.isPressed ? 0.5f : 0.1f;
             float passo = 0f;
-            if (Keyboard.current.f3Key.wasPressedThisFrame) passo = -0.1f;
-            if (Keyboard.current.f4Key.wasPressedThisFrame) passo = 0.1f;
+            if (Keyboard.current.f3Key.wasPressedThisFrame) passo = -grandezza;
+            if (Keyboard.current.f4Key.wasPressedThisFrame) passo = grandezza;
             if (passo != 0f) PlayerPrefs.SetFloat(ChiaveCorrezione, PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) + passo);
             if (Keyboard.current.f5Key.wasPressedThisFrame) PlayerPrefs.SetFloat(ChiaveCorrezione, 0f);
         }
@@ -397,7 +399,7 @@ public class LogoStudio : MonoBehaviour
             var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
             GUI.color = new Color(1f, 1f, 1f, 0.55f);
             GUI.Label(new Rect(20f, GraficaMenu.Altezza - 60f, 1400f, 40f),
-                "Solo editor - Correzione suono: " + CorrezioneTotale.ToString("+0.0;-0.0;0.0") + " s   (F3 = suono più presto, F4 = più tardi, F5 = azzera; vale dalla prova successiva)", piccolo);
+                "Solo editor - Correzione suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
             GUI.color = Color.white;
         }
     }
