@@ -21,7 +21,7 @@ Bozza approvata da Giuseppe il 10 ottobre 2026 (sera). I dialoghi veri sono da s
 | 2 | Prova la lama (Stregone: Lo studio delle magie) | Attacco, parata, schivata, aggancio | Guerriero e Ladro dal fabbro (lama o arco), Stregone dal vecchio Edric: vedi sotto |
 | 3 | Ratti nel granaio | Primo vero combattimento, resistenza | Pochi ratti giganti, facili. In co-op ne arrivano di più (difficoltà per giocatori) |
 | 4 | Le erbe di Ilse | Oggetti, zaino, uso dall'inventario | Tre erbe vicino al lago, in cambio una pozione |
-| 5 | La leggenda del lago (facoltativa) | Esplorazione, chiave, leva, baule | Edric manda alla cripta del cimitero: porta con leva e baule con un amuleto |
+| 5 | La leggenda del lago (obbligatoria dal 12 ottobre) | Esplorazione, chiave, leva, baule | Edric manda alla cripta del cimitero: porta con leva e baule con un amuleto |
 | 6 | Una sera in taverna | Storia | Al tramonto Hobb racconta le voci sugli orchi; dei tamburi in lontananza fanno partire la razzia |
 
 ## Variante dello Stregone (Giuseppe, 10 ottobre)
