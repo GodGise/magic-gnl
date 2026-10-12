@@ -34,9 +34,9 @@ Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione
 ## Il suono (versione attuale)
 
 Il file `logo-studio` parte **insieme al gioco**, dal primo istante, senza salti. Quindi i silenzi stanno **dentro il file**:
-- **0 - 4,3 s: silenzio** (3,0 s di nero + 1,3 s prima che le rune comincino ad accendersi).
-- **4,3 s: parte il suono** (le rune si accendono).
-- **6,3 s: il colpo** (la scintilla tocca il lago e la runa centrale si accende).
+- **0 - 3,5 s: silenzio** (3,0 s di nero + 0,5 s: il suono entra quando compare il **secondo arco** dell'anello, che arriva da fuori con le sue rune).
+- **3,5 s: parte il suono.**
+- **6,3 s: il colpo** (la scintilla tocca il lago e la runa centrale si accende): cioè **2,8 s dopo l'inizio del suono**.
 - Dopo il colpo la coda e la dissolvenza, fino a circa **13,4 s** totali.
 Le note qui sotto ("dopo il nero", secondi dall'animazione) valgono come idea del sonoro; per il file valgono i secondi sopra, dall'avvio del gioco.
 
