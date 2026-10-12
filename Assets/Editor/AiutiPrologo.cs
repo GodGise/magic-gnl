@@ -135,6 +135,7 @@ internal static class AiutiPrologo
         b.attaccaIlGiocatore = false;
         Imposta(b, "vitaMassima", vita);
         Imposta(b, "rinasce", true);
+        Imposta(o.AddComponent<NomeTradotto>(), "chiave", sagoma ? "nem.sagoma" : "nem.manichino");
         if (sagoma)
         {
             // il centro rosso e il palo
@@ -227,6 +228,25 @@ internal static class AiutiPrologo
                 spenti++;
             }
         return spenti;
+    }
+
+    // Come SgomberaAlberi, per le case anonime del villaggio ("casa-blocco N"): spegne quelle che toccherebbero l'area
+    // (gli edifici con un nome, come la Taverna, non si toccano). Restituisce quante.
+    internal static int SgomberaCase(Scene scena, Transform area, Vector3 centroLocale, Vector3 dimensioni)
+    {
+        int spente = 0;
+        foreach (var radice in scena.GetRootGameObjects())
+            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith("casa-blocco") || !t.gameObject.activeSelf) continue;
+                float margine = Mathf.Max(t.lossyScale.x, t.lossyScale.z) * 0.5f;
+                Vector3 locale = area.InverseTransformPoint(t.position) - centroLocale;
+                if (Mathf.Abs(locale.x) > dimensioni.x * 0.5f + margine || Mathf.Abs(locale.z) > dimensioni.z * 0.5f + margine) continue;
+                Undo.RecordObject(t.gameObject, "Sgombera case");
+                t.gameObject.SetActive(false);
+                spente++;
+            }
+        return spente;
     }
 
     // Un oggetto creato dai menu "Crea oggetti del Guerriero/Ladro/Stregone", cercato per nome del file.

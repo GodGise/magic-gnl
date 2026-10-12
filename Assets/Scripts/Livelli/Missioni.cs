@@ -26,6 +26,7 @@ public class Missioni : MonoBehaviour
     public Transform Meta => meta;
 
     string obiettivo;
+    int numeroObiettivo = -1;
     Transform meta;
     float obiettivoDa;
     readonly Queue<string> suggerimenti = new Queue<string>();
@@ -45,8 +46,18 @@ public class Missioni : MonoBehaviour
 
     public void ImpostaObiettivo(string chiave)
     {
+        numeroObiettivo = -1;
         obiettivo = chiave;
         obiettivoDa = Time.time;
+    }
+
+    // Obiettivo con un numero dentro (la chiave di Lingua ha {0}), per esempio "Ratti rimasti: 2". Non riparte
+    // l'animazione di "obiettivo nuovo" se cambia solo il numero.
+    public void ImpostaObiettivoConNumero(string chiave, int numero)
+    {
+        if (obiettivo != chiave) obiettivoDa = Time.time;
+        obiettivo = chiave;
+        numeroObiettivo = numero;
     }
 
     // Toglie l'obiettivo e anche la meta della bussola.
@@ -91,6 +102,7 @@ public class Missioni : MonoBehaviour
         float larghezza = GraficaMenu.FoglioIntero();
         float nuovo = Mathf.Clamp01((Time.time - obiettivoDa) / 0.6f);   // un obiettivo nuovo appare piano e si accende
         string testo = Dialogo.Testo(obiettivo);
+        if (numeroObiettivo >= 0) testo = testo.Replace("{0}", numeroObiettivo.ToString());
         var stile = new GUIStyle(GraficaMenu.EtichettaGioco) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
         float w = Mathf.Clamp(stile.CalcSize(new GUIContent(testo)).x + 70f, 260f, 760f);
         var r = new Rect(larghezza - 80f - w, 132f, w, 54f);

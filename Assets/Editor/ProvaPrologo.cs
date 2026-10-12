@@ -17,6 +17,8 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Vai da Brannoc")] static void Brannoc() => Vai("Brannoc");
     [MenuItem(Cartella + "Vai al manichino")] static void Manichino() => Vai("Manichino di Brannoc");
     [MenuItem(Cartella + "Vai da Edric (Stregone)")] static void Edric() => Vai("Edric");
+    [MenuItem(Cartella + "Vai da Hobb (granaio)")] static void Hobb() => Vai("Hobb");
+    [MenuItem(Cartella + "Vai al centro del granaio")] static void Granaio() => Vai("Centro del granaio");
 
     static void Vai(string nome)
     {

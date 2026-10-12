@@ -325,7 +325,7 @@ public class HudGioco : MonoBehaviour
         Bersaglio nemico = aggancio != null ? aggancio.Attuale : null;
         if (nemico == null || nemico.Morto) return;
 
-        string nome = nemico.gameObject.name.Replace("(Clone)", "").Trim();
+        string nome = NomeTradotto.Di(nemico);   // tradotto se il nemico ha NomeTradotto
         GraficaMenu.Scritta(new Rect(0f, altezza - 214f, larghezza, 40f), nome, GraficaMenu.NomeClasse, GraficaMenu.Testo, 1f);
         float max = Mathf.Max(1f, nemico.VitaMassima);
         Barra(larghezza * 0.5f - 400f, altezza - 175f, 800f, 16f, VitaNemico(nemico) / max, sciaNemico / max, ColoreVita, null, null);
