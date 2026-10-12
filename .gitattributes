@@ -17,3 +17,6 @@
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
+
+# I pezzi del logo dello studio sono piccoli: file normali, non LFS (il Claude nel cloud non può caricare su LFS)
+Assets/Resources/Logo/*.png -filter -diff -merge -text
