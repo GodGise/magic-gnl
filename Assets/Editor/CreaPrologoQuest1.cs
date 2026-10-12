@@ -76,7 +76,7 @@ public static class CreaPrologoQuest1
         // ---------- misure della casa ----------
         Transform tc = casa.transform;
         Vector3 scala = tc.lossyScale;
-        float W = Mathf.Max(scala.x, 7f), D = Mathf.Max(scala.z, 6f), H = Mathf.Clamp(scala.y, 3.2f, 4.2f);
+        float W = Mathf.Max(scala.x, 8f), D = Mathf.Max(scala.z, 7f), H = Mathf.Clamp(scala.y, 3.6f, 4.4f);   // spazio per la camera
         float s = 1f, portaX = 0f;
         Transform porta = tc.Find("Porta");
         if (porta != null && porta.gameObject.activeSelf)
@@ -145,6 +145,11 @@ public static class CreaPrologoQuest1
         for (int i = 0; i < 2; i++)
             Decoro("Mensola " + (i + 1), interno, new Vector3(-W / 2f + 2.6f, 1.4f + i * 0.6f, -s * (D / 2f - t - 0.2f)), new Vector3(1.6f, 0.08f, 0.35f), Legno);
         Luce("Luce della stanza", interno, new Vector3(0f, H - 0.6f, 0f), new Color(1f, 0.85f, 0.65f), 9f, 0.6f);
+        // Dentro casa la camera sta vicina e bassa (ZonaCamera), se no finisce contro il soffitto e guarda dall'alto.
+        var zonaCasa = Undo.AddComponent<ZonaCamera>(Vuoto("Zona camera (dentro casa)", interno));
+        Imposta(zonaCasa, "dimensioni", new Vector3(W - 0.4f, H, D - 0.4f));
+        Imposta(zonaCasa, "distanzaMassima", Mathf.Min(W, D) * 0.45f);
+        Imposta(zonaCasa, "inclinazioneMassima", 28f);
 
         // ---------- fuori: sentiero, panca, botti ----------
         Vector3 fuoriPorta = new Vector3(portaX, 0f, s * (D / 2f + 1f));
@@ -158,10 +163,17 @@ public static class CreaPrologoQuest1
         // ---------- il capanno della legna ----------
         var capanno = Vuoto("Capanno della legna", gruppo).transform;
         capanno.SetPositionAndRotation(interno.TransformPoint(capannoLocale), interno.rotation);
-        Blocco("Fondo", capanno, new Vector3(0f, 1.2f, -s * 1.3f), new Vector3(3.2f, 2.4f, 0.2f), Legno);
-        Blocco("Lato sinistro", capanno, new Vector3(-1.5f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), Legno);
-        Blocco("Lato destro", capanno, new Vector3(1.5f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), Legno);
-        Decoro("Tettoia", capanno, new Vector3(0f, 2.55f, s * 0.1f), new Vector3(3.6f, 0.15f, 3.2f), Paglia, new Vector3(s * 8f, 0f, 0f));
+        // Più alto e con il tetto solido: la camera non ci passa attraverso e il giocatore ci sta in piedi comodo.
+        Blocco("Fondo", capanno, new Vector3(0f, 1.5f, -s * 1.3f), new Vector3(3.6f, 3f, 0.2f), Legno);
+        Blocco("Lato sinistro", capanno, new Vector3(-1.7f, 1.5f, 0f), new Vector3(0.2f, 3f, 2.6f), Legno);
+        Blocco("Lato destro", capanno, new Vector3(1.7f, 1.5f, 0f), new Vector3(0.2f, 3f, 2.6f), Legno);
+        Blocco("Tettoia", capanno, new Vector3(0f, 3.15f, s * 0.2f), new Vector3(4f, 0.18f, 3.4f), Paglia, 0f);
+        Blocco("Palo sinistro", capanno, new Vector3(-1.7f, 1.5f, s * 1.75f), new Vector3(0.18f, 3f, 0.18f), LegnoScuro);
+        Blocco("Palo destro", capanno, new Vector3(1.7f, 1.5f, s * 1.75f), new Vector3(0.18f, 3f, 0.18f), LegnoScuro);
+        var zonaCapanno = Undo.AddComponent<ZonaCamera>(Vuoto("Zona camera (capanno)", capanno));
+        Imposta(zonaCapanno, "dimensioni", new Vector3(3.4f, 3f, 2.6f));
+        Imposta(zonaCapanno, "distanzaMassima", 2.4f);
+        Imposta(zonaCapanno, "inclinazioneMassima", 25f);
         var catasta = Vuoto("Catasta", capanno, new Vector3(0f, 0f, -s * 0.7f)).transform;
         for (int fila = 0; fila < 4; fila++)
             for (int i = 0; i < 4; i++)

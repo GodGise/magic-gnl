@@ -15,6 +15,7 @@ using UnityEngine.InputSystem;
 // Il mouse la può spostare, ma finché si è nella strettoia torna sempre dietro.
 // Negli spazi stretti la camera "si assottiglia": il suo spessore nei controlli si riduce a quello che
 // entra fra i muri, e il piano di taglio vicino (near clip) si accorcia, così non si vede dentro i muri.
+// Stanze piccole (ZonaCamera, per esempio dentro una casa): la camera si avvicina e non guarda troppo dall'alto.
 // Come montarlo: sulla Main Camera, trascinando il personaggio nel campo "Bersaglio".
 public class CameraTerzaPersona : MonoBehaviour
 {
@@ -64,6 +65,7 @@ public class CameraTerzaPersona : MonoBehaviour
     GiocatoreControllo giocatore;
     float inclinazione = 20f;
     float distanzaAttuale;
+    float distanzaZona, inclinazioneZona;   // limiti delle ZonaCamera (stanze piccole), con passaggio morbido
     AggancioBersaglio aggancio;
     Collider corpoPersonaggio;
     readonly List<Renderer> partiNascoste = new List<Renderer>();
@@ -75,6 +77,8 @@ public class CameraTerzaPersona : MonoBehaviour
     void Awake()
     {
         distanzaAttuale = distanza;
+        distanzaZona = distanza;
+        inclinazioneZona = inclinazioneMassima;
         obiettivo = GetComponent<Camera>();
         if (obiettivo != null) tagliaVicinoNormale = obiettivo.nearClipPlane;
 
@@ -143,6 +147,14 @@ public class CameraTerzaPersona : MonoBehaviour
             inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y) * segnoVerticale, inclinazioneMinima, inclinazioneMassima);
         }
 
+        // Nelle stanze piccole (ZonaCamera) la camera sta più vicina e non guarda troppo dall'alto.
+        float distanzaVoluta = distanza, inclinazioneVoluta = inclinazioneMassima;
+        ZonaCamera.Limiti(bersaglio.position, ref distanzaVoluta, ref inclinazioneVoluta);
+        float morbidoZona = 1f - Mathf.Exp(-4f * Time.deltaTime);
+        distanzaZona = Mathf.Lerp(distanzaZona, distanzaVoluta, morbidoZona);
+        inclinazioneZona = Mathf.Lerp(inclinazioneZona, inclinazioneVoluta, morbidoZona);
+        if (inclinazione > inclinazioneZona) inclinazione = inclinazioneZona;
+
         AllineaNellaStrettoia();
 
         Quaternion rotazione = Quaternion.Euler(inclinazione, rotazioneOrizzontale, 0f);
@@ -162,7 +174,7 @@ public class CameraTerzaPersona : MonoBehaviour
 
         // Il limite duro non ha distanza minima: se il muro è più vicino, la camera resta prima del muro
         // (al massimo nasconde il personaggio), invece di finirci dentro.
-        float distanzaDura = Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, true), 0.05f);
+        float distanzaDura = Mathf.Max(PrimoOstacolo(fuoco, indietro, distanzaZona, raggio, true), 0.05f);
         float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, anticipo, false));
 
         // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
@@ -200,7 +212,7 @@ public class CameraTerzaPersona : MonoBehaviour
     // "raggio" è lo spessore della camera nel controllo.
     float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio, bool contaGiaToccati)
     {
-        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, contaGiaToccati), distanzaMinima);
+        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanzaZona, raggio, contaGiaToccati), distanzaMinima);
     }
 
     // Distanza dal primo ostacolo partendo da "da" verso "direzione" (o distanzaMassima se non c'è niente).
