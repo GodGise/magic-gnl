@@ -33,7 +33,7 @@ Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione
 
 ## Il suono
 
-Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** (`.ogg` o `.wav`), parte da solo **quando inizia l'animazione** (dopo il nero), con il volume degli effetti scelto nelle opzioni. Non serve toccare il codice. Durata consigliata: **10,5 secondi**, con l'**impatto al secondo 3,3** del file (come prima). Idea per far combaciare il suono con le immagini:
+Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** (`.ogg` o `.wav`), parte da solo **quando inizia l'animazione** (dopo il nero), con il volume degli effetti scelto nelle opzioni. Non serve toccare il codice. Se il file ha un vuoto (silenzio) all'inizio, il gioco lo **salta da solo**: parte dal primo suono udibile (soglia molto bassa), quindi il colpo va messo a 3,3 secondi **dal primo suono**, non dall'inizio del file. Durata consigliata: **10,5 secondi**, con l'**impatto al secondo 3,3** del file (come prima). Idea per far combaciare il suono con le immagini:
 1. 0,0 - 1,4: un respiro grave e un brillio sottile che salgono (il punto di luce e il filo esterno).
 2. 0,3 - 2,1: un colpo leggero di metallo a ogni arco (circa 0,3 / 0,46 / 0,62 / 0,78 s).
 3. 1,3 - 2,6: tintinnii cristallini veloci, uno ogni 0,045 s, che salgono di tono (le rune).
