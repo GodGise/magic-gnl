@@ -1,6 +1,6 @@
 # Logo e apertura di GNL Studio
 
-Scritta il 12 ottobre 2026. All'avvio del gioco, prima della schermata del titolo, si vede il sigillo dello studio che si compone, poi "GNL STUDIO" e sotto, piccolo, "presenta". Dura circa 10 secondi dopo il nero iniziale (non si salta, solo nell’editor con F2). Si vede una volta sola a ogni avvio del gioco; tornando al menu da una partita non riparte.
+Scritta il 12 ottobre 2026. All'avvio del gioco, prima della schermata del titolo, si vede il sigillo dello studio che si compone, poi "GNL STUDIO" e sotto, piccolo, "presenta". Dura circa 10,5 secondi dopo il nero iniziale (non si salta, solo nell’editor con F2). Si vede una volta sola a ogni avvio del gioco; tornando al menu da una partita non riparte.
 
 ## Il sigillo
 
@@ -22,26 +22,26 @@ Prima **schermo nero e silenzio per 3 secondi**; poi parte l'animazione (e il su
 | 1,7 - 3,3 | La runa centrale compare appena visibile, spenta |
 | 2,3 - 3,3 | Una scintilla con la scia cala dall'alto, sempre più veloce, e cade nel lago |
 | **3,3** | **Impatto**: la scintilla tocca il lago e la **runa centrale si accende**. Lampo sullo schermo, tremito, onde nel lago, onda d'urto, raggi di luce, esplosione di scintille (circa 300) e gocce che schizzano; le rune si accendono tutte insieme |
-| 3,3 - 4,5 | Il sigillo resta acceso, le rune pulsano a onda, le braci salgono |
-| 4,5 - 5,6 | Il sigillo **sale in alto e rimpicciolisce** |
-| 5,0 - 6,9 | "GNL STUDIO" compare **al centro dello schermo**: lettere una a una che si stringono, filo di luce con rombo |
-| 6,5 - 7,5 | "presenta" (tradotto nelle 8 lingue) |
-| 8,5 - 9,5 | Dissolvenza al nero |
-| 9,85 | Parte il menu (musica e titolo) |
+| 3,3 - 5,0 | Pausa: il sigillo resta acceso, le rune pulsano a onda, le braci salgono. Vignetta scura ai bordi dello schermo, braci grandi sfocate in lontananza |
+| 5,0 - 6,1 | Il sigillo **sale in alto e rimpicciolisce** |
+| 5,5 - 7,4 | "GNL STUDIO" compare **al centro dello schermo**: lettere una a una che si stringono, filo di luce con rombo |
+| 7,0 - 8,0 | "presenta" (tradotto nelle 8 lingue) |
+| 9,0 - 10,0 | Dissolvenza al nero |
+| 10,35 | Parte il menu (musica e titolo) |
 
-Totale dall'avvio del gioco: circa 12,9 secondi (3 di nero + 9,85 di animazione).
+Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione).
 
 ## Il suono
 
-Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** (`.ogg` o `.wav`), parte da solo **quando inizia l'animazione** (dopo il nero), con il volume degli effetti scelto nelle opzioni. Non serve toccare il codice. Durata consigliata: **10 secondi**, con l'**impatto al secondo 3,3** del file (come prima). Idea per far combaciare il suono con le immagini:
+Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** (`.ogg` o `.wav`), parte da solo **quando inizia l'animazione** (dopo il nero), con il volume degli effetti scelto nelle opzioni. Non serve toccare il codice. Durata consigliata: **10,5 secondi**, con l'**impatto al secondo 3,3** del file (come prima). Idea per far combaciare il suono con le immagini:
 1. 0,0 - 1,4: un respiro grave e un brillio sottile che salgono (il punto di luce e il filo esterno).
 2. 0,3 - 2,1: un colpo leggero di metallo a ogni arco (circa 0,3 / 0,46 / 0,62 / 0,78 s).
 3. 1,3 - 2,6: tintinnii cristallini veloci, uno ogni 0,045 s, che salgono di tono (le rune).
 4. 1,7 - 2,9: una vibrazione grave che si apre (il rombo).
 5. 2,3 - 3,3: un sibilo sottile e luminoso che cala sempre più acuto e veloce (la scintilla).
 6. **3,3: l'impatto** (colpo di campana/incudine con spruzzo d'acqua e una coda lunga). È il momento più forte.
-7. 3,3 - 6,9: la coda dell'impatto con un accordo scuro sostenuto; un lieve brillio quando compare il nome (5,0) e "presenta" (6,5).
-8. 8,5 - 10: dissolvenza della coda.
+7. 3,3 - 7,4: la coda dell'impatto con un accordo scuro sostenuto; un lieve brillio quando compare il nome (5,5) e "presenta" (7,0).
+8. 9 - 10,5: dissolvenza della coda.
 Se nell'editor si salta con F2, il suono sfuma da solo in mezzo secondo.
 
 ## Cosa cambia nel codice
