@@ -7,8 +7,8 @@ using UnityEngine.SceneManagement;
 // Quale oggetto si usa: quello scelto nell'inventario (scheda Varie, E o doppio clic); se non è stato scelto niente,
 // o è finito, il primo consumabile dello zaino.
 // In basso a sinistra, sopra le armi, un rombo mostra l'oggetto pronto, quante copie ci sono e il tasto.
-// Si usa solo da fermi o camminando (non a metà di un attacco, una schivata o una parata), non durante un dialogo,
-// con l'inventario aperto o in pausa.
+// Si usa solo da fermi o camminando: premuto a metà di un attacco, una schivata o una parata, parte appena finiscono
+// (se entro 0,4 secondi). Non durante un dialogo, con l'inventario aperto o in pausa.
 // Le missioni possono sapere quando si usa un oggetto con l'evento UsoConsumabili.Usato (per esempio QuandoUsato).
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class UsoConsumabili : MonoBehaviour
@@ -25,6 +25,7 @@ public class UsoConsumabili : MonoBehaviour
     DatiConsumabile scelto;
     float prontoDa;            // prima di questo momento non si può usare un altro oggetto
     float curaRimasta, curaAlSecondo;
+    float premutoFino = -1f;   // tasto premuto a metà di un attacco o di una schivata: si usa appena si è liberi
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void CreaAllAvvio()
@@ -114,8 +115,10 @@ public class UsoConsumabili : MonoBehaviour
             }
         }
 
-        if (!comandoUsa.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto || Dialogo.InCorso) return;
+        if (comandoUsa.WasPressedThisFrame()) premutoFino = Time.time + 0.4f;
+        if (Time.time > premutoFino || MenuPausa.InPausa || InventarioGioco.Aperto || Dialogo.InCorso) return;
         if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Libero || Time.time < prontoDa) return;
+        premutoFino = -1f;
         var oggetto = Pronto();
         if (oggetto == null)
         {
@@ -163,9 +166,14 @@ public class UsoConsumabili : MonoBehaviour
             GraficaMenu.Riempi(new Rect(centro.x - 4f, centro.y - 22f, 8f, 14f), new Color(0.75f, 0.8f, 0.82f, 0.9f));
             GraficaMenu.Riempi(new Rect(centro.x - 6f, centro.y - 26f, 12f, 5f), new Color(0.45f, 0.32f, 0.2f));
         }
+        // il tasto in un piccolo rombo color fiamma, poi nome e copie
+        var tasto = new Vector2(centro.x + lato * 0.5f + 22f, centro.y);
+        GraficaMenu.Rombo(tasto, 34f, attesa ? GraficaMenu.Spento : GraficaMenu.Selezione);
+        GraficaMenu.Rombo(tasto, 28f, new Color(0.025f, 0.025f, 0.035f, 0.95f));
+        var stileTasto = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
+        GraficaMenu.Scritta(new Rect(tasto.x - 30f, tasto.y - 14f, 60f, 28f), Comandi.NomeTasto(Azione.UsaOggetto), stileTasto,
+            attesa ? GraficaMenu.Spento : GraficaMenu.Testo, 1f);
         var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft };
-        GraficaMenu.Scritta(new Rect(centro.x + lato * 0.5f + 8f, centro.y - 30f, 300f, 28f), oggetto.Nome + "  x" + Quanti(oggetto), stile, GraficaMenu.Testo, 1f);
-        GraficaMenu.Scritta(new Rect(centro.x + lato * 0.5f + 8f, centro.y + 2f, 300f, 28f), Comandi.NomeTasto(Azione.UsaOggetto), stile,
-            attesa ? GraficaMenu.Spento : GraficaMenu.Selezione, 1f);
+        GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y - 14f, 360f, 28f), oggetto.Nome + "  x" + Quanti(oggetto), stile, GraficaMenu.Testo, 1f);
     }
 }

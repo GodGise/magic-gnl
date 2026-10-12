@@ -22,7 +22,26 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Vai da Hobb (granaio)")] static void Hobb() => Vai("Hobb");
     [MenuItem(Cartella + "Vai al centro del granaio")] static void Granaio() => Vai("Centro del granaio");
     [MenuItem(Cartella + "Vai da Ilse (erborista)")] static void Ilse() => Vai("Ilse");
-    [MenuItem(Cartella + "Vai al primo fiore di riva")] static void Fiore() => Vai("Fiore di riva 1");
+    // Il primo dei tre fiori della quest 4 non ancora raccolto (spenti finché Ilse non li chiede).
+    [MenuItem(Cartella + "Vai al prossimo fiore di riva")]
+    static void Fiore()
+    {
+        for (int i = 1; i <= 3; i++)
+        {
+            // un fiore raccolto si spegne (activeSelf falso); quelli ancora da prendere restano accesi
+            var f = TrovaOggetto("Fiore di riva " + i);
+            if (f != null && f.activeSelf) { Vai("Fiore di riva " + i); return; }
+        }
+        Debug.Log("Prova prologo: nessun fiore di riva da raccogliere.");
+    }
+
+    static GameObject TrovaOggetto(string nome)
+    {
+        foreach (var radice in SceneManager.GetActiveScene().GetRootGameObjects())
+            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+                if (t.name == nome) return t.gameObject;
+        return null;
+    }
 
     // Toglie 50 di vita al giocatore (senza scendere sotto 1): serve a provare la Pozione di Ilse (tasto F).
     [MenuItem(Cartella + "Togli 50 di vita al giocatore")]
