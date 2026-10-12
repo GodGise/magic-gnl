@@ -51,9 +51,12 @@ public class LogoStudio : MonoBehaviour
     Texture2D[] anelli = new Texture2D[4];
     Texture2D rombo, spada;
     AudioSource sorgente;
-    float inizio = float.MaxValue;   // quando parte l'animazione (dopo il nero iniziale)
+    // Orologio del logo: conta solo i fotogrammi veri. I primi caricamenti (caratteri, scena, suoni) possono bloccare il gioco
+    // anche per un secondo: quel tempo non conta, altrimenti il nero iniziale si accorcia o sparisce.
+    float orologio;
+    int fotogrammi;
     bool suonoPartito;
-    float saltatoA = -1f;       // solo nell'editor: quando si è premuto F2
+    float saltatoA = -1f;       // solo nell'editor: l'orologio quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
     readonly List<Scintilla> scintille = new List<Scintilla>();
@@ -87,19 +90,21 @@ public class LogoStudio : MonoBehaviour
                 taglia = 2f + (float)caso.NextDouble() * 4f,
             });
         }
-        inizio = Time.unscaledTime + AttesaNera;
     }
 
     // Secondi dall'inizio dell'animazione: negativo durante il nero iniziale.
-    float Tempo => inizio == float.MaxValue ? -AttesaNera : Time.unscaledTime - inizio;
+    float Tempo => orologio - AttesaNera;
 
     // Solo nell'editor, con F2: la dissolvenza al nero parte subito (più veloce).
-    float TempoSpegni => saltatoA >= 0f ? Mathf.Min(InizioSpegni, saltatoA - inizio) : InizioSpegni;
+    float TempoSpegni => saltatoA >= 0f ? Mathf.Min(InizioSpegni, saltatoA - AttesaNera) : InizioSpegni;
     float DurataSpegniAttuale => saltatoA >= 0f ? 0.6f : DurataSpegni;
 
     void Update()
     {
         if (finito) return;
+        // i primi fotogrammi (caricamenti pesanti) non contano; poi si conta con passi mai più lunghi di 50 ms
+        fotogrammi++;
+        if (fotogrammi > 4) orologio += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
         float t = Tempo;
         if (!suonoPartito && t >= 0f)
         {
@@ -107,8 +112,8 @@ public class LogoStudio : MonoBehaviour
             if (sorgente != null && sorgente.clip != null) sorgente.Play();
         }
         if (Application.isEditor && saltatoA < 0f && t < InizioSpegni && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
-            saltatoA = Time.unscaledTime;
-        float fine = (saltatoA >= 0f ? saltatoA - inizio + 0.6f : InizioSpegni + DurataSpegni) + AttesaFinale;
+            saltatoA = orologio;
+        float fine = (saltatoA >= 0f ? saltatoA - AttesaNera + 0.6f : InizioSpegni + DurataSpegni) + AttesaFinale;
         if (saltatoA >= 0f && sorgente != null && sorgente.isPlaying) sorgente.volume = Mathf.MoveTowards(sorgente.volume, 0f, Time.unscaledDeltaTime / 0.5f);
         if (t >= fine) Concludi();
     }
