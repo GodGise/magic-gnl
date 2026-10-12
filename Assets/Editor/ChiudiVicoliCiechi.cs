@@ -17,7 +17,8 @@ using UnityEngine.SceneManagement;
 // (gruppo "Recinzioni dei vicoli ciechi" dentro "Villaggio") e rifà l'analisi. Si annulla con Ctrl+Z.
 // Alla fine scrive nella Console dove ha messo ogni staccionata e salva una mappa vista dall'alto in
 // Temp/vicoli-villaggio.png (bianco: spazio aperto, giallo: passaggi stretti che portano da qualche parte,
-// viola: staccionate, rosso: vicoli ciechi rimasti, azzurro: vicoli lasciati aperti per una quest).
+// viola: staccionate, rosso: vicoli ciechi rimasti, azzurro: vicoli lasciati aperti per una quest), e la mostra
+// nella finestra "Mappa dei vicoli" (MappaVicoli.cs).
 // Non va montato su niente: è solo un comando dell'editor.
 public static class ChiudiVicoliCiechi
 {
@@ -651,7 +652,8 @@ public static class ChiudiVicoliCiechi
         System.IO.Directory.CreateDirectory(cartella);
         string percorso = System.IO.Path.Combine(cartella, "vicoli-villaggio.png");
         System.IO.File.WriteAllBytes(percorso, tex.EncodeToPNG());
-        Object.DestroyImmediate(tex);
+        tex.filterMode = FilterMode.Point;
+        MappaVicoli.Mostra(tex);   // la finestra "Mappa dei vicoli"
         return "Temp/vicoli-villaggio.png";
     }
 }
