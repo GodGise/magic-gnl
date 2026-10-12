@@ -22,7 +22,12 @@ public class LogoStudio : MonoBehaviour
     // Il suono si aggancia da solo: il gioco cerca nel file audio il COLPO (il punto più forte) e fa partire il file in modo che
     // il colpo cada proprio quando la runa centrale si accende (MomentoLampo). Il file può avere qualsiasi silenzio all'inizio.
     // Per ritocchi fini: secondi di correzione, positivo = suono più tardi, negativo = più presto.
+    // Nell'editor di Unity si regola anche con i tasti (vedi sotto); quel valore si somma a questo.
     const float CorrezioneSuono = 0.0f;
+    const string ChiaveCorrezione = "LogoStudio.CorrezioneSuono";
+
+    // Correzione totale: la costante più, solo nell'editor, la regolazione fatta con F3/F4 (salvata tra una prova e l'altra).
+    static float CorrezioneTotale => CorrezioneSuono + (Application.isEditor ? PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) : 0f);
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
@@ -118,7 +123,7 @@ public class LogoStudio : MonoBehaviour
             if (colpo >= 0f)
             {
                 // il file deve far cadere il colpo a (nero + MomentoLampo) secondi dall'avvio
-                float partenza = AttesaNera + MomentoLampo - colpo + CorrezioneSuono;
+                float partenza = AttesaNera + MomentoLampo - colpo + CorrezioneTotale;
                 partenzaSuono = Mathf.Max(0f, partenza);
                 saltoNelFile = Mathf.Max(0f, -partenza);
                 Debug.Log("[Logo] Colpo trovato a " + colpo.ToString("0.00") + " s nel file (durata " + suono.length.ToString("0.00") + " s): il file parte a " + partenzaSuono.ToString("0.00") + " s dall'avvio");
@@ -233,6 +238,15 @@ public class LogoStudio : MonoBehaviour
                 sorgente.time = Mathf.Clamp(saltoNelFile, 0f, Mathf.Max(0f, sorgente.clip.length - 0.1f));
                 sorgente.Play();
             }
+        }
+        // Solo nell'editor: F3 = suono 0,1 s più presto, F4 = 0,1 s più tardi (vale dalla prova successiva), F5 = azzera
+        if (Application.isEditor && Keyboard.current != null)
+        {
+            float passo = 0f;
+            if (Keyboard.current.f3Key.wasPressedThisFrame) passo = -0.1f;
+            if (Keyboard.current.f4Key.wasPressedThisFrame) passo = 0.1f;
+            if (passo != 0f) PlayerPrefs.SetFloat(ChiaveCorrezione, PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) + passo);
+            if (Keyboard.current.f5Key.wasPressedThisFrame) PlayerPrefs.SetFloat(ChiaveCorrezione, 0f);
         }
         if (Application.isEditor && saltatoA < 0f && t < InizioSpegni && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
             saltatoA = orologio;
@@ -378,6 +392,14 @@ public class LogoStudio : MonoBehaviour
         float chiusa = Morbido(t / MomentoLampo) * 0.62f + 0.28f * lampo;
         if (chiusa > 0.01f) { GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(chiusa) * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), vignetta); GUI.color = Color.white; }
         DisegnaNome(t, luce);
+        if (Application.isEditor && !finito)
+        {
+            var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
+            GUI.color = new Color(1f, 1f, 1f, 0.55f);
+            GUI.Label(new Rect(20f, GraficaMenu.Altezza - 60f, 1400f, 40f),
+                "Solo editor - Correzione suono: " + CorrezioneTotale.ToString("+0.0;-0.0;0.0") + " s   (F3 = suono più presto, F4 = più tardi, F5 = azzera; vale dalla prova successiva)", piccolo);
+            GUI.color = Color.white;
+        }
     }
 
     // Le 28 rune: ogni runa ha il suo momento di accensione. Brillano forte, poi calano a una luce calda;
