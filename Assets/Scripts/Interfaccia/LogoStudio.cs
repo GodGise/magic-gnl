@@ -26,10 +26,10 @@ public class LogoStudio : MonoBehaviour
     const float InizioRombo = 1.7f, DurataRombo = 1.2f;       // il rombo si apre e si gira in posizione
     const float InizioCometa = 2.3f, DurataCometa = 1.0f;     // la scintilla cala dall'alto, sempre più veloce
     const float MomentoLampo = 3.3f;                          // la scintilla tocca il lago: la runa si accende, lampo, onde, scintille
-    const float InizioSposta = 4.5f, DurataSposta = 1.1f;     // il sigillo sale e rimpicciolisce
-    const float InizioNome = 5.0f, DurataNome = 1.9f;         // "GNL STUDIO" al centro
-    const float InizioPresenta = 6.5f, DurataPresenta = 1.0f; // "presenta"
-    const float InizioSpegni = 8.5f, DurataSpegni = 1.0f;     // dissolvenza al nero
+    const float InizioSposta = 5.0f, DurataSposta = 1.1f;     // il sigillo sale e rimpicciolisce (dopo mezzo secondo di pausa in più sull'impatto)
+    const float InizioNome = 5.5f, DurataNome = 1.9f;         // "GNL STUDIO" al centro
+    const float InizioPresenta = 7.0f, DurataPresenta = 1.0f; // "presenta"
+    const float InizioSpegni = 9.0f, DurataSpegni = 1.0f;     // dissolvenza al nero
     const float AttesaFinale = 0.35f;                         // nero prima del menu
 
     // Il sigillo: grandezza e posizione (in pixel del foglio virtuale 1920x1080)
@@ -58,7 +58,7 @@ public class LogoStudio : MonoBehaviour
     MenuPrincipale menu;
     Texture2D[] anelli = new Texture2D[4];
     Texture2D[] rune = new Texture2D[7];
-    Texture2D rombo, runaCentrale, esterno, onda, raggi;
+    Texture2D rombo, runaCentrale, esterno, onda, raggi, vignetta;
     AudioSource sorgente;
     // Orologio del logo: conta solo i fotogrammi veri. I primi caricamenti (caratteri, scena, suoni) possono bloccare il gioco
     // anche per un secondo: quel tempo non conta, altrimenti il nero iniziale si accorcia o sparisce.
@@ -87,6 +87,16 @@ public class LogoStudio : MonoBehaviour
         onda = Resources.Load<Texture2D>("Logo/onda");
         raggi = Resources.Load<Texture2D>("Logo/raggi");
         Cursor.visible = false;
+
+        // vignetta: trasparente al centro, scura ai bordi
+        vignetta = new Texture2D(128, 128, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+        for (int y = 0; y < 128; y++)
+            for (int x = 0; x < 128; x++)
+            {
+                float d = Mathf.Sqrt((x - 63.5f) * (x - 63.5f) + (y - 63.5f) * (y - 63.5f)) / 64f;   // 0 centro, 1 bordo, 1,41 angolo
+                vignetta.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.62f, 1.3f, d))));
+            }
+        vignetta.Apply();
 
         Impostazioni.Applica();
         var suono = Resources.Load<AudioClip>("Audio/Effetti/logo-studio");
@@ -137,6 +147,10 @@ public class LogoStudio : MonoBehaviour
             particelle.Add(new Particella { origine = new Vector2(512f + (R() - 0.5f) * 60f, 500f), direzione = Dir(ang),
                 nascita = MomentoLampo + R() * 0.12f, velocita = 200f + R() * 520f, vita = 1.0f + R() * 1.0f, taglia = 3f + R() * 4f, salita = -120f, tipo = 2 });
         }
+        // 4b) grandi braci sfocate e lente, in lontananza: danno profondità
+        for (int n = 0; n < 26; n++)
+            particelle.Add(new Particella { origine = new Vector2(R() * 1024f, 700f + R() * 500f), direzione = new Vector2((R() - 0.5f) * 0.5f, -1f),
+                nascita = 1.0f + R() * 6.0f, velocita = 10f + R() * 16f, vita = 3.5f + R() * 2.5f, taglia = 18f + R() * 30f, salita = 0f, tipo = 3 });
         // 5) braci che salgono piano dal sigillo, dall'accensione fino alla fine
         for (int n = 0; n < 150; n++)
         {
@@ -176,6 +190,7 @@ public class LogoStudio : MonoBehaviour
     {
         finito = true;
         Cursor.visible = true;
+        if (vignetta != null) Destroy(vignetta);
         if (menu != null) menu.enabled = true;   // da qui parte il menu (Start, musica, titolo)
         Destroy(gameObject);
     }
@@ -304,6 +319,9 @@ public class LogoStudio : MonoBehaviour
         if (dopo >= 0f && dopo < 0.5f) { GUI.color = new Color(1f, 0.85f, 0.6f, (1f - dopo / 0.5f) * (1f - dopo / 0.5f) * 0.28f * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), GraficaMenu.Pixel); GUI.color = Color.white; }
 
         DisegnaParticelle(t, luce);
+        // vignetta scura ai bordi: si chiude piano mentre il sigillo si compone e si stringe al lampo
+        float chiusa = Morbido(t / MomentoLampo) * 0.62f + 0.28f * lampo;
+        if (chiusa > 0.01f) { GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(chiusa) * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), vignetta); GUI.color = Color.white; }
         DisegnaNome(t, luce);
     }
 
@@ -418,12 +436,13 @@ public class LogoStudio : MonoBehaviour
             if (dt < 0f || dt > s.vita) continue;
             float k = dt / s.vita;
             float corsa = s.velocita * (1f - Mathf.Pow(1f - Mathf.Clamp01(dt / Mathf.Min(0.9f, s.vita)), 2f)) * 0.9f;
-            if (s.tipo == 1) corsa = s.velocita * dt;   // le braci salgono piano e costanti
+            if (s.tipo == 1 || s.tipo == 3) corsa = s.velocita * dt;   // le braci salgono piano e costanti
             Vector2 p = s.origine + s.direzione * corsa;
             p.y -= s.salita * dt * (s.tipo == 1 ? 0f : 1f) * (1f - 0.4f * k);
             // posizione sullo schermo con il sigillo nel posto iniziale (grande, al centro)
             Vector2 schermo = new Vector2(GraficaMenu.Larghezza * 0.5f, YCentro) - new Vector2(512f, 512f) * (LatoGrande / 1024f) + p * (LatoGrande / 1024f);
             float alfa;
+            if (s.tipo == 3) { Bagliore(schermo, s.taglia * 3.2f, new Color(1f, 0.5f, 0.2f), Mathf.Sin(k * Mathf.PI) * 0.16f * luce); continue; }
             if (s.tipo == 1) alfa = Mathf.Sin(k * Mathf.PI) * 0.7f * (0.75f + 0.25f * Mathf.Sin(t * 9f + s.nascita * 13f));
             else alfa = (1f - k) * (1f - k);
             alfa *= luce;
