@@ -42,6 +42,7 @@ Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** 
 6. **3,3: l'impatto** (colpo di campana/incudine con spruzzo d'acqua e una coda lunga). È il momento più forte.
 7. 3,3 - 7,4: la coda dell'impatto con un accordo scuro sostenuto; un lieve brillio quando compare il nome (5,5) e "presenta" (7,0).
 8. 9 - 10,5: dissolvenza della coda.
+Se il colpo non combacia: in `LogoStudio.cs` la costante `CorrezioneSuono` sposta l'inizio del suono (in secondi: positivo = più tardi, negativo = prima).
 Se nell'editor si salta con F2, il suono sfuma da solo in mezzo secondo.
 
 ## Cosa cambia nel codice

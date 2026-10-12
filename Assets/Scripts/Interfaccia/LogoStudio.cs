@@ -19,6 +19,11 @@ public class LogoStudio : MonoBehaviour
     // Prima schermo nero e silenzio per 3 secondi; poi parte l'animazione (e il suono).
     const float AttesaNera = 3.0f;
 
+    // Per far combaciare il suono con le immagini: secondi di spostamento dell'inizio del suono rispetto all'inizio dell'animazione.
+    // Positivo = il suono parte PIÙ TARDI (se il colpo si sente troppo presto); negativo = parte PRIMA (se il colpo si sente in ritardo).
+    // Esempio: il colpo arriva 1 secondo prima della runa -> CorrezioneSuono = 1.0f.
+    const float CorrezioneSuono = 0.0f;
+
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
     const float InizioAnelli = 0.3f, DurataAnelli = 1.8f;     // i quattro archi arrivano da fuori, uno dopo l'altro
@@ -174,7 +179,7 @@ public class LogoStudio : MonoBehaviour
         fotogrammi++;
         if (fotogrammi > 4) orologio += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
         float t = Tempo;
-        if (!suonoPartito && t >= 0f)
+        if (!suonoPartito && t >= CorrezioneSuono)
         {
             suonoPartito = true;
             if (sorgente != null && sorgente.clip != null) sorgente.Play();
