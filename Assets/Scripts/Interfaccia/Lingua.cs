@@ -214,6 +214,7 @@ public static class Lingua
         ["hud.ovest"] = new[] { "O", "W", "O", "O", "W", "O", "З", "西" },
         ["hud.prendi_legna"] = new[] { "Prendi la legna", "Take the wood", "Coger la leña", "Prendre le bois", "Holz nehmen", "Pegar a lenha", "Взять дрова", "拿柴" },
         ["hud.metti_legna"] = new[] { "Metti la legna nel fuoco", "Put the wood on the fire", "Echar la leña al fuego", "Mettre le bois dans le feu", "Holz ins Feuer legen", "Colocar a lenha no fogo", "Подбросить дрова в огонь", "把柴放进火里" },
+        ["logo.presenta"] = new[] { "presenta", "presents", "presenta", "présente", "präsentiert", "apresenta", "представляет", "出品" },
         ["hud.parla"] = new[] { "Parla", "Talk", "Hablar", "Parler", "Sprechen", "Falar", "Говорить", "交谈" },
         ["dlg.continua"] = new[] { "Continua", "Continue", "Continuar", "Continuer", "Weiter", "Continuar", "Далее", "继续" },
         ["hud.rialza"] = new[] { "Rialza", "Revive", "Levantar", "Relever", "Aufrichten", "Levantar", "Поднять", "扶起" },
