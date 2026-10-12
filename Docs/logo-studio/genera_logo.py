@@ -1,6 +1,6 @@
 # Genera i pezzi del logo di GNL Studio: livelli bianchi trasparenti (colorati poi dal gioco).
 # Uso: python3 genera_logo.py cartella_di_uscita
-# Pezzi 1024x1024: anello-1..4 (archi), anello-esterno, rombo, spada, onda, raggi. Rune 256x256: runa-1..7.
+# Pezzi 1024x1024: anello-1..4 (archi), anello-esterno, rombo, runa-centrale, onda, raggi. Rune 256x256: runa-1..7.
 import math, sys
 from PIL import Image, ImageDraw
 S=4
@@ -62,30 +62,26 @@ def rombo():
         pts=[P(512,512-r),P(512+r,512),P(512,512+r),P(512-r,512)]
         d.line(pts+[pts[0]],fill=255,width=int(w*S),joint='curve')
     rh(304,8); rh(286,1.8); rh(262,2.4)
-    for (x,y,deg) in [(816,512,0),(512,816,90),(208,512,0)]:
+    for (x,y,deg) in [(512,208,0),(816,512,0),(512,816,90),(208,512,0)]:
         d.polygon([P(x,y-26),P(x+17,y),P(x,y+26),P(x-17,y)],fill=255)
-    # il rombo in alto lo copre la spada: restano due tacche ai lati
-    for sx in (-1,1): d.polygon([P(512+sx*40,236),P(512+sx*52,226),P(512+sx*64,236),P(512+sx*52,246)],fill=255)
     circle(d,150,3.5); circle(d,132,1.8); circle(d,100,1.2)
     for k in range(32):
         tick(d,k*11.25,158,190 if k%2==0 else 174,2.4 if k%2==0 else 1.6)
     return im
 
-def spada():
-    # spada con la punta in giù, piantata nel lago
-    im=new(1024); d=ImageDraw.Draw(im); cx=512
-    d.polygon([P(cx-17,264),P(cx+17,264),P(cx+15,482),P(cx,566),P(cx-15,482)],fill=255)
-    d.polygon([P(cx-3.4,282),P(cx+3.4,282),P(cx+2.4,470),P(cx,498),P(cx-2.4,470)],fill=0)
-    for sx in (-1,1):
-        pts=[(14,232),(70,224),(128,238),(160,284),(118,266),(66,267),(14,266)]
-        d.polygon([P(cx+sx*x,y) for x,y in pts],fill=255)
-        d.polygon([P(cx+sx*x,y) for x,y in [(40,240),(86,236),(124,248),(90,252),(46,252)]],fill=0)
-    rhomb(d,cx,249,26,24,0)
-    rhomb(d,cx,249,9,9,0,fill=0)
-    d.rectangle([P(cx-8.5,150)[0],P(0,150)[1],P(cx+8.5,0)[0],P(0,232)[1]],fill=255)
-    for y in range(158,230,12): d.line([P(cx-8.5,y),P(cx+8.5,y+5)],fill=0,width=int(2.2*S))
-    d.polygon([P(cx,82),P(cx+25,120),P(cx,162),P(cx-25,120)],fill=255)
-    d.polygon([P(cx,100),P(cx+10,120),P(cx,144),P(cx-10,120)],fill=0)
+def runa_centrale():
+    # la runa del lago: un rombo-sole sopra un'asta, con due bracci in alto e un piede a V
+    im=new(1024); d=ImageDraw.Draw(im); cx=512; w=11
+    def L(pts,w=w):
+        p=[P(*q) for q in pts]
+        d.line(p,fill=255,width=int(w*S),joint='curve')
+        for q in (p[0],p[-1]): d.ellipse([q[0]-w*S/2,q[1]-w*S/2,q[0]+w*S/2,q[1]+w*S/2],fill=255)
+    L([(cx,452),(cx,612)])
+    L([(cx,420),(cx+30,452),(cx,484),(cx-30,452),(cx,420)],9)
+    L([(cx,520),(cx-46,474)]); L([(cx,520),(cx+46,474)])
+    L([(cx-34,578),(cx,612),(cx+34,578)])
+    rhomb(d,cx,640,9,12,0)
+    rhomb(d,cx,452,8,12,0)
     return im
 
 def onda():
@@ -138,7 +134,7 @@ if __name__=='__main__':
     for k in range(4): finish(quarter(k),f'{out}/anello-{k+1}.png',1024)
     finish(esterno(),f'{out}/anello-esterno.png',1024)
     finish(rombo(),f'{out}/rombo.png',1024)
-    finish(spada(),f'{out}/spada.png',1024)
+    finish(runa_centrale(),f'{out}/runa-centrale.png',1024)
     finish(onda(),f'{out}/onda.png',1024)
     raggi().save(f'{out}/_raggi_tmp.png')
     r=Image.open(f'{out}/_raggi_tmp.png').convert('L')
