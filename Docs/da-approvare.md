@@ -68,6 +68,12 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 12 ottobre, notte: quest 3 del prologo, il granaio di Hobb e tre ratti giganti (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/quest-3` (parte da `lorenzoc/quest-2`: va unito dopo la #60). Finita la quest 2 compare "Vai al granaio di Hobb, sul lago" e Hobb (prima muto) si può far parlare; dopo il dialogo si svegliano **3 ratti giganti** nel granaio (12×16 m, a sud della strada del molo, portone verso la strada). Numeri di Lorenzo: **37 di vita, 11 di danno, un attacco ogni 4 s** per ratto: si acquatta e diventa rosso (preavviso), balza mordendo, indietreggia. Due ratti non balzano mai insieme. L'obiettivo conta "Ratti rimasti nel granaio: N"; morti tutti, Hobb ringrazia e la quest finisce. La vita persa si recupera nella quest 4.
+- **File nuovi:** `RattoGigante.cs`, `GruppoNemici.cs`, `NomeTradotto.cs` (nome del nemico agganciato tradotto in 8 lingue), `Assets/Editor/CreaPrologoQuest3.cs`.
+- **File condivisi toccati:** `Missioni.cs` (obiettivo con un numero: `ImpostaObiettivoConNumero`), `HudGioco.cs` (il nome del nemico agganciato passa da `NomeTradotto`), `Lingua.cs` (testi della quest 3 e nomi dei nemici), `VillaggioLagoNero.unity`.
+- Prova veloce: in Play, "magic-gnl > Prova prologo > Ferisci i ratti del granaio (-20)" due volte chiude lo scontro.
+
 ### 12 ottobre, sera: quest 2 del prologo, tiro con l'arco, quest 1 migliorata (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/quest-2`, provato in Unity sul PC di Lorenzo con le tre classi.
 - **Quest 2** (comando `magic-gnl > Prologo: prepara la quest 2`): cortile della fucina con forgia, tettoia, steccato, Brannoc, manichino e sagome di tiro (solo Ladro); cortile di studio accanto al tempio con Edric e bersagli (solo Stregone). Brannoc dà Spada e Scudo della vecchia vita (Guerriero) o Pugnale da scuoiare e Arco corto da caccia (Ladro) e manda lo Stregone da Edric (Bastone e Libro della vecchia vita, Scintilla, Scheggia di ghiaccio). Allenamento con l'elenco delle mosse a schermo (`AllenamentoMosse`): finita ogni mossa almeno una volta, la quest finisce e il sole avanza. Dialoghi della quest 2 in 8 lingue (`dlg.q2.*`, `dlg.q2s.*`).

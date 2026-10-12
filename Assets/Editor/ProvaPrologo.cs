@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 // della quest (Maren, la catasta, il camino, Brannoc, il manichino, Edric), senza doverci camminare.
 // Le quest restano quelle vere: si salta solo la strada, non i passi (dialoghi e tasti vanno fatti lo stesso).
 // Come si usa: in Play, menu "magic-gnl > Prova prologo > Vai da ...". Non va montato su niente.
+// "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta).
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -17,6 +18,25 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Vai da Brannoc")] static void Brannoc() => Vai("Brannoc");
     [MenuItem(Cartella + "Vai al manichino")] static void Manichino() => Vai("Manichino di Brannoc");
     [MenuItem(Cartella + "Vai da Edric (Stregone)")] static void Edric() => Vai("Edric");
+    [MenuItem(Cartella + "Vai da Hobb (granaio)")] static void Hobb() => Vai("Hobb");
+    [MenuItem(Cartella + "Vai al centro del granaio")] static void Granaio() => Vai("Centro del granaio");
+
+    // Toglie 20 di vita a ogni ratto del granaio ancora vivo (due volte = tutti morti): serve a provare il contatore
+    // "Ratti rimasti" e la fine della quest 3 senza dover vincere lo scontro.
+    [MenuItem(Cartella + "Ferisci i ratti del granaio (-20)")]
+    static void FerisciRatti()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        int quanti = 0;
+        foreach (var ratto in Object.FindObjectsByType<RattoGigante>(FindObjectsSortMode.None))
+        {
+            var b = ratto.GetComponent<Bersaglio>();
+            if (b == null || b.Morto) continue;
+            b.RiceviColpo(20f, b.transform.position + Vector3.up);
+            quanti++;
+        }
+        Debug.Log(quanti > 0 ? "Prova prologo: feriti " + quanti + " ratti." : "Prova prologo: nessun ratto vivo (parla prima con Hobb).");
+    }
 
     static void Vai(string nome)
     {
