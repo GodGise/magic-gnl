@@ -283,6 +283,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     bool SchivataRichiesta => Time.time <= schivataPrenotataFino;
     bool AttaccoRichiesto => Time.time <= attaccoPrenotatoFino;
+    TiroConLArco tiroArco;
+    // Il Ladro ha l'arco in mano (tasto 2): il tasto di attacco tende l'arco invece di colpire.
+    public bool ArcoInMano => tiroArco != null && tiroArco.ArcoInMano;
 
     void Awake()
     {
@@ -304,6 +307,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
         if (GetComponent<RianimaAlleato>() == null) gameObject.AddComponent<RianimaAlleato>();   // co-op: rialzare gli alleati
+        tiroArco = GetComponent<TiroConLArco>();
+        if (tiroArco == null) tiroArco = gameObject.AddComponent<TiroConLArco>();   // il tiro con l'arco del Ladro
         raggioNormale = controller.radius;
         Vita = VitaMassima;
         puntoRinascita = transform.position;
@@ -467,7 +472,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         if (stato != Stato.Esecuzione) movimento *= velocitaAcqua;
 
         // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
-        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
+        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada && !ArcoInMano ? CercaVittima() : null;
         if (vittimaPossibile != null) HudGioco.MostraAzione(Comandi.NomeTasto(Azione.Attacca), Lingua.T("hud.esecuzione"));
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
@@ -631,6 +636,12 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Con la spada serve resistenza; con il bastone serve abbastanza mana (altrimenti avvisa).
     bool PuoAttaccare()
     {
+        // Con l'arco in mano il tasto di attacco tende l'arco (TiroConLArco): niente colpi corpo a corpo.
+        if (ArcoInMano)
+        {
+            attaccoPrenotatoFino = -1f;
+            return false;
+        }
         if (UsaMagia)
         {
             if (magia.PuoLanciare()) return true;

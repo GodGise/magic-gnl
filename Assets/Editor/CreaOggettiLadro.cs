@@ -33,7 +33,7 @@ public static class CreaOggettiLadro
         riscrivi = false;
     }
 
-    static void Crea()
+    internal static void Crea()
     {
         int creati = 0;
 

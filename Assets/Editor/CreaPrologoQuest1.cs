@@ -1,28 +1,28 @@
-using System;
-using System.Reflection;
 using UnityEditor;
-using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using static AiutiPrologo;
 
 // Strumento dell'editor: prepara nella scena VillaggioLagoNero (aperta) l'inizio del prologo e la quest 1
 // "Un'altra mattina" (Docs/quest-capitolo-1.md, Docs/dialoghi-capitolo-1.md), tutto con forme provvisorie.
 // Cosa fa, in un gruppo nuovo "Prologo - quest 1" (tutto si sposta e si regola a mano dopo):
 //   - spegne il blocco pieno "Casa dell'eroe" e al suo posto costruisce una casa vuota dentro, con la porta dallo
-//     stesso lato: pavimento, muri, tetto, letto, camino acceso, tavolo e una luce calda;
-//   - Maren vicino al camino e Tobin accanto al letto (forme provvisorie);
-//   - un capanno della legna aperto, accanto alla casa, con la catasta;
-//   - il giocatore in piedi accanto al letto;
-//   - Missioni (obiettivo a schermo e suggerimenti), OrarioPrologo (il tempo a tappe) e la dissolvenza dal nero;
+//     stesso lato e il tetto a due falde: finestre, stipiti, letto grande e lettino di Tobin, baule, camino acceso con
+//     il cesto della legna, tavolo con sgabelli, mensole, tappeto, luci calde;
+//   - fuori: soglia, sentiero di terra dalla porta al capanno, panca, botti e casse;
+//   - il capanno della legna con la catasta, il ceppo e l'ascia;
+//   - Maren vicino al camino, Tobin accanto al suo lettino, il giocatore accanto al letto;
+//   - Missioni (obiettivo e suggerimenti), OrarioPrologo (tempo a tappe) e la dissolvenza dal nero;
 //   - la quest 1 già collegata con gli eventi (si vedono e si cambiano nell'Inspector):
 //       risveglio (Tobin, Maren, "L'eroe si alza") -> suggerimenti per muoversi e parlare -> parli con Maren
-//       -> obiettivo "Porta la legna", Tobin ti segue -> E alla catasta, Tobin parla -> E al camino, Maren parla
-//       -> quest 1 finita (il sole avanza), obiettivo "Vai dal fabbro" -> arrivi alla fucina, obiettivo tolto;
-//   - la bussola in alto indica dove andare: Maren, poi la catasta, il camino e la fucina (MetaObiettivo);
+//       -> obiettivo "Porta la legna", Tobin ti segue -> E alla catasta: la legna in braccio, Tobin parla
+//       -> E al camino: la legna nel cesto, il fuoco si ravviva, Maren parla -> quest 1 finita (il sole avanza),
+//       obiettivo "Vai dal fabbro" -> arrivi alla fucina (lì parte la quest 2, CreaPrologoQuest2);
+//   - la bussola in alto indica Maren, la catasta, il camino e la fucina (MetaObiettivo);
 //   - spegne l'orco di prova della piazza e i segnalini (di giorno l'orco attaccherebbe).
-// Per una scena già preparata c'è "magic-gnl > Prologo: aggiungi la bussola alla quest 1" (non rifà niente).
+// Per una scena già preparata con la versione vecchia c'è "magic-gnl > Prologo: aggiungi la bussola alla quest 1".
 // Non salva la scena: dopo il comando si guarda il risultato e si salva con Ctrl+S.
 // Se il gruppo esiste già, chiede se rifarlo da capo (le modifiche fatte a mano a quel gruppo si perdono).
 // Come si usa: aprire Assets/Scenes/VillaggioLagoNero.unity, poi menu "magic-gnl > Prologo: prepara la quest 1".
@@ -30,8 +30,9 @@ using UnityEngine.SceneManagement;
 [InitializeOnLoad]
 public static class CreaPrologoQuest1
 {
-    // Prima di ogni Play: se la scena ha la quest 1 ma non ancora le mete della bussola, le aggiunge da sola
-    // (così non serve ricordarsi il comando "aggiungi la bussola"). Poi la scena va salvata con Ctrl+S.
+    internal const string NomeGruppo = "Prologo - quest 1";
+
+    // Prima di ogni Play: se la scena ha la quest 1 ma non ancora le mete della bussola, le aggiunge da sola.
     static CreaPrologoQuest1()
     {
         EditorApplication.playModeStateChanged += stato =>
@@ -46,11 +47,6 @@ public static class CreaPrologoQuest1
             Debug.Log("Prologo: aggiunte da sole le mete della bussola alla quest 1 (" + nuovi + "). Dopo il Play salva la scena (Ctrl+S).");
         };
     }
-
-    const string NomeGruppo = "Prologo - quest 1";
-    const string Cartella = "Assets/Segnaposto/Prologo";
-
-    static Material legno, legnoScuro, pietra, paglia, fuoco, stoffaMaren, stoffaTobin, pelle;
 
     [MenuItem("magic-gnl/Prologo: prepara la quest 1")]
     static void Prepara()
@@ -74,14 +70,13 @@ public static class CreaPrologoQuest1
             Undo.DestroyObjectImmediate(vecchio);
         }
 
-        PreparaMateriali();
         var gruppo = new GameObject(NomeGruppo).transform;
         Undo.RegisterCreatedObjectUndo(gruppo.gameObject, "Prologo quest 1");
 
-        // ---------- la casa vuota al posto del blocco pieno ----------
+        // ---------- misure della casa ----------
         Transform tc = casa.transform;
         Vector3 scala = tc.lossyScale;
-        float W = Mathf.Max(scala.x, 7f), D = Mathf.Max(scala.z, 6f), H = Mathf.Max(scala.y, 3.2f);
+        float W = Mathf.Max(scala.x, 7f), D = Mathf.Max(scala.z, 6f), H = Mathf.Clamp(scala.y, 3.2f, 4.2f);
         float s = 1f, portaX = 0f;
         Transform porta = tc.Find("Porta");
         if (porta != null && porta.gameObject.activeSelf)
@@ -89,108 +84,161 @@ public static class CreaPrologoQuest1
             s = Mathf.Sign(porta.localPosition.z);
             portaX = porta.localPosition.x * scala.x;
         }
-        portaX = Mathf.Clamp(portaX, -W / 2f + 1.6f, W / 2f - 1.6f);
+        portaX = Mathf.Clamp(portaX, -W / 2f + 1.8f, W / 2f - 1.8f);
         Undo.RecordObject(casa, "Prologo quest 1");
         casa.SetActive(false);
 
-        var interno = new GameObject("Casa dell'eroe (vuota dentro)").transform;
-        interno.SetParent(gruppo, false);
+        var interno = Vuoto("Casa dell'eroe (vuota dentro)", gruppo).transform;
         interno.SetPositionAndRotation(new Vector3(tc.position.x, tc.position.y - scala.y / 2f, tc.position.z), tc.rotation);
         const float t = 0.3f;
-        Blocco("Pavimento", interno, new Vector3(0f, 0.05f, 0f), new Vector3(W, 0.1f, D), legnoScuro);
-        Blocco("Muro di fondo", interno, new Vector3(0f, H / 2f, -s * (D / 2f - t / 2f)), new Vector3(W, H, t), pietra);
-        Blocco("Muro sinistro", interno, new Vector3(-(W / 2f - t / 2f), H / 2f, 0f), new Vector3(t, H, D), pietra);
-        Blocco("Muro destro", interno, new Vector3(W / 2f - t / 2f, H / 2f, 0f), new Vector3(t, H, D), pietra);
-        float zFronte = s * (D / 2f - t / 2f), a = portaX - 0.9f, b = portaX + 0.9f;
-        Blocco("Muro della porta (sinistra)", interno, new Vector3((-W / 2f + a) / 2f, H / 2f, zFronte), new Vector3(a + W / 2f, H, t), pietra);
-        Blocco("Muro della porta (destra)", interno, new Vector3((b + W / 2f) / 2f, H / 2f, zFronte), new Vector3(W / 2f - b, H, t), pietra);
-        Blocco("Sopra la porta", interno, new Vector3(portaX, (2.4f + H) / 2f, zFronte), new Vector3(1.8f, H - 2.4f, t), pietra);
-        Blocco("Tetto", interno, new Vector3(0f, H + 0.15f, 0f), new Vector3(W + 0.6f, 0.3f, D + 0.6f), paglia);
 
-        // Arredi: letto nell'angolo in fondo a destra, camino sul muro sinistro, tavolo al centro.
-        float xLetto = W / 2f - t - 0.7f, zLetto = -s * (D / 2f - t - 1.1f);
-        Blocco("Letto", interno, new Vector3(xLetto, 0.3f, zLetto), new Vector3(1.3f, 0.5f, 2.1f), legno);
-        Blocco("Coperta", interno, new Vector3(xLetto, 0.58f, zLetto + s * 0.25f), new Vector3(1.25f, 0.08f, 1.4f), stoffaMaren);
+        // ---------- muri, finestre, tetto ----------
+        Blocco("Pavimento", interno, new Vector3(0f, 0.05f, 0f), new Vector3(W, 0.1f, D), LegnoScuro);
+        float zFronte = s * (D / 2f - t / 2f), zFondo = -s * (D / 2f - t / 2f);
+        MuroX("Muro della porta", interno, zFronte, W, H, t, portaX, 1.8f, 0f, 2.4f);
+        MuroX("Muro di fondo", interno, zFondo, W, H, t, W / 2f - 3.2f, 1.2f, 1.1f, 2.1f);
+        MuroZ("Muro sinistro", interno, -(W / 2f - t / 2f), D, H, t, s * 0.6f, 1.2f, 1.1f, 2.1f);
+        MuroZ("Muro destro", interno, W / 2f - t / 2f, D, H, t, s * 0.4f, 1.2f, 1.1f, 2.1f);
+        Blocco("Soffitto", interno, new Vector3(0f, H + 0.1f, 0f), new Vector3(W, 0.2f, D), LegnoScuro);
+        float pendenza = 32f, falda = (D / 2f + 0.5f) / Mathf.Cos(pendenza * Mathf.Deg2Rad);
+        float colmo = H + 0.2f + (D / 4f) * Mathf.Tan(pendenza * Mathf.Deg2Rad);
+        Decoro("Falda davanti", interno, new Vector3(0f, colmo, D / 4f), new Vector3(W + 0.8f, 0.22f, falda), Paglia, new Vector3(pendenza, 0f, 0f));
+        Decoro("Falda dietro", interno, new Vector3(0f, colmo, -D / 4f), new Vector3(W + 0.8f, 0.22f, falda), Paglia, new Vector3(-pendenza, 0f, 0f));
+        Decoro("Timpano sinistro", interno, new Vector3(-(W / 2f - t / 2f), H + 0.2f + D * 0.15f, 0f), new Vector3(t, D * 0.3f, D * 0.55f), Pietra);
+        Decoro("Timpano destro", interno, new Vector3(W / 2f - t / 2f, H + 0.2f + D * 0.15f, 0f), new Vector3(t, D * 0.3f, D * 0.55f), Pietra);
+        // stipiti e soglia della porta
+        Decoro("Stipite sinistro", interno, new Vector3(portaX - 0.95f, 1.2f, zFronte + s * 0.18f), new Vector3(0.15f, 2.4f, 0.12f), Legno);
+        Decoro("Stipite destro", interno, new Vector3(portaX + 0.95f, 1.2f, zFronte + s * 0.18f), new Vector3(0.15f, 2.4f, 0.12f), Legno);
+        Decoro("Architrave", interno, new Vector3(portaX, 2.45f, zFronte + s * 0.18f), new Vector3(2.05f, 0.15f, 0.12f), Legno);
+        Blocco("Soglia", interno, new Vector3(portaX, 0.06f, s * (D / 2f + 0.5f)), new Vector3(2.2f, 0.12f, 1f), PietraScura);
+
+        // ---------- arredi ----------
+        float xLetto = W / 2f - t - 0.75f, zLetto = -s * (D / 2f - t - 1.15f);
+        Blocco("Letto", interno, new Vector3(xLetto, 0.3f, zLetto), new Vector3(1.4f, 0.5f, 2.2f), Legno);
+        Decoro("Coperta", interno, new Vector3(xLetto, 0.58f, zLetto + s * 0.25f), new Vector3(1.35f, 0.08f, 1.5f), Tappeto);
+        Decoro("Cuscino", interno, new Vector3(xLetto, 0.62f, zLetto - s * 0.75f), new Vector3(0.9f, 0.12f, 0.4f), Stoffa);
+        float xLettino = xLetto - 1.8f, zLettino = -s * (D / 2f - t - 0.9f);
+        Blocco("Lettino di Tobin", interno, new Vector3(xLettino, 0.22f, zLettino), new Vector3(0.9f, 0.36f, 1.6f), Legno);
+        Decoro("Coperta di Tobin", interno, new Vector3(xLettino, 0.42f, zLettino + s * 0.2f), new Vector3(0.86f, 0.06f, 1.1f), Materiale("prologo-tobin-coperta", new Color(0.25f, 0.35f, 0.22f)));
+        Blocco("Baule", interno, new Vector3(xLetto, 0.3f, zLetto + s * 1.6f), new Vector3(1.1f, 0.6f, 0.6f), LegnoScuro);
+
         float xCamino = -(W / 2f - t - 0.45f), zCamino = -s * (D / 2f - 2.4f);
-        Blocco("Camino", interno, new Vector3(xCamino, 1.1f, zCamino), new Vector3(0.9f, 2.2f, 1.7f), pietra);
-        var braci = Blocco("Fuoco del camino", interno, new Vector3(xCamino + 0.5f, 0.3f, zCamino), new Vector3(0.3f, 0.25f, 0.9f), fuoco);
-        braci.GetComponent<Collider>().enabled = false;
-        Luce("Luce del camino", interno, new Vector3(xCamino + 0.9f, 0.8f, zCamino), new Color(1f, 0.55f, 0.25f), 7f, 1.6f);
+        Blocco("Camino", interno, new Vector3(xCamino, 1.1f, zCamino), new Vector3(0.9f, 2.2f, 1.8f), Pietra);
+        Blocco("Canna fumaria", interno, new Vector3(xCamino, H + 0.9f, zCamino), new Vector3(0.7f, 2f, 0.9f), Pietra);
+        Decoro("Fuoco del camino", interno, new Vector3(xCamino + 0.5f, 0.3f, zCamino), new Vector3(0.3f, 0.25f, 0.9f), Fuoco);
+        Luce("Luce del camino", interno, new Vector3(xCamino + 0.9f, 0.8f, zCamino), new Color(1f, 0.55f, 0.25f), 7f, 1.4f);
+        var ravvivato = Vuoto("Fuoco ravvivato", interno).transform;
+        Decoro("Fiamme alte", ravvivato, new Vector3(xCamino + 0.5f, 0.55f, zCamino), new Vector3(0.25f, 0.45f, 0.7f), Fuoco);
+        Luce("Luce del fuoco ravvivato", ravvivato, new Vector3(xCamino + 1f, 1f, zCamino), new Color(1f, 0.6f, 0.3f), 10f, 2.2f);
+        ravvivato.gameObject.SetActive(false);
+        Vector3 cesto = new Vector3(xCamino + 0.9f, 0f, zCamino + s * 1.3f);
+        Blocco("Cesto della legna", interno, cesto + Vector3.up * 0.2f, new Vector3(0.8f, 0.4f, 0.6f), Paglia);
+        var legnaNelCesto = Vuoto("Legna nel cesto", interno, cesto + Vector3.up * 0.45f).transform;
+        Ceppi(legnaNelCesto, 3, 0.25f);
+        legnaNelCesto.gameObject.SetActive(false);
+
+        Blocco("Tavolo", interno, new Vector3(-0.4f, 0.4f, s * 0.7f), new Vector3(1.6f, 0.8f, 0.9f), Legno);
+        Blocco("Sgabello 1", interno, new Vector3(-0.4f - 1.1f, 0.25f, s * 0.7f), new Vector3(0.45f, 0.5f, 0.45f), LegnoScuro);
+        Blocco("Sgabello 2", interno, new Vector3(-0.4f + 1.1f, 0.25f, s * 0.7f), new Vector3(0.45f, 0.5f, 0.45f), LegnoScuro);
+        Forma(PrimitiveType.Cylinder, "Ciotola", interno, new Vector3(-0.6f, 0.84f, s * 0.7f), new Vector3(0.3f, 0.04f, 0.3f), Stoffa);
+        Decoro("Tappeto", interno, new Vector3(0f, 0.11f, -s * 0.3f), new Vector3(2.6f, 0.02f, 1.8f), Tappeto);
+        for (int i = 0; i < 2; i++)
+            Decoro("Mensola " + (i + 1), interno, new Vector3(-W / 2f + 2.6f, 1.4f + i * 0.6f, -s * (D / 2f - t - 0.2f)), new Vector3(1.6f, 0.08f, 0.35f), Legno);
         Luce("Luce della stanza", interno, new Vector3(0f, H - 0.6f, 0f), new Color(1f, 0.85f, 0.65f), 9f, 0.6f);
-        Blocco("Tavolo", interno, new Vector3(-0.6f, 0.4f, s * 0.6f), new Vector3(1.6f, 0.8f, 0.9f), legno);
+
+        // ---------- fuori: sentiero, panca, botti ----------
+        Vector3 fuoriPorta = new Vector3(portaX, 0f, s * (D / 2f + 1f));
+        Vector3 capannoLocale = new Vector3(W / 2f + 4f, 0f, s * (D / 2f - 1.5f));
+        Sentiero(interno, fuoriPorta, fuoriPorta + new Vector3(0f, 0f, s * 5f));
+        Sentiero(interno, fuoriPorta + new Vector3(0f, 0f, s * 2f), capannoLocale + new Vector3(0f, 0f, s * 2.2f));
+        Blocco("Panca", interno, new Vector3(portaX - 2.4f, 0.25f, s * (D / 2f + 0.6f)), new Vector3(1.6f, 0.5f, 0.45f), Legno);
+        Forma(PrimitiveType.Cylinder, "Botte", interno, new Vector3(-W / 2f + 0.8f, 0.5f, s * (D / 2f + 0.7f)), new Vector3(0.8f, 0.5f, 0.8f), Legno, true);
+        Blocco("Cassa", interno, new Vector3(-W / 2f + 1.9f, 0.35f, s * (D / 2f + 0.6f)), new Vector3(0.7f, 0.7f, 0.7f), LegnoScuro);
+
+        // ---------- il capanno della legna ----------
+        var capanno = Vuoto("Capanno della legna", gruppo).transform;
+        capanno.SetPositionAndRotation(interno.TransformPoint(capannoLocale), interno.rotation);
+        Blocco("Fondo", capanno, new Vector3(0f, 1.2f, -s * 1.3f), new Vector3(3.2f, 2.4f, 0.2f), Legno);
+        Blocco("Lato sinistro", capanno, new Vector3(-1.5f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), Legno);
+        Blocco("Lato destro", capanno, new Vector3(1.5f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), Legno);
+        Decoro("Tettoia", capanno, new Vector3(0f, 2.55f, s * 0.1f), new Vector3(3.6f, 0.15f, 3.2f), Paglia, new Vector3(s * 8f, 0f, 0f));
+        var catasta = Vuoto("Catasta", capanno, new Vector3(0f, 0f, -s * 0.7f)).transform;
+        for (int fila = 0; fila < 4; fila++)
+            for (int i = 0; i < 4; i++)
+                Forma(PrimitiveType.Cylinder, "Ceppo", catasta, new Vector3(-1.0f + i * 0.66f, 0.18f + fila * 0.33f, 0f), new Vector3(0.32f, 0.85f, 0.32f), Legno)
+                    .transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        Vector3 ceppo = new Vector3(0.9f, 0f, s * 2.4f);
+        Forma(PrimitiveType.Cylinder, "Ceppo per spaccare", capanno, ceppo + Vector3.up * 0.3f, new Vector3(0.7f, 0.3f, 0.7f), LegnoScuro, true);
+        Decoro("Manico dell'ascia", capanno, ceppo + new Vector3(0.05f, 0.8f, 0f), new Vector3(0.06f, 0.8f, 0.06f), Legno, new Vector3(0f, 0f, 20f));
+        Decoro("Lama dell'ascia", capanno, ceppo + new Vector3(-0.08f, 0.62f, 0f), new Vector3(0.28f, 0.2f, 0.04f), Ferro, new Vector3(0f, 0f, 20f));
+        for (int i = 0; i < 3; i++)
+            Forma(PrimitiveType.Cylinder, "Ceppo a terra", capanno, ceppo + new Vector3(-0.7f - i * 0.35f, 0.15f, 0.4f * (i - 1)), new Vector3(0.3f, 0.4f, 0.3f), Legno)
+                .transform.localRotation = Quaternion.Euler(90f, 30f * i, 0f);
+
+        // ---------- registro delle missioni, orario, dissolvenza ----------
+        var missioni = Undo.AddComponent<Missioni>(Vuoto("Missioni", gruppo));
+        if (Object.FindFirstObjectByType<OrarioPrologo>() == null) Undo.AddComponent<OrarioPrologo>(Vuoto("Orario del prologo", gruppo));
+        Undo.AddComponent<DissolvenzaIniziale>(Vuoto("Dissolvenza dal nero", gruppo));
 
         // ---------- Maren e Tobin ----------
-        var maren = Personaggio("Maren", interno, new Vector3(xCamino + 1.5f, 0f, zCamino + s * 0.4f), 1.75f, stoffaMaren, true);
+        var maren = Personaggio("Maren", interno, new Vector3(xCamino + 1.6f, 0.1f, zCamino + s * 0.3f), 1.75f, new Color(0.45f, 0.18f, 0.16f), true);
         maren.transform.rotation = Quaternion.LookRotation(interno.TransformDirection(new Vector3(1f, 0f, s * 0.6f)));
-        var tobin = Personaggio("Tobin", interno, new Vector3(xLetto - 1.3f, 0f, zLetto - s * 0.4f), 1.2f, stoffaTobin, false);
+        var tobin = Personaggio("Tobin", interno, new Vector3(xLettino, 0.1f, zLettino + s * 1.3f), 1.2f, new Color(0.25f, 0.35f, 0.22f), false);
         tobin.transform.rotation = Quaternion.LookRotation(interno.TransformDirection(new Vector3(0f, 0f, s)));
         var segui = Undo.AddComponent<SeguiGiocatore>(tobin);
         Imposta(segui, "altezzaDaTerra", 0.6f);
         segui.enabled = false;
 
-        // ---------- il capanno della legna, accanto alla casa ----------
-        var capanno = new GameObject("Capanno della legna").transform;
-        capanno.SetParent(gruppo, false);
-        capanno.SetPositionAndRotation(interno.TransformPoint(new Vector3(W / 2f + 3.5f, 0f, s * (D / 2f - 1.5f))), interno.rotation);
-        Blocco("Fondo", capanno, new Vector3(0f, 1.2f, -s * 1.3f), new Vector3(3f, 2.4f, 0.2f), legno);
-        Blocco("Lato sinistro", capanno, new Vector3(-1.4f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), legno);
-        Blocco("Lato destro", capanno, new Vector3(1.4f, 1.2f, 0f), new Vector3(0.2f, 2.4f, 2.6f), legno);
-        Blocco("Tettoia", capanno, new Vector3(0f, 2.5f, 0f), new Vector3(3.4f, 0.15f, 3f), paglia);
-        var catasta = new GameObject("Catasta").transform;
-        catasta.SetParent(capanno, false);
-        catasta.localPosition = new Vector3(0f, 0f, -s * 0.6f);
-        for (int i = 0; i < 9; i++)
-        {
-            var ceppo = Forma(PrimitiveType.Cylinder, "Ceppo", catasta, new Vector3(-0.8f + (i % 3) * 0.8f, 0.2f + (i / 3) * 0.36f, 0f), new Vector3(0.34f, 0.9f, 0.34f), legno);
-            ceppo.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-        }
-
-        // ---------- registro delle missioni, orario, dissolvenza ----------
-        var missioni = Undo.AddComponent<Missioni>(Vuoto("Missioni", gruppo));
-        if (UnityEngine.Object.FindFirstObjectByType<OrarioPrologo>() == null)
-            Undo.AddComponent<OrarioPrologo>(Vuoto("Orario del prologo", gruppo));
-        Undo.AddComponent<DissolvenzaIniziale>(Vuoto("Dissolvenza dal nero", gruppo));
+        // ---------- la legna in braccio ----------
+        var legnaInBraccio = Vuoto("Legna in braccio", capanno, new Vector3(0f, 1f, 0f)).transform;
+        Ceppi(legnaInBraccio, 3, 0.22f);
+        var trasporta = Undo.AddComponent<TrasportaOggetto>(legnaInBraccio.gameObject);
+        legnaInBraccio.gameObject.SetActive(false);
 
         // ---------- la quest 1, collegata con gli eventi ----------
-        // Maren al ritorno con la legna.
         var marenRitorno = Undo.AddComponent<DialogoAutomatico>(Vuoto("Dialogo: Maren al ritorno", maren.transform));
         Imposta(marenRitorno, "righe", new[] { Riga("pg.maren", "dlg.q1.09") });
-        // Tobin al capanno.
         var tobinCapanno = Undo.AddComponent<DialogoAutomatico>(Vuoto("Dialogo: Tobin al capanno", tobin.transform));
         Imposta(tobinCapanno, "righe", new[] { Riga("pg.tobin", "dlg.q1.08") });
 
-        // Arrivo alla fucina (si accende alla fine della quest 1).
+        // Arrivo alla fucina (si accende alla fine della quest 1; la quest 2 aggiunge qui i suoi collegamenti).
         var fucina = Vuoto("Arrivo dal fabbro", gruppo);
-        fucina.transform.position = PuntoDavantiAllaPorta(scena, "Fabbro", interno.position);
+        if (Porta(scena, "Fabbro", out Vector3 pFabbro, out Vector3 fFabbro)) fucina.transform.position = pFabbro + fFabbro * 2f;
         var zona = Undo.AddComponent<ZonaArrivo>(fucina);
         Imposta(zona, "raggio", 5f);
-        UnityEventTools.AddVoidPersistentListener(Evento(zona, "allArrivo"), missioni.TogliObiettivo);
+        Su(Evento(zona, "allArrivo"), missioni.TogliObiettivo);
         fucina.SetActive(false);
 
         // Camino: E per mettere la legna (si accende quando hai preso la legna).
-        var camino = Vuoto("Punto: metti la legna nel fuoco", interno);
-        camino.transform.localPosition = new Vector3(xCamino + 0.9f, 0.5f, zCamino);
+        var camino = Vuoto("Punto: metti la legna nel fuoco", interno, new Vector3(xCamino + 0.9f, 0.5f, zCamino + s * 0.6f));
         var puntoCamino = Undo.AddComponent<PuntoInterazione>(camino);
         Imposta(puntoCamino, "chiaveAzione", "hud.metti_legna");
         Imposta(puntoCamino, "raggio", 1.8f);
-        UnityEventTools.AddPersistentListener(Evento(puntoCamino, "alPremere"), marenRitorno.Avvia);
+        var mettiLegna = Evento(puntoCamino, "alPremere");
+        Su(mettiLegna, trasporta.Posa);
+        Su(mettiLegna, legnaNelCesto.gameObject.SetActive, true);
+        Su(mettiLegna, ravvivato.gameObject.SetActive, true);
+        Su(mettiLegna, marenRitorno.Avvia);
         camino.SetActive(false);
 
         // Fine della quest 1, dopo le parole di Maren.
         var fineMaren = Evento(marenRitorno, "alTermine");
-        UnityEventTools.AddStringPersistentListener(fineMaren, missioni.ImpostaObiettivo, "ob.q1.fabbro");
-        UnityEventTools.AddIntPersistentListener(fineMaren, missioni.QuestFinita, 1);
-        UnityEventTools.AddBoolPersistentListener(fineMaren, Abilita(segui), false);
-        UnityEventTools.AddBoolPersistentListener(fineMaren, fucina.SetActive, true);
+        Su(fineMaren, missioni.ImpostaObiettivo, "ob.q1.fabbro");
+        Su(fineMaren, missioni.QuestFinita, 1);
+        Su(fineMaren, Abilita(segui), false);
+        Su(fineMaren, fucina.SetActive, true);
+        Meta(fineMaren, fucina);
 
         // Catasta: E per prendere la legna (si accende dopo aver parlato con Maren).
-        var puntoLegna = Vuoto("Punto: prendi la legna", capanno);
-        puntoLegna.transform.localPosition = new Vector3(0f, 0.5f, -s * 0.2f);
+        var puntoLegna = Vuoto("Punto: prendi la legna", capanno, new Vector3(0f, 0.5f, -s * 0.1f));
         var prendi = Undo.AddComponent<PuntoInterazione>(puntoLegna);
         Imposta(prendi, "chiaveAzione", "hud.prendi_legna");
         Imposta(prendi, "raggio", 2.2f);
-        UnityEventTools.AddPersistentListener(Evento(prendi, "alPremere"), tobinCapanno.Avvia);
-        UnityEventTools.AddBoolPersistentListener(Evento(prendi, "alPremere"), camino.SetActive, true);
+        var prendiLegna = Evento(prendi, "alPremere");
+        Su(prendiLegna, trasporta.Prendi);
+        Su(prendiLegna, tobinCapanno.Avvia);
+        Su(prendiLegna, camino.SetActive, true);
+        Meta(prendiLegna, camino);
         puntoLegna.SetActive(false);
 
         // Maren: il dialogo in casa; alla fine parte la quest della legna e Tobin ti segue.
@@ -202,12 +250,12 @@ public static class CreaPrologoQuest1
         });
         Imposta(parlaMaren, "righeRipetute", new[] { Riga("pg.maren", "dlg.q1.07") });
         var fineParla = Evento(parlaMaren, "alTermine");
-        UnityEventTools.AddStringPersistentListener(fineParla, missioni.ImpostaObiettivo, "ob.q1.legna");
-        UnityEventTools.AddBoolPersistentListener(fineParla, Abilita(segui), true);
-        UnityEventTools.AddBoolPersistentListener(fineParla, puntoLegna.SetActive, true);
-        // Presa la legna, Maren non risponde più al tasto: altrimenti al camino (vicino a lei) il tasto farebbe
-        // partire la sua riga ripetuta invece di "Metti la legna nel fuoco".
-        UnityEventTools.AddBoolPersistentListener(Evento(prendi, "alPremere"), Abilita(parlaMaren), false);
+        Su(fineParla, missioni.ImpostaObiettivo, "ob.q1.legna");
+        Su(fineParla, Abilita(segui), true);
+        Su(fineParla, puntoLegna.SetActive, true);
+        Meta(fineParla, puntoLegna);
+        // Presa la legna, Maren non risponde più al tasto (al camino, vicino a lei, il tasto mette la legna nel fuoco).
+        Su(prendiLegna, Abilita(parlaMaren), false);
 
         // Risveglio: parte da solo dopo la dissolvenza; poi i suggerimenti per muoversi e per parlare.
         var risveglio = Undo.AddComponent<DialogoAutomatico>(Vuoto("Dialogo: risveglio", gruppo));
@@ -215,15 +263,16 @@ public static class CreaPrologoQuest1
         Imposta(risveglio, "allAvvio", true);
         Imposta(risveglio, "ritardo", 3.5f);
         var fineRisveglio = Evento(risveglio, "alTermine");
-        UnityEventTools.AddStringPersistentListener(fineRisveglio, missioni.Suggerisci, "tip.q1.muovi");
-        UnityEventTools.AddStringPersistentListener(fineRisveglio, missioni.Suggerisci, "tip.q1.parla");
+        Su(fineRisveglio, missioni.Suggerisci, "tip.q1.muovi");
+        Su(fineRisveglio, missioni.Suggerisci, "tip.q1.parla");
+        Meta(fineRisveglio, maren);
 
         // ---------- il giocatore accanto al letto ----------
-        var giocatore = UnityEngine.Object.FindFirstObjectByType<GiocatoreControllo>(FindObjectsInactive.Include);
+        var giocatore = Object.FindFirstObjectByType<GiocatoreControllo>(FindObjectsInactive.Include);
         if (giocatore != null)
         {
             Undo.RecordObject(giocatore.transform, "Prologo quest 1");
-            giocatore.transform.position = interno.TransformPoint(new Vector3(xLetto - 0.2f, 1.1f, zLetto + s * 1.8f));
+            giocatore.transform.position = interno.TransformPoint(new Vector3(xLetto - 0.2f, 1.1f, zLetto + s * 2.4f));
             giocatore.transform.rotation = Quaternion.LookRotation(interno.TransformDirection(new Vector3(-1f, 0f, s * 0.3f)));
         }
 
@@ -236,18 +285,52 @@ public static class CreaPrologoQuest1
             o.SetActive(false);
         }
 
-        AggiungiBussola(scena);
-
-        foreach (var c in new Component[] { missioni, segui, zona, puntoCamino, prendi, parlaMaren, marenRitorno, tobinCapanno, risveglio })
-            EditorUtility.SetDirty(c);
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
-        Debug.Log("Prologo: quest 1 preparata nel gruppo \"" + NomeGruppo + "\". Controlla e salva la scena (Ctrl+S), poi Play.");
+        Debug.Log("Prologo: quest 1 preparata nel gruppo \"" + NomeGruppo + "\". Controlla e salva la scena (Ctrl+S), poi Play. Per la fucina: \"Prologo: prepara la quest 2\".");
     }
 
-    // ---------- bussola ----------
+    // ---------- pezzi della casa ----------
 
-    // Per una scena già preparata (senza rifare il gruppo e perdere le modifiche a mano): aggiunge le mete della bussola.
+    // Muro lungo X (davanti o dietro) con un'apertura (porta o finestra) centrata in "c", larga "l", da "basso" a "alto".
+    static void MuroX(string nome, Transform genitore, float z, float W, float H, float t, float c, float l, float basso, float alto)
+    {
+        float a = c - l / 2f, b = c + l / 2f;
+        Blocco(nome + " (sinistra)", genitore, new Vector3((-W / 2f + a) / 2f, H / 2f, z), new Vector3(a + W / 2f, H, t), Pietra);
+        Blocco(nome + " (destra)", genitore, new Vector3((b + W / 2f) / 2f, H / 2f, z), new Vector3(W / 2f - b, H, t), Pietra);
+        Blocco(nome + " (sopra)", genitore, new Vector3(c, (alto + H) / 2f, z), new Vector3(l, H - alto, t), Pietra);
+        if (basso > 0f) Blocco(nome + " (sotto)", genitore, new Vector3(c, basso / 2f, z), new Vector3(l, basso, t), Pietra);
+    }
+
+    // Muro lungo Z (di lato) con una finestra centrata in "c".
+    static void MuroZ(string nome, Transform genitore, float x, float D, float H, float t, float c, float l, float basso, float alto)
+    {
+        float a = c - l / 2f, b = c + l / 2f;
+        Blocco(nome + " (dietro)", genitore, new Vector3(x, H / 2f, (-D / 2f + a) / 2f), new Vector3(t, H, a + D / 2f), Pietra);
+        Blocco(nome + " (davanti)", genitore, new Vector3(x, H / 2f, (b + D / 2f) / 2f), new Vector3(t, H, D / 2f - b), Pietra);
+        Blocco(nome + " (sopra)", genitore, new Vector3(x, (alto + H) / 2f, c), new Vector3(t, H - alto, l), Pietra);
+        Blocco(nome + " (sotto)", genitore, new Vector3(x, basso / 2f, c), new Vector3(t, basso, l), Pietra);
+    }
+
+    // Una striscia di terra battuta da un punto all'altro (a filo del terreno, senza collider).
+    static void Sentiero(Transform genitore, Vector3 da, Vector3 a)
+    {
+        Vector3 d = a - da;
+        d.y = 0f;
+        var o = Decoro("Sentiero", genitore, (da + a) / 2f + Vector3.up * 0.015f, new Vector3(1.4f, 0.03f, d.magnitude + 1.4f), Terra);
+        if (d.sqrMagnitude > 0.01f) o.transform.localRotation = Quaternion.LookRotation(d.normalized);
+    }
+
+    // Qualche ceppo coricato, uno accanto all'altro.
+    static void Ceppi(Transform genitore, int quanti, float diametro)
+    {
+        for (int i = 0; i < quanti; i++)
+            Forma(PrimitiveType.Cylinder, "Ceppo", genitore, new Vector3((i - (quanti - 1) / 2f) * diametro * 1.05f, i == 1 ? diametro * 0.6f : 0f, 0f),
+                new Vector3(diametro, 0.35f, diametro), Legno).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+    }
+
+    // ---------- bussola per le scene preparate con la versione vecchia ----------
+
     [MenuItem("magic-gnl/Prologo: aggiungi la bussola alla quest 1")]
     static void MenuBussola()
     {
@@ -262,194 +345,21 @@ public static class CreaPrologoQuest1
         Debug.Log("Prologo: bussola aggiunta alla quest 1 (" + nuovi + " collegamenti nuovi). Salva la scena (Ctrl+S), poi Play.");
     }
 
-    // Mete della quest 1: Maren dopo il risveglio, la catasta dopo il dialogo con Maren, il camino quando hai la legna,
-    // la fucina alla fine. Cerca gli oggetti per nome; un collegamento già presente non viene ripetuto.
     static int AggiungiBussola(Scene scena)
     {
-        int nuovi = 0;
         var maren = Trova(scena, "Maren");
         var legna = Trova(scena, "Punto: prendi la legna");
         var camino = Trova(scena, "Punto: metti la legna nel fuoco");
         var fucina = Trova(scena, "Arrivo dal fabbro");
         var risveglio = Trova(scena, "Dialogo: risveglio");
         var ritorno = Trova(scena, "Dialogo: Maren al ritorno");
-        if (risveglio != null && maren != null)
-            nuovi += Collega(Evento(risveglio.GetComponent<DialogoAutomatico>(), "alTermine"), Meta(maren));
-        if (maren != null && legna != null && maren.GetComponent<Interlocutore>() != null)
-            nuovi += Collega(Evento(maren.GetComponent<Interlocutore>(), "alTermine"), Meta(legna));
-        if (legna != null && camino != null && legna.GetComponent<PuntoInterazione>() != null)
-            nuovi += Collega(Evento(legna.GetComponent<PuntoInterazione>(), "alPremere"), Meta(camino));
-        if (ritorno != null && fucina != null)
-            nuovi += Collega(Evento(ritorno.GetComponent<DialogoAutomatico>(), "alTermine"), Meta(fucina));
-        foreach (var o in new[] { maren, legna, camino, fucina, risveglio, ritorno })
-        {
-            if (o == null) { Debug.LogWarning("Prologo: un oggetto della quest 1 non si trova (rinominato?): bussola incompleta."); continue; }
-            foreach (var c in o.GetComponents<MonoBehaviour>()) EditorUtility.SetDirty(c);
-        }
+        int nuovi = 0;
+        if (risveglio != null) nuovi += Meta(Evento(risveglio.GetComponent<DialogoAutomatico>(), "alTermine"), maren);
+        if (maren != null) nuovi += Meta(Evento(maren.GetComponent<Interlocutore>(), "alTermine"), legna);
+        if (legna != null) nuovi += Meta(Evento(legna.GetComponent<PuntoInterazione>(), "alPremere"), camino);
+        if (ritorno != null) nuovi += Meta(Evento(ritorno.GetComponent<DialogoAutomatico>(), "alTermine"), fucina);
+        if (maren == null || legna == null || camino == null || fucina == null || risveglio == null || ritorno == null)
+            Debug.LogWarning("Prologo: un oggetto della quest 1 non si trova (rinominato?): bussola incompleta.");
         return nuovi;
-    }
-
-    static MetaObiettivo Meta(GameObject o)
-    {
-        var m = o.GetComponent<MetaObiettivo>();
-        return m != null ? m : Undo.AddComponent<MetaObiettivo>(o);
-    }
-
-    static int Collega(UnityEvent evento, MetaObiettivo meta)
-    {
-        if (evento == null) return 0;
-        for (int i = 0; i < evento.GetPersistentEventCount(); i++)
-            if (evento.GetPersistentTarget(i) == meta && evento.GetPersistentMethodName(i) == "Attiva") return 0;
-        UnityEventTools.AddPersistentListener(evento, meta.Attiva);
-        return 1;
-    }
-
-    // ---------- aiuti ----------
-
-    static RigaDialogo Riga(string parlante, string testo) => new RigaDialogo { parlante = parlante, testo = testo };
-
-    // Il campo privato di un componente (righe, eventi...), letto o scritto per nome.
-    static void Imposta(Component c, string campo, object valore)
-    {
-        var f = c.GetType().GetField(campo, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        if (f == null) { Debug.LogWarning("Prologo: campo " + campo + " non trovato in " + c.GetType().Name); return; }
-        f.SetValue(c, valore);
-    }
-
-    static UnityEvent Evento(Component c, string campo)
-    {
-        if (c == null) return null;
-        var f = c.GetType().GetField(campo, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        var e = (UnityEvent)f.GetValue(c);
-        if (e == null) { e = new UnityEvent(); f.SetValue(c, e); }
-        return e;
-    }
-
-    // "enabled = vero/falso" di un componente, da usare in un evento.
-    static UnityAction<bool> Abilita(Behaviour b) =>
-        (UnityAction<bool>)Delegate.CreateDelegate(typeof(UnityAction<bool>), b, typeof(Behaviour).GetProperty("enabled").GetSetMethod());
-
-    static GameObject Trova(Scene scena, string nome)
-    {
-        foreach (var radice in scena.GetRootGameObjects())
-        {
-            if (radice.name == nome) return radice;
-            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
-                if (t.name == nome) return t.gameObject;
-        }
-        return null;
-    }
-
-    // Due metri fuori dalla porta di un edificio (se non trova la porta, davanti al centro, verso "verso").
-    static Vector3 PuntoDavantiAllaPorta(Scene scena, string nome, Vector3 verso)
-    {
-        var edificio = Trova(scena, nome);
-        if (edificio == null) return verso;
-        Transform porta = edificio.transform.Find("Porta");
-        Vector3 centro = edificio.transform.position;
-        Vector3 punto = porta != null && porta.gameObject.activeSelf ? porta.position : centro;
-        Vector3 fuori = punto - centro;
-        fuori.y = 0f;
-        if (fuori.sqrMagnitude < 0.01f) fuori = verso - centro;
-        fuori.y = 0f;
-        punto += fuori.normalized * 2f;
-        punto.y = 0f;
-        return punto;
-    }
-
-    static GameObject Vuoto(string nome, Transform genitore)
-    {
-        var o = new GameObject(nome);
-        o.transform.SetParent(genitore, false);
-        return o;
-    }
-
-    static GameObject Personaggio(string nome, Transform genitore, Vector3 piedi, float altezza, Material vestito, bool solido)
-    {
-        var radice = new GameObject(nome);
-        radice.transform.SetParent(genitore, false);
-        radice.transform.localPosition = piedi + Vector3.up * (altezza / 2f);
-        var corpo = Forma(PrimitiveType.Capsule, "Corpo", radice.transform, Vector3.zero, new Vector3(altezza * 0.28f, altezza * 0.42f, altezza * 0.28f), vestito);
-        corpo.transform.localPosition = Vector3.down * altezza * 0.08f;
-        Forma(PrimitiveType.Sphere, "Testa", radice.transform, Vector3.up * altezza * 0.4f, Vector3.one * altezza * 0.17f, pelle);
-        var naso = Forma(PrimitiveType.Cube, "Naso (dove guarda)", radice.transform, new Vector3(0f, altezza * 0.4f, altezza * 0.09f), Vector3.one * altezza * 0.04f, pelle);
-        UnityEngine.Object.DestroyImmediate(naso.GetComponent<Collider>());
-        if (solido)
-        {
-            var c = radice.AddComponent<CapsuleCollider>();
-            c.height = altezza;
-            c.radius = 0.3f;
-        }
-        return radice;
-    }
-
-    static GameObject Blocco(string nome, Transform genitore, Vector3 posizione, Vector3 scala, Material materiale)
-    {
-        var o = Forma(PrimitiveType.Cube, nome, genitore, posizione, scala, materiale);
-        o.isStatic = true;
-        return o;
-    }
-
-    static GameObject Forma(PrimitiveType tipo, string nome, Transform genitore, Vector3 posizione, Vector3 scala, Material materiale)
-    {
-        var o = GameObject.CreatePrimitive(tipo);
-        o.name = nome;
-        o.transform.SetParent(genitore, false);
-        o.transform.localPosition = posizione;
-        o.transform.localScale = scala;
-        o.GetComponent<Renderer>().sharedMaterial = materiale;
-        if (tipo != PrimitiveType.Cube)
-        {
-            // Solo i blocchi fanno da muro: sfere, capsule e ceppi sono decorazione.
-            UnityEngine.Object.DestroyImmediate(o.GetComponent<Collider>());
-        }
-        return o;
-    }
-
-    static void Luce(string nome, Transform genitore, Vector3 posizione, Color colore, float portata, float intensita)
-    {
-        var o = Vuoto(nome, genitore);
-        o.transform.localPosition = posizione;
-        var l = o.AddComponent<Light>();
-        l.type = LightType.Point;
-        l.color = colore;
-        l.range = portata;
-        l.intensity = intensita;
-    }
-
-    static void PreparaMateriali()
-    {
-        legno = Materiale("prologo-legno", new Color(0.36f, 0.25f, 0.16f));
-        legnoScuro = Materiale("prologo-pavimento", new Color(0.22f, 0.16f, 0.11f));
-        pietra = Materiale("prologo-pietra", new Color(0.42f, 0.4f, 0.37f));
-        paglia = Materiale("prologo-paglia", new Color(0.5f, 0.42f, 0.25f));
-        fuoco = Materiale("prologo-fuoco", new Color(1f, 0.5f, 0.15f), true);
-        stoffaMaren = Materiale("prologo-maren", new Color(0.45f, 0.18f, 0.16f));
-        stoffaTobin = Materiale("prologo-tobin", new Color(0.25f, 0.35f, 0.22f));
-        pelle = Materiale("prologo-pelle", new Color(0.78f, 0.62f, 0.5f));
-    }
-
-    static Material Materiale(string nome, Color colore, bool luminoso = false)
-    {
-        string[] parti = Cartella.Split('/');
-        string attuale = parti[0];
-        for (int i = 1; i < parti.Length; i++)
-        {
-            string prossima = attuale + "/" + parti[i];
-            if (!AssetDatabase.IsValidFolder(prossima)) AssetDatabase.CreateFolder(attuale, parti[i]);
-            attuale = prossima;
-        }
-        string percorso = Cartella + "/" + nome + ".mat";
-        var m = AssetDatabase.LoadAssetAtPath<Material>(percorso);
-        if (m != null) return m;
-        m = new Material(Shader.Find("Standard")) { color = colore };
-        m.SetFloat("_Glossiness", 0.05f);
-        if (luminoso)
-        {
-            m.EnableKeyword("_EMISSION");
-            m.SetColor("_EmissionColor", colore * 2f);
-        }
-        AssetDatabase.CreateAsset(m, percorso);
-        return m;
     }
 }

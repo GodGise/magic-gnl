@@ -195,8 +195,9 @@ public class HudGioco : MonoBehaviour
             return;
         }
         bool spada = giocatore.Arma == GiocatoreControllo.ArmaImpugnata.Spada;
+        bool arcoInMano = giocatore.ArcoInMano;
         var e = equipaggiamento;
-        RomboOggetto(new Vector2(110f, y), 118f, spada, e != null ? e.Arma : null, "1");
+        RomboOggetto(new Vector2(110f, y), 118f, spada && !arcoInMano, e != null ? e.Arma : null, "1");
 
         float x = 240f;
         if (giocatore.HaBastone)
@@ -214,8 +215,8 @@ public class HudGioco : MonoBehaviour
         bool ladro = SceltaPartita.Classe == ClasseGiocatore.Ladro;
         if (ladro && e != null && e.ArmaDistanza != null)
         {
-            // il tiro con l'arco non c'è ancora: l'arco si vede, ma non si accende
-            RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, null);   // il tasto arriverà con il tiro
+            // arco o balestra: tasto 2 per prenderlo in mano (TiroConLArco), acceso quando è in mano
+            RomboOggetto(new Vector2(x, y), 118f, arcoInMano, e.ArmaDistanza, "2");
             x += 130f;
         }
         else if (SceltaPartita.Classe == ClasseGiocatore.Stregone && e != null && e.Libro != null)
