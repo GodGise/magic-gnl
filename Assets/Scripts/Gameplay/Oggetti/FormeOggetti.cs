@@ -86,6 +86,8 @@ public static class FormeOggetti
             case DatiBastone b: Bastone(b, radice); break;
             case DatiLibro l: Libro(l, radice); break;
             case DatiIncantesimo i: Incantesimo(i, radice); break;
+            case DatiConsumabile c: Boccetta(c.colore, radice); break;
+            case DatiOggettoMissione m: OggettoMissione(m, radice); break;
             default: P(radice, PrimitiveType.Cube, Vector3.zero, new Vector3(0.25f, 0.4f, 0.08f), Oro); break;
         }
         return radice;
@@ -110,6 +112,32 @@ public static class FormeOggetti
             for (int i = 0; i < materiali.Length; i++) materiali[i] = o.materialeModello;
             r.sharedMaterials = materiali;
         }
+    }
+
+    // Pozione: boccetta tonda del colore del liquido (che brilla un poco), collo di vetro e tappo di sughero.
+    static void Boccetta(Color liquido, Transform t)
+    {
+        P(t, PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.12f, liquido, luce: true);
+        P(t, PrimitiveType.Cylinder, new Vector3(0f, 0.08f, 0f), new Vector3(0.04f, 0.035f, 0.04f), new Color(0.75f, 0.8f, 0.82f));
+        P(t, PrimitiveType.Cylinder, new Vector3(0f, 0.12f, 0f), new Vector3(0.045f, 0.012f, 0.045f), Cuoio);
+    }
+
+    // Oggetto di una missione: un fiore (stelo verde e petali che brillano) o un sacchetto di stoffa.
+    static void OggettoMissione(DatiOggettoMissione m, Transform t)
+    {
+        if (m.forma == DatiOggettoMissione.FormaProvvisoria.Sacchetto)
+        {
+            P(t, PrimitiveType.Sphere, Vector3.zero, new Vector3(0.14f, 0.12f, 0.12f), Stoffa);
+            P(t, PrimitiveType.Cylinder, new Vector3(0f, 0.07f, 0f), new Vector3(0.03f, 0.02f, 0.03f), Cuoio);
+            return;
+        }
+        Color stelo = new Color(0.22f, 0.38f, 0.2f);
+        P(t, PrimitiveType.Cylinder, new Vector3(0f, 0.12f, 0f), new Vector3(0.012f, 0.12f, 0.012f), stelo);
+        P(t, PrimitiveType.Cube, new Vector3(0.03f, 0.1f, 0f), new Vector3(0.06f, 0.008f, 0.025f), stelo, new Vector3(0f, 0f, 25f));
+        for (int i = 0; i < 5; i++)
+            P(t, PrimitiveType.Sphere, new Vector3(0f, 0.25f, 0f) + Quaternion.Euler(0f, i * 72f, 0f) * new Vector3(0.035f, 0f, 0f),
+                new Vector3(0.05f, 0.012f, 0.03f), m.colore, new Vector3(0f, i * 72f, 0f), true);
+        P(t, PrimitiveType.Sphere, new Vector3(0f, 0.255f, 0f), Vector3.one * 0.022f, new Color(0.95f, 0.9f, 0.6f), luce: true);
     }
 
     // La spada provvisoria di quando non si ha un'arma (uguale a quella di AspettoUmanoide).

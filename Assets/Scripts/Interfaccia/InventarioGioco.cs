@@ -9,7 +9,8 @@ using UnityEngine.SceneManagement;
 //   - sotto lo zaino: il dettaglio dell'oggetto scelto, con il confronto con quello che hai addosso
 //     (verde = meglio, rosso = peggio).
 // Lo zaino non ha limite ed è diviso in schede, come in Elden Ring: Tutto, Armi (anche archi e balestre), Scudi,
-// Armature, Amuleti. Si cambia scheda con Q e R (LB e RB sul pad) o con un clic sul nome della scheda.
+// Armature, Amuleti, Varie (pozioni e oggetti delle missioni). Si cambia scheda con Q e R (LB e RB sul pad) o con un
+// clic sul nome della scheda. Una pozione non si equipaggia: E o doppio clic la sceglie per il tasto "Usa oggetto" (F).
 // Comandi: frecce, WASD o levetta per scegliere; E, Invio o A per equipaggiare (dallo zaino) o togliere
 // (da una casella); Tab, Esc o B per chiudere. Mouse: clic per scegliere, doppio clic per equipaggiare o togliere.
 // Trascinare con il mouse: un oggetto dello zaino su una casella lo equipaggia lì (quello che c'era torna nello
@@ -53,8 +54,9 @@ public class InventarioGioco : MonoBehaviour
     int indiceZaino;          // posizione nella scheda scelta (non in tutto lo zaino)
     int scheda;               // 0 Tutto, 1 Armi, 2 Scudi, 3 Armature, 4 Amuleti
     static readonly string[] chiaviSchede = { "inv.tutto", "inv.armi", "inv.scudi", "inv.armature", "inv.amuleti", "inv.incantesimi" };
-    // Lo Stregone ha la scheda Incantesimi in più.
-    static int NumeroSchede => Stregone ? 6 : 5;
+    // Lo Stregone ha la scheda Incantesimi in più. L'ultima scheda, per tutti, è Varie (pozioni e oggetti delle missioni).
+    static int NumeroSchede => Stregone ? 7 : 6;
+    static int SchedaVarie => NumeroSchede - 1;
     // Gli oggetti dello zaino che si vedono nella scheda scelta.
     readonly List<DatiOggetto> visibili = new List<DatiOggetto>();
     int rigaIniziale;
@@ -89,7 +91,7 @@ public class InventarioGioco : MonoBehaviour
         : i == 1 && Stregone ? "inv.libro" : i >= 4 ? "inv.incantesimi" : chiaviCaselle[i];
     bool StregoneConArma => equipaggiamento != null && equipaggiamento.Bastone == null && equipaggiamento.Arma != null;
     int CaselleIncantesimi => Stregone && equipaggiamento != null ? equipaggiamento.NumeroCaselle : 0;
-    static string ChiaveScheda(int i) => i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
+    static string ChiaveScheda(int i) => i == SchedaVarie ? "inv.varie" : i == 2 && Stregone ? "inv.libri" : chiaviSchede[i];
 
     // Avviso in basso (per esempio "Il Ladro non usa scudi"), per qualche secondo.
     string avviso;
@@ -182,8 +184,9 @@ public class InventarioGioco : MonoBehaviour
     }
 
     static bool NellaScheda(DatiOggetto o, int s) => s == 0
+        || (s == SchedaVarie && (o is DatiConsumabile || o is DatiOggettoMissione))
         || (s == 1 && (o is DatiArma || o is DatiArmaDistanza || o is DatiBastone)) || (s == 2 && (o is DatiScudo || o is DatiLibro))
-        || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto) || (s == 5 && o is DatiIncantesimo);
+        || (s == 3 && o is DatiArmatura) || (s == 4 && o is DatiAmuleto) || (s == 5 && Stregone && o is DatiIncantesimo);
 
     void AggiornaVisibili()
     {
@@ -215,6 +218,21 @@ public class InventarioGioco : MonoBehaviour
     void Equipaggia(DatiOggetto oggetto)
     {
         if (oggetto == null || !zaino.Contiene(oggetto)) return;
+        // pozioni: diventano quella pronta per il tasto "Usa oggetto"; oggetti delle missioni: non si equipaggiano
+        if (oggetto is DatiConsumabile consumabile)
+        {
+            UsoConsumabili.Seleziona(consumabile);
+            avviso = Dialogo.SostituisciTasti(Lingua.T("inv.rapido"));
+            avvisoFino = Time.unscaledTime + 3f;
+            Suoni.Suona(Suono.CambioArma, giocatore.transform.position + Vector3.up, 0.5f);
+            return;
+        }
+        if (oggetto is DatiOggettoMissione)
+        {
+            avviso = Lingua.T("inv.missione");
+            avvisoFino = Time.unscaledTime + 3f;
+            return;
+        }
         string negato = Negato(oggetto);
         if (negato != null)
         {
@@ -252,7 +270,7 @@ public class InventarioGioco : MonoBehaviour
     // La casella i può ricevere questo oggetto? (le caselle da 4 in su sono quelle degli incantesimi)
     bool Accetta(int i, DatiOggetto o)
     {
-        if (o == null) return false;
+        if (o == null || o is DatiConsumabile || o is DatiOggettoMissione) return false;
         if (i >= 4) return o is DatiIncantesimo && i - 4 < CaselleIncantesimi;
         return !(o is DatiIncantesimo) && CasellaDi(o) == i;
     }
@@ -825,6 +843,14 @@ public class InventarioGioco : MonoBehaviour
 
         switch (o)
         {
+            case DatiConsumabile cons:
+                // pozioni: quanta vita ridanno e quante ne hai
+                Aggiungi("stat.vita", "+" + Formatta(cons.cura), cons.cura, false, true);
+                Aggiungi("inv.quantita", UsoConsumabili.Quanti(cons).ToString(), 0f, false, true);
+                break;
+            case DatiOggettoMissione mis:
+                Aggiungi("inv.quantita", UsoConsumabili.Quanti(mis).ToString(), 0f, false, true);
+                break;
             case DatiIncantesimo inc:
                 // incantesimi dello Stregone: danno, mana, carica e attesa
                 Aggiungi("stat.danno", inc.danno > 0f ? Formatta(inc.danno) : inc.dannoAlSecondo > 0f ? Formatta(inc.dannoAlSecondo) + "/s"
@@ -991,6 +1017,10 @@ public class InventarioGioco : MonoBehaviour
                 return Lingua.T(ChiavePeso(b.peso, b.classe == ClasseGiocatore.Stregone ? "tipo.veste_" : "tipo.armatura_"));
             case DatiAmuleto c:
                 return Lingua.T(c.tipo == DatiAmuleto.Tipo.Magico ? "tipo.amuleto_magico" : "tipo.amuleto_arcano");
+            case DatiConsumabile _:
+                return Lingua.T("tipo.consumabile");
+            case DatiOggettoMissione _:
+                return Lingua.T("tipo.missione");
         }
         return "";
     }

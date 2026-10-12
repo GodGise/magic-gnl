@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Un oggetto (arma, scudo, armatura, amuleto) appoggiato nel mondo, da raccogliere con E.
+// Un oggetto (arma, scudo, armatura, amuleto, pozione, oggetto di una missione) appoggiato nel mondo, da raccogliere con E.
 // Quando il giocatore è vicino compare "E  Raccogli: ..." in basso; premendo E (o A sul pad) l'oggetto
 // finisce nello zaino e da lì si equipaggia dall'inventario (Tab).
 // Aspetto: se l'oggetto ha un modello 3D (fatto da Nazar) si vede quello, altrimenti la sua forma provvisoria
@@ -65,6 +65,7 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
         {
             if (oggetto is DatiAmuleto) forma.localScale = Vector3.one * 3f;
             else if (oggetto is DatiLibro || oggetto is DatiIncantesimo) forma.localScale = Vector3.one * 1.6f;
+            else if (oggetto is DatiConsumabile || oggetto is DatiOggettoMissione) forma.localScale = Vector3.one * 2.2f;
         }
         // Centrata sopra il punto dell'oggetto, con la base a 25 cm da terra.
         var parti = forma.GetComponentsInChildren<Renderer>();
