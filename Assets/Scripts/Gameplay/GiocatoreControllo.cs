@@ -923,7 +923,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         coloriPrimaDellOmbra.Clear();
     }
 
-    void Cura(float quantita)
+    // Ridà vita (amuleti, pozioni: UsoConsumabili), senza superare il massimo. Da morti non fa niente.
+    public void Cura(float quantita)
     {
         if (quantita <= 0f || stato == Stato.Morto) return;
         Vita = Mathf.Min(VitaMassima, Vita + quantita);

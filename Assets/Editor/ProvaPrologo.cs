@@ -6,7 +6,8 @@ using UnityEngine.SceneManagement;
 // della quest (Maren, la catasta, il camino, Brannoc, il manichino, Edric), senza doverci camminare.
 // Le quest restano quelle vere: si salta solo la strada, non i passi (dialoghi e tasti vanno fatti lo stesso).
 // Come si usa: in Play, menu "magic-gnl > Prova prologo > Vai da ...". Non va montato su niente.
-// "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta).
+// "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta);
+// "Togli 50 di vita al giocatore" serve a provare le pozioni (tasto F).
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -20,6 +21,20 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Vai da Edric (Stregone)")] static void Edric() => Vai("Edric");
     [MenuItem(Cartella + "Vai da Hobb (granaio)")] static void Hobb() => Vai("Hobb");
     [MenuItem(Cartella + "Vai al centro del granaio")] static void Granaio() => Vai("Centro del granaio");
+    [MenuItem(Cartella + "Vai da Ilse (erborista)")] static void Ilse() => Vai("Ilse");
+    [MenuItem(Cartella + "Vai al primo fiore di riva")] static void Fiore() => Vai("Fiore di riva 1");
+
+    // Toglie 50 di vita al giocatore (senza scendere sotto 1): serve a provare la Pozione di Ilse (tasto F).
+    [MenuItem(Cartella + "Togli 50 di vita al giocatore")]
+    static void TogliVita()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var g = Object.FindFirstObjectByType<GiocatoreControllo>();
+        if (g == null) return;
+        float danno = Mathf.Min(50f, g.Vita - 1f);
+        if (danno > 0f) g.RiceviColpo(danno, g.transform.position - g.transform.forward);
+        Debug.Log("Prova prologo: vita del giocatore " + Mathf.CeilToInt(g.Vita) + ".");
+    }
 
     // Toglie 20 di vita a ogni ratto del granaio ancora vivo (due volte = tutti morti): serve a provare il contatore
     // "Ratti rimasti" e la fine della quest 3 senza dover vincere lo scontro.

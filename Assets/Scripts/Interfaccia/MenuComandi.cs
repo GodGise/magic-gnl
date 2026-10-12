@@ -18,7 +18,7 @@ public class MenuComandi : MonoBehaviour
 
     static MenuComandi istanza;
 
-    const int Azioni = 12, Ripristina = 12, Indietro = 13, PerColonna = 6;
+    const int Azioni = 13, Ripristina = 13, Indietro = 14, PerColonna = 7;
 
     readonly ElencoMenu lettore = new ElencoMenu();   // solo per leggere frecce, conferma e indietro
     int selezione;
@@ -119,9 +119,9 @@ public class MenuComandi : MonoBehaviour
         if (selezione < Azioni)
         {
             int colonna = selezione / PerColonna, riga = selezione % PerColonna;
-            if (dy > 0) selezione = riga < PerColonna - 1 ? selezione + 1 : (colonna == 0 ? Ripristina : Indietro);
+            if (dy > 0) selezione = riga < PerColonna - 1 && selezione + 1 < Azioni ? selezione + 1 : (colonna == 0 ? Ripristina : Indietro);
             else if (dy < 0 && riga > 0) selezione--;
-            if (dx != 0) selezione = Mathf.Clamp(colonna + dx, 0, 1) * PerColonna + riga;
+            if (dx != 0) selezione = Mathf.Min(Mathf.Clamp(colonna + dx, 0, 1) * PerColonna + riga, Azioni - 1);
             return;
         }
         if (dy < 0) selezione = selezione == Ripristina ? PerColonna - 1 : Azioni - 1;
@@ -361,7 +361,7 @@ public class MenuComandi : MonoBehaviour
     bool DisegnaElenco(float alfa, Event e, bool mouseMosso)
     {
         float L = GraficaMenu.Larghezza;
-        const float alto = 650f, passo = 54f, larghezzaColonna = 760f, distanza = 80f;
+        const float alto = 650f, passo = 46f, larghezzaColonna = 760f, distanza = 80f;
         float x0 = (L - (2f * larghezzaColonna + distanza)) * 0.5f;
         for (int i = 0; i < Azioni; i++)
         {
@@ -370,7 +370,7 @@ public class MenuComandi : MonoBehaviour
             if (Clic(r, i, e, mouseMosso)) return false;
             bool scelta = selezione == i;
             if (scelta) GraficaMenu.FasciaLuce(r, GraficaMenu.Con(GraficaMenu.Selezione, 0.2f * alfa));
-            var nome = new GUIStyle(GraficaMenu.VoceSinistra) { fontSize = 28 };
+            var nome = new GUIStyle(GraficaMenu.VoceSinistra) { fontSize = 26 };
             GraficaMenu.Scritta(new Rect(r.x + 24f, r.y, r.width - 260f, r.height), Comandi.NomeAzione((Azione)i), nome,
                 scelta ? GraficaMenu.Selezione : GraficaMenu.Testo, alfa);
 
