@@ -23,7 +23,7 @@ public class LogoStudio : MonoBehaviour
     // il colpo cada proprio quando la runa centrale si accende (MomentoLampo). Il file può avere qualsiasi silenzio all'inizio.
     // Per ritocchi fini: secondi di correzione, positivo = suono più tardi, negativo = più presto.
     // Nell'editor di Unity si regola anche con i tasti (vedi sotto); quel valore si somma a questo.
-    const float CorrezioneSuono = 0.0f;
+    const float CorrezioneSuono = -1.04f;   // regolata a orecchio da Giuseppe nell'editor (13 ottobre)
     const string ChiaveCorrezione = "LogoStudio.CorrezioneSuono";
 
     // Correzione totale: la costante più, solo nell'editor, la regolazione fatta con F3/F4 (salvata tra una prova e l'altra).
