@@ -226,7 +226,9 @@ public class MenuPrincipale : MonoBehaviour
                 {
                     int slot = i;
                     var voce = elenco.Aggiungi(() => TestoSlot(slot), () => ScegliSlot(slot));
-                    voce.attiva = scopo == ScopoSlot.Tutti || (scopo == ScopoSlot.Nuova ? datiSlot[i] == null : datiSlot[i] != null);
+                    // Multigiocatore: solo i personaggi che hanno finito il prologo (nelle prove sempre tutti).
+                    voce.attiva = scopo == ScopoSlot.Tutti ? Salvataggio.CoopLiberoNelleProve || (datiSlot[i] != null && datiSlot[i].prologoFinito)
+                        : (scopo == ScopoSlot.Nuova ? datiSlot[i] == null : datiSlot[i] != null);
                 }
                 elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
                 elenco.selezione = PrimoSlotAttivo(slotScelto);
@@ -340,6 +342,8 @@ public class MenuPrincipale : MonoBehaviour
         VaiA(Schermata.Slot);
         // "Nuova partita" con tutti gli slot occupati: si spiega perché non si può scegliere niente
         if (scopo == ScopoSlot.Nuova && elenco.selezione >= datiSlot.Length) Avvisa(Lingua.T("slot.pieni"));
+        // Multigiocatore senza nessun personaggio che abbia finito il prologo: si spiega perché
+        if (scopo == ScopoSlot.Tutti && elenco.selezione >= datiSlot.Length) Avvisa(Lingua.T("slot.coop_blocco"));
     }
 
     // Prima voce attiva a partire da quella indicata (o dalla prima); se non ce ne sono, "Indietro".
@@ -355,7 +359,9 @@ public class MenuPrincipale : MonoBehaviour
         string numero = Lingua.T("slot.nome") + " " + (slot + 1);
         var d = datiSlot[slot];
         if (d == null) return numero + GraficaMenu.Separatore + Lingua.T("slot.vuoto");
-        return numero + GraficaMenu.Separatore + d.nome + GraficaMenu.Separatore + Lingua.T(chiaviClassi[Mathf.Clamp(d.classe, 0, chiaviClassi.Length - 1)]);
+        string testo = numero + GraficaMenu.Separatore + d.nome + GraficaMenu.Separatore + Lingua.T(chiaviClassi[Mathf.Clamp(d.classe, 0, chiaviClassi.Length - 1)]);
+        if (scopo == ScopoSlot.Tutti && !d.prologoFinito && !Salvataggio.CoopLiberoNelleProve) testo += GraficaMenu.Separatore + Lingua.T("slot.prologo_da_finire");
+        return testo;
     }
 
     void ScegliSlot(int slot)

@@ -13,6 +13,7 @@ public class DatiSlot
     public int classe;          // ClasseGiocatore
     public float secondiGioco;
     public string ultimoSalvataggio;   // data e ora, per mostrarle nel menu
+    public bool prologoFinito;         // il giocatore ha finito il prologo da solo (tutorial): da qui in poi può giocare in co-op
 }
 
 // Gli slot di salvataggio dei personaggi (5), uno per file in una cartella del computer di chi gioca:
@@ -33,6 +34,24 @@ public static class Salvataggio
     static string Percorso(int slot) => Path.Combine(Cartella, "slot" + (slot + 1) + ".json");
 
     public static bool Esiste(int slot) => Leggi(slot) != null;
+
+    // Il co-op si apre solo a chi ha finito il prologo (giorno al villaggio, razzia, boss, risveglio in gattabuia) da solo:
+    // decisione di Giuseppe e Lorenzo, 12 ottobre. Nell'editor di Unity e nelle build di sviluppo è sempre libero, per poter provare.
+    public static bool CoopLiberoNelleProve => Application.isEditor || Debug.isDebugBuild;
+
+    public static bool PrologoFinito(int slot) { var d = Leggi(slot); return d != null && d.prologoFinito; }
+
+    public static bool CoopSbloccato(int slot) => CoopLiberoNelleProve || PrologoFinito(slot);
+
+    // Da chiamare quando il personaggio attivo finisce il prologo, cioè al risveglio in gattabuia (la scena è da fare).
+    public static void SegnaPrologoFinito()
+    {
+        var dati = Leggi(SlotAttivo);
+        if (dati == null || dati.prologoFinito) return;
+        dati.prologoFinito = true;
+        dati.ultimoSalvataggio = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        Scrivi(SlotAttivo, dati);
+    }
 
     public static bool QualcunoEsiste
     {

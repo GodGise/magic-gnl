@@ -11,6 +11,12 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 12 ottobre: risposte di Giuseppe su prologo, tempo e co-op (da leggere)
+- **Quest obbligatorie (tutte e 6) e tempo a tappe:** approvato.
+- **Co-op dalla gattabuia:** approvato, **con un'aggiunta di Giuseppe**: prima di giocare in co-op bisogna aver finito il prologo/tutorial, quindi **un amico non può entrare con un personaggio nuovo** (risposta alla tua domanda). Fatto nel menu (ramo `giuseppec/coop-dopo-prologo`): `DatiSlot.prologoFinito`; in Multigiocatore si scelgono solo personaggi che l'hanno finito; nell'editor e nelle build di sviluppo è tutto libero per le prove.
+- **Per te:** al risveglio in gattabuia chiama `Salvataggio.SegnaPrologoFinito()` (una volta, per il personaggio attivo). Finché non c'è, in una build per i giocatori il co-op resta chiuso.
+- **Testi più leggibili:** fatto (ramo `giuseppec/testi-leggibili`): nuovo carattere Alegreya Sans, più grande, per dialoghi, messaggi, azioni, obiettivo e ora. Ho cambiato lo stile in `Missioni.cs` (una riga) e la bussola, quando la unisci, può usare `GraficaMenu.EtichettaGioco`.
+
 ### 11 ottobre: manca il `.meta` di `Assets/Editor/CreaOggettiComuni.cs` (promemoria)
 Lo script era su `main` senza il suo `.meta`, e il Unity di Giuseppe ne ha creato uno. Il Claude di Giuseppe ha aggiunto il `.meta` (ramo `giuseppec/meta-oggetti`). **Regola di `CLAUDE.md`: quando si crea uno script (o una cartella) si crea nello stesso commit anche il suo `.meta`** (`fileFormatVersion: 2` e un `guid` di 32 caratteri esadecimali). Il tuo Claude lo ricordi a ogni nuovo script. Prima del Pull, se GitHub Desktop mostra un `CreaOggettiComuni.cs.meta` fra le tue modifiche, scartalo (clic destro → *Discard changes*), così usi quello di `main`.
 

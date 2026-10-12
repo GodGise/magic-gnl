@@ -100,3 +100,11 @@ Ordine proposto (stato all'8 ottobre):
 - Prezzi Unity Relay: https://support.unity.com/hc/en-us/articles/4410136449812-How-is-the-Relay-Service-Priced
 - Confronto 2026 degli stack di rete per Unity: https://dev.to/gamedevtoollab/choosing-the-right-real-time-networking-stack-for-unity-in-2026-29f4
 - Discussione sull'App ID 480: https://forum.godotengine.org/t/if-i-want-to-test-the-online-multiplayer-functionality-using-steam-do-i-need-to-register-a-game-or-will-using-the-480-app-be-sufficient/131625
+
+## Il co-op si apre dopo il prologo (deciso il 12 ottobre)
+
+- Il prologo (giorno al villaggio, razzia, boss, risveglio in gattabuia) si gioca **da soli**. Da lì in poi si può giocare in co-op.
+- Nel menu "Multigiocatore" (Ospita e Entra) si possono scegliere solo i personaggi con `prologoFinito` (campo di `DatiSlot`); gli slot vuoti e i personaggi che non hanno finito il prologo sono spenti, con la scritta "prologo da finire" e un avviso se non ce n'è nessuno.
+- Per segnarlo: `Salvataggio.SegnaPrologoFinito()`, da chiamare al **risveglio in gattabuia** (la scena è di Lorenzo, da fare).
+- Nell'editor di Unity e nelle build di sviluppo (`Salvataggio.CoopLiberoNelleProve`) il co-op è sempre libero, per poterlo provare senza rifare il prologo. Nella build per i giocatori no.
+- Un amico non può entrare con un personaggio nuovo: deve aver già finito il prologo (risposta di Giuseppe alla domanda di Lorenzo).
