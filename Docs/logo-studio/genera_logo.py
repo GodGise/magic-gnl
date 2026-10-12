@@ -70,18 +70,15 @@ def rombo():
     return im
 
 def runa_centrale():
-    # la runa del lago: un rombo-sole sopra un'asta, con due bracci in alto e un piede a V
-    im=new(1024); d=ImageDraw.Draw(im); cx=512; w=11
+    # la runa dell'energia (bindrune): un'asta con un rombo e due bracci a V in alto che si incrociano sul vertice del rombo
+    im=new(1024); d=ImageDraw.Draw(im); cx=512; w=10
     def L(pts,w=w):
         p=[P(*q) for q in pts]
         d.line(p,fill=255,width=int(w*S),joint='curve')
         for q in (p[0],p[-1]): d.ellipse([q[0]-w*S/2,q[1]-w*S/2,q[0]+w*S/2,q[1]+w*S/2],fill=255)
-    L([(cx,452),(cx,612)])
-    L([(cx,420),(cx+30,452),(cx,484),(cx-30,452),(cx,420)],9)
-    L([(cx,520),(cx-46,474)]); L([(cx,520),(cx+46,474)])
-    L([(cx-34,578),(cx,612),(cx+34,578)])
-    rhomb(d,cx,640,9,12,0)
-    rhomb(d,cx,452,8,12,0)
+    L([(cx,387),(cx,637)])
+    L([(cx-52,408),(cx,457),(cx+52,408)])
+    L([(cx,457),(cx-52,507),(cx,556),(cx+52,507),(cx,457)])
     return im
 
 def onda():

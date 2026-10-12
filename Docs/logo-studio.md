@@ -4,7 +4,7 @@ Scritta il 12 ottobre 2026. All'avvio del gioco, prima della schermata del titol
 
 ## Il sigillo
 
-Disegnato **grande al centro dello schermo**. Un filo esterno con tacche (gira piano), un anello di quattro archi con **28 rune** che si accendono una dopo l'altra, un rombo (lo stesso dell'interfaccia del gioco), il cerchio del lago con il sole e una **runa centrale, nel lago, che si accende quando la scintilla la raggiunge**. Colori: bronzo caldo su nero, con un lampo di brace (invariati).
+Disegnato **grande al centro dello schermo**. Un filo esterno con tacche (gira piano), un anello di quattro archi con **28 rune** che si accendono una dopo l'altra, un rombo (lo stesso dell'interfaccia del gioco), il cerchio del lago con il sole e una **runa centrale, nel lago, che si accende quando la scintilla la raggiunge** (la runa dell'**energia**, una bindrune: asta con rombo e due bracci a V; scelta da Giuseppe). Colori: bronzo caldo su nero, con un lampo di brace (invariati).
 - I pezzi sono immagini bianche trasparenti in `Assets/Resources/Logo/`: `anello-1..4`, `anello-esterno`, `rombo`, `runa-centrale`, `onda`, `raggi` (1024x1024) e `runa-1..7` (256x256); il gioco le colora e fa gli aloni.
 - Si rifanno con `Docs/logo-studio/genera_logo.py` (Python con Pillow e numpy): `python3 genera_logo.py cartella_di_uscita`. Se si cambia il disegno vero (per esempio da Nazar) basta sostituire i PNG tenendo la stessa tela con il centro al centro. Le 28 rune stanno sull'anello a 425 px dal centro (angoli come in `AngoloRuna` nel codice).
 
