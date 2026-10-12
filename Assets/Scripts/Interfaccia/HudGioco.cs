@@ -346,11 +346,11 @@ public class HudGioco : MonoBehaviour
     {
         if (Time.frameCount - azioneFotogramma > 1 || string.IsNullOrEmpty(azioneTesto)) return;
         // il tasto: una lettera sta nel rombo; un nome lungo (per esempio "Mouse sinistro") in un riquadro
-        float kw = GraficaMenu.Etichetta.CalcSize(new GUIContent(azioneTasto)).x;
-        bool lungo = kw > 30f;
+        float kw = GraficaMenu.EtichettaGioco.CalcSize(new GUIContent(azioneTasto)).x;
+        bool lungo = kw > 36f;
         float spazioTasto = lungo ? kw + 44f : 72f;
-        float w = Mathf.Clamp(GraficaMenu.TestoSinistra.CalcSize(new GUIContent(azioneTesto)).x + spazioTasto + 38f, 360f, 1100f);
-        var r = new Rect(larghezza * 0.5f - w * 0.5f, altezza - 100f, w, 56f);
+        float w = Mathf.Clamp(GraficaMenu.TestoGioco.CalcSize(new GUIContent(azioneTesto)).x + spazioTasto + 38f, 360f, 1100f);
+        var r = new Rect(larghezza * 0.5f - w * 0.5f, altezza - 104f, w, 62f);
         GraficaMenu.Cornice(r, 0.95f, false);
         if (lungo)
         {
@@ -362,9 +362,9 @@ public class HudGioco : MonoBehaviour
         {
             var c = new Vector2(r.x + 40f, r.center.y);
             GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
-            ScrittaSenzaOmbra(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto);
+            ScrittaSenzaOmbra(new Rect(c.x - 20f, c.y - 16f, 40f, 32f), azioneTasto);
         }
-        var testo = new GUIStyle(GraficaMenu.TestoSinistra) { wordWrap = false };
+        var testo = new GUIStyle(GraficaMenu.TestoGioco) { wordWrap = false };
         GraficaMenu.Scritta(new Rect(r.x + spazioTasto, r.y, r.width - spazioTasto - 18f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
     }
 
@@ -372,7 +372,7 @@ public class HudGioco : MonoBehaviour
     static void ScrittaSenzaOmbra(Rect area, string testo)
     {
         GUI.color = new Color(0.05f, 0.05f, 0.06f);
-        GUI.Label(area, testo, GraficaMenu.Etichetta);
+        GUI.Label(area, testo, GraficaMenu.EtichettaGioco);
         GUI.color = Color.white;
     }
 
@@ -383,8 +383,8 @@ public class HudGioco : MonoBehaviour
         float ora = ciclo.ora;
         string momento = ora >= 5f && ora < 7f ? "hud.alba" : ora >= 7f && ora < 17f ? "hud.giorno" : ora >= 17f && ora < 19f ? "hud.tramonto" : "hud.notte";
         int ore = Mathf.FloorToInt(ora), minuti = Mathf.FloorToInt((ora - ore) * 60f);
-        var r = new Rect(larghezza - 300f, 60f, 220f, 52f);
+        var r = new Rect(larghezza - 380f, 60f, 300f, 56f);
         GraficaMenu.Cornice(r, 0.8f, false);
-        GraficaMenu.Scritta(r, Lingua.T(momento) + GraficaMenu.Separatore + ore.ToString("00") + ":" + minuti.ToString("00"), GraficaMenu.Etichetta, GraficaMenu.Testo, 1f);
+        GraficaMenu.Scritta(r, Lingua.T(momento) + GraficaMenu.Separatore + ore.ToString("00") + ":" + minuti.ToString("00"), GraficaMenu.EtichettaGioco, GraficaMenu.Testo, 1f);
     }
 }

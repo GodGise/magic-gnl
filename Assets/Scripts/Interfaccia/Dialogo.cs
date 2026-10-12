@@ -149,26 +149,26 @@ public class Dialogo : MonoBehaviour
         float larghezza = GraficaMenu.FoglioIntero();
 
         float w = Mathf.Min(1200f, larghezza - 120f);
-        var riquadro = new Rect(larghezza * 0.5f - w * 0.5f, 770f, w, 250f);
+        var riquadro = new Rect(larghezza * 0.5f - w * 0.5f, 730f, w, 290f);
         GraficaMenu.Cornice(riquadro, 0.96f, false);
 
         string nome = string.IsNullOrEmpty(righe[indice].parlante) ? "" : Lingua.T(righe[indice].parlante);
         float y = riquadro.y + 20f;
         if (nome.Length > 0)
         {
-            var stileNome = new GUIStyle(GraficaMenu.TestoSinistra) { fontSize = Mathf.RoundToInt(GraficaMenu.TestoSinistra.fontSize * 1.1f), fontStyle = FontStyle.Bold };
+            var stileNome = new GUIStyle(GraficaMenu.NomeGioco);
             GraficaMenu.Scritta(new Rect(riquadro.x + 40f, y, w - 80f, 40f), nome, stileNome, GraficaMenu.Selezione, 1f);
             y += 46f;
         }
 
-        var stile = new GUIStyle(GraficaMenu.TestoSinistra) { wordWrap = false, alignment = TextAnchor.UpperLeft };
+        var stile = new GUIStyle(GraficaMenu.TestoGioco) { wordWrap = false, alignment = TextAnchor.UpperLeft };
         bool narrazione = nome.Length == 0;
         string a_capo = AndareACapo(testoCompleto, stile, w - 80f, LettereVisibili);
         GraficaMenu.Scritta(new Rect(riquadro.x + 40f, y, w - 80f, riquadro.yMax - y - 40f), a_capo, stile, narrazione ? GraficaMenu.Bronzo : GraficaMenu.Testo, 1f);
 
         if (LettereVisibili >= testoCompleto.Length)
         {
-            var piccolo = new GUIStyle(GraficaMenu.Piccolo) { alignment = TextAnchor.MiddleRight };
+            var piccolo = new GUIStyle(GraficaMenu.EtichettaGioco) { alignment = TextAnchor.MiddleRight };
             string tasto = Comandi.NomeTasto(Azione.Interagisci);
             GraficaMenu.Scritta(new Rect(riquadro.x + 40f, riquadro.yMax - 40f, w - 80f, 30f), tasto + "  " + Lingua.T("dlg.continua"), piccolo, GraficaMenu.Selezione, 0.5f + 0.5f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * 2.5f)));
         }

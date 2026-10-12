@@ -79,9 +79,9 @@ public class Missioni : MonoBehaviour
         float larghezza = GraficaMenu.FoglioIntero();
         float nuovo = Mathf.Clamp01((Time.time - obiettivoDa) / 0.6f);   // un obiettivo nuovo appare piano e si accende
         string testo = Dialogo.Testo(obiettivo);
-        var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
+        var stile = new GUIStyle(GraficaMenu.EtichettaGioco) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
         float w = Mathf.Clamp(stile.CalcSize(new GUIContent(testo)).x + 70f, 260f, 760f);
-        var r = new Rect(larghezza - 80f - w, 124f, w, 46f);
+        var r = new Rect(larghezza - 80f - w, 132f, w, 54f);
         GraficaMenu.Cornice(r, 0.8f * nuovo, nuovo < 1f);
         GraficaMenu.Rombo(new Vector2(r.x + 24f, r.center.y), 12f, GraficaMenu.Con(GraficaMenu.Selezione, nuovo));
         GraficaMenu.Scritta(new Rect(r.x + 44f, r.y, w - 54f, r.height), testo, stile, GraficaMenu.Testo, nuovo);
