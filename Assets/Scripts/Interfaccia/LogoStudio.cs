@@ -27,7 +27,7 @@ public class LogoStudio : MonoBehaviour
     const float SilenzioDiRiserva = 5.0f;
     // Secondi in più da saltare nel file (per ritocchi fini, dopo il salto automatico o di riserva).
     const float SaltoExtra = 0.0f;
-    const float CorrezioneSuono = 1.3f;   // = InizioRune: il suono parte quando le rune cominciano ad accendersi sull'anello
+    const float CorrezioneSuono = -AttesaNera;   // il file audio parte insieme al gioco: i secondi di silenzio sono dentro il file   // = InizioRune: il suono parte quando le rune cominciano ad accendersi sull'anello
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
@@ -118,7 +118,7 @@ public class LogoStudio : MonoBehaviour
         if (suono != null)
         {
             sorgente.clip = suono;
-            inizioSuono = SilenzioIniziale(suono) + SaltoExtra;
+            inizioSuono = SaltoExtra;   // nessun salto automatico: il file è già a posto
         }
 
         var caso = new System.Random(7);
