@@ -9,14 +9,14 @@ using UnityEngine.InputSystem;
 // Non si salta (il logo dello studio è sacro): solo nell'editor di Unity, per chi lo prova spesso, F2 lo salta.
 // Si vede una volta sola a ogni avvio del gioco.
 // Suono: se nella cartella Assets/Resources/Audio/Effetti c'è un file "logo-studio" (ogg o wav) parte da solo quando
-// inizia l'animazione, cioè dopo 1,5 secondi di nero.
+// inizia l'animazione, cioè dopo 3 secondi di nero.
 // I momenti dell'animazione (per far combaciare il suono) sono in Docs/logo-studio.md e nelle costanti qui sotto.
 // I pezzi del logo sono in Assets/Resources/Logo (si rifanno con Docs/logo-studio/genera_logo.py).
 // Come montarlo: non si monta, si crea da solo. Nella scena "Menu" ferma MenuPrincipale finché il logo non è finito.
 public class LogoStudio : MonoBehaviour
 {
-    // Prima schermo nero e silenzio per 1,5 secondi; poi parte l'animazione (e il suono).
-    const float AttesaNera = 1.5f;
+    // Prima schermo nero e silenzio per 3 secondi; poi parte l'animazione (e il suono).
+    const float AttesaNera = 3.0f;
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioAnelli = 0.0f, DurataAnelli = 2.0f;     // i quattro archi arrivano da fuori, uno dopo l'altro
