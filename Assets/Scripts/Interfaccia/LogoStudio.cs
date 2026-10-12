@@ -22,7 +22,7 @@ public class LogoStudio : MonoBehaviour
     // Per far combaciare il suono con le immagini: secondi di spostamento dell'inizio del suono rispetto all'inizio dell'animazione.
     // Positivo = il suono parte PIÙ TARDI (se il colpo si sente troppo presto); negativo = parte PRIMA (se il colpo si sente in ritardo).
     // Esempio: il colpo arriva 1 secondo prima della runa -> CorrezioneSuono = 1.0f.
-    const float CorrezioneSuono = 0.0f;
+    const float CorrezioneSuono = 1.3f;   // = InizioRune: il suono parte quando le rune cominciano ad accendersi sull'anello
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
