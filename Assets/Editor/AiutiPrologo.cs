@@ -209,6 +209,26 @@ internal static class AiutiPrologo
         return null;
     }
 
+    // Spegne gli alberi del villaggio (oggetti "Albero") che finirebbero dentro un'area appena costruita:
+    // un rettangolo con centro e dimensioni nel sistema di "area", più il raggio della chioma. Restituisce quanti.
+    internal static int SgomberaAlberi(Scene scena, Transform area, Vector3 centroLocale, Vector3 dimensioni)
+    {
+        int spenti = 0;
+        foreach (var radice in scena.GetRootGameObjects())
+            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name != "Albero" || !t.gameObject.activeSelf) continue;
+                Transform chioma = t.Find("Chioma");
+                float margine = chioma != null ? chioma.lossyScale.x * 0.45f : 1.5f;
+                Vector3 locale = area.InverseTransformPoint(t.position) - centroLocale;
+                if (Mathf.Abs(locale.x) > dimensioni.x * 0.5f + margine || Mathf.Abs(locale.z) > dimensioni.z * 0.5f + margine) continue;
+                Undo.RecordObject(t.gameObject, "Sgombera alberi");
+                t.gameObject.SetActive(false);
+                spenti++;
+            }
+        return spenti;
+    }
+
     // Un oggetto creato dai menu "Crea oggetti del Guerriero/Ladro/Stregone", cercato per nome del file.
     internal static DatiOggetto Oggetto(string file)
     {

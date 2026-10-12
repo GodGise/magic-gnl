@@ -63,7 +63,19 @@ public static class CreaPrologoQuest2
         // ==================== il cortile della fucina ====================
         var cortile = Vuoto("Cortile della fucina", gruppo).transform;
         cortile.SetPositionAndRotation(portaFabbro + fuoriFabbro * 1f, Quaternion.LookRotation(fuoriFabbro));
-        Decoro("Terra battuta", cortile, new Vector3(0f, 0.015f, 6f), new Vector3(9f, 0.03f, 13f), Terra);
+        // Un cortile compatto (10 x 10 m) davanti alla fucina, con lo steccato ai lati: non invade la piazzetta.
+        Decoro("Terra battuta", cortile, new Vector3(0f, 0.015f, 5f), new Vector3(10f, 0.03f, 10f), Terra);
+        foreach (float lato in new[] { -5.1f, 5.1f })
+        {
+            Blocco(lato < 0 ? "Steccato sinistro" : "Steccato destro", cortile, new Vector3(lato, 0.45f, 5.6f), new Vector3(0.1f, 0.12f, 8.6f), Legno);
+            Blocco(lato < 0 ? "Steccato sinistro (basso)" : "Steccato destro (basso)", cortile, new Vector3(lato, 0.85f, 5.6f), new Vector3(0.1f, 0.12f, 8.6f), Legno);
+            for (int i = 0; i < 5; i++)
+                Blocco("Paletto", cortile, new Vector3(lato, 0.5f, 1.3f + i * 2.15f), new Vector3(0.16f, 1f, 0.16f), LegnoScuro);
+        }
+        // Tettoia sopra la forgia, appoggiata alla fucina dietro e a due pali davanti.
+        Blocco("Tettoia della forgia", cortile, new Vector3(-3f, 3.1f, 1.45f), new Vector3(3.8f, 0.18f, 3.6f), Paglia);
+        Blocco("Palo della tettoia 1", cortile, new Vector3(-4.7f, 1.5f, 3.1f), new Vector3(0.18f, 3f, 0.18f), LegnoScuro);
+        Blocco("Palo della tettoia 2", cortile, new Vector3(-1.3f, 1.5f, 3.1f), new Vector3(0.18f, 3f, 0.18f), LegnoScuro);
         Blocco("Forgia", cortile, new Vector3(-3.4f, 0.6f, 0.9f), new Vector3(1.6f, 1.2f, 1.4f), PietraScura);
         Decoro("Braci della forgia", cortile, new Vector3(-3.4f, 1.22f, 0.9f), new Vector3(1.2f, 0.06f, 1f), Fuoco);
         Blocco("Cappa della forgia", cortile, new Vector3(-3.4f, 2.4f, 0.6f), new Vector3(1.2f, 1.4f, 0.9f), PietraScura);
@@ -78,15 +90,15 @@ public static class CreaPrologoQuest2
 
         var brannoc = Personaggio("Brannoc", cortile, new Vector3(1.9f, 0f, 1.1f), 1.85f, new Color(0.3f, 0.22f, 0.16f), true);
         brannoc.transform.localRotation = Quaternion.LookRotation(new Vector3(-0.3f, 0f, 1f));
-        var manichino = Manichino("Manichino di Brannoc", cortile, new Vector3(0f, 0f, 5.5f), 9999f, false);
+        var manichino = Manichino("Manichino di Brannoc", cortile, new Vector3(-2.3f, 0f, 5.2f), 9999f, false);
         manichino.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
         var tiro = Vuoto("Bersagli di tiro (solo Ladro)", cortile).transform;
         var soloLadro = Undo.AddComponent<SoloPerClasse>(tiro.gameObject);
         Imposta(soloLadro, "guerriero", false);
         Imposta(soloLadro, "stregone", false);
-        Decoro("Linea di tiro", tiro, new Vector3(0f, 0.04f, 3.5f), new Vector3(5f, 0.05f, 0.2f), Legno);
-        Vector3[] sagome = { new Vector3(-2.6f, 0f, 9.5f), new Vector3(0.4f, 0f, 12f), new Vector3(2.8f, 0f, 10f) };
+        Decoro("Linea di tiro", tiro, new Vector3(2f, 0.04f, 3.5f), new Vector3(4.5f, 0.05f, 0.2f), Legno);
+        Vector3[] sagome = { new Vector3(0.4f, 0f, 8.8f), new Vector3(2.4f, 0f, 9.6f), new Vector3(4f, 0f, 7.8f) };   // lontane dal manichino
         GameObject primaSagoma = null;
         for (int i = 0; i < sagome.Length; i++)
         {
@@ -129,6 +141,8 @@ public static class CreaPrologoQuest2
             Riga("pg.brannoc", "dlg.q2.01s", ClasseRiga.Stregone),
         });
 
+        SgomberaAlberi(scena, cortile, new Vector3(0f, 0f, 5f), new Vector3(10.5f, 0f, 10.5f));
+
         // ==================== il cortile di studio del tempio (solo Stregone) ====================
         Transform tempio = Trova(scena, "Tempio").transform;
         float profonditaTempio = tempio.lossyScale.z;
@@ -151,6 +165,7 @@ public static class CreaPrologoQuest2
             Decoro("Fiamma del braciere", studio, punto + Vector3.up * 0.95f, new Vector3(0.35f, 0.15f, 0.35f), Fuoco);
             Luce("Luce del braciere", studio, punto + Vector3.up * 1.3f, new Color(1f, 0.6f, 0.3f), 6f, 1.2f);
         }
+        SgomberaAlberi(scena, studio, new Vector3(-3f, 0f, 0f), new Vector3(16.5f, 0f, 9.5f));
         var edric = Personaggio("Edric", studio, new Vector3(2.8f, 0f, 1.6f), 1.7f, new Color(0.35f, 0.33f, 0.42f), true);
         edric.transform.localRotation = Quaternion.LookRotation(new Vector3(-0.5f, 0f, -1f));
         Vector3[] bersagliStudio = { new Vector3(-3.5f, 0f, -0.5f), new Vector3(-6.5f, 0f, 1.8f), new Vector3(-9.5f, 0f, -1.2f) };

@@ -187,6 +187,9 @@ public static class CreaPrologoQuest1
             Forma(PrimitiveType.Cylinder, "Ceppo a terra", capanno, ceppo + new Vector3(-0.7f - i * 0.35f, 0.15f, 0.4f * (i - 1)), new Vector3(0.3f, 0.4f, 0.3f), Legno)
                 .transform.localRotation = Quaternion.Euler(90f, 30f * i, 0f);
 
+        // Gli alberi del villaggio che toccherebbero la casa, il capanno o il sentiero si spengono.
+        SgomberaAlberi(scena, interno, new Vector3(2.75f, 0f, s * 1.5f), new Vector3(W + 7.5f, 0f, D + 5f));
+
         // ---------- registro delle missioni, orario, dissolvenza ----------
         var missioni = Undo.AddComponent<Missioni>(Vuoto("Missioni", gruppo));
         if (Object.FindFirstObjectByType<OrarioPrologo>() == null) Undo.AddComponent<OrarioPrologo>(Vuoto("Orario del prologo", gruppo));
