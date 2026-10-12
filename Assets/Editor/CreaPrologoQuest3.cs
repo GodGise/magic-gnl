@@ -6,8 +6,8 @@ using static AiutiPrologo;
 
 // Strumento dell'editor: prepara nella scena VillaggioLagoNero (aperta, con le quest 1 e 2 già preparate) la quest 3
 // "Ratti nel granaio" (Docs/quest-capitolo-1.md), con forme provvisorie, in un gruppo nuovo "Prologo - quest 3":
-//   - un granaio grande sulla riva del lago, vicino al molo: 12 x 16 m, alto 5,5 m, portone aperto verso il
-//     villaggio, soppalco in fondo, balle di fieno, sacchi, botti, un carro, travi e lanterne; al centro uno spazio
+//   - un granaio grande sulla riva del lago, vicino al molo, a sud della strada: 12 x 16 m, alto 5,5 m, portone aperto
+//     verso la strada, soppalco in fondo, balle di fieno, sacchi, botti, un carro, travi e lanterne; al centro uno spazio
 //     libero di circa 8 x 9 m per lo scontro; dentro la camera sta più vicina (ZonaCamera);
 //   - Hobb davanti al portone;
 //   - tre ratti giganti (RattoGigante + Bersaglio): 37 di vita, morso da 11, un balzo ogni 4 secondi a testa;
@@ -51,10 +51,10 @@ public static class CreaPrologoQuest3
         var gruppo = new GameObject(NomeGruppo).transform;
         Undo.RegisterCreatedObjectUndo(gruppo.gameObject, "Prologo quest 3");
 
-        // Sulla riva, poco a sud-ovest dell'inizio del molo; il portone guarda verso il villaggio (ovest).
         float[] molo = DatiVillaggioLagoNero.Molo;
         var granaio = Vuoto("Granaio di Hobb", gruppo).transform;
-        granaio.SetPositionAndRotation(new Vector3(molo[0] - 17f, 0f, molo[1] - 1.5f), Quaternion.LookRotation(Vector3.left));
+        // A sud della strada che porta al molo (non la blocca), con il portone verso la strada (nord).
+        granaio.SetPositionAndRotation(new Vector3(molo[0] - 17f, 0f, molo[1] - 14f), Quaternion.LookRotation(Vector3.forward));
         SgomberaAlberi(scena, granaio, new Vector3(0f, 0f, 2f), new Vector3(W + 3f, 0f, D + 8f));
         SgomberaCase(scena, granaio, new Vector3(0f, 0f, 2f), new Vector3(W + 3f, 0f, D + 8f));
 
