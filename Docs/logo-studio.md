@@ -10,11 +10,11 @@ Un anello di rune diviso in quattro archi, un rombo (lo stesso rombo dell'interf
 
 ## La sequenza
 
-Prima **schermo nero e silenzio per 1,5 secondi**; poi parte l'animazione (e il suono). I secondi qui sotto sono contati **dall'inizio dell'animazione**, cioè dopo il nero.
+Prima **schermo nero e silenzio per 3 secondi**; poi parte l'animazione (e il suono). I secondi qui sotto sono contati **dall'inizio dell'animazione**, cioè dopo il nero.
 
 | Quando | Cosa succede |
 | --- | --- |
-| (prima) 1,5 s | Nero e silenzio |
+| (prima) 3,0 s | Nero e silenzio |
 | 0,0 - 2,0 | I quattro archi dell'anello arrivano da fuori, ruotando, uno dopo l'altro (ogni 0,18 s) |
 | 1,5 - 2,8 | Il rombo si apre dal centro e gira in posizione |
 | 2,4 - 3,3 | La spada cala dall'alto |
@@ -24,7 +24,7 @@ Prima **schermo nero e silenzio per 1,5 secondi**; poi parte l'animazione (e il 
 | 7,3 - 8,3 | Dissolvenza al nero |
 | 8,65 | Parte il menu (musica e titolo) |
 
-Totale dall'avvio del gioco: circa 10 secondi (1,5 di nero + 8,65 di animazione).
+Totale dall'avvio del gioco: circa 11,7 secondi (3 di nero + 8,65 di animazione).
 
 ## Il suono
 
