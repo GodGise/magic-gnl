@@ -33,11 +33,8 @@ Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione
 
 ## Il suono (versione attuale)
 
-Il file `logo-studio` parte **insieme al gioco**, dal primo istante, senza salti. Quindi i silenzi stanno **dentro il file**:
-- **0 - 4,4 s: silenzio** (3,0 s di nero + 1,4 s: il suono entra quando si accende la **terza runa** del primo arco, in alto a destra).
-- **4,4 s: parte il suono.**
-- **6,3 s: il colpo** (la scintilla tocca il lago e la runa centrale si accende): cioè **1,9 s dopo l'inizio del suono**.
-- Dopo il colpo la coda e la dissolvenza, fino a circa **13,4 s** totali.
+Il suono si **aggancia da solo**: il gioco cerca nel file `logo-studio` il **colpo** (il punto più forte, finestra di 20 ms con più energia) e fa partire il file in modo che il colpo cada quando la runa centrale si accende (6,3 s dall'avvio). Il file può avere qualsiasi silenzio all'inizio e qualsiasi durata: non serve misurare né tagliare. Nella Console di Unity compare una riga `[Logo]` con il punto in cui ha trovato il colpo. Per ritocchi fini: costante `CorrezioneSuono` (secondi, positivo = più tardi).
+Se il file non si può leggere, parte con l'animazione senza aggancio.
 Le note qui sotto ("dopo il nero", secondi dall'animazione) valgono come idea del sonoro; per il file valgono i secondi sopra, dall'avvio del gioco.
 
 

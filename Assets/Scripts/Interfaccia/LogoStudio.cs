@@ -19,15 +19,10 @@ public class LogoStudio : MonoBehaviour
     // Prima schermo nero e silenzio per 3 secondi; poi parte l'animazione (e il suono).
     const float AttesaNera = 3.0f;
 
-    // Per far combaciare il suono con le immagini: secondi di spostamento dell'inizio del suono rispetto all'inizio dell'animazione.
-    // Positivo = il suono parte PIÙ TARDI (se il colpo si sente troppo presto); negativo = parte PRIMA (se il colpo si sente in ritardo).
-    // Esempio: il colpo arriva 1 secondo prima della runa -> CorrezioneSuono = 1.0f.
-    // Se il gioco non riesce a leggere il file per trovare il silenzio iniziale (succede con alcuni mp3), salta questi secondi.
-    // Il silenzio vero all'inizio del file di Giuseppe: se il suono parte in ritardo di X secondi, qui va X.
-    const float SilenzioDiRiserva = 5.0f;
-    // Secondi in più da saltare nel file (per ritocchi fini, dopo il salto automatico o di riserva).
-    const float SaltoExtra = 0.0f;
-    const float CorrezioneSuono = -AttesaNera;   // il file audio parte insieme al gioco: i secondi di silenzio sono dentro il file   // = InizioRune: il suono parte quando le rune cominciano ad accendersi sull'anello
+    // Il suono si aggancia da solo: il gioco cerca nel file audio il COLPO (il punto più forte) e fa partire il file in modo che
+    // il colpo cada proprio quando la runa centrale si accende (MomentoLampo). Il file può avere qualsiasi silenzio all'inizio.
+    // Per ritocchi fini: secondi di correzione, positivo = suono più tardi, negativo = più presto.
+    const float CorrezioneSuono = 0.0f;
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
@@ -75,7 +70,8 @@ public class LogoStudio : MonoBehaviour
     float orologio;
     int fotogrammi;
     bool suonoPartito;
-    float inizioSuono;   // secondi di silenzio all'inizio del file audio, saltati in automatico
+    float partenzaSuono;   // a che secondo dall'avvio far partire il file (può essere 0 se il colpo è lontano dall'inizio del file)
+    float saltoNelFile;    // da che punto del file partire (se bisogna anticipare)
     float saltatoA = -1f;       // solo nell'editor: l'orologio quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
@@ -118,7 +114,15 @@ public class LogoStudio : MonoBehaviour
         if (suono != null)
         {
             sorgente.clip = suono;
-            inizioSuono = SaltoExtra;   // nessun salto automatico: il file è già a posto
+            float colpo = TrovaColpo(suono);
+            if (colpo >= 0f)
+            {
+                // il file deve far cadere il colpo a (nero + MomentoLampo) secondi dall'avvio
+                float partenza = AttesaNera + MomentoLampo - colpo + CorrezioneSuono;
+                partenzaSuono = Mathf.Max(0f, partenza);
+                saltoNelFile = Mathf.Max(0f, -partenza);
+                Debug.Log("[Logo] Colpo trovato a " + colpo.ToString("0.00") + " s nel file (durata " + suono.length.ToString("0.00") + " s): il file parte a " + partenzaSuono.ToString("0.00") + " s dall'avvio");
+            }
         }
 
         var caso = new System.Random(7);
@@ -175,33 +179,36 @@ public class LogoStudio : MonoBehaviour
         }
     }
 
-    // Quanti secondi di silenzio ci sono all'inizio del file audio (se il file ha un vuoto prima del suono, qui lo si salta:
-    // così il primo suono udibile parte con l'animazione e il colpo cade al secondo giusto, senza dover tagliare il file).
-    static float SilenzioIniziale(AudioClip clip)
+    // Cerca nel file il colpo: la finestra di 20 ms con più energia. Ritorna i secondi dall'inizio del file, o -1 se non riesce a leggerlo.
+    static float TrovaColpo(AudioClip clip)
     {
         try
         {
-            var campioni = new float[clip.samples * clip.channels];
+            int canali = clip.channels;
+            var campioni = new float[clip.samples * canali];
             if (!clip.GetData(campioni, 0))
             {
-                Debug.LogWarning("[Logo] Non riesco a leggere il file audio per cercare il silenzio: uso SilenzioDiRiserva = " + SilenzioDiRiserva + " s");
-                return SilenzioDiRiserva;
+                Debug.LogWarning("[Logo] Non riesco a leggere il file audio: il suono parte con l'animazione senza aggancio.");
+                return -1f;
             }
-            for (int i = 0; i < campioni.Length; i++)
-                if (Mathf.Abs(campioni[i]) > 0.003f)
-                {
-                    float quando = Mathf.Max(0f, (float)(i / clip.channels) / clip.frequency - 0.02f);
-                    Debug.Log("[Logo] Il suono parte a " + quando.ToString("0.00") + " s dall'inizio del file (durata " + clip.length.ToString("0.00") + " s)");
-                    return quando;
-                }
-            Debug.LogWarning("[Logo] Il file audio sembra tutto silenzio (soglia 0,003).");
+            int finestra = Mathf.Max(1, clip.frequency / 50);    // 20 ms
+            int passo = Mathf.Max(1, finestra / 2);
+            float migliore = 0f; int posizione = -1;
+            for (int inizio = 0; inizio + finestra <= clip.samples; inizio += passo)
+            {
+                float energia = 0f;
+                for (int i = inizio; i < inizio + finestra; i++)
+                    for (int ch = 0; ch < canali; ch++) { float v = campioni[i * canali + ch]; energia += v * v; }
+                if (energia > migliore) { migliore = energia; posizione = inizio; }
+            }
+            if (posizione < 0) return -1f;
+            return (float)posizione / clip.frequency;
         }
         catch (System.Exception e)
         {
-            Debug.LogWarning("[Logo] Errore nel leggere il file audio (" + e.Message + "): uso SilenzioDiRiserva = " + SilenzioDiRiserva + " s");
-            return SilenzioDiRiserva;
+            Debug.LogWarning("[Logo] Errore nel leggere il file audio (" + e.Message + ")");
+            return -1f;
         }
-        return 0f;
     }
 
     // Secondi dall'inizio dell'animazione: negativo durante il nero iniziale.
@@ -218,12 +225,12 @@ public class LogoStudio : MonoBehaviour
         fotogrammi++;
         if (fotogrammi > 4) orologio += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
         float t = Tempo;
-        if (!suonoPartito && t >= CorrezioneSuono)
+        if (!suonoPartito && orologio >= partenzaSuono)
         {
             suonoPartito = true;
             if (sorgente != null && sorgente.clip != null)
             {
-                sorgente.time = Mathf.Clamp(inizioSuono, 0f, Mathf.Max(0f, sorgente.clip.length - 0.1f));
+                sorgente.time = Mathf.Clamp(saltoNelFile, 0f, Mathf.Max(0f, sorgente.clip.length - 0.1f));
                 sorgente.Play();
             }
         }
