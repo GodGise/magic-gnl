@@ -8,7 +8,8 @@ using UnityEngine.SceneManagement;
 // Strumento dell'editor: trova nella scena aperta i "vicoli ciechi" fra le costruzioni e li chiude con una staccionata.
 // Vicolo cieco = uno spazio stretto (meno di 2,4 m) fra case, muri, recinti o oggetti in cui il giocatore può entrare,
 // anche usando la strettoia, ma che non porta da nessuna parte: ci si infila e si resta incastrati nell'angolo.
-// I passaggi stretti che collegano due posti (anche solo con la strettoia) restano aperti.
+// I passaggi stretti che collegano due posti (anche solo con la strettoia) restano aperti. Dove una staccionata
+// non si può tirare (la bocca non ha muri vicini ai due lati) l'angolo si riempie con una catasta di legna.
 // Le fessure troppo strette per entrarci (meno di circa mezzo metro) non servono: lì il giocatore non entra.
 // Non chiude gli angoli poco profondi (meno di 1 m), gli spazi in mezzo al bosco senza costruzioni, e gli spazi
 // vicino a un punto delle quest (un personaggio con cui parlare, un punto con E, un arrivo).
@@ -316,17 +317,45 @@ public static class ChiudiVicoliCiechi
         Vector3 baseLinea = bocca + dentro * 0.25f;
 
         float a = Fino(baseLinea, lato), b = Fino(baseLinea, -lato);
-        if (a < 0f || b < 0f)
-        {
-            saltati.AppendLine("- bocca troppo larga (oltre " + BoccaMassima + " m), a " + Posizione(bocca) + " (accanto a " + NomeVicino(v.bocca) + ")");
-            return false;
-        }
+        if (a < 0f || b < 0f) return Riempi(v, dentro, lato, gruppo, legno, elenco, saltati);
         Vector3 p1 = baseLinea + lato * (a + 0.3f), p2 = baseLinea - lato * (b + 0.3f);
         Vector3 mezzo = (p1 + p2) * 0.5f;
         float lunghezza = Vector3.Distance(p1, p2);
         mezzo.y = Pavimento(mezzo);
         Staccionata(gruppo, mezzo, lato, lunghezza, legno);
         elenco.AppendLine("- staccionata di " + lunghezza.ToString("0.0") + " m a " + Posizione(mezzo) + ", accanto a " + NomeVicino(v.bocca));
+        return true;
+    }
+
+    // Quando la staccionata non si può tirare (la bocca non ha due muri vicini ai lati), l'angolo si riempie
+    // con una catasta di legna grande quanto il vicolo.
+    static bool Riempi(Vicolo v, Vector3 dentro, Vector3 lato, Transform gruppo, Material legno, StringBuilder elenco, StringBuilder saltati)
+    {
+        float minL = float.MaxValue, maxL = float.MinValue, minD = float.MaxValue, maxD = float.MinValue;
+        Vector3 origine = PosCella(v.celle[0]);
+        foreach (int c in v.celle)
+        {
+            Vector3 p = PosCella(c) - origine;
+            float l = Vector3.Dot(p, lato), d = Vector3.Dot(p, dentro);
+            minL = Mathf.Min(minL, l); maxL = Mathf.Max(maxL, l); minD = Mathf.Min(minD, d); maxD = Mathf.Max(maxD, d);
+        }
+        float largo = maxL - minL + Cella + 0.3f, lungo = maxD - minD + Cella + 0.3f;
+        Vector3 centro = origine + lato * ((minL + maxL) * 0.5f) + dentro * ((minD + maxD) * 0.5f);
+        if (largo > BoccaMassima || lungo > BoccaMassima)
+        {
+            saltati.AppendLine("- vicolo troppo grande da chiudere (" + largo.ToString("0.0") + " x " + lungo.ToString("0.0") + " m), a "
+                + Posizione(centro) + " (accanto a " + NomeVicino(v.bocca) + ")");
+            return false;
+        }
+        centro.y = Pavimento(centro);
+        var o = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Undo.RegisterCreatedObjectUndo(o, "Chiudi i vicoli ciechi");
+        o.name = "Catasta (chiude un vicolo)";
+        o.transform.SetParent(gruppo, false);
+        o.transform.SetPositionAndRotation(centro + Vector3.up * 0.6f, Quaternion.LookRotation(dentro));
+        o.transform.localScale = new Vector3(largo, 1.2f, lungo);
+        if (legno != null) o.GetComponent<Renderer>().sharedMaterial = legno;
+        elenco.AppendLine("- catasta di " + largo.ToString("0.0") + " x " + lungo.ToString("0.0") + " m a " + Posizione(centro) + ", accanto a " + NomeVicino(v.bocca));
         return true;
     }
 
