@@ -62,6 +62,9 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 12 ottobre: bussola in alto per gli obiettivi (solo informazione)
+Lorenzo ha chiesto una bussola a schermo (ramo `lorenzoc/bussola`): striscia in alto al centro con i punti cardinali (tradotti, chiavi `hud.nord/est/sud/ovest`) e un rombo color fiamma sull'obiettivo, con la distanza in metri. Si vede solo nelle scene con `Missioni` (non nella zona di prova). Script nuovi in `Assets/Scripts/Livelli/`: `Bussola.cs` (si crea da sola, come l'interfaccia) e `MetaObiettivo.cs` (il punto da indicare, si attiva dagli eventi delle quest); `Missioni.cs` ha `ImpostaMeta`. Usa lo stile di `GraficaMenu`: se Giuseppe cambia caratteri e grandezze, la bussola li segue.
+
 ### 11 ottobre, notte: testi poco leggibili, da cambiare carattere e grandezza (richiesta per Giuseppe)
 Provando il prologo, Lorenzo trova i testi **poco leggibili**: chiede di **cambiare il carattere (font) e la grandezza** dei testi in partita (dialoghi, suggerimenti, obiettivo, scritte delle azioni). Stile e caratteri stanno in `Assets/Scripts/Interfaccia/GraficaMenu.cs` (area di Giuseppe). La prova del prologo e della quest 1 è andata bene.
 

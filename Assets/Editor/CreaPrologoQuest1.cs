@@ -20,13 +20,33 @@ using UnityEngine.SceneManagement;
 //       risveglio (Tobin, Maren, "L'eroe si alza") -> suggerimenti per muoversi e parlare -> parli con Maren
 //       -> obiettivo "Porta la legna", Tobin ti segue -> E alla catasta, Tobin parla -> E al camino, Maren parla
 //       -> quest 1 finita (il sole avanza), obiettivo "Vai dal fabbro" -> arrivi alla fucina, obiettivo tolto;
+//   - la bussola in alto indica dove andare: Maren, poi la catasta, il camino e la fucina (MetaObiettivo);
 //   - spegne l'orco di prova della piazza e i segnalini (di giorno l'orco attaccherebbe).
+// Per una scena già preparata c'è "magic-gnl > Prologo: aggiungi la bussola alla quest 1" (non rifà niente).
 // Non salva la scena: dopo il comando si guarda il risultato e si salva con Ctrl+S.
 // Se il gruppo esiste già, chiede se rifarlo da capo (le modifiche fatte a mano a quel gruppo si perdono).
 // Come si usa: aprire Assets/Scenes/VillaggioLagoNero.unity, poi menu "magic-gnl > Prologo: prepara la quest 1".
 // Non va montato su niente: è un comando dell'editor e non finisce nel gioco.
+[InitializeOnLoad]
 public static class CreaPrologoQuest1
 {
+    // Prima di ogni Play: se la scena ha la quest 1 ma non ancora le mete della bussola, le aggiunge da sola
+    // (così non serve ricordarsi il comando "aggiungi la bussola"). Poi la scena va salvata con Ctrl+S.
+    static CreaPrologoQuest1()
+    {
+        EditorApplication.playModeStateChanged += stato =>
+        {
+            if (stato != PlayModeStateChange.ExitingEditMode) return;
+            Scene scena = SceneManager.GetActiveScene();
+            var gruppo = Trova(scena, NomeGruppo);
+            if (gruppo == null || gruppo.GetComponentInChildren<MetaObiettivo>(true) != null) return;
+            int nuovi = AggiungiBussola(scena);
+            if (nuovi == 0) return;
+            EditorSceneManager.MarkSceneDirty(scena);
+            Debug.Log("Prologo: aggiunte da sole le mete della bussola alla quest 1 (" + nuovi + "). Dopo il Play salva la scena (Ctrl+S).");
+        };
+    }
+
     const string NomeGruppo = "Prologo - quest 1";
     const string Cartella = "Assets/Segnaposto/Prologo";
 
@@ -216,11 +236,72 @@ public static class CreaPrologoQuest1
             o.SetActive(false);
         }
 
+        AggiungiBussola(scena);
+
         foreach (var c in new Component[] { missioni, segui, zona, puntoCamino, prendi, parlaMaren, marenRitorno, tobinCapanno, risveglio })
             EditorUtility.SetDirty(c);
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
         Debug.Log("Prologo: quest 1 preparata nel gruppo \"" + NomeGruppo + "\". Controlla e salva la scena (Ctrl+S), poi Play.");
+    }
+
+    // ---------- bussola ----------
+
+    // Per una scena già preparata (senza rifare il gruppo e perdere le modifiche a mano): aggiunge le mete della bussola.
+    [MenuItem("magic-gnl/Prologo: aggiungi la bussola alla quest 1")]
+    static void MenuBussola()
+    {
+        Scene scena = SceneManager.GetActiveScene();
+        if (Trova(scena, NomeGruppo) == null)
+        {
+            EditorUtility.DisplayDialog("Prologo", "Apri la scena VillaggioLagoNero già preparata con \"Prologo: prepara la quest 1\".", "Ok");
+            return;
+        }
+        int nuovi = AggiungiBussola(scena);
+        EditorSceneManager.MarkSceneDirty(scena);
+        Debug.Log("Prologo: bussola aggiunta alla quest 1 (" + nuovi + " collegamenti nuovi). Salva la scena (Ctrl+S), poi Play.");
+    }
+
+    // Mete della quest 1: Maren dopo il risveglio, la catasta dopo il dialogo con Maren, il camino quando hai la legna,
+    // la fucina alla fine. Cerca gli oggetti per nome; un collegamento già presente non viene ripetuto.
+    static int AggiungiBussola(Scene scena)
+    {
+        int nuovi = 0;
+        var maren = Trova(scena, "Maren");
+        var legna = Trova(scena, "Punto: prendi la legna");
+        var camino = Trova(scena, "Punto: metti la legna nel fuoco");
+        var fucina = Trova(scena, "Arrivo dal fabbro");
+        var risveglio = Trova(scena, "Dialogo: risveglio");
+        var ritorno = Trova(scena, "Dialogo: Maren al ritorno");
+        if (risveglio != null && maren != null)
+            nuovi += Collega(Evento(risveglio.GetComponent<DialogoAutomatico>(), "alTermine"), Meta(maren));
+        if (maren != null && legna != null && maren.GetComponent<Interlocutore>() != null)
+            nuovi += Collega(Evento(maren.GetComponent<Interlocutore>(), "alTermine"), Meta(legna));
+        if (legna != null && camino != null && legna.GetComponent<PuntoInterazione>() != null)
+            nuovi += Collega(Evento(legna.GetComponent<PuntoInterazione>(), "alPremere"), Meta(camino));
+        if (ritorno != null && fucina != null)
+            nuovi += Collega(Evento(ritorno.GetComponent<DialogoAutomatico>(), "alTermine"), Meta(fucina));
+        foreach (var o in new[] { maren, legna, camino, fucina, risveglio, ritorno })
+        {
+            if (o == null) { Debug.LogWarning("Prologo: un oggetto della quest 1 non si trova (rinominato?): bussola incompleta."); continue; }
+            foreach (var c in o.GetComponents<MonoBehaviour>()) EditorUtility.SetDirty(c);
+        }
+        return nuovi;
+    }
+
+    static MetaObiettivo Meta(GameObject o)
+    {
+        var m = o.GetComponent<MetaObiettivo>();
+        return m != null ? m : Undo.AddComponent<MetaObiettivo>(o);
+    }
+
+    static int Collega(UnityEvent evento, MetaObiettivo meta)
+    {
+        if (evento == null) return 0;
+        for (int i = 0; i < evento.GetPersistentEventCount(); i++)
+            if (evento.GetPersistentTarget(i) == meta && evento.GetPersistentMethodName(i) == "Attiva") return 0;
+        UnityEventTools.AddPersistentListener(evento, meta.Attiva);
+        return 1;
     }
 
     // ---------- aiuti ----------
@@ -237,6 +318,7 @@ public static class CreaPrologoQuest1
 
     static UnityEvent Evento(Component c, string campo)
     {
+        if (c == null) return null;
         var f = c.GetType().GetField(campo, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         var e = (UnityEvent)f.GetValue(c);
         if (e == null) { e = new UnityEvent(); f.SetValue(c, e); }

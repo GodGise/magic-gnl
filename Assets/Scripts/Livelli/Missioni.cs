@@ -7,6 +7,7 @@ using UnityEngine;
 // ZonaArrivo, DialogoAutomatico) lo chiamano dai loro eventi per cambiare l'obiettivo, mostrare un suggerimento o
 // dire che una quest è finita. Quando una quest finisce lo dice anche a OrarioPrologo (il sole avanza).
 // L'obiettivo si vede in alto a destra, sotto l'ora; i suggerimenti in alto al centro, uno dopo l'altro.
+// Dove andare lo indica la Bussola in alto (la meta si sceglie con il componente MetaObiettivo).
 // Come montarlo: su un oggetto vuoto della scena (per esempio "Missioni"); lo crea da solo il menu
 // "magic-gnl > Prologo: prepara la quest 1". Poi, negli eventi degli altri componenti, si trascina questo oggetto e
 // si sceglie Missioni > ImpostaObiettivo (con la chiave di Lingua, per esempio ob.q1.legna), Suggerisci (per esempio
@@ -21,8 +22,11 @@ public class Missioni : MonoBehaviour
 
     public static Missioni Istanza { get; private set; }
     public string Obiettivo => obiettivo;
+    // Dove si trova l'obiettivo (lo indica la Bussola). Si imposta con MetaObiettivo > Attiva.
+    public Transform Meta => meta;
 
     string obiettivo;
+    Transform meta;
     float obiettivoDa;
     readonly Queue<string> suggerimenti = new Queue<string>();
     Coroutine giroSuggerimenti;
@@ -45,7 +49,15 @@ public class Missioni : MonoBehaviour
         obiettivoDa = Time.time;
     }
 
-    public void TogliObiettivo() => obiettivo = null;
+    // Toglie l'obiettivo e anche la meta della bussola.
+    public void TogliObiettivo()
+    {
+        obiettivo = null;
+        meta = null;
+    }
+
+    public void ImpostaMeta(Transform punto) => meta = punto;
+    public void TogliMeta() => meta = null;
 
     // I suggerimenti si mettono in fila: se ne arrivano due insieme si vedono uno dopo l'altro, mai durante un dialogo.
     public void Suggerisci(string chiave)
