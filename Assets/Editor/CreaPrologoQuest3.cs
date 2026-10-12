@@ -12,7 +12,8 @@ using static AiutiPrologo;
 //   - Hobb davanti al portone;
 //   - tre ratti giganti (RattoGigante + Bersaglio): 37 di vita, morso da 11, un balzo ogni 4 secondi a testa;
 //   - tutto collegato con gli eventi:
-//       fine della quest 2 (Brannoc o Edric) -> obiettivo "Vai al granaio di Hobb" (la bussola indica Hobb)
+//       fine della quest 2 (Brannoc o Edric) -> Hobb diventa parlabile, obiettivo "Vai al granaio di Hobb"
+//       (la bussola indica Hobb)
 //       -> parli con Hobb -> i ratti si svegliano, obiettivo "Ratti rimasti: 3" (scende a ogni ratto ucciso),
 //          suggerimenti su resistenza e balzi
 //       -> morti tutti e tre: Hobb ringrazia, quest 3 finita (il sole avanza).
@@ -158,6 +159,7 @@ public static class CreaPrologoQuest3
         Meta(inizio, centro);
         Su(inizio, missioni.Suggerisci, "tip.q3.resistenza");
         Su(inizio, missioni.Suggerisci, "tip.q3.schiva");
+        parla.enabled = false;   // Hobb parla solo dopo la quest 2 (così gli obiettivi non si accavallano)
 
         // Fine della quest 2 (per tutte le classi) -> "Vai al granaio di Hobb".
         foreach (var d in new[] { fineBrannoc, fineEdric })
@@ -167,6 +169,7 @@ public static class CreaPrologoQuest3
                 if (e.GetPersistentTarget(i) == null || (e.GetPersistentMethodName(i) == "ImpostaObiettivo" && e.GetPersistentTarget(i) == missioni))
                     UnityEditor.Events.UnityEventTools.RemovePersistentListener(e, i);
             Su(e, missioni.ImpostaObiettivo, "ob.q3.granaio");
+            Su(e, Abilita(parla), true);
             Meta(e, hobb);
             EditorUtility.SetDirty(d.GetComponent<DialogoAutomatico>());
         }
