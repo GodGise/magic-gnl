@@ -65,6 +65,7 @@ public class LogoStudio : MonoBehaviour
     float orologio;
     int fotogrammi;
     bool suonoPartito;
+    float inizioSuono;   // secondi di silenzio all'inizio del file audio, saltati in automatico
     float saltatoA = -1f;       // solo nell'editor: l'orologio quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
@@ -104,7 +105,11 @@ public class LogoStudio : MonoBehaviour
         sorgente.playOnAwake = false;
         sorgente.spatialBlend = 0f;
         sorgente.volume = Impostazioni.VolumeEffetti;
-        if (suono != null) { sorgente.clip = suono; }
+        if (suono != null)
+        {
+            sorgente.clip = suono;
+            inizioSuono = SilenzioIniziale(suono);
+        }
 
         var caso = new System.Random(7);
         float R() => (float)caso.NextDouble();
@@ -160,6 +165,22 @@ public class LogoStudio : MonoBehaviour
         }
     }
 
+    // Quanti secondi di silenzio ci sono all'inizio del file audio (se il file ha un vuoto prima del suono, qui lo si salta:
+    // così il primo suono udibile parte con l'animazione e il colpo cade al secondo giusto, senza dover tagliare il file).
+    static float SilenzioIniziale(AudioClip clip)
+    {
+        try
+        {
+            var campioni = new float[clip.samples * clip.channels];
+            if (!clip.GetData(campioni, 0)) return 0f;
+            for (int i = 0; i < campioni.Length; i++)
+                if (Mathf.Abs(campioni[i]) > 0.003f)
+                    return Mathf.Max(0f, (float)(i / clip.channels) / clip.frequency - 0.02f);
+        }
+        catch (System.Exception) { }
+        return 0f;
+    }
+
     // Secondi dall'inizio dell'animazione: negativo durante il nero iniziale.
     float Tempo => orologio - AttesaNera;
 
@@ -177,7 +198,11 @@ public class LogoStudio : MonoBehaviour
         if (!suonoPartito && t >= 0f)
         {
             suonoPartito = true;
-            if (sorgente != null && sorgente.clip != null) sorgente.Play();
+            if (sorgente != null && sorgente.clip != null)
+            {
+                sorgente.time = Mathf.Clamp(inizioSuono, 0f, Mathf.Max(0f, sorgente.clip.length - 0.1f));
+                sorgente.Play();
+            }
         }
         if (Application.isEditor && saltatoA < 0f && t < InizioSpegni && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
             saltatoA = orologio;
