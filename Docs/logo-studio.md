@@ -31,7 +31,15 @@ Prima **schermo nero e silenzio per 3 secondi**; poi parte l'animazione (e il su
 
 Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione).
 
-## Il suono
+## Il suono (versione attuale)
+
+Il file `logo-studio` parte **insieme al gioco**, dal primo istante, senza salti. Quindi i silenzi stanno **dentro il file**:
+- **0 - 4,4 s: silenzio** (3,0 s di nero + 1,4 s: il suono entra quando si accende la **terza runa** del primo arco, in alto a destra).
+- **4,4 s: parte il suono.**
+- **6,3 s: il colpo** (la scintilla tocca il lago e la runa centrale si accende): cioè **1,9 s dopo l'inizio del suono**.
+- Dopo il colpo la coda e la dissolvenza, fino a circa **13,4 s** totali.
+Le note qui sotto ("dopo il nero", secondi dall'animazione) valgono come idea del sonoro; per il file valgono i secondi sopra, dall'avvio del gioco.
+
 
 Se in `Assets/Resources/Audio/Effetti/` c'è un file chiamato **`logo-studio`** (`.ogg` o `.wav`), parte da solo **quando inizia l'animazione** (dopo il nero), con il volume degli effetti scelto nelle opzioni. Non serve toccare il codice. Se il file ha un vuoto (silenzio) all'inizio, il gioco lo **salta da solo**: parte dal primo suono udibile (soglia molto bassa), quindi il colpo va messo a 3,3 secondi **dal primo suono**, non dall'inizio del file. Durata consigliata: **10,5 secondi**, con l'**impatto al secondo 3,3** del file (come prima). Idea per far combaciare il suono con le immagini:
 1. 0,0 - 1,4: un respiro grave e un brillio sottile che salgono (il punto di luce e il filo esterno).
