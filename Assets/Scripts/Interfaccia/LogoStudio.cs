@@ -8,20 +8,24 @@ using UnityEngine.InputSystem;
 // poi compaiono "GNL STUDIO" (le lettere si stringono) e sotto, piccolo, "presenta"; infine tutto si spegne e parte il menu.
 // Non si salta (il logo dello studio è sacro): solo nell'editor di Unity, per chi lo prova spesso, F2 lo salta.
 // Si vede una volta sola a ogni avvio del gioco.
-// Suono: se nella cartella Assets/Resources/Audio/Effetti c'è un file "logo-studio" (ogg o wav) parte da solo a tempo zero.
+// Suono: se nella cartella Assets/Resources/Audio/Effetti c'è un file "logo-studio" (ogg o wav) parte da solo quando
+// inizia l'animazione, cioè dopo 1,5 secondi di nero.
 // I momenti dell'animazione (per far combaciare il suono) sono in Docs/logo-studio.md e nelle costanti qui sotto.
 // I pezzi del logo sono in Assets/Resources/Logo (si rifanno con Docs/logo-studio/genera_logo.py).
 // Come montarlo: non si monta, si crea da solo. Nella scena "Menu" ferma MenuPrincipale finché il logo non è finito.
 public class LogoStudio : MonoBehaviour
 {
-    // ---------- momenti (secondi dall'inizio) ----------
-    const float InizioAnelli = 0.7f, DurataAnelli = 2.0f;     // i quattro archi arrivano da fuori, uno dopo l'altro
-    const float InizioRombo = 2.2f, DurataRombo = 1.3f;       // il rombo si apre e si gira in posizione
-    const float InizioSpada = 3.1f, DurataSpada = 0.9f;       // la spada cala dall'alto
-    const float MomentoLampo = 4.0f;                          // la spada tocca: lampo, onda e scintille
-    const float InizioNome = 4.4f, DurataNome = 1.9f;         // "GNL STUDIO"
-    const float InizioPresenta = 6.0f, DurataPresenta = 1.0f; // "presenta"
-    const float InizioSpegni = 8.0f, DurataSpegni = 1.0f;     // dissolvenza al nero
+    // Prima schermo nero e silenzio per 1,5 secondi; poi parte l'animazione (e il suono).
+    const float AttesaNera = 1.5f;
+
+    // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
+    const float InizioAnelli = 0.0f, DurataAnelli = 2.0f;     // i quattro archi arrivano da fuori, uno dopo l'altro
+    const float InizioRombo = 1.5f, DurataRombo = 1.3f;       // il rombo si apre e si gira in posizione
+    const float InizioSpada = 2.4f, DurataSpada = 0.9f;       // la spada cala dall'alto
+    const float MomentoLampo = 3.3f;                          // la spada tocca: lampo, onda e scintille
+    const float InizioNome = 3.7f, DurataNome = 1.9f;         // "GNL STUDIO"
+    const float InizioPresenta = 5.3f, DurataPresenta = 1.0f; // "presenta"
+    const float InizioSpegni = 7.3f, DurataSpegni = 1.0f;     // dissolvenza al nero
     const float AttesaFinale = 0.35f;                         // nero prima del menu
 
     // Una volta per avvio del gioco (nell'editor con "Reload Domain" spento si azzera da solo).
@@ -47,7 +51,8 @@ public class LogoStudio : MonoBehaviour
     Texture2D[] anelli = new Texture2D[4];
     Texture2D rombo, spada;
     AudioSource sorgente;
-    float inizio = -1f;
+    float inizio = float.MaxValue;   // quando parte l'animazione (dopo il nero iniziale)
+    bool suonoPartito;
     float saltatoA = -1f;       // solo nell'editor: quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
@@ -82,11 +87,11 @@ public class LogoStudio : MonoBehaviour
                 taglia = 2f + (float)caso.NextDouble() * 4f,
             });
         }
-        inizio = Time.unscaledTime;
-        if (sorgente.clip != null) sorgente.Play();
+        inizio = Time.unscaledTime + AttesaNera;
     }
 
-    float Tempo => inizio < 0f ? 0f : Time.unscaledTime - inizio;
+    // Secondi dall'inizio dell'animazione: negativo durante il nero iniziale.
+    float Tempo => inizio == float.MaxValue ? -AttesaNera : Time.unscaledTime - inizio;
 
     // Solo nell'editor, con F2: la dissolvenza al nero parte subito (più veloce).
     float TempoSpegni => saltatoA >= 0f ? Mathf.Min(InizioSpegni, saltatoA - inizio) : InizioSpegni;
@@ -96,6 +101,11 @@ public class LogoStudio : MonoBehaviour
     {
         if (finito) return;
         float t = Tempo;
+        if (!suonoPartito && t >= 0f)
+        {
+            suonoPartito = true;
+            if (sorgente != null && sorgente.clip != null) sorgente.Play();
+        }
         if (Application.isEditor && saltatoA < 0f && t < InizioSpegni && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
             saltatoA = Time.unscaledTime;
         float fine = (saltatoA >= 0f ? saltatoA - inizio + 0.6f : InizioSpegni + DurataSpegni) + AttesaFinale;
