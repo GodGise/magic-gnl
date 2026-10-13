@@ -416,14 +416,6 @@ public class LogoStudio : MonoBehaviour
         float chiusa = Morbido(t / MomentoLampo) * 0.62f + 0.28f * lampo;
         if (chiusa > 0.01f) { GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(chiusa) * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), vignetta); GUI.color = Color.white; }
         DisegnaNome(t, luce);
-        if (Application.isEditor && !finito && Time.captureFramerate == 0)   // durante la registrazione la scritta non deve finire nel video
-        {
-            var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
-            GUI.color = new Color(1f, 1f, 1f, 0.55f);
-            GUI.Label(new Rect(20f, GraficaMenu.Altezza - 60f, 1400f, 40f),
-                "Solo editor - Differenza suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
-            GUI.color = Color.white;
-        }
     }
 
     // Le 28 rune: ogni runa ha il suo momento di accensione. Brillano forte, poi calano a una luce calda;
