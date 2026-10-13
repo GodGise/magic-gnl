@@ -169,6 +169,7 @@ public class CaricamentoZona : MonoBehaviour
     void ApplicaAmbiente(Scene zona)
     {
         ambientePrima = RenderSettings.ambientLight;
+        modoAmbientePrima = RenderSettings.ambientMode;
         nebbiaPrima = RenderSettings.fogColor;
         densitaPrima = RenderSettings.fogDensity;
         nebbiaAccesa = RenderSettings.fog;
@@ -184,6 +185,7 @@ public class CaricamentoZona : MonoBehaviour
         var ambiente = FindFirstObjectByType<AmbienteZona>();
         Color luce = ambiente != null ? ambiente.luceAmbiente : new Color(0.08f, 0.08f, 0.1f);
         Color nebbia = ambiente != null ? ambiente.nebbia : Color.black;
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;   // luce uguale da tutte le parti (senza cielo)
         RenderSettings.ambientLight = luce;
         RenderSettings.fog = true;
         RenderSettings.fogColor = nebbia;
@@ -199,8 +201,11 @@ public class CaricamentoZona : MonoBehaviour
         }
     }
 
+    UnityEngine.Rendering.AmbientMode modoAmbientePrima;
+
     void RimettiAmbiente()
     {
+        RenderSettings.ambientMode = modoAmbientePrima;
         RenderSettings.ambientLight = ambientePrima;
         RenderSettings.fogColor = nebbiaPrima;
         RenderSettings.fogDensity = densitaPrima;
