@@ -72,9 +72,9 @@ public static class CreaPrologoQuest5
         {
             if (figlio == null || figlio == edric.transform) continue;
             if (figlio.name != "Edric (la leggenda)" && figlio.name != "Edric (il medaglione)") continue;
-            var vecchio = figlio.GetComponent<Interlocutore>();
+            var dialogoVecchio = figlio.GetComponent<Interlocutore>();
             for (int i = fineIlseEvento.GetPersistentEventCount() - 1; i >= 0; i--)
-                if (vecchio != null && fineIlseEvento.GetPersistentTarget(i) == vecchio) UnityEventTools.RemovePersistentListener(fineIlseEvento, i);
+                if (dialogoVecchio != null && fineIlseEvento.GetPersistentTarget(i) == dialogoVecchio) UnityEventTools.RemovePersistentListener(fineIlseEvento, i);
             Undo.DestroyObjectImmediate(figlio.gameObject);
         }
 
