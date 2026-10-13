@@ -68,6 +68,11 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: nome delle monete deciso, e ringraziamenti a quest finita (solo informazione)
+Stesso ramo `lorenzoc/negozio-ilse`.
+- **Monete:** Lorenzo ha scelto **Lacrime del lago**; nel parlato e nelle interfacce basta "lacrime".
+- **Ringraziamenti:** Hobb, a ratti morti, chiedeva ancora di ucciderli. Ora a quest finita Maren, Brannoc, Edric e Hobb ringraziano con una battuta coerente (anche diversa per classe; battute in `Docs/dialoghi-capitolo-1.md`, sezione "Dopo le quest", 8 lingue). `Interlocutore` ha "Righe Dopo La Quest" e `QuestCompiuta()`; comando nuovo "magic-gnl > Prologo: ringraziamenti dopo le quest" (`CreaRingraziamenti.cs`), richiamato anche dai comandi delle quest 1-4. **Toccati:** `Interlocutore.cs`, `Lingua.cs`, `CreaPrologoQuest1-4.cs` (una riga ciascuno).
+
 ### 13 ottobre: monete (Lacrime del lago) e mercato (serve un'occhiata di Giuseppe, e un parere sul nome)
 Stesso ramo `lorenzoc/negozio-ilse`. Lorenzo ha chiesto monete legate alla storia, niente argento. Scelta provvisoria: **Lacrime del lago**, sassolini neri come vetro che il lago lascia sulla riva dopo le tempeste. Altre 4 proposte (Scaglie nere, Chiodi di guardia, Segni di veglia, Gocce di pece) in `Docs/monete.md`: **Giuseppe, dicci quale preferisci**; cambiare nome vuol dire cambiare solo i testi `valuta.*` in `Lingua.cs`.
 - **Mercato:** ogni mercante vende le sue cose (tabella in `Docs/monete.md`). Fatto solo Ilse: nella bottega tre schede, **Baratto** (fiori per pozioni, il più conveniente), **Compra** (pozioni con le Lacrime, circa 5 volte più caro), **Vendi** (fiori per Lacrime). Prezzi provvisori nello stesso documento.

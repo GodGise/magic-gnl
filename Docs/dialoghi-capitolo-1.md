@@ -107,3 +107,15 @@ Scritti dal Claude di Giuseppe il 10 ottobre 2026 sulla base di `Docs/quest-capi
 ## Chiavi in `Lingua.cs` (stato al 11 ottobre)
 
 Tradotti nelle 8 lingue: i nomi dei personaggi (`pg.maren`, `pg.tobin`, `pg.brannoc`, `pg.edric`, `pg.hobb`, `pg.ilse`) e tutta la **quest 1** (`dlg.q1.01` a `dlg.q1.09`, suggerimenti `tip.q1.muovi` e `tip.q1.parla`, obiettivi `ob.q1.legna` e `ob.q1.fabbro`). L'ordine delle righe del dialogo in casa è `dlg.q1.01` a `dlg.q1.07`; `dlg.q1.08` è Tobin al capanno e `dlg.q1.09` Maren al ritorno con la legna. Le quest 2-6 si traducono dopo.
+
+## Dopo le quest (Lorenzo, 13 ottobre)
+
+A quest finita chi l'ha data non chiede più il lavoro ma ringrazia (chiavi `dlg.dopo.*` in `Lingua.cs`).
+
+- **Maren** (dopo la quest 1): "Grazie per la legna. Stasera la casa sarà calda... e Tobin non fa che raccontare a tutti quanto sei forte."
+- **Brannoc** (dopo la quest 2), Guerriero e Ladro: "Hai ancora la mano buona, te l'ho detto. Il manichino è lì se vuoi sfogarti: io torno al mio ferro."
+- **Brannoc**, Stregone: "Edric ti ha rimesso in mano quel bastone, eh? Stai attento: il fuoco non perdona chi se ne dimentica."
+- **Edric** (dopo la quest 2), Stregone: "Torna quando vuoi. Il tempio è silenzioso, ma non è vuoto."
+- **Edric**, Guerriero e Ladro: "Brannoc dice che hai ancora la mano ferma. Bene: di questi tempi una lama vale più di una preghiera."
+- **Hobb** (dopo la quest 3): "Il granaio è di nuovo mio, grazie a te! Quelle lacrime te le sei guadagnate tutte... e le due birre non me le scordo."
+- **Ilse** (dopo la quest 4): niente battuta, vicino a lei c'è la bottega ("Commercia").

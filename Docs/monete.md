@@ -2,18 +2,18 @@
 
 Richiesta di Lorenzo, 13 ottobre 2026: monete legate alla storia (niente le solite monete d'argento), un mercato dove ogni cosa si trova in un posto preciso, prezzi provvisori.
 
-## La moneta scelta per ora: le Lacrime del lago
+## La moneta: le Lacrime del lago (decisa da Lorenzo, 13 ottobre)
 
 Sassolini neri, lisci e lucidi come vetro, con un riflesso blu. Il Lago Nero li lascia sulla riva **solo dopo le tempeste**: nessuno sa da dove vengano. Sono rare e non si possono falsificare, per questo al villaggio valgono più del ferro. I vecchi dicono che sono le lacrime di quello che dorme sotto il lago (gancio per la storia: forse c'entrano con la reliquia).
 
-- Nel gioco: "45 lacrime", "1 lacrima". Nel codice: `Borsa` (un numero, non riempie lo zaino).
+- Nome intero: **Lacrime del lago**. Nel parlato dei personaggi e nelle interfacce va bene anche solo **"lacrime"**: "45 lacrime", "1 lacrima". Nel codice: `Borsa` (un numero, non riempie lo zaino).
 - Si cambiano nome e testi in `Lingua.cs` (chiavi `valuta.*`) se si sceglie un'altra proposta qui sotto: il codice non cambia.
 
-## Altre proposte (da scegliere insieme)
+## Le altre proposte (scartate, restano qui come idee)
 
 | Nome | Materiale | Legame con la storia |
 |---|---|---|
-| **Lacrime del lago** (scelta per ora) | Ossidiana nera lasciata dal lago dopo le tempeste | Il lago nero e quello che ci dorme sotto |
+| **Lacrime del lago** (scelta) | Ossidiana nera lasciata dal lago dopo le tempeste | Il lago nero e quello che ci dorme sotto |
 | **Scaglie nere** | Scaglie dure e cangianti dei grossi pesci del lago, forate e infilate su cordini di cuoio (10 scaglie = un filo) | Il villaggio vive del lago anche se nessuno ci fa il bagno |
 | **Chiodi di guardia** | Chiodi quadrati di ferro nero battuti alla fucina | Gli antenati pagavano le sentinelle in chiodi per costruire le case. Moneta povera, da villaggio |
 | **Segni di veglia** | Dischetti d'osso o di corno incisi con la runa della guardia | Gli antichi li davano a chi vegliava sul lago; oggi nessuno crede più alla storia e sono solo soldi |

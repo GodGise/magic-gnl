@@ -272,6 +272,7 @@ public static class CreaPrologoQuest4
         Meta(dopoHobb, ilse);
         EditorUtility.SetDirty(fineHobb.GetComponent<DialogoAutomatico>());
 
+        CreaRingraziamenti.Applica(scena);   // a quest finita i personaggi ringraziano invece di ripetere il compito
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
         Debug.Log("Prologo: quest 4 preparata nel gruppo \"" + NomeGruppo + "\" (bottega di Ilse con il negozio, 3 fiori di riva). "
