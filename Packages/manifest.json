@@ -11,6 +11,8 @@
     "com.unity.modules.terrain": "1.0.0",
     "com.unity.modules.ui": "1.0.0",
     "com.unity.modules.uielements": "1.0.0",
-    "com.unity.netcode.gameobjects": "2.13.3"
+    "com.unity.modules.video": "1.0.0",
+    "com.unity.netcode.gameobjects": "2.13.3",
+    "com.unity.recorder": "5.1.2"
   }
 }

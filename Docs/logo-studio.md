@@ -54,3 +54,10 @@ Se nell'editor si salta con F2, il suono sfuma da solo in mezzo secondo.
 ## Cosa cambia nel codice
 
 `Assets/Scripts/Interfaccia/LogoStudio.cs` si crea da solo all'avvio, solo se la scena è `Menu`: ferma `MenuPrincipale` (non parte né la musica né la sequenza del titolo) fino a logo finito. I tempi sono costanti all'inizio del file. In "Opzioni" non c'è modo di spegnerlo; per le prove nell'editor basta partire da un'altra scena o premere F2.
+
+## Soluzione definitiva: video con il suono dentro (14 ottobre)
+
+Per non avere più problemi di sincronia, il logo può essere un **video finito** (immagini + suono montati insieme, es. su CapCut).
+- Se esiste `Assets/StreamingAssets/logo-studio.mp4`, il gioco riproduce quello (VideoPlayer) e basta.
+- Se non esiste, si usa l'animazione disegnata dal codice (con il suono agganciato come orologio).
+- Per ottenere il video senza audio da montare: pacchetto Unity **Recorder** (aggiunto in `manifest.json`), Window > General > Recorder > Recorder Window, Movie Recorder, MP4, 30 fps, Game View 1920x1080; durante la registrazione la scritta "Solo editor" e il suono vengono disattivati da soli (`Time.captureFramerate`).

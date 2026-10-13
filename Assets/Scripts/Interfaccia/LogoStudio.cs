@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Video;
 
 // L'apertura con il logo dello studio: "GNL STUDIO presenta".
 // A cosa serve: all'avvio del gioco, prima della schermata del titolo, su fondo nero (3 secondi) il sigillo si compone GRANDE
@@ -73,6 +75,13 @@ public class LogoStudio : MonoBehaviour
     Texture2D[] rune = new Texture2D[7];
     Texture2D rombo, runaCentrale, esterno, onda, raggi, vignetta;
     AudioSource sorgente;
+
+    // VIDEO FINITO: se esiste StreamingAssets/logo-studio.mp4 (animazione + suono montati insieme, es. su CapCut) si riproduce quello,
+    // e il sincronismo è garantito perché suono e immagini stanno nello stesso file. Altrimenti si usa l'animazione disegnata dal codice.
+    bool modoVideo;
+    bool videoFinito;
+    VideoPlayer video;
+    RenderTexture schermoVideo;
     // Orologio del logo: conta solo i fotogrammi veri. I primi caricamenti (caratteri, scena, suoni) possono bloccare il gioco
     // anche per un secondo: quel tempo non conta, altrimenti il nero iniziale si accorcia o sparisce.
     float orologio;
@@ -100,6 +109,7 @@ public class LogoStudio : MonoBehaviour
         onda = Resources.Load<Texture2D>("Logo/onda");
         raggi = Resources.Load<Texture2D>("Logo/raggi");
         Cursor.visible = false;
+        PreparaVideo();
 
         // vignetta: trasparente al centro, scura ai bordi
         vignetta = new Texture2D(128, 128, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
@@ -184,14 +194,53 @@ public class LogoStudio : MonoBehaviour
     float TempoSpegni => saltatoA >= 0f ? Mathf.Min(InizioSpegni, saltatoA - AttesaNera) : InizioSpegni;
     float DurataSpegniAttuale => saltatoA >= 0f ? 0.6f : DurataSpegni;
 
+    void PreparaVideo()
+    {
+        string percorso = Path.Combine(Application.streamingAssetsPath, "logo-studio.mp4");
+        if (!File.Exists(percorso)) return;
+        Impostazioni.Applica();
+        sorgente = gameObject.AddComponent<AudioSource>();
+        sorgente.playOnAwake = false;
+        sorgente.spatialBlend = 0f;
+        sorgente.volume = Impostazioni.VolumeEffetti;
+        schermoVideo = new RenderTexture(1920, 1080, 0);
+        video = gameObject.AddComponent<VideoPlayer>();
+        video.playOnAwake = false;
+        video.isLooping = false;
+        video.source = VideoSource.Url;
+        video.url = percorso;
+        video.renderMode = VideoRenderMode.RenderTexture;
+        video.targetTexture = schermoVideo;
+        video.audioOutputMode = VideoAudioOutputMode.AudioSource;
+        video.controlledAudioTrackCount = 1;
+        video.EnableAudioTrack(0, true);
+        video.SetTargetAudioSource(0, sorgente);
+        video.loopPointReached += _ => videoFinito = true;
+        video.errorReceived += (_, messaggio) =>
+        {
+            Debug.LogWarning("[Logo] Video non riproducibile (" + messaggio + "): uso l'animazione del codice");
+            modoVideo = false;
+        };
+        video.Prepare();
+        modoVideo = true;
+    }
+
+    void UpdateVideo()
+    {
+        if (video.isPrepared && !video.isPlaying && !videoFinito) video.Play();
+        if (Application.isEditor && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame) videoFinito = true;
+        if (videoFinito) Concludi();
+    }
+
     void Update()
     {
         if (finito) return;
+        if (modoVideo) { UpdateVideo(); return; }
         // i primi fotogrammi (caricamenti pesanti) non contano; poi si conta con passi mai più lunghi di 50 ms
         fotogrammi++;
         if (fotogrammi > 4) orologio += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
         float t = Tempo;
-        if (!suonoPartito && fotogrammi > 4 && sorgente != null && sorgente.clip != null)
+        if (!suonoPartito && fotogrammi > 4 && Time.captureFramerate == 0 && sorgente != null && sorgente.clip != null)
         {
             suonoPartito = true;
             sorgente.time = 0f;
@@ -228,6 +277,8 @@ public class LogoStudio : MonoBehaviour
         finito = true;
         Cursor.visible = true;
         if (vignetta != null) Destroy(vignetta);
+        if (video != null) { video.Stop(); Destroy(video); }
+        if (schermoVideo != null) schermoVideo.Release();
         if (menu != null) menu.enabled = true;   // da qui parte il menu (Start, musica, titolo)
         Destroy(gameObject);
     }
@@ -248,6 +299,11 @@ public class LogoStudio : MonoBehaviour
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), GraficaMenu.Pixel);
         GUI.color = Color.white;
         GraficaMenu.FoglioVirtuale();
+        if (modoVideo)
+        {
+            if (video.isPlaying) GUI.DrawTexture(new Rect(0f, 0f, GraficaMenu.Larghezza, GraficaMenu.Altezza), schermoVideo, ScaleMode.StretchToFill, false);
+            return;
+        }
         base_ = GUI.matrix;
 
         float t = Tempo;
@@ -360,7 +416,7 @@ public class LogoStudio : MonoBehaviour
         float chiusa = Morbido(t / MomentoLampo) * 0.62f + 0.28f * lampo;
         if (chiusa > 0.01f) { GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(chiusa) * luce); GUI.DrawTexture(new Rect(0, 0, GraficaMenu.Larghezza, GraficaMenu.Altezza), vignetta); GUI.color = Color.white; }
         DisegnaNome(t, luce);
-        if (Application.isEditor && !finito)
+        if (Application.isEditor && !finito && Time.captureFramerate == 0)   // durante la registrazione la scritta non deve finire nel video
         {
             var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
             GUI.color = new Color(1f, 1f, 1f, 0.55f);
