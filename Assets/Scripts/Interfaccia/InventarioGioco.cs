@@ -33,9 +33,13 @@ using UnityEngine.SceneManagement;
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class InventarioGioco : MonoBehaviour
 {
-    public static bool Aperto { get; private set; }
+    // Vero quando è aperto l'inventario oppure la finestra di un negozio (Negozio): per gli altri script vuol dire
+    // "c'è una finestra aperta in partita, ignora i tasti". L'inventario stesso guarda solo il suo stato (inventarioAperto).
+    public static bool Aperto => inventarioAperto || Negozio.Aperto;
+    static bool inventarioAperto;
     // Fotogramma in cui l'inventario si è chiuso: il menu di pausa non deve aprirsi con lo stesso Esc.
-    public static int FotogrammaChiusura { get; private set; } = -10;
+    // Anche il negozio lo segna quando si chiude.
+    public static int FotogrammaChiusura { get; internal set; } = -10;
 
     const int Colonne = 9, RigheVisibili = 4;   // 36 caselle visibili; lo zaino non ha limite, il resto si scorre con la rotellina o le frecce
 
@@ -111,7 +115,7 @@ public class InventarioGioco : MonoBehaviour
 
     void SceneCaricata(Scene s, LoadSceneMode m)
     {
-        if (Aperto) Chiudi(false);
+        if (inventarioAperto) Chiudi(false);
         giocatore = null;
     }
 
@@ -137,7 +141,7 @@ public class InventarioGioco : MonoBehaviour
         zona = visibili.Count > 0 ? Zona.Zaino : Zona.Caselle;
         indiceZaino = Mathf.Clamp(indiceZaino, 0, Mathf.Max(0, visibili.Count - 1));
         tempoApertura = Time.unscaledTime;
-        Aperto = true;
+        inventarioAperto = true;
     }
 
     void Spegni(Behaviour b)
@@ -149,7 +153,7 @@ public class InventarioGioco : MonoBehaviour
 
     void Chiudi(bool riattiva)
     {
-        Aperto = false;
+        inventarioAperto = false;
         preso = null;
         trascinando = false;
         casellaAccesa = -1;
@@ -416,7 +420,8 @@ public class InventarioGioco : MonoBehaviour
         // il tasto dell'inventario si sceglie in Opzioni > Comandi (Tab all'inizio)
         bool tasto = Comandi.PremutoOra(Azione.Inventario) || (pad != null && pad.selectButton.wasPressedThisFrame);
 
-        if (!Aperto)
+        if (Negozio.Aperto) return;   // con la bottega aperta il tasto dell'inventario non fa niente
+        if (!inventarioAperto)
         {
             // si apre solo da fermi o camminando: non a metà di un attacco, una schivata o una parata
             if (tasto && giocatore.StatoAttuale == GiocatoreControllo.Stato.Libero && MenuPausa.FotogrammaApertura != Time.frameCount) Apri();
@@ -496,7 +501,7 @@ public class InventarioGioco : MonoBehaviour
 
     void OnGUI()
     {
-        if (!Aperto || giocatore == null) return;
+        if (!inventarioAperto || giocatore == null) return;
         GUI.depth = -50;
         GraficaMenu.PreparaStili();
         float comparsa = Mathf.Clamp01((Time.unscaledTime - tempoApertura) / 0.2f);
@@ -844,8 +849,13 @@ public class InventarioGioco : MonoBehaviour
         switch (o)
         {
             case DatiConsumabile cons:
-                // pozioni: quanta vita ridanno e quante ne hai
-                Aggiungi("stat.vita", "+" + Formatta(cons.cura), cons.cura, false, true);
+                // pozioni: quanta vita, mana e resistenza ridanno, e quante ne hai
+                if (cons.cura > 0f) Aggiungi("stat.vita", "+" + Formatta(cons.cura), cons.cura, false, true);
+                if (cons.mana > 0f) Aggiungi("stat.mana", "+" + Formatta(cons.mana), cons.mana, false, true);
+                if (cons.resistenza > 0f) Aggiungi("stat.resistenza", "+" + Formatta(cons.resistenza), cons.resistenza, false, true);
+                if (cons.recuperoResistenzaPercento > 0f && cons.durataEffetto > 0f)
+                    Aggiungi("stat.recupero_resistenza", "+" + Formatta(cons.recuperoResistenzaPercento) + "%  " + Formatta(cons.durataEffetto) + " s",
+                        cons.recuperoResistenzaPercento, false, true);
                 Aggiungi("inv.quantita", UsoConsumabili.Quanti(cons).ToString(), 0f, false, true);
                 break;
             case DatiOggettoMissione mis:

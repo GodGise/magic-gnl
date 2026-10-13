@@ -989,6 +989,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         Vita = Mathf.Min(VitaMassima, Vita + quantita);
     }
 
+    // Ridà mana (pozioni: UsoConsumabili), senza superare il massimo. Senza bastone il mana non serve e non cambia.
+    public void RidaiMana(float quantita)
+    {
+        if (quantita <= 0f || stato == Stato.Morto || !HaBastone) return;
+        Mana = Mathf.Min(ManaMassimo, Mana + quantita);
+    }
+
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
     public void SbloccaBastone()
     {

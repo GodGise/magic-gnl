@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 // L'uso degli oggetti consumabili (pozioni): il tasto "Usa oggetto" (F all'inizio, si cambia in Opzioni > Comandi;
-// freccia giù sul pad) usa l'oggetto scelto dello zaino, che sparisce. La Pozione di Ilse ridà vita in un secondo.
+// freccia giù sul pad) usa l'oggetto scelto dello zaino, che sparisce. La Pozione di Ilse ridà vita in un secondo;
+// le altre pozioni (Docs/erbe-e-pozioni.md) ridanno anche mana e resistenza o fanno ricaricare più in fretta la resistenza.
 // Quale oggetto si usa: quello scelto nell'inventario (scheda Varie, E o doppio clic); se non è stato scelto niente,
 // o è finito, il primo consumabile dello zaino.
 // In basso a sinistra, sopra le armi, un rombo mostra l'oggetto pronto, quante copie ci sono e il tasto.
@@ -137,8 +138,16 @@ public class UsoConsumabili : MonoBehaviour
         curaRimasta += oggetto.cura;
         curaAlSecondo = oggetto.durataCura > 0f ? oggetto.cura / oggetto.durataCura : 0f;
         Suoni.Suona(Suono.Raccolta, giocatore.transform.position + Vector3.up, 0.8f, 0.8f);
-        string testo = oggetto.Nome;
-        if (oggetto.cura > 0f) testo += "   +" + Mathf.RoundToInt(oggetto.cura) + " " + Lingua.T("stat.vita");
+        if (oggetto.mana > 0f) giocatore.RidaiMana(oggetto.mana);
+        var resistenza = giocatore.GetComponent<Resistenza>();
+        if (resistenza != null)
+        {
+            resistenza.Recupera(oggetto.resistenza);
+            if (oggetto.recuperoResistenzaPercento > 0f && oggetto.durataEffetto > 0f)
+                resistenza.Potenzia(oggetto.recuperoResistenzaPercento, oggetto.durataEffetto);
+        }
+        string effetti = oggetto.Effetti();
+        string testo = oggetto.Nome + (effetti.Length > 0 ? "   " + effetti : "");
         MessaggiSchermo.Mostra(testo, 2.5f);
         Usato?.Invoke(oggetto);
     }

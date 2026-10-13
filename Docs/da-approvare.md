@@ -68,6 +68,13 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: bottega di Ilse, fiori e pozioni (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/negozio-ilse` (parte da `lorenzoc/stamina-esplorazione`: va unito dopo). Decisione di Lorenzo: l'erboristeria di Ilse è un **negozio di baratto** (fiori per pozioni) e **ogni fiore ha uno scopo**: Fiore di riva = vita, Cardo nero = resistenza, Lunaria = mana. Cinque ricette, anche con fiori combinati (tabella in `Docs/erbe-e-pozioni.md`). Nella quest 4 Ilse, quando hai i 3 fiori, apre la bottega e sei tu a scambiarli con 2 Pozioni di Ilse; il primo scambio fa passare a "Bevi una pozione". Le monete non ci sono ancora: quando arriveranno saranno un oggetto da mettere nelle ricette, il negozio non cambia.
+- **File nuovi:** `Negozio.cs` (finestra della bottega, serve a qualsiasi mercante), `DatiRicetta.cs`, `Assets/Editor/CreaErbe.cs` (menu "magic-gnl > Erbe: crea fiori, pozioni e ricette"), `Docs/erbe-e-pozioni.md`.
+- **File condivisi toccati:** `InventarioGioco.cs` (`Aperto` è vero anche con la bottega aperta, così E, F e Tab non fanno altro; dettaglio delle pozioni con mana e resistenza), `DatiConsumabile.cs` (mana, resistenza, ricarica più veloce per un po'), `Resistenza.cs` (`Recupera`, `Potenzia`), `UsoConsumabili.cs`, `GiocatoreControllo.cs` (`RidaiMana`), `Lingua.cs` (testi della bottega, 2 fiori e 4 pozioni nuove; `dlg.q4.04` riscritta), `CreaPrologoQuest4.cs`, `CLAUDE.md`.
+- `ScambioOggetti.cs` resta ma la quest 4 non lo usa più.
+- Cardo nero e Lunaria non sono ancora nel mondo: li mette Lorenzo.
+
 ### 13 ottobre: lo sprint non consuma resistenza mentre si esplora (solo informazione)
 Decisione di Lorenzo, ramo `lorenzoc/stamina-esplorazione`. Lo sprint consuma resistenza **solo in combattimento**: con un nemico vivo entro **15 m** (sveglio o no; manichini e sagome non contano), con un nemico che insegue entro 40 m, o per **5 s** dopo un colpo ricevuto (anche parato o schivato). Esplorando si corre gratis e la barra si ricarica. Schivata, attacco e parata costano come prima. Numeri regolabili nell'Inspector di `GiocatoreControllo` (sezione "Sprint mentre si esplora"; si può anche spegnere).
 - **File condiviso toccato:** solo `GiocatoreControllo.cs` (nuova proprietà pubblica `InCombattimento`, utile anche per altro, per esempio la musica di combattimento).

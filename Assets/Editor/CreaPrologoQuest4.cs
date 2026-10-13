@@ -14,14 +14,17 @@ using static AiutiPrologo;
 //   - Ilse dietro il bancone;
 //   - tre Fiori di riva nell'acqua bassa della riva del lago (a nord del molo, più a nord e a sud), spenti finché
 //     Ilse non li chiede;
-//   - crea, se mancano, gli oggetti Assets/Dati/Oggetti/Consumabili/pozione-di-ilse (ridà 60 di vita in 1 secondo)
-//     e Assets/Dati/Oggetti/Missioni/fiore-di-riva;
+//   - crea, se mancano, fiori, pozioni e ricette della bottega (CreaErbe, Docs/erbe-e-pozioni.md) e mette su Ilse
+//     il Negozio con le 5 ricette (3 Fiori di riva -> 2 Pozioni di Ilse, che ridanno 60 di vita in 1 secondo, e le
+//     altre, che si potranno fare quando i nuovi fiori saranno nel mondo);
 //   - tutto collegato con gli eventi:
 //       fine della quest 3 (Hobb ringrazia) -> Ilse diventa parlabile, obiettivo "Vai dall'erborista Ilse"
 //       -> parli con Ilse -> si accendono i fiori, obiettivo "Fiori di riva raccolti: 0/3" (la bussola indica il fiore
 //          più vicino), suggerimenti su come raccogliere e sull'acqua bassa
 //       -> con 3 fiori nello zaino: obiettivo "Porta i fiori a Ilse"
-//       -> parli con Ilse -> prende i fiori e dà due pozioni, obiettivo "Bevi una pozione: premi F", suggerimento
+//       -> parli con Ilse -> si apre la bottega, obiettivo "Scambia i fiori con le pozioni da Ilse", suggerimento
+//       -> primo scambio nella bottega -> obiettivo "Bevi una pozione: premi F", suggerimento
+//          (da qui in poi vicino a Ilse c'è "E  Commercia: Ilse")
 //       -> bevi una pozione (tasto Usa oggetto, F) -> Ilse racconta del lago, quest 4 finita (il sole avanza).
 // Gli alberi del villaggio che toccherebbero la bottega si spengono (non si cancellano).
 // Dopo questo comando conviene rifare "magic-gnl > Villaggio: chiudi i vicoli ciechi" (la bottega è cambiata).
@@ -33,8 +36,6 @@ using static AiutiPrologo;
 public static class CreaPrologoQuest4
 {
     const string NomeGruppo = "Prologo - quest 4";
-    const string PercorsoPozione = "Assets/Dati/Oggetti/Consumabili/pozione-di-ilse.asset";
-    const string PercorsoFiore = "Assets/Dati/Oggetti/Missioni/fiore-di-riva.asset";
 
     [MenuItem("magic-gnl/Prologo: prepara la quest 4")]
     static void Prepara()
@@ -55,8 +56,9 @@ public static class CreaPrologoQuest4
             Undo.DestroyObjectImmediate(vecchio);
         }
         var missioni = missioniOggetto.GetComponent<Missioni>();
-        var pozione = Pozione();
-        var fiore = Fiore();
+        var pozione = CreaErbe.PozioneDiIlse;
+        var fiore = CreaErbe.FioreDiRiva;
+        var ricette = CreaErbe.RicetteIlse();
         var gruppo = new GameObject(NomeGruppo).transform;
         Undo.RegisterCreatedObjectUndo(gruppo.gameObject, "Prologo quest 4");
 
@@ -191,10 +193,13 @@ public static class CreaPrologoQuest4
         Imposta(raccolta, "chiaveObiettivo", "ob.q4.fiori");
         Imposta(raccolta, "punti", punti);
 
-        var scambio = Undo.AddComponent<ScambioOggetti>(ilse);
-        Imposta(scambio, "prende", (DatiOggetto)fiore);
-        Imposta(scambio, "quantiPrende", 3);
-        Imposta(scambio, "da", new DatiOggetto[] { pozione, pozione });
+        // la bottega: si accende quando Ilse ha i fiori, da lì in poi resta sempre aperta
+        var negozio = Undo.AddComponent<Negozio>(Vuoto("Bottega (negozio di Ilse)", ilse.transform));
+        Imposta(negozio, "nomeChiave", "pg.ilse");
+        Imposta(negozio, "titoloChiave", "neg.bottega_ilse");
+        Imposta(negozio, "ricette", ricette);
+        Imposta(negozio, "raggio", 3f);
+        negozio.enabled = false;
 
         var bevuta = Undo.AddComponent<QuandoUsato>(Vuoto("Attesa: bevi la pozione", gruppo));
         Imposta(bevuta, "oggetto", pozione);
@@ -206,20 +211,27 @@ public static class CreaPrologoQuest4
         Su(dopo, missioni.TogliObiettivo);
         Su(Evento(bevuta, "quandoUsato"), fine.Avvia);
 
-        // Ilse, la seconda volta: prende i fiori e dà le pozioni (si accende con 3 fiori nello zaino).
+        // Ilse, la seconda volta: vede i fiori e apre la bottega (si accende con 3 fiori nello zaino).
+        // Parla una volta sola: poi vicino a lei resta solo "Commercia".
         var conIFiori = Vuoto("Ilse (con i fiori)", ilse.transform);
         var parlaFine = Undo.AddComponent<Interlocutore>(conIFiori);
         Imposta(parlaFine, "nomeChiave", "pg.ilse");
         Imposta(parlaFine, "raggio", 3f);
+        Imposta(parlaFine, "unaVoltaSola", true);
         Imposta(parlaFine, "righe", new[] { Riga("pg.ilse", "dlg.q4.04") });
-        Imposta(parlaFine, "righeRipetute", new[] { Riga("pg.ilse", "dlg.q4.05") });
         var dati = Evento(parlaFine, "alTermine");
-        Su(dati, scambio.Scambia);
-        Su(dati, missioni.ImpostaObiettivo, "ob.q4.bevi");
-        Su(dati, missioni.TogliMeta);
-        Su(dati, missioni.Suggerisci, "tip.q4.usa");
-        Su(dati, bevuta.Avvia);
+        Su(dati, Abilita(negozio), true);
+        Su(dati, negozio.Apri);
+        Su(dati, missioni.ImpostaObiettivo, "ob.q4.scambia");
+        Su(dati, missioni.Suggerisci, "tip.q4.bottega");
         parlaFine.enabled = false;
+
+        // primo scambio nella bottega -> "Bevi una pozione"
+        var scambiato = Evento(negozio, "alPrimoScambio");
+        Su(scambiato, missioni.ImpostaObiettivo, "ob.q4.bevi");
+        Su(scambiato, missioni.TogliMeta);
+        Su(scambiato, missioni.Suggerisci, "tip.q4.usa");
+        Su(scambiato, bevuta.Avvia);
 
         // Ilse, la prima volta: chiede i fiori.
         var parla = Undo.AddComponent<Interlocutore>(ilse);
@@ -257,7 +269,7 @@ public static class CreaPrologoQuest4
 
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
-        Debug.Log("Prologo: quest 4 preparata nel gruppo \"" + NomeGruppo + "\" (bottega di Ilse, 3 fiori di riva, pozione). "
+        Debug.Log("Prologo: quest 4 preparata nel gruppo \"" + NomeGruppo + "\" (bottega di Ilse con il negozio, 3 fiori di riva). "
             + "Rifai \"Villaggio: chiudi i vicoli ciechi\", poi salva la scena (Ctrl+S) e Play.");
     }
 
@@ -268,49 +280,6 @@ public static class CreaPrologoQuest4
         for (int i = 0; i + 3 < r.Length; i += 2)
             if (z <= r[i + 1] && z >= r[i + 3]) return (r[i] + r[i + 2]) / 2f;
         return r[0];
-    }
-
-    // ---------- gli oggetti della quest (creati la prima volta) ----------
-
-    static DatiConsumabile Pozione()
-    {
-        var p = AssetDatabase.LoadAssetAtPath<DatiConsumabile>(PercorsoPozione);
-        if (p != null) return p;
-        Cartella("Assets/Dati/Oggetti", "Consumabili");
-        p = ScriptableObject.CreateInstance<DatiConsumabile>();
-        p.nomeDiLavoro = "Pozione di Ilse";
-        p.chiaveNome = "oggetto.pozione_di_ilse.nome";
-        p.chiaveDescrizione = "oggetto.pozione_di_ilse.descrizione";
-        p.tutteLeClassi = true;
-        p.cura = 60f;
-        p.durataCura = 1f;
-        p.attesa = 1.2f;
-        p.colore = new Color(0.75f, 0.12f, 0.1f);
-        AssetDatabase.CreateAsset(p, PercorsoPozione);
-        AssetDatabase.SaveAssets();
-        return p;
-    }
-
-    static DatiOggettoMissione Fiore()
-    {
-        var f = AssetDatabase.LoadAssetAtPath<DatiOggettoMissione>(PercorsoFiore);
-        if (f != null) return f;
-        Cartella("Assets/Dati/Oggetti", "Missioni");
-        f = ScriptableObject.CreateInstance<DatiOggettoMissione>();
-        f.nomeDiLavoro = "Fiore di riva";
-        f.chiaveNome = "oggetto.fiore_di_riva.nome";
-        f.chiaveDescrizione = "oggetto.fiore_di_riva.descrizione";
-        f.tutteLeClassi = true;
-        f.colore = new Color(0.6f, 0.82f, 1f);
-        f.forma = DatiOggettoMissione.FormaProvvisoria.Fiore;
-        AssetDatabase.CreateAsset(f, PercorsoFiore);
-        AssetDatabase.SaveAssets();
-        return f;
-    }
-
-    static void Cartella(string genitore, string nome)
-    {
-        if (!AssetDatabase.IsValidFolder(genitore + "/" + nome)) AssetDatabase.CreateFolder(genitore, nome);
     }
 
     // ---------- muri ----------
