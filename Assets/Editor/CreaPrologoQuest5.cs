@@ -64,6 +64,20 @@ public static class CreaPrologoQuest5
         Imposta(perClasse, "componenti", new Behaviour[] { edric });
         Imposta(perClasse, "stregone", true);
 
+        // Rifacendo la quest: via i dialoghi della quest 5 rimasti su Edric dalla volta prima. Stanno su Edric e non nel
+        // gruppo, quindi non sparivano con il gruppo: due "Edric (la leggenda)" rispondevano insieme al tasto e quello
+        // vecchio (collegato a un ingresso che non c'era più) non faceva partire niente (Lorenzo, 13 ottobre).
+        var fineIlseEvento = Evento(fineIlse.GetComponent<DialogoAutomatico>(), "alTermine");
+        foreach (Transform figlio in edric.GetComponentsInChildren<Transform>(true))
+        {
+            if (figlio == null || figlio == edric.transform) continue;
+            if (figlio.name != "Edric (la leggenda)" && figlio.name != "Edric (il medaglione)") continue;
+            var vecchio = figlio.GetComponent<Interlocutore>();
+            for (int i = fineIlseEvento.GetPersistentEventCount() - 1; i >= 0; i--)
+                if (vecchio != null && fineIlseEvento.GetPersistentTarget(i) == vecchio) UnityEventTools.RemovePersistentListener(fineIlseEvento, i);
+            Undo.DestroyObjectImmediate(figlio.gameObject);
+        }
+
         var missioni = missioniOggetto.GetComponent<Missioni>();
         var gruppo = new GameObject(NomeGruppo).transform;
         Undo.RegisterCreatedObjectUndo(gruppo.gameObject, "Prologo quest 5");

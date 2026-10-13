@@ -35,6 +35,7 @@ public class Interlocutore : MonoBehaviour
     GiocatoreControllo giocatore;
     InputAction comandoParla;
     bool parlatoUnaVolta;
+    static int fotogrammaParla = -1;   // il fotogramma dell'ultimo dialogo partito con il tasto
     bool questCompiuta;
 
     // La quest di questo personaggio è finita: da ora ringrazia (Righe Dopo La Quest) e torna a parlare se era spento.
@@ -64,7 +65,12 @@ public class Interlocutore : MonoBehaviour
         if (Dialogo.InCorso || Dialogo.ApenaFinito || !PuoParlare()) return;
         string nome = string.IsNullOrEmpty(nomeChiave) ? "" : ": " + Lingua.T(nomeChiave);
         HudGioco.MostraAzione("E", Lingua.T("hud.parla") + nome);
-        if (comandoParla.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto) Parla();
+        // un solo personaggio per pressione: se due sono vicini, risponde il primo e l'altro aspetta
+        if (comandoParla.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto && fotogrammaParla != Time.frameCount)
+        {
+            fotogrammaParla = Time.frameCount;
+            Parla();
+        }
     }
 
     bool PuoParlare()
