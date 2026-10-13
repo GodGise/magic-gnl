@@ -207,9 +207,17 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     public MagiaStregone Magia => magia;
     public float Mana { get; private set; }
     // Mana massimo vero: quello dell'Inspector più libro, veste e amuleto (vedi Statistiche).
-    public float ManaMassimo => statistiche != null
+    // Le pozioni (Infuso di lunaria) lo alzano per qualche minuto: EffettiPozioni.
+    public float ManaMassimo => (statistiche != null
         ? Mathf.Max(1f, (manaMassimo + statistiche.ManaMassimo) * (1f + statistiche.ManaMassimoPercento / 100f))
-        : manaMassimo;
+        : manaMassimo) * (effettiPozioni != null ? effettiPozioni.MoltiplicatoreMana : 1f);
+    EffettiPozioni effettiPozioni;
+    // Danni ricevuti dopo le pozioni (Tonico di cardo: -10% per 3 minuti, cumulabile).
+    float DopoPozioni(float danno)
+    {
+        if (effettiPozioni == null) effettiPozioni = GetComponent<EffettiPozioni>();
+        return effettiPozioni != null ? danno * effettiPozioni.MoltiplicatoreDanni : danno;
+    }
     public bool AttaccoMagico => attaccoMagico;
     public float DurataPreparazioneIncantesimo => preparazioneIncantesimo;
     public float DurataRecuperoIncantesimo => recuperoIncantesimo;
@@ -436,6 +444,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         if (comandoAbilita.WasPressedThisFrame() && !Dialogo.InCorso) SvanisciNellOmbra();
         AggiornaOmbra();
         RicaricaMana(dt);
+        if (effettiPozioni == null) effettiPozioni = GetComponent<EffettiPozioni>();
+        if (Mana > ManaMassimo) Mana = ManaMassimo;   // finito l'effetto di una pozione, il mana in più si perde
         AggiornaClasse();
 
         // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
@@ -989,6 +999,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         Vita = Mathf.Min(VitaMassima, Vita + quantita);
     }
 
+    // Ridà mana (pozioni: UsoConsumabili), senza superare il massimo. Senza bastone il mana non serve e non cambia.
+    public void RidaiMana(float quantita)
+    {
+        if (quantita <= 0f || stato == Stato.Morto || !HaBastone) return;
+        Mana = Mathf.Min(ManaMassimo, Mana + quantita);
+    }
+
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
     public void SbloccaBastone()
     {
@@ -1394,6 +1411,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
         ultimoColpoRicevuto = Time.time;   // anche se lo schivi o lo pari, sei in combattimento
+        danno = DopoPozioni(danno);
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
@@ -1452,6 +1470,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     void Rinasci()
     {
+        if (effettiPozioni != null) effettiPozioni.Azzera();   // morendo finiscono gli effetti delle pozioni
         // Il CharacterController va spento per un attimo, altrimenti non lascia spostare il personaggio di colpo.
         controller.enabled = false;
         if (usaPuntoTemporaneo) transform.SetPositionAndRotation(puntoTemporaneo, rotazioneTemporanea);
@@ -1483,6 +1502,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     public void RiceviDannoAmbiente(float danno)
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
+        danno = DopoPozioni(danno);
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
             Debug.Log("Schivato!");
@@ -1561,7 +1581,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
             if (conBastone)
             {
-                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(ManaMassimo));
+                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana + 0.01f) + " / " + Mathf.CeilToInt(ManaMassimo));
                 DisegnaBarra(new Rect(20, 136, 450, 10), Mana / ManaMassimo, new Color(0.25f, 0.45f, 0.95f));
             }
         }

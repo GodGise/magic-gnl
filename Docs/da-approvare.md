@@ -68,6 +68,43 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: icone provvisorie per tutti gli oggetti, prove fatte in Unity (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Nell'inventario gli oggetti si vedevano solo come iniziali. Ora ogni tipo ha una sagoma disegnata (spada, spadone, ascia, mazza, pugnali, archi, balestra, scudi per taglia, armature per peso, vesti, amuleti, bastoni, libri, incantesimi, pozioni, fiori) e ogni oggetto ha un dettaglio di colore suo (dal nome). Spariscono da sole quando un oggetto ha la sua icona vera (`DatiOggetto.icona`).
+- **File nuovo:** `Assets/Scripts/Interfaccia/IconeProvvisorie.cs`. **Toccati:** `GraficaMenu.cs` (`Icona` chiama le sagome prima dell'iniziale), `FormeOggetti.cs` (`ColoreMagia` pubblico).
+- Bottega, monete, pozioni, tasto C e Stregone **provati in Unity dal Claude di Lorenzo** sul PC di Lorenzo, Console senza errori; scena `VillaggioLagoNero` già preparata sul ramo.
+
+### 13 ottobre: tasto C per cambiare consumabile, regola delle pozioni cumulabili (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
+- **Cambia oggetto**: azione nuova `CambiaOggetto` in `Comandi.cs`, tasto **C** (Y / Triangolo sul pad), passa al consumabile dopo; `MenuComandi.cs` ora ha 14 azioni (7 per colonna). Testi in 8 lingue.
+- **Cumulabili:** solo Tonico e Infuso, e solo negli effetti: tre Tonici = -30%, ogni pozione fa ripartire i 3 minuti di tutta la somma. Balsamo ed Elisir non si sommano (conta il più forte). Balsamo: 100 di vita in 7 s (prima 4).
+- **Toccati:** `Comandi.cs`, `MenuComandi.cs`, `UsoConsumabili.cs`, `EffettiPozioni.cs`, `DatiConsumabile.cs`, `Lingua.cs`, file del Balsamo e dell'Elisir, `CreaErbe.cs`.
+
+### 13 ottobre: effetti delle pozioni rivisti e massimo 3 pozioni (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
+- **Cardo nero** (fiore dei sassi): danni subiti **-10% per 3 minuti**, non più resistenza. **Lunaria**: mana massimo **+5% per 3 minuti**, non più mana (si ricarica da solo). Effetti **cumulabili**, ognuno con il suo tempo; a schermo sopra il rombo della pozione. Morendo finiscono.
+- **Al massimo 3 pozioni** nello zaino all'inizio del gioco: la bottega non ne dà altre, quelle a terra restano lì.
+- Fiori, pozioni e le 13 voci della bottega **esistono già come file** in `Assets/Dati/` (prima li creava solo il comando).
+- **File nuovo:** `EffettiPozioni.cs`. **Toccati (di tutti):** `GiocatoreControllo.cs` (danni ricevuti e mana massimo passano dagli effetti; a ogni rinascita si azzerano), `Zaino.cs` (`MassimoConsumabili`), `OggettoRaccoglibile.cs`, `InventarioGioco.cs`, `UsoConsumabili.cs`, `DatiConsumabile.cs`, `DatiRicetta.cs`, `Negozio.cs`, `Lingua.cs`.
+
+### 13 ottobre: nome delle monete deciso, e ringraziamenti a quest finita (solo informazione)
+Stesso ramo `lorenzoc/negozio-ilse`.
+- **Monete:** Lorenzo ha scelto **Lacrime del lago**; nel parlato e nelle interfacce basta "lacrime".
+- **Ringraziamenti:** Hobb, a ratti morti, chiedeva ancora di ucciderli. Ora a quest finita Maren, Brannoc, Edric e Hobb ringraziano con una battuta coerente (anche diversa per classe; battute in `Docs/dialoghi-capitolo-1.md`, sezione "Dopo le quest", 8 lingue). `Interlocutore` ha "Righe Dopo La Quest" e `QuestCompiuta()`; comando nuovo "magic-gnl > Prologo: ringraziamenti dopo le quest" (`CreaRingraziamenti.cs`), richiamato anche dai comandi delle quest 1-4. **Toccati:** `Interlocutore.cs`, `Lingua.cs`, `CreaPrologoQuest1-4.cs` (una riga ciascuno).
+
+### 13 ottobre: monete (Lacrime del lago) e mercato (serve un'occhiata di Giuseppe, e un parere sul nome)
+Stesso ramo `lorenzoc/negozio-ilse`. Lorenzo ha chiesto monete legate alla storia, niente argento. Scelta provvisoria: **Lacrime del lago**, sassolini neri come vetro che il lago lascia sulla riva dopo le tempeste. Altre 4 proposte (Scaglie nere, Chiodi di guardia, Segni di veglia, Gocce di pece) in `Docs/monete.md`: **Giuseppe, dicci quale preferisci**; cambiare nome vuol dire cambiare solo i testi `valuta.*` in `Lingua.cs`.
+- **Mercato:** ogni mercante vende le sue cose (tabella in `Docs/monete.md`). Fatto solo Ilse: nella bottega tre schede, **Baratto** (fiori per pozioni, il più conveniente), **Compra** (pozioni con le Lacrime, circa 5 volte più caro), **Vendi** (fiori per Lacrime). Prezzi provvisori nello stesso documento.
+- **Da dove arrivano:** 15 all'inizio, 20 da Hobb alla fine della quest 3, vendendo i fiori. Le Lacrime si vedono nell'inventario (accanto a "Zaino") e nella bottega.
+- **File nuovi:** `Borsa.cs` (le monete del giocatore: un numero, non oggetti dello zaino), `DaiMonete.cs` (ricompense), `Docs/monete.md`. **Toccati:** `DatiRicetta.cs` (prezzo e ricavo), `Negozio.cs` (schede e borsa), `InventarioGioco.cs` (le Lacrime accanto allo zaino), `CreaErbe.cs`, `CreaPrologoQuest4.cs` (paga di Hobb), `Lingua.cs`, `CLAUDE.md`.
+- Le monete non si salvano ancora (come lo zaino).
+
+### 13 ottobre: bottega di Ilse, fiori e pozioni (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/negozio-ilse` (parte da `lorenzoc/stamina-esplorazione`: va unito dopo). Decisione di Lorenzo: l'erboristeria di Ilse è un **negozio di baratto** (fiori per pozioni) e **ogni fiore ha uno scopo**: Fiore di riva = vita, Cardo nero = resistenza, Lunaria = mana. Cinque ricette, anche con fiori combinati (tabella in `Docs/erbe-e-pozioni.md`). Nella quest 4 Ilse, quando hai i 3 fiori, apre la bottega e sei tu a scambiarli con 2 Pozioni di Ilse; il primo scambio fa passare a "Bevi una pozione". Le monete non ci sono ancora: quando arriveranno saranno un oggetto da mettere nelle ricette, il negozio non cambia.
+- **File nuovi:** `Negozio.cs` (finestra della bottega, serve a qualsiasi mercante), `DatiRicetta.cs`, `Assets/Editor/CreaErbe.cs` (menu "magic-gnl > Erbe: crea fiori, pozioni e ricette"), `Docs/erbe-e-pozioni.md`.
+- **File condivisi toccati:** `InventarioGioco.cs` (`Aperto` è vero anche con la bottega aperta, così E, F e Tab non fanno altro; dettaglio delle pozioni con mana e resistenza), `DatiConsumabile.cs` (mana, resistenza, ricarica più veloce per un po'), `Resistenza.cs` (`Recupera`, `Potenzia`), `UsoConsumabili.cs`, `GiocatoreControllo.cs` (`RidaiMana`), `Lingua.cs` (testi della bottega, 2 fiori e 4 pozioni nuove; `dlg.q4.04` riscritta), `CreaPrologoQuest4.cs`, `CLAUDE.md`.
+- `ScambioOggetti.cs` resta ma la quest 4 non lo usa più.
+- Cardo nero e Lunaria non sono ancora nel mondo: li mette Lorenzo.
+
 ### 13 ottobre: lo sprint non consuma resistenza mentre si esplora (solo informazione)
 Decisione di Lorenzo, ramo `lorenzoc/stamina-esplorazione`. Lo sprint consuma resistenza **solo in combattimento**: con un nemico vivo entro **15 m** (sveglio o no; manichini e sagome non contano), con un nemico che insegue entro 40 m, o per **5 s** dopo un colpo ricevuto (anche parato o schivato). Esplorando si corre gratis e la barra si ricarica. Schivata, attacco e parata costano come prima. Numeri regolabili nell'Inspector di `GiocatoreControllo` (sezione "Sprint mentre si esplora"; si può anche spegnere).
 - **File condiviso toccato:** solo `GiocatoreControllo.cs` (nuova proprietà pubblica `InCombattimento`, utile anche per altro, per esempio la musica di combattimento).

@@ -300,6 +300,7 @@ public static class CreaPrologoQuest1
             o.SetActive(false);
         }
 
+        CreaRingraziamenti.Applica(scena);   // a quest finita i personaggi ringraziano invece di ripetere il compito
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
         Debug.Log("Prologo: quest 1 preparata nel gruppo \"" + NomeGruppo + "\". Controlla e salva la scena (Ctrl+S), poi Play. Per la fucina: \"Prologo: prepara la quest 2\".");

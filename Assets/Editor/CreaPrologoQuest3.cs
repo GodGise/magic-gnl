@@ -174,6 +174,7 @@ public static class CreaPrologoQuest3
             EditorUtility.SetDirty(d.GetComponent<DialogoAutomatico>());
         }
 
+        CreaRingraziamenti.Applica(scena);   // a quest finita i personaggi ringraziano invece di ripetere il compito
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
         Debug.Log("Prologo: quest 3 preparata nel gruppo \"" + NomeGruppo + "\" (granaio di Hobb sul lago, 3 ratti). Salva la scena (Ctrl+S), poi Play.");

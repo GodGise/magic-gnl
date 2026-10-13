@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.Controls;
 
 // Le azioni del giocatore che si possono assegnare a un altro tasto (Opzioni > Comandi, schermata MenuComandi).
 // Solo tastiera e mouse: i tasti del pad restano quelli scritti negli script.
-public enum Azione { Avanti, Indietro, Sinistra, Destra, Corsa, Schiva, Attacca, Para, Interagisci, Abilita, Aggancia, Inventario, UsaOggetto }
+public enum Azione { Avanti, Indietro, Sinistra, Destra, Corsa, Schiva, Attacca, Para, Interagisci, Abilita, Aggancia, Inventario, UsaOggetto, CambiaOggetto }
 
 // Elenco unico dei tasti del gioco, con quelli scelti dal giocatore (salvati anche chiudendo il gioco).
 // Come si usa negli script: si crea l'InputAction come sempre, con il tasto predefinito, e subito dopo si chiama
@@ -24,7 +24,7 @@ public static class Comandi
         "<Keyboard>/w", "<Keyboard>/s", "<Keyboard>/a", "<Keyboard>/d",
         "<Keyboard>/shift", "<Keyboard>/space", "<Mouse>/leftButton", "<Mouse>/rightButton",
         "<Keyboard>/e", "<Keyboard>/q", "<Mouse>/middleButton", "<Keyboard>/tab",
-        "<Keyboard>/f",
+        "<Keyboard>/f", "<Keyboard>/c",
     };
 
     static readonly string[] chiaviNomi =
@@ -32,7 +32,7 @@ public static class Comandi
         "comando.avanti", "comando.indietro", "comando.sinistra", "comando.destra",
         "comando.corsa", "comando.schiva", "comando.attacca", "comando.para",
         "comando.interagisci", "comando.abilita", "comando.aggancia", "comando.inventario",
-        "comando.usaoggetto",
+        "comando.usaoggetto", "comando.cambiaoggetto",
     };
 
     // Tasti che non si possono usare perché hanno già un compito fisso: Esc (pausa), 1-6 (armi e incantesimi),

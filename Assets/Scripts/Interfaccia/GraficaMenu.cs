@@ -204,7 +204,8 @@ public static class GraficaMenu
         return Screen.width / s;
     }
 
-    // Icona di un oggetto: l'immagine fatta da Nazar se c'è, altrimenti l'iniziale del nome.
+    // Icona di un oggetto: l'immagine fatta da Nazar se c'è; altrimenti la sagoma provvisoria del suo tipo
+    // (IconeProvvisorie: spada, scudo, armatura, boccetta...) o, per i tipi senza sagoma, l'iniziale del nome.
     public static void Icona(Rect r, DatiOggetto oggetto, float alfa)
     {
         if (oggetto == null) return;
@@ -217,6 +218,7 @@ public static class GraficaMenu
             GUI.color = Color.white;
             return;
         }
+        if (IconeProvvisorie.Disegna(r, oggetto, alfa)) return;   // sagoma provvisoria del tipo di oggetto
         string nome = oggetto.Nome;
         string iniziale = string.IsNullOrEmpty(nome) ? "?" : nome.Substring(0, 1).ToUpperInvariant();
         Scritta(r, iniziale, Iniziale, Testo, alfa);

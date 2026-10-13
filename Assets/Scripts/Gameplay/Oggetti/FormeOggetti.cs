@@ -544,6 +544,10 @@ public static class FormeOggetti
 
     // ---------- aiuti ----------
 
+    // Il colore della scuola di magia più forte dell'oggetto (bastoni, libri, vesti), oppure "senza".
+    // Lo usano anche le icone provvisorie dell'inventario (IconeProvvisorie).
+    public static Color ColoreMagia(ModificatoriMagia m, Color senza) => ColoreScuola(ScuolaPiuForte(m), senza);
+
     static Color ColoreScuola(ScuolaMagia? scuola, Color senza)
     {
         if (scuola == null) return senza;

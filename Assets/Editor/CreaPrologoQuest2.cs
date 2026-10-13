@@ -234,6 +234,7 @@ public static class CreaPrologoQuest2
         Su(allArrivo, missioni.ImpostaObiettivo, "ob.q2.brannoc");
         Meta(allArrivo, brannoc);
 
+        CreaRingraziamenti.Applica(scena);   // a quest finita i personaggi ringraziano invece di ripetere il compito
         EditorSceneManager.MarkSceneDirty(scena);
         Selection.activeGameObject = gruppo.gameObject;
         Debug.Log("Prologo: quest 2 preparata nel gruppo \"" + NomeGruppo + "\" (fucina e cortile di studio del tempio). Salva la scena (Ctrl+S), poi Play.");
