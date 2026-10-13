@@ -37,6 +37,34 @@ public static class ProvaPrologo
         Debug.Log("Prova prologo: nessun fiore di riva da raccogliere.");
     }
 
+    // Porta al mausoleo del cimitero e apre l'ingresso della cripta anche prima della quest 5.
+    [MenuItem(Cartella + "Vai alla cripta (ingresso aperto)")]
+    static void Cripta()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var ingresso = TrovaOggetto("Ingresso della cripta");
+        if (ingresso == null) { Debug.LogWarning("Prova prologo: manca l'ingresso della cripta (prepara la quest 5)."); return; }
+        var passaggio = ingresso.GetComponent<PassaggioScena>();
+        if (passaggio != null) passaggio.enabled = true;
+        Vai("Ingresso della cripta");
+    }
+
+    // Toglie 20 di vita a ogni scheletro vivo (per provare in fretta la cripta).
+    [MenuItem(Cartella + "Ferisci gli scheletri della cripta (-20)")]
+    static void FerisciScheletri()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        int quanti = 0;
+        foreach (var s in Object.FindObjectsByType<ScheletroVivente>(FindObjectsSortMode.None))
+        {
+            var b = s.GetComponent<Bersaglio>();
+            if (b == null || b.Morto) continue;
+            b.RiceviColpo(20f, b.transform.position + Vector3.up);
+            quanti++;
+        }
+        Debug.Log("Prova prologo: feriti " + quanti + " scheletri.");
+    }
+
     [MenuItem(Cartella + "Apri la bottega di Ilse")]
     static void Bottega()
     {
@@ -118,9 +146,10 @@ public static class ProvaPrologo
             return;
         }
         GameObject meta = null;
-        foreach (var radice in SceneManager.GetActiveScene().GetRootGameObjects())
-            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
-                if (t.name == nome) { meta = t.gameObject; break; }
+        for (int k = 0; k < SceneManager.sceneCount && meta == null; k++)   // anche nella cripta, se è caricata
+            foreach (var radice in SceneManager.GetSceneAt(k).GetRootGameObjects())
+                foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+                    if (t.name == nome) { meta = t.gameObject; break; }
         var giocatore = Object.FindFirstObjectByType<GiocatoreControllo>();
         if (meta == null || giocatore == null)
         {

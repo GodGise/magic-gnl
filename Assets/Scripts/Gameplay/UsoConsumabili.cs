@@ -74,6 +74,7 @@ public class UsoConsumabili : MonoBehaviour
 
     void SceneCaricata(Scene s, LoadSceneMode m)
     {
+        if (m == LoadSceneMode.Additive) return;   // una zona caricata in aggiunta (la cripta): il giocatore è lo stesso
         giocatore = null;
         scelto = null;
         curaRimasta = 0f;
