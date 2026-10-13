@@ -61,3 +61,7 @@ Per non avere più problemi di sincronia, il logo può essere un **video finito*
 - Se esiste `Assets/StreamingAssets/logo-studio.mp4`, il gioco riproduce quello (VideoPlayer) e basta.
 - Se non esiste, si usa l'animazione disegnata dal codice (con il suono agganciato come orologio).
 - Per ottenere il video senza audio da montare: pacchetto Unity **Recorder** (aggiunto in `manifest.json`), Window > General > Recorder > Recorder Window, Movie Recorder, MP4, 30 fps, Game View 1920x1080; durante la registrazione la scritta "Solo editor" e il suono vengono disattivati da soli (`Time.captureFramerate`).
+
+## Scintille che si disperdono (14 ottobre)
+
+Dietro il sigillo partono altre ~400 scintille che volano fino ai bordi dello schermo: una grande raffica all'impatto (230, alcune con alone) e poi un flusso più lento che continua fino a metà della scritta (170). In `LogoStudio.cs`, punto "6)" dell'elenco delle particelle.
