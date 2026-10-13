@@ -90,7 +90,7 @@ Richiesta di Lorenzo, ramo `lorenzoc/razzia`, pull request #91. **Provato da Lor
 - **Suoni nuovi** fatti dal codice: tamburo, urlo d'orco, rombo, legno spaccato, crepitio del fuoco.
 - **Da decidere dopo:** cosa succede quando l'orco enorme vince (regole già scritte: invulnerabile dopo 3 minuti, poi risveglio in gattabuia). Per ora, morendo, si rinasce davanti alla taverna e lo scontro ricomincia.
 - **Giuseppe:** tocca file non solo di Lorenzo: `InseguimentoNemico.cs` (posto che cambia, ritirata), `AnimazioneUmanoide.cs` (gesti dei razziatori), `AspettoUmanoide.cs` (ascia), `CameraTerzaPersona.cs` (camera che trema), `Suoni.cs`. Nessun file della rete.
-- **Per Nazar:** case danneggiate, crollate, porte sfondate, texture di fuoco e fumo, orco corazzato con ascia, animazioni della razzia: aggiunti in `Docs/lista-modelli-nazar.txt` (43b-43g, 71b, 72).
+- **Per Nazar:** case danneggiate, crollate, porte sfondate, texture di fuoco e fumo, orco corazzato con ascia, animazioni della razzia: nella lista completa `Docs/lista-modelli-nazar.txt`, rifatta il 13 ottobre con tutto quello che oggi è provvisorio (183 voci).
 
 ### 13 ottobre: quest 5, la cripta della prima guardia in una scena a parte (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/quest-5` (parte da `lorenzoc/negozio-ilse`: va unito dopo la #79). Decisioni di Lorenzo: la cripta è una **scena a parte** (`Assets/Scenes/Cripta.unity`, aggiunta alle Build Settings) per non caricare troppo il mondo. Dal mausoleo del cimitero "E  Entra nella cripta" → schermata di caricamento → dentro la cripta. La scena si carica in aggiunta al villaggio (che si nasconde), così zaino, monete e quest restano; uscendo si torna al cimitero.
