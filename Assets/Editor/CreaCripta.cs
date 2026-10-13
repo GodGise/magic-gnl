@@ -105,9 +105,9 @@ public static class CreaCripta
         var ambiente = new GameObject("Ambiente della cripta").AddComponent<AmbienteZona>();
         ambiente.transform.SetParent(radice, false);
         // buio da cripta, ma gli scheletri si devono vedere anche lontano dalle torce (provato in Unity il 13 ottobre)
-        ambiente.luceAmbiente = new Color(0.2f, 0.2f, 0.25f);
+        ambiente.luceAmbiente = new Color(0.3f, 0.29f, 0.34f);
         ambiente.nebbia = new Color(0.015f, 0.015f, 0.025f);
-        ambiente.densitaNebbia = 0.035f;
+        ambiente.densitaNebbia = 0.03f;
         Vuoto("Memoria della cripta", radice).AddComponent<MemoriaZona>();
         var ponte = Vuoto("Ponte verso le missioni", radice).AddComponent<PonteMissioni>();
         Imposta(ponte, "finitoSe", "q5.medaglione");
