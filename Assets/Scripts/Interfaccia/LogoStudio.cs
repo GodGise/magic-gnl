@@ -19,15 +19,18 @@ public class LogoStudio : MonoBehaviour
     // Prima schermo nero e silenzio per 3 secondi; poi parte l'animazione (e il suono).
     const float AttesaNera = 3.0f;
 
-    // Il suono è il file "logo-studio" montato da Giuseppe su CapCut (13 ottobre) sul video del logo: nel file l'istante 0 è l'inizio
-    // della registrazione, e le rune cominciano ad accendersi a 4,43 s. Nel gioco le rune si accendono a AttesaNera + InizioRune = 4,3 s
-    // dall'avvio, quindi il file deve partire 0,13 s "prima": si salta il primo 0,13 s del file (è silenzio).
-    // Positivo = il file parte più tardi; negativo = si salta l'inizio del file. Per ritocchi fini, nell'editor: F3/F4 (vedi sotto).
-    const float PartenzaSuono = -0.13f;
-    const string ChiaveCorrezione = "LogoStudio.RitoccoSuono";   // chiave nuova: azzera i vecchi tentativi salvati nell'editor
+    // SINCRONIA: il suono è l'orologio dell'animazione. Il file "logo-studio" parte subito e, finché suona, il tempo dell'animazione
+    // si ricava dalla posizione di lettura del file: animazione = posizione nel file + Differenza. Così, anche se il PC si blocca
+    // per un attimo, immagine e suono restano agganciati (prima erano due orologi separati e si sfasavano).
+    // Differenza = (AttesaNera + MomentoLampo) - ColpoNelFile: il colpo secco nel file è a ~6,0 s (CapCut) e nell'animazione
+    // la runa centrale si accende a 3,0 + 3,3 = 6,3 s. Per ritocchi fini nell'editor: F3/F4 (vedi sotto).
+    const float ColpoNelFile = 6.0f;
+    const float Differenza = AttesaNera + MomentoLampo - ColpoNelFile;
+    const string ChiaveCorrezione = "LogoStudio.RitoccoSuono2";   // chiave nuova: azzera i vecchi tentativi salvati nell'editor
 
-    // Partenza totale: la costante più, solo nell'editor, il ritocco fatto con F3/F4 (salvato tra una prova e l'altra).
-    static float CorrezioneTotale => PartenzaSuono + (Application.isEditor ? PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) : 0f);
+    // Differenza totale: la costante più, solo nell'editor, il ritocco fatto con F3/F4 (salvato tra una prova e l'altra).
+    // Positivo = il suono sembra arrivare più presto rispetto all'immagine.
+    static float CorrezioneTotale => Differenza + (Application.isEditor ? PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) : 0f);
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
@@ -75,8 +78,6 @@ public class LogoStudio : MonoBehaviour
     float orologio;
     int fotogrammi;
     bool suonoPartito;
-    float partenzaSuono;   // a che secondo dall'avvio far partire il file (può essere 0 se il colpo è lontano dall'inizio del file)
-    float saltoNelFile;    // da che punto del file partire (se bisogna anticipare)
     float saltatoA = -1f;       // solo nell'editor: l'orologio quando si è premuto F2
     bool finito;
     Matrix4x4 base_;
@@ -119,10 +120,7 @@ public class LogoStudio : MonoBehaviour
         if (suono != null)
         {
             sorgente.clip = suono;
-            float partenza = CorrezioneTotale;
-            partenzaSuono = Mathf.Max(0f, partenza);
-            saltoNelFile = Mathf.Max(0f, -partenza);
-            Debug.Log("[Logo] Il file parte a " + partenzaSuono.ToString("0.00") + " s dall'avvio, saltando i primi " + saltoNelFile.ToString("0.00") + " s del file (durata " + suono.length.ToString("0.00") + " s)");
+            Debug.Log("[Logo] Suono agganciato all'animazione, differenza " + CorrezioneTotale.ToString("0.00") + " s (durata file " + suono.length.ToString("0.00") + " s)");
         }
 
         var caso = new System.Random(7);
@@ -193,23 +191,28 @@ public class LogoStudio : MonoBehaviour
         fotogrammi++;
         if (fotogrammi > 4) orologio += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
         float t = Tempo;
-        if (!suonoPartito && orologio >= partenzaSuono)
+        if (!suonoPartito && fotogrammi > 4 && sorgente != null && sorgente.clip != null)
         {
             suonoPartito = true;
-            if (sorgente != null && sorgente.clip != null)
-            {
-                sorgente.time = Mathf.Clamp(saltoNelFile, 0f, Mathf.Max(0f, sorgente.clip.length - 0.1f));
-                sorgente.Play();
-            }
+            sorgente.time = 0f;
+            sorgente.Play();
+            orologio = CorrezioneTotale;   // il file è a 0: l'animazione si allinea a quel punto
         }
+        else if (suonoPartito && sorgente != null && sorgente.isPlaying)
+        {
+            // l'orologio segue il suono: piccoli scarti si assorbono piano, quelli grandi (blocchi del PC) si recuperano subito
+            float scarto = sorgente.time + CorrezioneTotale - orologio;
+            orologio += Mathf.Abs(scarto) > 0.08f ? scarto : scarto * 0.25f;
+        }
+        t = Tempo;
         // Solo nell'editor: F3 = suono 0,1 s più presto, F4 = 0,1 s più tardi (vale dalla prova successiva), F5 = azzera
         if (Application.isEditor && Keyboard.current != null)
         {
             // passo: 0,1 s; con Maiusc premuto 0,01 s (un centesimo); con Ctrl premuto 0,5 s
             float grandezza = Keyboard.current.shiftKey.isPressed ? 0.01f : Keyboard.current.ctrlKey.isPressed ? 0.5f : 0.1f;
             float passo = 0f;
-            if (Keyboard.current.f3Key.wasPressedThisFrame) passo = -grandezza;
-            if (Keyboard.current.f4Key.wasPressedThisFrame) passo = grandezza;
+            if (Keyboard.current.f3Key.wasPressedThisFrame) passo = grandezza;   // differenza più grande = suono più presto
+            if (Keyboard.current.f4Key.wasPressedThisFrame) passo = -grandezza;
             if (passo != 0f) PlayerPrefs.SetFloat(ChiaveCorrezione, PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) + passo);
             if (Keyboard.current.f5Key.wasPressedThisFrame) PlayerPrefs.SetFloat(ChiaveCorrezione, 0f);
         }
@@ -362,7 +365,7 @@ public class LogoStudio : MonoBehaviour
             var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
             GUI.color = new Color(1f, 1f, 1f, 0.55f);
             GUI.Label(new Rect(20f, GraficaMenu.Altezza - 60f, 1400f, 40f),
-                "Solo editor - Partenza suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
+                "Solo editor - Differenza suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
             GUI.color = Color.white;
         }
     }
