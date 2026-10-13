@@ -858,10 +858,17 @@ public class InventarioGioco : MonoBehaviour
                 if (cons.cura > 0f) Aggiungi("stat.vita", "+" + Formatta(cons.cura), cons.cura, false, true);
                 if (cons.mana > 0f) Aggiungi("stat.mana", "+" + Formatta(cons.mana), cons.mana, false, true);
                 if (cons.resistenza > 0f) Aggiungi("stat.resistenza", "+" + Formatta(cons.resistenza), cons.resistenza, false, true);
+                if (cons.riduzioneDanniPercento > 0f && cons.durataEffetto > 0f)
+                    Aggiungi("stat.danni_subiti", "-" + Formatta(cons.riduzioneDanniPercento) + "%  " + EffettiPozioni.Durata(cons.durataEffetto),
+                        cons.riduzioneDanniPercento, false, true);
+                if (cons.manaMassimoPercento > 0f && cons.durataEffetto > 0f)
+                    Aggiungi("stat.mana_massimo", "+" + Formatta(cons.manaMassimoPercento) + "%  " + EffettiPozioni.Durata(cons.durataEffetto),
+                        cons.manaMassimoPercento, false, true);
                 if (cons.recuperoResistenzaPercento > 0f && cons.durataEffetto > 0f)
                     Aggiungi("stat.recupero_resistenza", "+" + Formatta(cons.recuperoResistenzaPercento) + "%  " + Formatta(cons.durataEffetto) + " s",
                         cons.recuperoResistenzaPercento, false, true);
                 Aggiungi("inv.quantita", UsoConsumabili.Quanti(cons).ToString(), 0f, false, true);
+                if (zaino != null) Aggiungi("inv.pozioni_massimo", zaino.Consumabili + " / " + zaino.MassimoConsumabili, 0f, false, true);
                 break;
             case DatiOggettoMissione mis:
                 Aggiungi("inv.quantita", UsoConsumabili.Quanti(mis).ToString(), 0f, false, true);

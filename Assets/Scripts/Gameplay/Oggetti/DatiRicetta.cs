@@ -56,10 +56,13 @@ public class DatiRicetta : ScriptableObject
     // Qualcosa si dà e qualcosa si riceve.
     public bool Valida => (da != null || ricavo > 0) && (HaIngredienti || prezzo > 0);
 
-    // Nello zaino e nella borsa c'è tutto quello che serve?
+    // Si ricevono pozioni ma lo zaino ne ha già troppe (massimo 3 all'inizio del gioco, Zaino.MassimoConsumabili).
+    public bool TroppiConsumabili(Zaino zaino) => da is DatiConsumabile && zaino != null && !zaino.PostoPerConsumabili(quantiDa);
+
+    // Nello zaino e nella borsa c'è tutto quello che serve, e c'è posto per quello che si riceve?
     public bool Possibile(Zaino zaino, Borsa borsa)
     {
-        if (!Valida) return false;
+        if (!Valida || TroppiConsumabili(zaino)) return false;
         if (prezzo > 0 && (borsa == null || borsa.Quante < prezzo)) return false;
         if (chiede != null)
             foreach (var i in chiede)

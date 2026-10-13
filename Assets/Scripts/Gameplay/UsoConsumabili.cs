@@ -146,8 +146,11 @@ public class UsoConsumabili : MonoBehaviour
             if (oggetto.recuperoResistenzaPercento > 0f && oggetto.durataEffetto > 0f)
                 resistenza.Potenzia(oggetto.recuperoResistenzaPercento, oggetto.durataEffetto);
         }
-        string effetti = oggetto.Effetti();
-        string testo = oggetto.Nome + (effetti.Length > 0 ? "   " + effetti : "");
+        var effetti = EffettiPozioni.Di(giocatore);
+        effetti.Aggiungi(EffettiPozioni.Tipo.RiduzioneDanni, oggetto.riduzioneDanniPercento, oggetto.durataEffetto, oggetto.cumulabile);
+        effetti.Aggiungi(EffettiPozioni.Tipo.ManaMassimo, oggetto.manaMassimoPercento, oggetto.durataEffetto, oggetto.cumulabile);
+        string elenco = oggetto.Effetti();
+        string testo = oggetto.Nome + (elenco.Length > 0 ? "   " + elenco : "");
         MessaggiSchermo.Mostra(testo, 2.5f);
         Usato?.Invoke(oggetto);
     }
@@ -156,11 +159,12 @@ public class UsoConsumabili : MonoBehaviour
     void OnGUI()
     {
         if (giocatore == null || !HudGioco.Attivo || MenuPausa.InPausa || InventarioGioco.Aperto) return;
-        var oggetto = Pronto();
-        if (oggetto == null) return;
         GUI.depth = 10;
         GraficaMenu.PreparaStili();
         GraficaMenu.FoglioIntero();
+        DisegnaEffetti();
+        var oggetto = Pronto();
+        if (oggetto == null) return;
         var centro = new Vector2(110f, GraficaMenu.Altezza - 320f);
         const float lato = 84f;
         bool attesa = Time.time < prontoDa;
@@ -184,5 +188,24 @@ public class UsoConsumabili : MonoBehaviour
             attesa ? GraficaMenu.Spento : GraficaMenu.Testo, 1f);
         var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft };
         GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y - 14f, 360f, 28f), oggetto.Nome + "  x" + Quanti(oggetto), stile, GraficaMenu.Testo, 1f);
+    }
+
+    // Gli effetti a tempo delle pozioni bevute, sopra il rombo: "Danni subiti -10%  2:41", "Mana massimo +5%  1:10".
+    void DisegnaEffetti()
+    {
+        var effetti = giocatore.GetComponent<EffettiPozioni>();
+        if (effetti == null) return;
+        var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 20 };
+        float y = GraficaMenu.Altezza - 410f;
+        foreach (EffettiPozioni.Tipo tipo in System.Enum.GetValues(typeof(EffettiPozioni.Tipo)))
+        {
+            float totale = effetti.Totale(tipo);
+            if (totale <= 0f) continue;
+            string chiave = tipo == EffettiPozioni.Tipo.RiduzioneDanni ? "eff.breve_danni" : "eff.breve_mana";
+            string testo = string.Format(Lingua.T(chiave), Mathf.RoundToInt(totale)) + "   " + EffettiPozioni.Orologio(effetti.SecondiRimasti(tipo));
+            GraficaMenu.Rombo(new Vector2(78f, y + 14f), 12f, tipo == EffettiPozioni.Tipo.RiduzioneDanni ? new Color(0.55f, 0.35f, 0.65f) : new Color(0.35f, 0.5f, 0.95f));
+            GraficaMenu.Scritta(new Rect(94f, y, 420f, 28f), testo, stile, GraficaMenu.Testo, 1f);
+            y -= 32f;
+        }
     }
 }

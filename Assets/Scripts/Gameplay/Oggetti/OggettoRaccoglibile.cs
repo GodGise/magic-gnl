@@ -98,6 +98,13 @@ public class OggettoRaccoglibile : MonoBehaviour, IOggettoCondiviso
             && fotogrammaUltimaRaccolta != Time.frameCount)
         {
             fotogrammaUltimaRaccolta = Time.frameCount;
+            // pozioni: se lo zaino ne ha già il massimo (3 all'inizio del gioco) resta a terra
+            if (oggetto is DatiConsumabile && giocatore != null && !Zaino.Di(giocatore).PostoPerConsumabili(1))
+            {
+                MessaggiSchermo.Mostra(string.Format(Lingua.T("neg.troppe_pozioni"), Zaino.Di(giocatore).MassimoConsumabili), 2.5f);
+                Suoni.Suona(Suono.Negato, giocatore.transform.position + Vector3.up, 0.6f);
+                return;
+            }
             if (MondoRete.ChiediUso(this, 1)) { richiestoFino = Time.time + 2f; return; }   // co-op: decide l'host chi lo prende
             PresoDa(Rete.MioId);
         }

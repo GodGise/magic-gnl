@@ -4,8 +4,10 @@ using UnityEngine;
 // Strumento dell'editor: crea, se mancano, i fiori, le pozioni e le ricette della bottega di Ilse
 // (proposta di Lorenzo del 13 ottobre, numeri e idee in Docs/erbe-e-pozioni.md). Ogni fiore ha uno scopo:
 //   - Fiore di riva (acqua bassa del lago)      -> vita
-//   - Cardo nero (campi incolti, fra le pietre)  -> resistenza
-//   - Lunaria (si apre di notte, vicino a tombe e rovine) -> mana
+//   - Cardo nero (fra i sassi dei campi incolti) -> difesa: -10% danni subiti per 3 minuti
+//   - Lunaria (si apre di notte, vicino a tombe e rovine) -> mana massimo +5% per 3 minuti
+// (effetti cumulabili, EffettiPozioni; nello zaino al massimo 3 pozioni all'inizio del gioco)
+// I file sono già nella repository: questo comando serve solo a ricrearli se qualcuno li cancella.
 // Fiori in   Assets/Dati/Oggetti/Missioni/    (fiore-di-riva, cardo-nero, lunaria)
 // Pozioni in Assets/Dati/Oggetti/Consumabili/ (pozione-di-ilse, tonico-di-cardo, infuso-di-lunaria, balsamo-di-riva,
 //                                              elisir-del-crepuscolo)
@@ -41,18 +43,18 @@ public static class CreaErbe
     // +60 vita in 1 s: la pozione della quest 4.
     internal static DatiConsumabile PozioneDiIlse => Pozione("pozione-di-ilse", "Pozione di Ilse", "pozione_di_ilse", new Color(0.75f, 0.12f, 0.1f),
         p => { p.cura = 60f; p.durataCura = 1f; p.attesa = 1.2f; });
-    // resistenza piena e ricarica +50% per 60 s
+    // -10% danni subiti per 3 minuti (cumulabile)
     internal static DatiConsumabile TonicoDiCardo => Pozione("tonico-di-cardo", "Tonico di cardo", "tonico_di_cardo", new Color(0.6f, 0.68f, 0.15f),
-        p => { p.cura = 0f; p.resistenza = 100f; p.recuperoResistenzaPercento = 50f; p.durataEffetto = 60f; p.attesa = 1.2f; });
-    // +60 mana
+        p => { p.cura = 0f; p.riduzioneDanniPercento = 10f; p.durataEffetto = 180f; p.attesa = 1.2f; });
+    // +5% mana massimo per 3 minuti (cumulabile)
     internal static DatiConsumabile InfusoDiLunaria => Pozione("infuso-di-lunaria", "Infuso di lunaria", "infuso_di_lunaria", new Color(0.25f, 0.45f, 0.95f),
-        p => { p.cura = 0f; p.mana = 60f; p.attesa = 1.2f; });
-    // +100 vita in 4 s e ricarica della resistenza +30% per 30 s
+        p => { p.cura = 0f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.attesa = 1.2f; });
+    // +100 vita in 4 s e -10% danni subiti per 3 minuti
     internal static DatiConsumabile BalsamoDiRiva => Pozione("balsamo-di-riva", "Balsamo di riva", "balsamo_di_riva", new Color(0.85f, 0.25f, 0.3f),
-        p => { p.cura = 100f; p.durataCura = 4f; p.recuperoResistenzaPercento = 30f; p.durataEffetto = 30f; p.attesa = 2f; });
-    // un po' di tutto
+        p => { p.cura = 100f; p.durataCura = 4f; p.riduzioneDanniPercento = 10f; p.durataEffetto = 180f; p.attesa = 2f; });
+    // un po' di tutto: +40 vita, -10% danni subiti e +5% mana massimo per 3 minuti
     internal static DatiConsumabile ElisirDelCrepuscolo => Pozione("elisir-del-crepuscolo", "Elisir del crepuscolo", "elisir_del_crepuscolo", new Color(0.55f, 0.25f, 0.75f),
-        p => { p.cura = 40f; p.durataCura = 1f; p.mana = 40f; p.resistenza = 40f; p.attesa = 1.5f; });
+        p => { p.cura = 40f; p.durataCura = 1f; p.riduzioneDanniPercento = 10f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.attesa = 1.5f; });
 
     // ---------- le voci della bottega di Ilse (prezzi provvisori in Lacrime del lago, Docs/monete.md) ----------
 

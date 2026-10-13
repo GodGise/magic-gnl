@@ -193,7 +193,9 @@ public class Negozio : MonoBehaviour
         if (!r.Esegui(zaino, borsa))
         {
             bool pocheMonete = r.prezzo > 0 && borsa.Quante < r.prezzo;
-            Avvisa(Lingua.T(pocheMonete ? "neg.poche_monete" : "neg.mancano"), Rosso);
+            string motivo = r.TroppiConsumabili(zaino) ? string.Format(Lingua.T("neg.troppe_pozioni"), zaino.MassimoConsumabili)
+                : Lingua.T(pocheMonete ? "neg.poche_monete" : "neg.mancano");
+            Avvisa(motivo, Rosso);
             Suoni.Suona(Suono.Negato, suono, 0.6f);
             return;
         }
@@ -299,6 +301,11 @@ public class Negozio : MonoBehaviour
         var stileBorsa = new GUIStyle(GraficaMenu.Valore) { alignment = TextAnchor.MiddleRight, fontSize = 30 };
         GraficaMenu.Scritta(new Rect(L - 560f, 60f, 400f, 44f), Borsa.Testo(borsa.Quante), stileBorsa, GraficaMenu.Testo, alfa);
         Borsa.Disegna(new Vector2(L - 130f, 82f), 34f, alfa);
+        // quante pozioni porti e quante ne puoi portare (massimo 3 all'inizio del gioco)
+        var stilePozioni = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleRight, fontSize = 22 };
+        bool pieno = !zaino.PostoPerConsumabili(1);
+        GraficaMenu.Scritta(new Rect(L - 560f, 104f, 450f, 30f), string.Format(Lingua.T("neg.pozioni_portate"), zaino.Consumabili, zaino.MassimoConsumabili),
+            stilePozioni, pieno ? Rosso : GraficaMenu.Spento, alfa);
 
         if (DisegnaSchede(alfa, e)) return;
         if (DisegnaElenco(alfa, e)) return;

@@ -68,6 +68,13 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: effetti delle pozioni rivisti e massimo 3 pozioni (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
+- **Cardo nero** (fiore dei sassi): danni subiti **-10% per 3 minuti**, non più resistenza. **Lunaria**: mana massimo **+5% per 3 minuti**, non più mana (si ricarica da solo). Effetti **cumulabili**, ognuno con il suo tempo; a schermo sopra il rombo della pozione. Morendo finiscono.
+- **Al massimo 3 pozioni** nello zaino all'inizio del gioco: la bottega non ne dà altre, quelle a terra restano lì.
+- Fiori, pozioni e le 13 voci della bottega **esistono già come file** in `Assets/Dati/` (prima li creava solo il comando).
+- **File nuovo:** `EffettiPozioni.cs`. **Toccati (di tutti):** `GiocatoreControllo.cs` (danni ricevuti e mana massimo passano dagli effetti; a ogni rinascita si azzerano), `Zaino.cs` (`MassimoConsumabili`), `OggettoRaccoglibile.cs`, `InventarioGioco.cs`, `UsoConsumabili.cs`, `DatiConsumabile.cs`, `DatiRicetta.cs`, `Negozio.cs`, `Lingua.cs`.
+
 ### 13 ottobre: nome delle monete deciso, e ringraziamenti a quest finita (solo informazione)
 Stesso ramo `lorenzoc/negozio-ilse`.
 - **Monete:** Lorenzo ha scelto **Lacrime del lago**; nel parlato e nelle interfacce basta "lacrime".

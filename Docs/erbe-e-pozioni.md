@@ -13,20 +13,25 @@ Si può anche **comprare** con le monete, le **Lacrime del lago**, quando mancan
 | Fiore | Dove cresce (proposta) | A cosa serve |
 |---|---|---|
 | **Fiore di riva** | Acqua bassa della riva del lago (già nel villaggio, quest 4) | Vita |
-| **Cardo nero** | Campi incolti, fra le pietre (per esempio dietro le fattorie) | Resistenza |
-| **Lunaria** | Si apre solo di notte, vicino a tombe e rovine (cimitero, tempio) | Mana (Stregone) |
+| **Cardo nero** | Fra i sassi dei campi incolti (per esempio dietro le fattorie) | Difesa: danni subiti -10% per 3 minuti |
+| **Lunaria** | Si apre solo di notte, vicino a tombe e rovine (cimitero, tempio) | Mana massimo +5% per 3 minuti (Stregone) |
 
-Per ora solo i Fiori di riva sono nel mondo. Cardo nero e Lunaria vanno messi da Lorenzo (level design): oggetto vuoto con il componente `OggettoRaccoglibile` e, come "Oggetto", `Assets/Dati/Oggetti/Missioni/cardo-nero` o `lunaria`.
+Fiori, pozioni e voci della bottega **esistono già** come file (`Assets/Dati/Oggetti/Missioni/`, `Assets/Dati/Oggetti/Consumabili/`, `Assets/Dati/Ricette/`), pronti da usare. Per ora solo i Fiori di riva sono nel mondo. Cardo nero e Lunaria vanno messi da Lorenzo (level design): oggetto vuoto con il componente `OggettoRaccoglibile` e, come "Oggetto", `Assets/Dati/Oggetti/Missioni/cardo-nero` o `lunaria`.
 
 ## Le ricette della bottega di Ilse
 
 | Ricetta | Serve | Ricevi | Effetto |
 |---|---|---|---|
 | Pozione di Ilse | 3 Fiori di riva | 2 pozioni | +60 vita in 1 s |
-| Tonico di cardo | 2 Cardi neri | 1 | +100 resistenza subito, ricarica della resistenza +50% per 60 s |
-| Infuso di lunaria | 2 Lunarie | 1 | +60 mana |
-| Balsamo di riva | 2 Fiori di riva + 1 Cardo nero | 1 | +100 vita in 4 s, ricarica della resistenza +30% per 30 s |
-| Elisir del crepuscolo | 1 Fiore di riva + 1 Cardo nero + 1 Lunaria | 1 | +40 vita, +40 mana, +40 resistenza |
+| Tonico di cardo | 2 Cardi neri | 1 | Danni subiti -10% per 3 minuti |
+| Infuso di lunaria | 2 Lunarie | 1 | Mana massimo +5% per 3 minuti |
+| Balsamo di riva | 2 Fiori di riva + 1 Cardo nero | 1 | +100 vita in 4 s, danni subiti -10% per 3 minuti |
+| Elisir del crepuscolo | 1 Fiore di riva + 1 Cardo nero + 1 Lunaria | 1 | +40 vita, danni subiti -10% e mana massimo +5% per 3 minuti |
+
+**Regole (Lorenzo, 13 ottobre):**
+- Gli effetti a tempo sono **cumulabili**: due Tonici = danni subiti -20%, ognuno con i suoi 3 minuti (al massimo -90%). Si vedono in basso a sinistra, sopra il rombo della pozione, con il tempo che resta. Morendo finiscono.
+- Il mana non si ridà con le pozioni (si ricarica da solo): la Lunaria alza il **mana massimo**.
+- Nello zaino si portano **al massimo 3 pozioni** all'inizio del gioco (`Zaino`, "Massimo Consumabili", si potrà alzare più avanti). Con 3 pozioni la bottega non ne dà altre e quelle a terra non si raccolgono.
 
 Tutti i numeri si cambiano dall'Inspector: le pozioni in `Assets/Dati/Oggetti/Consumabili/`, le ricette in `Assets/Dati/Ricette/`.
 
