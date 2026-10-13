@@ -65,3 +65,5 @@ Per non avere più problemi di sincronia, il logo può essere un **video finito*
 ## Scintille che si disperdono (14 ottobre)
 
 Dietro il sigillo partono altre ~400 scintille che volano fino ai bordi dello schermo: una grande raffica all'impatto (230, alcune con alone) e poi un flusso più lento che continua fino a metà della scritta (170). In `LogoStudio.cs`, punto "6)" dell'elenco delle particelle.
+
+Le scintille del flusso (6b) e le braci nascono dove il sigillo si trova in quel momento: quando sale e si rimpicciolisce, partono dalla sua nuova posizione.

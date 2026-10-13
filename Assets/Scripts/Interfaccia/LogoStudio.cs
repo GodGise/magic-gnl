@@ -94,7 +94,7 @@ public class LogoStudio : MonoBehaviour
 
     // Una particella: nasce a un certo momento in un punto del disegno (coordinate 1024x1024, centro 512,512),
     // parte in una direzione, rallenta e svanisce. "tipo" 0 = scintilla, 1 = brace che sale, 2 = scintilla con alone.
-    struct Particella { public Vector2 origine, direzione; public float nascita, velocita, vita, taglia, salita; public int tipo; }
+    struct Particella { public Vector2 origine, direzione; public float nascita, velocita, vita, taglia, salita; public int tipo; public bool segue; }
 
     // Angolo (gradi, 0 = destra, senso orario sullo schermo) della runa i del quarto k: uguale allo script che disegna i pezzi.
     static float AngoloRuna(int k, int i) => k * 90f - 90f + 8f + i * (74f / 6f);
@@ -183,7 +183,7 @@ public class LogoStudio : MonoBehaviour
         {
             float ang = R() * Mathf.PI * 2f, raggio = Mathf.Sqrt(R()) * 470f;
             particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = new Vector2((R() - 0.5f) * 0.6f, -1f),
-                nascita = 0.8f + R() * 7.2f, velocita = 18f + R() * 38f, vita = 2.2f + R() * 2.4f, taglia = 2f + R() * 3.5f, salita = 0f, tipo = 1 });
+                nascita = 0.8f + R() * 7.2f, velocita = 18f + R() * 38f, vita = 2.2f + R() * 2.4f, taglia = 2f + R() * 3.5f, salita = 0f, tipo = 1, segue = true });
         }
         // 6) scintille che partono da dietro il sigillo e si disperdono nell'aria, fino ai bordi dello schermo
         //    6a) all'impatto: una grande raffica in tutte le direzioni (alcune con alone)
@@ -198,7 +198,7 @@ public class LogoStudio : MonoBehaviour
         {
             float ang = R() * Mathf.PI * 2f, raggio = 180f + R() * 300f;
             particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = Dir(ang + (R() - 0.5f) * 0.9f),
-                nascita = MomentoLampo + 0.4f + R() * 5.2f, velocita = 160f + R() * 520f, vita = 1.2f + R() * 1.8f, taglia = 2f + R() * 4f, salita = 10f + R() * 60f, tipo = n % 5 == 0 ? 2 : 0 });
+                nascita = MomentoLampo + 0.4f + R() * 5.2f, velocita = 160f + R() * 520f, vita = 1.2f + R() * 1.8f, taglia = 2f + R() * 4f, salita = 10f + R() * 60f, tipo = n % 5 == 0 ? 2 : 0, segue = true });
         }
     }
 
@@ -549,6 +549,14 @@ public class LogoStudio : MonoBehaviour
             p.y -= s.salita * dt * (s.tipo == 1 ? 0f : 1f) * (1f - 0.4f * k);
             // posizione sullo schermo con il sigillo nel posto iniziale (grande, al centro)
             Vector2 schermo = new Vector2(GraficaMenu.Larghezza * 0.5f, YCentro) - new Vector2(512f, 512f) * (LatoGrande / 1024f) + p * (LatoGrande / 1024f);
+            if (s.segue)
+            {
+                // nasce dove il sigillo si trova nel momento della nascita (anche quando è salito e rimpicciolito), poi vola via
+                float sp = Morbido((s.nascita - InizioSposta) / DurataSposta);
+                float latoNascita = Mathf.Lerp(LatoGrande, LatoPiccolo, sp);
+                var centroNascita = new Vector2(GraficaMenu.Larghezza * 0.5f, Mathf.Lerp(YCentro, YAlto, sp));
+                schermo = centroNascita + (s.origine - new Vector2(512f, 512f)) * (latoNascita / 1024f) + (p - s.origine) * (LatoGrande / 1024f);
+            }
             float alfa;
             if (s.tipo == 3) { Bagliore(schermo, s.taglia * 3.2f, new Color(1f, 0.5f, 0.2f), Mathf.Sin(k * Mathf.PI) * 0.16f * luce); continue; }
             if (s.tipo == 1) alfa = Mathf.Sin(k * Mathf.PI) * 0.7f * (0.75f + 0.25f * Mathf.Sin(t * 9f + s.nascita * 13f));
