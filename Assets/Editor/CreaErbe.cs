@@ -43,18 +43,18 @@ public static class CreaErbe
     // +60 vita in 1 s: la pozione della quest 4.
     internal static DatiConsumabile PozioneDiIlse => Pozione("pozione-di-ilse", "Pozione di Ilse", "pozione_di_ilse", new Color(0.75f, 0.12f, 0.1f),
         p => { p.cura = 60f; p.durataCura = 1f; p.attesa = 1.2f; });
-    // -10% danni subiti per 3 minuti (cumulabile)
+    // -10% danni subiti per 3 minuti (cumulabile: tre tonici = -30%, ogni tonico fa ripartire i 3 minuti)
     internal static DatiConsumabile TonicoDiCardo => Pozione("tonico-di-cardo", "Tonico di cardo", "tonico_di_cardo", new Color(0.6f, 0.68f, 0.15f),
         p => { p.cura = 0f; p.riduzioneDanniPercento = 10f; p.durataEffetto = 180f; p.attesa = 1.2f; });
     // +5% mana massimo per 3 minuti (cumulabile)
     internal static DatiConsumabile InfusoDiLunaria => Pozione("infuso-di-lunaria", "Infuso di lunaria", "infuso_di_lunaria", new Color(0.25f, 0.45f, 0.95f),
         p => { p.cura = 0f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.attesa = 1.2f; });
-    // +100 vita in 4 s e -10% danni subiti per 3 minuti
+    // +100 vita in 7 s e -10% danni subiti per 3 minuti (non cumulabile)
     internal static DatiConsumabile BalsamoDiRiva => Pozione("balsamo-di-riva", "Balsamo di riva", "balsamo_di_riva", new Color(0.85f, 0.25f, 0.3f),
-        p => { p.cura = 100f; p.durataCura = 4f; p.riduzioneDanniPercento = 10f; p.durataEffetto = 180f; p.attesa = 2f; });
-    // un po' di tutto: +40 vita, -10% danni subiti e +5% mana massimo per 3 minuti
+        p => { p.cura = 100f; p.durataCura = 7f; p.riduzioneDanniPercento = 10f; p.durataEffetto = 180f; p.cumulabile = false; p.attesa = 2f; });
+    // un po' di tutto: +40 vita, -10% danni subiti e +5% mana massimo per 3 minuti (non cumulabile)
     internal static DatiConsumabile ElisirDelCrepuscolo => Pozione("elisir-del-crepuscolo", "Elisir del crepuscolo", "elisir_del_crepuscolo", new Color(0.55f, 0.25f, 0.75f),
-        p => { p.cura = 40f; p.durataCura = 1f; p.riduzioneDanniPercento = 10f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.attesa = 1.5f; });
+        p => { p.cura = 40f; p.durataCura = 1f; p.riduzioneDanniPercento = 10f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.cumulabile = false; p.attesa = 1.5f; });
 
     // ---------- le voci della bottega di Ilse (prezzi provvisori in Lacrime del lago, Docs/monete.md) ----------
 

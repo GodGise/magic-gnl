@@ -24,13 +24,13 @@ MonoBehaviour:
   posizioneModello: {x: 0, y: 0, z: 0}
   scalaModello: 1
   cura: 100
-  durataCura: 4
+  durataCura: 7
   mana: 0
   resistenza: 0
   recuperoResistenzaPercento: 0
   riduzioneDanniPercento: 10
   manaMassimoPercento: 0
   durataEffetto: 180
-  cumulabile: 1
+  cumulabile: 0
   attesa: 2
   colore: {r: 0.85, g: 0.25, b: 0.3, a: 1}

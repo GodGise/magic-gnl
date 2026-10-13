@@ -68,6 +68,12 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: tasto C per cambiare consumabile, regola delle pozioni cumulabili (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
+- **Cambia oggetto**: azione nuova `CambiaOggetto` in `Comandi.cs`, tasto **C** (Y / Triangolo sul pad), passa al consumabile dopo; `MenuComandi.cs` ora ha 14 azioni (7 per colonna). Testi in 8 lingue.
+- **Cumulabili:** solo Tonico e Infuso, e solo negli effetti: tre Tonici = -30%, ogni pozione fa ripartire i 3 minuti di tutta la somma. Balsamo ed Elisir non si sommano (conta il più forte). Balsamo: 100 di vita in 7 s (prima 4).
+- **Toccati:** `Comandi.cs`, `MenuComandi.cs`, `UsoConsumabili.cs`, `EffettiPozioni.cs`, `DatiConsumabile.cs`, `Lingua.cs`, file del Balsamo e dell'Elisir, `CreaErbe.cs`.
+
 ### 13 ottobre: effetti delle pozioni rivisti e massimo 3 pozioni (serve un'occhiata di Giuseppe)
 Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
 - **Cardo nero** (fiore dei sassi): danni subiti **-10% per 3 minuti**, non più resistenza. **Lunaria**: mana massimo **+5% per 3 minuti**, non più mana (si ricarica da solo). Effetti **cumulabili**, ognuno con il suo tempo; a schermo sopra il rombo della pozione. Morendo finiscono.

@@ -29,7 +29,7 @@ public class DatiConsumabile : DatiOggetto
     [Min(0f)] public float manaMassimoPercento = 0f;
     [Tooltip("Secondi degli effetti a tempo (180 = 3 minuti).")]
     [Min(0f)] public float durataEffetto = 0f;
-    [Tooltip("Se attivo, bevendone due gli effetti a tempo si sommano (ognuno con il suo tempo).")]
+    [Tooltip("Se attivo (Tonico e Infuso), bevendone più d'una gli effetti a tempo si sommano e ogni pozione fa ripartire il tempo di tutta la somma. Se spento, l'effetto non si somma a niente.")]
     public bool cumulabile = true;
     [Tooltip("Secondi prima di poter usare un altro oggetto.")]
     [Min(0f)] public float attesa = 1.2f;

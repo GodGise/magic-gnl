@@ -25,11 +25,14 @@ Fiori, pozioni e voci della bottega **esistono già** come file (`Assets/Dati/Og
 | Pozione di Ilse | 3 Fiori di riva | 2 pozioni | +60 vita in 1 s |
 | Tonico di cardo | 2 Cardi neri | 1 | Danni subiti -10% per 3 minuti |
 | Infuso di lunaria | 2 Lunarie | 1 | Mana massimo +5% per 3 minuti |
-| Balsamo di riva | 2 Fiori di riva + 1 Cardo nero | 1 | +100 vita in 4 s, danni subiti -10% per 3 minuti |
+| Balsamo di riva | 2 Fiori di riva + 1 Cardo nero | 1 | +100 vita in 7 s, danni subiti -10% per 3 minuti |
 | Elisir del crepuscolo | 1 Fiore di riva + 1 Cardo nero + 1 Lunaria | 1 | +40 vita, danni subiti -10% e mana massimo +5% per 3 minuti |
 
 **Regole (Lorenzo, 13 ottobre):**
-- Gli effetti a tempo sono **cumulabili**: due Tonici = danni subiti -20%, ognuno con i suoi 3 minuti (al massimo -90%). Si vedono in basso a sinistra, sopra il rombo della pozione, con il tempo che resta. Morendo finiscono.
+- **Solo Tonico e Infuso sono cumulabili, e solo negli effetti, non nella durata**: tre Tonici = danni subiti -30%; ogni pozione bevuta fa ripartire i 3 minuti di tutta la somma, che poi finisce tutta insieme (al massimo -90%).
+- Balsamo ed Elisir non si sommano a niente: conta il più forte fra il loro effetto e la somma dei Tonici (o degli Infusi).
+- Gli effetti si vedono in basso a sinistra, sopra il rombo della pozione, con il tempo che resta. Morendo finiscono.
+- **Cambiare consumabile**: tasto **C** (si cambia in Opzioni > Comandi, voce "Cambia oggetto"; Y / Triangolo sul pad) passa al consumabile dopo; F lo usa. Con più consumabili diversi, sotto il rombo compare "C  cambia".
 - Il mana non si ridà con le pozioni (si ricarica da solo): la Lunaria alza il **mana massimo**.
 - Nello zaino si portano **al massimo 3 pozioni** all'inizio del gioco (`Zaino`, "Massimo Consumabili", si potrà alzare più avanti). Con 3 pozioni la bottega non ne dà altre e quelle a terra non si raccolgono.
 

@@ -18,7 +18,7 @@ public class MenuComandi : MonoBehaviour
 
     static MenuComandi istanza;
 
-    const int Azioni = 13, Ripristina = 13, Indietro = 14, PerColonna = 7;
+    const int Azioni = 14, Ripristina = 14, Indietro = 15, PerColonna = 7;
 
     readonly ElencoMenu lettore = new ElencoMenu();   // solo per leggere frecce, conferma e indietro
     int selezione;

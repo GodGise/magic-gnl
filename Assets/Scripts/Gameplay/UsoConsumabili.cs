@@ -5,8 +5,9 @@ using UnityEngine.SceneManagement;
 // L'uso degli oggetti consumabili (pozioni): il tasto "Usa oggetto" (F all'inizio, si cambia in Opzioni > Comandi;
 // freccia giù sul pad) usa l'oggetto scelto dello zaino, che sparisce. La Pozione di Ilse ridà vita in un secondo;
 // le altre pozioni (Docs/erbe-e-pozioni.md) ridanno anche mana e resistenza o fanno ricaricare più in fretta la resistenza.
-// Quale oggetto si usa: quello scelto nell'inventario (scheda Varie, E o doppio clic); se non è stato scelto niente,
-// o è finito, il primo consumabile dello zaino.
+// Quale oggetto si usa: quello scelto nell'inventario (scheda Varie, E o doppio clic) o con il tasto "Cambia oggetto"
+// (C all'inizio, si cambia in Opzioni > Comandi; Y / Triangolo sul pad), che passa al consumabile dopo dello zaino
+// (Lorenzo, 13 ottobre); se non è stato scelto niente, o è finito, il primo consumabile dello zaino.
 // In basso a sinistra, sopra le armi, un rombo mostra l'oggetto pronto, quante copie ci sono e il tasto.
 // Si usa solo da fermi o camminando: premuto a metà di un attacco, una schivata o una parata, parte appena finiscono
 // (se entro 0,4 secondi). Non durante un dialogo, con l'inventario aperto o in pausa.
@@ -22,7 +23,7 @@ public class UsoConsumabili : MonoBehaviour
     public static DatiConsumabile Scelto => Istanza != null ? Istanza.Pronto() : null;
 
     GiocatoreControllo giocatore;
-    InputAction comandoUsa;
+    InputAction comandoUsa, comandoCambia;
     DatiConsumabile scelto;
     float prontoDa;            // prima di questo momento non si può usare un altro oggetto
     float curaRimasta, curaAlSecondo;
@@ -44,23 +45,30 @@ public class UsoConsumabili : MonoBehaviour
         comandoUsa.AddBinding("<Keyboard>/f");
         comandoUsa.AddBinding("<Gamepad>/dpad/down");
         Comandi.Collega(comandoUsa, Azione.UsaOggetto, this);   // tasto scelto in Opzioni > Comandi
+        comandoCambia = new InputAction("CambiaOggetto", InputActionType.Button);
+        comandoCambia.AddBinding("<Keyboard>/c");
+        comandoCambia.AddBinding("<Gamepad>/buttonNorth");
+        Comandi.Collega(comandoCambia, Azione.CambiaOggetto, this);
     }
 
     void OnEnable()
     {
         comandoUsa.Enable();
+        comandoCambia.Enable();
         SceneManager.sceneLoaded += SceneCaricata;
     }
 
     void OnDisable()
     {
         comandoUsa.Disable();
+        comandoCambia.Disable();
         SceneManager.sceneLoaded -= SceneCaricata;
     }
 
     void OnDestroy()
     {
         comandoUsa.Dispose();
+        comandoCambia.Dispose();
         if (Istanza == this) Istanza = null;
     }
 
@@ -87,6 +95,36 @@ public class UsoConsumabili : MonoBehaviour
         int n = 0;
         foreach (var o in zaino.Oggetti) if (o == oggetto) n++;
         return n;
+    }
+
+    // Passa al consumabile dopo (tipi diversi, nell'ordine dello zaino) e lo scrive in alto.
+    void Cambia()
+    {
+        var zaino = giocatore.GetComponent<Zaino>();
+        if (zaino == null) return;
+        var tipi = new System.Collections.Generic.List<DatiConsumabile>();
+        foreach (var o in zaino.Oggetti)
+            if (o is DatiConsumabile c && !tipi.Contains(c)) tipi.Add(c);
+        if (tipi.Count == 0)
+        {
+            MessaggiSchermo.Mostra(Lingua.T("hud.niente_da_usare"), 2f);
+            Suoni.Suona(Suono.Negato, giocatore.transform.position + Vector3.up, 0.5f);
+            return;
+        }
+        int i = tipi.IndexOf(Pronto());
+        scelto = tipi[(i + 1) % tipi.Count];
+        MessaggiSchermo.Mostra(scelto.Nome + "  x" + Quanti(scelto), 1.5f);
+        Suoni.Suona(Suono.CambioArma, giocatore.transform.position + Vector3.up, 0.45f, 1.1f);
+    }
+
+    // Quanti consumabili diversi ci sono nello zaino (per mostrare il tasto "Cambia oggetto" solo se serve).
+    int TipiDiversi()
+    {
+        var zaino = giocatore != null ? giocatore.GetComponent<Zaino>() : null;
+        if (zaino == null) return 0;
+        var tipi = new System.Collections.Generic.HashSet<DatiConsumabile>();
+        foreach (var o in zaino.Oggetti) if (o is DatiConsumabile c) tipi.Add(c);
+        return tipi.Count;
     }
 
     DatiConsumabile Pronto()
@@ -116,6 +154,7 @@ public class UsoConsumabili : MonoBehaviour
             }
         }
 
+        if (comandoCambia.WasPressedThisFrame() && !MenuPausa.InPausa && !InventarioGioco.Aperto && !Dialogo.InCorso) Cambia();
         if (comandoUsa.WasPressedThisFrame()) premutoFino = Time.time + 0.4f;
         if (Time.time > premutoFino || MenuPausa.InPausa || InventarioGioco.Aperto || Dialogo.InCorso) return;
         if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Libero || Time.time < prontoDa) return;
@@ -188,6 +227,13 @@ public class UsoConsumabili : MonoBehaviour
             attesa ? GraficaMenu.Spento : GraficaMenu.Testo, 1f);
         var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft };
         GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y - 14f, 360f, 28f), oggetto.Nome + "  x" + Quanti(oggetto), stile, GraficaMenu.Testo, 1f);
+        // con più consumabili diversi: sotto il nome, il tasto per passare al prossimo
+        if (TipiDiversi() > 1)
+        {
+            var piccolo = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 18 };
+            GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y + 12f, 360f, 24f),
+                Comandi.NomeTasto(Azione.CambiaOggetto) + "  " + Lingua.T("hud.cambia_oggetto"), piccolo, GraficaMenu.Spento, 1f);
+        }
     }
 
     // Gli effetti a tempo delle pozioni bevute, sopra il rombo: "Danni subiti -10%  2:41", "Mana massimo +5%  1:10".

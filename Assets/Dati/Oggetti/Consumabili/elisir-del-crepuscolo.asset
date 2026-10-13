@@ -31,6 +31,6 @@ MonoBehaviour:
   riduzioneDanniPercento: 10
   manaMassimoPercento: 5
   durataEffetto: 180
-  cumulabile: 1
+  cumulabile: 0
   attesa: 1.5
   colore: {r: 0.55, g: 0.25, b: 0.75, a: 1}
