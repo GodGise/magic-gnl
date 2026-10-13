@@ -18,7 +18,7 @@ using static AiutiPrologo;
 //     il Negozio con le 5 ricette (3 Fiori di riva -> 2 Pozioni di Ilse, che ridanno 60 di vita in 1 secondo, e le
 //     altre, che si potranno fare quando i nuovi fiori saranno nel mondo);
 //   - tutto collegato con gli eventi:
-//       fine della quest 3 (Hobb ringrazia e paga 20 Lacrime del lago, le monete) -> Ilse diventa parlabile,
+//       fine della quest 3 (Hobb ringrazia e paga 20 monete d'oro) -> Ilse diventa parlabile,
 //       obiettivo "Vai dall'erborista Ilse"
 //       -> parli con Ilse -> si accendono i fiori, obiettivo "Fiori di riva raccolti: 0/3" (la bussola indica il fiore
 //          più vicino), suggerimenti su come raccogliere e sull'acqua bassa
@@ -265,7 +265,7 @@ public static class CreaPrologoQuest4
         }
         Su(dopoHobb, missioni.ImpostaObiettivo, "ob.q4.ilse");
         // la paga di Hobb per i ratti: le prime monete (oltre a quelle di partenza)
-        var paga = Undo.AddComponent<DaiMonete>(Vuoto("Paga di Hobb (20 Lacrime)", gruppo));
+        var paga = Undo.AddComponent<DaiMonete>(Vuoto("Paga di Hobb (20 monete)", gruppo));
         Imposta(paga, "quante", 20);
         Su(dopoHobb, paga.Dai);
         Su(dopoHobb, Abilita(parla), true);

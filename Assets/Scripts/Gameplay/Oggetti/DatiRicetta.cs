@@ -2,10 +2,10 @@ using UnityEngine;
 
 // Una voce di un negozio: "dai questo, ricevi quello". Ci sono tre modi (decisione di Lorenzo, 13 ottobre):
 //   - Baratto: ingredienti -> oggetto ("3 Fiori di riva -> 2 Pozioni di Ilse"). Il modo più conveniente.
-//   - Compra:  monete (Prezzo) -> oggetto ("30 Lacrime -> 1 Pozione di Ilse"). Quando mancano i fiori; costa di più.
-//   - Vendi:   oggetto -> monete (Ricavo) ("1 Fiore di riva -> 4 Lacrime"). "Da" resta vuoto.
+//   - Compra:  monete (Prezzo) -> oggetto ("30 monete -> 1 Pozione di Ilse"). Quando mancano i fiori; costa di più.
+//   - Vendi:   oggetto -> monete (Ricavo) ("1 Fiore di riva -> 4 monete"). "Da" resta vuoto.
 // Si possono anche mescolare (fiori + monete -> pozione): conta come baratto.
-// Le monete sono le Lacrime del lago (Borsa, Docs/monete.md). Fiori, pozioni e prezzi: Docs/erbe-e-pozioni.md.
+// Le monete sono le monete d'oro (Borsa, Docs/monete.md). Fiori, pozioni e prezzi: Docs/erbe-e-pozioni.md.
 // La stessa voce si può usare in più negozi.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Ricetta; oppure il menu
 // "magic-gnl > Erbe: crea fiori, pozioni e ricette", che crea quelle della bottega di Ilse in Assets/Dati/Ricette.
@@ -24,12 +24,12 @@ public class DatiRicetta : ScriptableObject
 
     [Tooltip("Oggetti da dare al negoziante (fiori). Vuoto = si compra solo con le monete.")]
     public Ingrediente[] chiede;
-    [Tooltip("Lacrime del lago da pagare (0 = niente).")]
+    [Tooltip("Monete da pagare (0 = niente).")]
     [Min(0)] public int prezzo;
     [Tooltip("Cosa si riceve. Vuoto = si vende e si ricevono solo monete.")]
     public DatiOggetto da;
     [Min(1)] public int quantiDa = 1;
-    [Tooltip("Lacrime del lago ricevute (per vendere).")]
+    [Tooltip("Monete ricevute (per vendere).")]
     [Min(0)] public int ricavo;
 
     bool HaIngredienti

@@ -14,7 +14,7 @@ using UnityEngine;
 //   4. torna all'attacco con il colpo dopo.
 // Al massimo 2 scheletri caricano un colpo nello stesso momento (gli altri aspettano girando intorno).
 // Se il giocatore scappa lontano (o non lo vede per qualche secondo) torna al suo posto e si riaddormenta.
-// Morendo lascia qualche Lacrima del lago (Borsa).
+// Morendo lascia qualche moneta (Borsa).
 // Vita, morte, aggancio, colpi ricevuti e difficoltà co-op sono quelli di Bersaglio (con "Attacca Il Giocatore" spento:
 // gli attacchi li comanda questo componente con Bersaglio.AttaccaOra). Stordito o bloccato dagli incantesimi non si
 // muove; rallentato va più piano.
@@ -57,7 +57,7 @@ public class ScheletroVivente : MonoBehaviour
     [SerializeField] float distanzaMassimaDalPosto = 22f;
 
     [Header("Bottino")]
-    [Tooltip("Lacrime del lago lasciate morendo.")]
+    [Tooltip("Monete lasciate morendo.")]
     [SerializeField, Min(0)] int lacrime = 3;
 
     const int MassimoInCarica = 2;

@@ -117,5 +117,5 @@ A quest finita chi l'ha data non chiede più il lavoro ma ringrazia (chiavi `dlg
 - **Brannoc**, Stregone: "Edric ti ha rimesso in mano quel bastone, eh? Stai attento: il fuoco non perdona chi se ne dimentica."
 - **Edric** (dopo la quest 2), Stregone: "Torna quando vuoi. Il tempio è silenzioso, ma non è vuoto."
 - **Edric**, Guerriero e Ladro: "Brannoc dice che hai ancora la mano ferma. Bene: di questi tempi una lama vale più di una preghiera."
-- **Hobb** (dopo la quest 3): "Il granaio è di nuovo mio, grazie a te! Quelle lacrime te le sei guadagnate tutte... e le due birre non me le scordo."
+- **Hobb** (dopo la quest 3): "Il granaio è di nuovo mio, grazie a te! Quelle monete te le sei guadagnate tutte... e le due birre non me le scordo."
 - **Ilse** (dopo la quest 4): niente battuta, vicino a lei c'è la bottega ("Commercia").

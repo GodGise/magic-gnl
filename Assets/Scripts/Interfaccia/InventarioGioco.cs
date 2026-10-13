@@ -730,7 +730,7 @@ public class InventarioGioco : MonoBehaviour
         GraficaMenu.Cornice(Z, alfa, lasciaQui && Z.Contains(e.mousePosition));
         var et = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 24 };
         GraficaMenu.Scritta(new Rect(Z.x + 40f, Z.y + 16f, 400f, 34f), Lingua.T("inv.zaino").ToUpperInvariant(), et, GraficaMenu.Bronzo, alfa);
-        // le Lacrime del lago (monete) nella borsa, accanto al titolo dello zaino
+        // le monete d'oro nella borsa, accanto al titolo dello zaino
         var borsa = Borsa.Di(giocatore);
         var stileBorsa = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 24 };
         Borsa.Disegna(new Vector2(Z.x + 330f, Z.y + 33f), 24f, alfa);

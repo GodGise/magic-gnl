@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Dà al giocatore delle Lacrime del lago (le monete, vedi Borsa) come ricompensa: per esempio Hobb, alla fine della
-// quest 3, ne dà 20 per i ratti. In alto compare "Ricevuto: 20 lacrime".
+// Dà al giocatore delle monete d'oro (vedi Borsa) come ricompensa: per esempio Hobb, alla fine della
+// quest 3, ne dà 20 per i ratti. In alto compare "Ricevuto: 20 monete".
 // Come montarlo: su un oggetto vuoto (o sul personaggio che paga); "Quante" = le monete da dare. Da un evento
 // (per esempio "Al Termine" di un dialogo) si sceglie DaiMonete > Dai. Dà una volta sola.
 public class DaiMonete : MonoBehaviour

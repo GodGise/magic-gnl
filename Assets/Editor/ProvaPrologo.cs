@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 // "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta);
 // "Togli 50 di vita al giocatore" serve a provare le pozioni (tasto F).
 // Bottega e monete: "Apri la bottega di Ilse" porta da Ilse e apre il negozio anche prima della quest 4;
-// "Dai 100 lacrime" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
+// "Dai 100 monete" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -81,14 +81,14 @@ public static class ProvaPrologo
         negozio.Apri();
     }
 
-    [MenuItem(Cartella + "Dai 100 lacrime")]
-    static void Lacrime()
+    [MenuItem(Cartella + "Dai 100 monete")]
+    static void Monete()
     {
         if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
         var g = Object.FindFirstObjectByType<GiocatoreControllo>();
         if (g == null) return;
         Borsa.Di(g).Aggiungi(100);
-        Debug.Log("Prova prologo: lacrime nella borsa " + Borsa.Di(g).Quante + ".");
+        Debug.Log("Prova prologo: monete nella borsa " + Borsa.Di(g).Quante + ".");
     }
 
     [MenuItem(Cartella + "Dai 3 fiori di ogni tipo")]

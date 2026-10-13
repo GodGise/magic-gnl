@@ -12,7 +12,7 @@ Decisa da Lorenzo il 10 ottobre 2026, scritta con il suo Claude. È la parte del
 - **Gli orchi:** per fortuna gran parte è uscita marciando, portandosi via quasi tutte le armi. Ne restano pochi: macellai distratti, qualche pattuglia, il carceriere.
 - **Miniboss:** il **Carceriere**, nella piazzola sotterranea ai piedi della scalinata d'uscita. È il **primo miniboss vero che si può battere**: uno scontro impegnativo ma fattibile con l'equipaggiamento povero di inizio gioco (11 ottobre). Proposta di numeri e mosse più sotto.
 - **Parassiti delle grotte:** come **ragni con 6 zampe invece di 8**, deformi e strani, **grandi la metà del personaggio** (11 ottobre).
-- **Dopo la fuga la gattabuia non è più accessibile.** Forse in futuro si potrà tornarci, ma non subito (11 ottobre). Niente campo base qui.
+- **Dopo la fuga la gattabuia non è più accessibile.** Forse in futuro si potrà tornarci, ma non subito (11 ottobre). **Niente campo base qui, e la gattabuia crolla** (Giuseppe, 11 e 13 ottobre): le tane degli orchi sono collegate da un enorme sistema di caverne, quindi non si può costruire un campo base lì (arriverebbero altri orchi); il crollo è anche una vendetta contro di loro.
 
 ## Il percorso
 
