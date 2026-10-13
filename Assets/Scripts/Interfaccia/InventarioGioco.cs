@@ -802,7 +802,10 @@ public class InventarioGioco : MonoBehaviour
         GraficaMenu.Cornice(D, alfa, oggetto != null);
         if (oggetto == null) return;
 
-        var nome = new GUIStyle(GraficaMenu.NomeClasse) { alignment = TextAnchor.MiddleLeft };
+        var nome = new GUIStyle(GraficaMenu.NomeClasse) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
+        // nomi lunghi (Medaglione della prima guardia): carattere più piccolo, così restano su una riga
+        float larghezzaNome = nome.CalcSize(new GUIContent(oggetto.Nome.ToUpperInvariant())).x;
+        if (larghezzaNome > D.width * 0.6f) nome.fontSize = Mathf.Max(18, Mathf.FloorToInt(nome.fontSize * D.width * 0.6f / larghezzaNome));
         GraficaMenu.Scritta(new Rect(D.x + 40f, D.y + 22f, D.width * 0.6f, 44f), oggetto.Nome.ToUpperInvariant(), nome, GraficaMenu.Selezione, alfa);
         var tipo = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleRight };
         GraficaMenu.Scritta(new Rect(D.x + D.width * 0.45f, D.y + 22f, D.width * 0.55f - 40f, 44f), Tipo(oggetto) + GraficaMenu.Separatore + (oggetto.tutteLeClassi ? Lingua.T("inv.tutte_classi") : NomeClasse(oggetto.classe)), tipo, GraficaMenu.Spento, alfa);

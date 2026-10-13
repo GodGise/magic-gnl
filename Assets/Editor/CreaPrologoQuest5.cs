@@ -19,6 +19,8 @@ using static AiutiPrologo;
 //       -> segnale q5.medaglione (dalla cripta) -> Edric ha le battute del ritorno
 //       -> uscendo dalla cripta (segnale uscita.Cripta) -> "Porta il medaglione a Edric", la bussola indica Edric
 //       -> Edric (dlg.q5.04-05) -> quest 5 finita (il sole avanza); da lì Edric ringrazia (dlg.dopo.edric5).
+//   - Edric esce dal cortile di studio (che c'è solo per lo Stregone), così c'è per tutte le classi; il suo dialogo della
+//     quest 2 resta solo per lo Stregone (ComponentiPerClasse);
 //   - mentre la quest è in corso, l'Interlocutore di Edric della quest 2 (i ringraziamenti) si spegne, così non ci sono
 //     due "Parla: Edric" insieme.
 // Gli alberi e le lapidi che toccherebbero il mausoleo si spengono (non si cancellano).
@@ -51,6 +53,16 @@ public static class CreaPrologoQuest5
             Undo.DestroyObjectImmediate(vecchio);
         }
         if (AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/" + CreaCripta.NomeScena + ".unity") == null) CreaCripta.Crea();
+
+        // Edric serve a tutte le classi: esce dal cortile di studio (solo Stregone) e resta dov'è, accanto al tempio.
+        // Il suo "Parla" della quest 2 (lo studio delle magie) resta solo per lo Stregone (ComponentiPerClasse).
+        // (Prova in Unity del 13 ottobre: con Guerriero e Ladro Edric non c'era e la quest 5 non si poteva fare.)
+        var cortile = edric.GetComponentInParent<SoloPerClasse>(true);
+        if (cortile != null) Undo.SetTransformParent(edric.transform, cortile.transform.parent, "Prologo quest 5");
+        var perClasse = edric.GetComponent<ComponentiPerClasse>();
+        if (perClasse == null) perClasse = Undo.AddComponent<ComponentiPerClasse>(edric.gameObject);
+        Imposta(perClasse, "componenti", new Behaviour[] { edric });
+        Imposta(perClasse, "stregone", true);
 
         var missioni = missioniOggetto.GetComponent<Missioni>();
         var gruppo = new GameObject(NomeGruppo).transform;
