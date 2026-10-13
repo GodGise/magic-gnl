@@ -23,7 +23,7 @@ using static AiutiPrologo;
 // nord-ovest -> sala con il sarcofago della guardia, la sua statua e il baule. Nella camera a nord-est due lunarie.
 // La cripta sta lontano dal villaggio (X 3000), così le due scene caricate insieme non si toccano.
 // Collegamenti della quest dentro la cripta (passano da PonteMissioni, che parla con Missioni del villaggio):
-//   arrivo -> "Trova la tomba della prima guardia", suggerimento sugli scheletri;
+//   arrivo -> "Trova la tomba della prima guardia";
 //   davanti al cancello chiuso -> avviso, "Trova il modo di aprire il cancello", la bussola indica la leva;
 //   leva -> "Apri il baule della prima guardia", la bussola indica il baule;
 //   baule -> medaglione nello zaino, "Esci dalla cripta", la bussola indica la scala, poi il segnale q5.medaglione
@@ -155,7 +155,6 @@ public static class CreaCripta
         Imposta(arrivoZona, "raggio", 3f);
         var allArrivo = Evento(arrivoZona, "allArrivo");
         Su(allArrivo, ponte.ImpostaObiettivo, "ob.q5.tomba");
-        Su(allArrivo, ponte.Suggerisci, "tip.q5.scheletri");
         if (cancello != null) UnityEventTools.AddObjectPersistentListener<Transform>(allArrivo, ponte.ImpostaMeta, cancello.transform);
 
         if (zonaCancello != null && cancello != null)
