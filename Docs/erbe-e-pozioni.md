@@ -6,7 +6,7 @@ Decisione di Lorenzo, 13 ottobre 2026. Proposta di fiori e ricette del Claude di
 
 L'erboristeria di Ilse è un **negozio di baratto**: si portano fiori e si ricevono pozioni. **Ogni fiore ha uno scopo** e ogni fiore, o combinazione di fiori, dà una pozione precisa. Nel prologo serve solo la pozione della vita (quest 4); le altre ricette si vedono già nella bottega, spente finché non si hanno i fiori.
 
-Si può anche **comprare** con le monete, le **Lacrime del lago**, quando mancano i fiori (costa molto di più), e **vendere** i fiori a Ilse. Monete, prezzi e mercato: `Docs/monete.md`.
+Si può anche **comprare** con le monete, le **monete d'oro**, quando mancano i fiori (costa molto di più), e **vendere** i fiori a Ilse. Monete, prezzi e mercato: `Docs/monete.md`.
 
 ## I fiori
 
