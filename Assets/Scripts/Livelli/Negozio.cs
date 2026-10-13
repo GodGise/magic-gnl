@@ -206,7 +206,8 @@ public class Negozio : MonoBehaviour
             return;
         }
         if (r.da is DatiConsumabile c) UsoConsumabili.Seleziona(c);   // la pozione appena presa è pronta per il tasto F
-        Avvisa(Lingua.T("hud.raccolto") + ": " + NomeVoce(r), Verde);
+        Avvisa(Lingua.T(r.Tipo == DatiRicetta.Modo.Compra ? "neg.comprato" : "neg.ottenuto") + ": " + NomeVoce(r)
+            + (r.prezzo > 0 ? GraficaMenu.Separatore + "-" + Borsa.Testo(r.prezzo) : ""), Verde);
         Suoni.Suona(Suono.Raccolta, suono, 0.8f);
         if (scambiatoUnaVolta) return;
         scambiatoUnaVolta = true;
@@ -333,9 +334,15 @@ public class Negozio : MonoBehaviour
                 CambiaScheda(i);
                 return true;
             }
-            if (scelta) GraficaMenu.FasciaLuce(new Rect(r.x + 6f, r.y, r.width - 12f, r.height), GraficaMenu.Con(GraficaMenu.Selezione, 0.22f * alfa));
+            if (scelta)
+            {
+                // scheda scelta: fascia leggera e una riga color fiamma sotto, così il nome resta leggibile
+                GraficaMenu.FasciaLuce(new Rect(r.x + 6f, r.y, r.width - 12f, r.height), GraficaMenu.Con(GraficaMenu.Selezione, 0.1f * alfa));
+                GraficaMenu.FasciaLuce(new Rect(r.x + 20f, r.yMax - 3f, r.width - 40f, 3f), GraficaMenu.Con(GraficaMenu.Selezione, 0.9f * alfa));
+            }
             var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
-            GraficaMenu.Scritta(r, Lingua.T(chiaviSchede[(int)schede[i]]).ToUpperInvariant(), stile, scelta ? GraficaMenu.Selezione : GraficaMenu.Spento, alfa);
+            GraficaMenu.Scritta(r, Lingua.T(chiaviSchede[(int)schede[i]]).ToUpperInvariant(), stile, scelta ? GraficaMenu.Selezione : GraficaMenu.Testo,
+                (scelta ? 1f : 0.55f) * alfa);
         }
         var tasto = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleCenter };
         var tq = new Vector2(x0 - 22f, y + h * 0.5f);
@@ -448,9 +455,10 @@ public class Negozio : MonoBehaviour
         if (r.da is DatiConsumabile c)
         {
             string effetti = c.Effetti();
-            if (effetti.Length > 0) GraficaMenu.Scritta(new Rect(D.x + 30f, y, D.width - 60f, 34f), effetti, GraficaMenu.Didascalia, Verde, alfa);
+            var stileEffetti = new GUIStyle(GraficaMenu.Didascalia) { wordWrap = true, alignment = TextAnchor.UpperCenter };
+            if (effetti.Length > 0) GraficaMenu.Scritta(new Rect(D.x + 40f, y, D.width - 80f, 60f), effetti, stileEffetti, Verde, alfa);
         }
-        y += 44f;
+        y += 66f;
 
         GraficaMenu.Divisore(cx, y, 520f, alfa);
         y += 20f;
@@ -489,6 +497,10 @@ public class Negozio : MonoBehaviour
 
         // il pulsante: acceso se si può fare
         var pulsante = new Rect(cx - 170f, D.yMax - 100f, 340f, 70f);
+        // con lo zaino pieno di pozioni, sopra il pulsante si dice perché non si può
+        if (r.TroppiConsumabili(zaino))
+            GraficaMenu.Scritta(new Rect(D.x + 30f, pulsante.y - 44f, D.width - 60f, 34f),
+                string.Format(Lingua.T("neg.troppe_pozioni"), zaino.MassimoConsumabili), GraficaMenu.Didascalia, Rosso, alfa);
         bool sopra = pulsante.Contains(e.mousePosition);
         if (sopra && e.type == EventType.MouseDown && e.button == 0)
         {
@@ -504,31 +516,6 @@ public class Negozio : MonoBehaviour
         return false;
     }
 
-    // Icona dell'oggetto; per le pozioni senza icona disegna la boccetta del loro colore, per i fiori un fiore.
-    static void DisegnaOggetto(Rect r, DatiOggetto o, float alfa)
-    {
-        if (o == null) return;
-        if (o.icona != null) { GraficaMenu.Icona(r, o, alfa); return; }
-        Vector2 c = r.center;
-        float s = r.width / 60f;
-        if (o is DatiConsumabile pozione)
-        {
-            GraficaMenu.Rombo(c + new Vector2(0f, 6f * s), 34f * s, GraficaMenu.Con(pozione.colore, alfa));
-            GraficaMenu.Riempi(new Rect(c.x - 4f * s, c.y - 24f * s, 8f * s, 14f * s), new Color(0.75f, 0.8f, 0.82f, 0.9f * alfa));
-            GraficaMenu.Riempi(new Rect(c.x - 6f * s, c.y - 28f * s, 12f * s, 5f * s), new Color(0.45f, 0.32f, 0.2f, alfa));
-            return;
-        }
-        if (o is DatiOggettoMissione fiore && fiore.forma == DatiOggettoMissione.FormaProvvisoria.Fiore)
-        {
-            GraficaMenu.Riempi(new Rect(c.x - 2f * s, c.y, 4f * s, 26f * s), new Color(0.3f, 0.45f, 0.22f, alfa));
-            for (int k = 0; k < 4; k++)
-            {
-                float a = k * Mathf.PI * 0.5f;
-                GraficaMenu.Rombo(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 9f * s + new Vector2(0f, -6f * s), 14f * s, GraficaMenu.Con(fiore.colore, alfa));
-            }
-            GraficaMenu.Rombo(c + new Vector2(0f, -6f * s), 8f * s, new Color(1f, 0.9f, 0.6f, alfa));
-            return;
-        }
-        GraficaMenu.Icona(r, o, alfa);
-    }
+    // Icona dell'oggetto (per pozioni e fiori senza icona, GraficaMenu disegna la boccetta o il fiore).
+    static void DisegnaOggetto(Rect r, DatiOggetto o, float alfa) => GraficaMenu.Icona(r, o, alfa);
 }

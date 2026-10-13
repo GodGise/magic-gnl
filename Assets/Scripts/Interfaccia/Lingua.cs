@@ -296,6 +296,8 @@ public static class Lingua
         ["neg.compra_ora"] = new[] { "Compra", "Buy", "Comprar", "Acheter", "Kaufen", "Comprar", "Купить", "购买" },
         ["neg.vendi_ora"] = new[] { "Vendi", "Sell", "Vender", "Vendre", "Verkaufen", "Vender", "Продать", "出售" },
         ["neg.poche_monete"] = new[] { "Non hai abbastanza lacrime", "You don't have enough lake tears", "No tienes suficientes lágrimas", "Tu n'as pas assez de larmes", "Du hast nicht genug Seetränen", "Você não tem lágrimas suficientes", "Не хватает озёрных слёз", "湖泪不够" },
+        ["neg.comprato"] = new[] { "Comprato", "Bought", "Comprado", "Acheté", "Gekauft", "Comprado", "Куплено", "已购买" },
+        ["neg.ottenuto"] = new[] { "Ottenuto", "Obtained", "Obtenido", "Obtenu", "Erhalten", "Obtido", "Получено", "获得" },
         ["neg.venduto"] = new[] { "Venduto", "Sold", "Vendido", "Vendu", "Verkauft", "Vendido", "Продано", "已出售" },
         ["neg.ne_hai"] = new[] { "Ne hai {0}", "You have {0}", "Tienes {0}", "Tu en as {0}", "Du hast {0}", "Você tem {0}", "У тебя: {0}", "拥有 {0}" },
         ["neg.dai"] = new[] { "Dai", "You give", "Das", "Tu donnes", "Du gibst", "Você dá", "Отдаёшь", "给出" },

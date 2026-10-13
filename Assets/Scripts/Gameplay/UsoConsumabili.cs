@@ -210,14 +210,8 @@ public class UsoConsumabili : MonoBehaviour
         Color bordo = attesa ? GraficaMenu.Spento : GraficaMenu.Bronzo;
         GraficaMenu.Rombo(centro, lato, bordo);
         GraficaMenu.Rombo(centro, lato - 8f, new Color(0.025f, 0.025f, 0.035f, 0.9f));
-        if (oggetto.icona != null) GraficaMenu.Icona(new Rect(centro.x - 21f, centro.y - 21f, 42f, 42f), oggetto, 1f);
-        else
-        {
-            // boccetta disegnata: corpo tondo del colore della pozione, collo e tappo
-            GraficaMenu.Rombo(centro + new Vector2(0f, 6f), 30f, oggetto.colore);
-            GraficaMenu.Riempi(new Rect(centro.x - 4f, centro.y - 22f, 8f, 14f), new Color(0.75f, 0.8f, 0.82f, 0.9f));
-            GraficaMenu.Riempi(new Rect(centro.x - 6f, centro.y - 26f, 12f, 5f), new Color(0.45f, 0.32f, 0.2f));
-        }
+        // l'icona di Nazar, oppure la boccetta del colore della pozione (GraficaMenu.Icona)
+        GraficaMenu.Icona(new Rect(centro.x - 26f, centro.y - 26f, 52f, 52f), oggetto, 1f);
         // il tasto in un piccolo rombo color fiamma, poi nome e copie
         var tasto = new Vector2(centro.x + lato * 0.5f + 22f, centro.y);
         GraficaMenu.Rombo(tasto, 34f, attesa ? GraficaMenu.Spento : GraficaMenu.Selezione);
@@ -232,7 +226,7 @@ public class UsoConsumabili : MonoBehaviour
         {
             var piccolo = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 18 };
             GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y + 12f, 360f, 24f),
-                Comandi.NomeTasto(Azione.CambiaOggetto) + "  " + Lingua.T("hud.cambia_oggetto"), piccolo, GraficaMenu.Spento, 1f);
+                Comandi.NomeTasto(Azione.CambiaOggetto) + "  " + Lingua.T("hud.cambia_oggetto"), piccolo, GraficaMenu.Testo, 0.75f);
         }
     }
 
