@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 // Interfaccia in partita, nello stile dei menu (disegno approvato in Docs/interfaccia.md):
 //   - in alto a sinistra: Vita (con la scia chiara del danno appena subito), Resistenza e, se serve, Mana;
+//     accanto alla vita, un segnalino per ogni effetto di pozione attivo (scudo = danni subiti in meno, goccia
+//     blu = mana massimo in più): i puntini sopra dicono quante pozioni sono sommate, la riga sotto si svuota
+//     col tempo e negli ultimi 20 secondi il segnalino lampeggia (Lorenzo, 13 ottobre: niente conto alla rovescia);
 //   - in basso a sinistra: arma (tasto 1) e bastone (tasto 2, se lo hai) dentro due rombi, scudo e amuleto più piccoli;
 //     per il Ladro, al posto dello scudo, l'arma a distanza (tasto 2); se l'amuleto ha un'abilità (Ultimo respiro),
 //     un rombo con Q che si riempie mentre si ricarica, acceso quando è pronta e viola mentre si è invisibili;
@@ -126,7 +129,9 @@ public class HudGioco : MonoBehaviour
 
         // barre in alto a sinistra (la vita si allunga se cresce il massimo)
         float vitaMax = Mathf.Max(1f, giocatore.VitaMassima);
-        Barra(80f, 70f, Mathf.Clamp(520f * vitaMax / 100f, 320f, 760f), 22f, giocatore.Vita / vitaMax, scia / vitaMax, ColoreVita,
+        float larghezzaVita = Mathf.Clamp(520f * vitaMax / 100f, 320f, 760f);
+        DisegnaPozioni(80f + larghezzaVita + 40f, 81f);
+        Barra(80f, 70f, larghezzaVita, 22f, giocatore.Vita / vitaMax, scia / vitaMax, ColoreVita,
             Lingua.T("stat.vita"), Mathf.CeilToInt(giocatore.Vita) + " / " + Mathf.CeilToInt(vitaMax));
         if (resistenza != null)
             Barra(80f, 128f, Mathf.Clamp(420f * resistenza.Massimo / 100f, 260f, 640f), 16f, resistenza.Attuale / Mathf.Max(1f, resistenza.Massimo), 0f,
@@ -139,6 +144,73 @@ public class HudGioco : MonoBehaviour
         DisegnaNemico(larghezza, altezza);
         DisegnaAzione(larghezza, altezza);
         DisegnaOra(larghezza);
+    }
+
+    // ---------- segnalini delle pozioni ----------
+
+    static readonly Color ColoreDifesa = new Color(0.62f, 0.42f, 0.72f);
+    static readonly Color ColoreManaPiu = new Color(0.4f, 0.58f, 1f);
+
+    // I segnalini degli effetti attivi, in fila a destra della barra della vita (centro del primo in x, y).
+    void DisegnaPozioni(float x, float y)
+    {
+        var effetti = giocatore.GetComponent<EffettiPozioni>();
+        if (effetti == null) return;
+        foreach (EffettiPozioni.Tipo tipo in System.Enum.GetValues(typeof(EffettiPozioni.Tipo)))
+        {
+            float totale = effetti.Totale(tipo);
+            if (totale <= 0f) continue;
+            bool difesa = tipo == EffettiPozioni.Tipo.RiduzioneDanni;
+            // quante pozioni sommate (una pozione = 10% di difesa o 5% di mana)
+            int pile = Mathf.Clamp(Mathf.RoundToInt(totale / (difesa ? 10f : 5f)), 1, 6);
+            Segnalino(new Vector2(x, y), difesa, pile, effetti.ParteRimasta(tipo), effetti.SecondiRimasti(tipo));
+            x += 80f;
+        }
+    }
+
+    static void Segnalino(Vector2 c, bool difesa, int pile, float parte, float secondi)
+    {
+        Color colore = difesa ? ColoreDifesa : ColoreManaPiu;
+        // negli ultimi 20 secondi lampeggia, sempre più in fretta
+        float alfa = 1f;
+        if (secondi < 20f)
+        {
+            float velocita = Mathf.Lerp(9f, 3f, secondi / 20f);
+            alfa = 0.45f + 0.55f * (0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * velocita));
+        }
+        const float lato = 40f;
+        GraficaMenu.Alone(new Rect(c.x - 34f, c.y - 34f, 68f, 68f), GraficaMenu.Con(colore, 0.35f * alfa));
+        GraficaMenu.Rombo(c, lato, GraficaMenu.Con(GraficaMenu.Bronzo, alfa));
+        GraficaMenu.Rombo(c, lato - 6f, new Color(0.025f, 0.025f, 0.035f, 0.92f * alfa));
+        if (difesa) Scudo(c, colore, alfa); else Goccia(c, colore, alfa);
+        // puntini: uno per pozione sommata
+        float inizio = c.x - (pile - 1) * 5f;
+        for (int i = 0; i < pile; i++)
+            GraficaMenu.Rombo(new Vector2(inizio + i * 10f, c.y - lato * 0.71f - 8f), 7f, GraficaMenu.Con(GraficaMenu.Selezione, alfa));
+        // la riga del tempo che si svuota
+        var riga = new Rect(c.x - 20f, c.y + lato * 0.71f + 6f, 40f, 4f);
+        GraficaMenu.Riempi(riga, new Color(0f, 0f, 0f, 0.6f * alfa));
+        GraficaMenu.Riempi(new Rect(riga.x, riga.y, riga.width * parte, riga.height), GraficaMenu.Con(colore, alfa));
+    }
+
+    // Uno scudo a punta fatto di rettangoli e un rombo.
+    static void Scudo(Vector2 c, Color colore, float alfa)
+    {
+        var col = GraficaMenu.Con(colore, alfa);
+        GraficaMenu.Riempi(new Rect(c.x - 9f, c.y - 10f, 18f, 12f), col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y + 2f), 18f, col);
+        GraficaMenu.Riempi(new Rect(c.x - 1f, c.y - 8f, 2f, 16f), GraficaMenu.Con(Color.black, 0.35f * alfa));
+        GraficaMenu.Riempi(new Rect(c.x - 9f, c.y - 10f, 18f, 3f), GraficaMenu.Con(Color.white, 0.25f * alfa));
+    }
+
+    // Una goccia di mana: un rombo con la punta in alto e un riflesso.
+    static void Goccia(Vector2 c, Color colore, float alfa)
+    {
+        var col = GraficaMenu.Con(colore, alfa);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y + 3f), 20f, col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y - 4f), 11f, col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y - 9f), 5f, col);
+        GraficaMenu.Rombo(new Vector2(c.x - 3f, c.y + 1f), 4f, GraficaMenu.Con(Color.white, 0.5f * alfa));
     }
 
     void Barra(float x, float y, float w, float h, float parte, float partescia, Color colore, string etichetta, string valore)

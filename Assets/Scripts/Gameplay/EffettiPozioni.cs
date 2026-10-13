@@ -9,8 +9,8 @@ using UnityEngine;
 // conta il più forte fra la somma dei cumulabili e il loro (Balsamo -10% con tre Tonici attivi = sempre -30%).
 // I danni subiti non scendono mai sotto il 10% (al massimo -90%). Quando un effetto finisce, il mana che supera il
 // nuovo massimo si perde. Morendo finisce tutto.
-// Li applica GiocatoreControllo (RiceviColpo, RiceviDannoAmbiente, ManaMassimo); a schermo li mostra UsoConsumabili
-// (sopra il rombo della pozione, con il tempo che resta).
+// Li applica GiocatoreControllo (RiceviColpo, RiceviDannoAmbiente, ManaMassimo); a schermo li mostra HudGioco con
+// un segnalino accanto alla barra della vita (niente conto alla rovescia: il segnalino si svuota e lampeggia alla fine).
 // Come montarlo: non serve, si aggiunge da solo al giocatore la prima volta che beve una pozione (EffettiPozioni.Di).
 public class EffettiPozioni : MonoBehaviour
 {
@@ -22,6 +22,8 @@ public class EffettiPozioni : MonoBehaviour
     readonly float[] fineSomma = new float[Tipi];
     readonly float[] fisso = new float[Tipi];
     readonly float[] fineFisso = new float[Tipi];
+    // Quanto durava l'effetto quando è ripartito l'ultima volta (per il segnalino che si svuota).
+    readonly float[] durata = new float[Tipi];
 
     // Aggiunge l'effetto di una pozione.
     public void Aggiungi(Tipo tipo, float percento, float secondi, bool cumulabile)
@@ -33,11 +35,20 @@ public class EffettiPozioni : MonoBehaviour
             if (Time.time >= fineSomma[t]) somma[t] = 0f;   // la somma vecchia era già finita
             somma[t] += percento;
             fineSomma[t] = Time.time + secondi;            // ogni pozione fa ripartire il tempo di tutta la somma
+            durata[t] = secondi;
             return;
         }
         // non cumulabile: prende il posto del precedente se è più forte o se quello è finito; altrimenti allunga solo il tempo
         if (Time.time >= fineFisso[t] || percento >= fisso[t]) fisso[t] = percento;
         fineFisso[t] = Mathf.Max(fineFisso[t], Time.time + secondi);
+        durata[t] = Mathf.Max(secondi, fineFisso[t] - Time.time);
+    }
+
+    // Da 1 (appena bevuta) a 0 (finito): quanto resta dell'effetto, per il segnalino.
+    public float ParteRimasta(Tipo tipo)
+    {
+        int t = (int)tipo;
+        return durata[t] <= 0f ? 0f : Mathf.Clamp01(SecondiRimasti(tipo) / durata[t]);
     }
 
     // L'effetto attivo di un tipo, in percento: il più forte fra la somma dei cumulabili e il non cumulabile.
@@ -67,7 +78,7 @@ public class EffettiPozioni : MonoBehaviour
 
     public void Azzera()
     {
-        for (int t = 0; t < Tipi; t++) { somma[t] = 0f; fineSomma[t] = 0f; fisso[t] = 0f; fineFisso[t] = 0f; }
+        for (int t = 0; t < Tipi; t++) { somma[t] = 0f; fineSomma[t] = 0f; fisso[t] = 0f; fineFisso[t] = 0f; durata[t] = 0f; }
     }
 
     // Gli effetti del giocatore (li aggiunge se mancano).
