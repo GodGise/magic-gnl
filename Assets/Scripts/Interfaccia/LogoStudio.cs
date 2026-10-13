@@ -24,9 +24,9 @@ public class LogoStudio : MonoBehaviour
     // SINCRONIA: il suono è l'orologio dell'animazione. Il file "logo-studio" parte subito e, finché suona, il tempo dell'animazione
     // si ricava dalla posizione di lettura del file: animazione = posizione nel file + Differenza. Così, anche se il PC si blocca
     // per un attimo, immagine e suono restano agganciati (prima erano due orologi separati e si sfasavano).
-    // Differenza = (AttesaNera + MomentoLampo) - ColpoNelFile: il colpo secco nel file è a ~6,0 s (CapCut) e nell'animazione
+    // Differenza = (AttesaNera + MomentoLampo) - ColpoNelFile: il colpo secco nel file è a 5,9 s (misurato sul file del 13 ottobre sera) e nell'animazione
     // la runa centrale si accende a 3,0 + 3,3 = 6,3 s. Per ritocchi fini nell'editor: F3/F4 (vedi sotto).
-    const float ColpoNelFile = 6.0f;
+    const float ColpoNelFile = 5.9f;
     const float Differenza = AttesaNera + MomentoLampo - ColpoNelFile;
     const string ChiaveCorrezione = "LogoStudio.RitoccoSuono2";   // chiave nuova: azzera i vecchi tentativi salvati nell'editor
 
