@@ -178,8 +178,8 @@ public class CaricamentoZona : MonoBehaviour
         luciSpente.Clear();
         var ciclo = CicloGiornoNotte.Istanza;
         if (ciclo != null && ciclo.enabled) { ciclo.enabled = false; spenti.Add(ciclo); }
-        foreach (var luce in FindObjectsByType<Light>(FindObjectsSortMode.None))
-            if (luce.type == LightType.Directional && luce.enabled && luce.gameObject.scene != zona) { luce.enabled = false; luciSpente.Add(luce); }
+        foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+            if (l.type == LightType.Directional && l.enabled && l.gameObject.scene != zona) { l.enabled = false; luciSpente.Add(l); }
 
         var ambiente = FindFirstObjectByType<AmbienteZona>();
         Color luce = ambiente != null ? ambiente.luceAmbiente : new Color(0.08f, 0.08f, 0.1f);
