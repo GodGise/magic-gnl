@@ -68,6 +68,11 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: icone provvisorie per tutti gli oggetti, prove fatte in Unity (serve un'occhiata di Giuseppe)
+Stesso ramo `lorenzoc/negozio-ilse`. Nell'inventario gli oggetti si vedevano solo come iniziali. Ora ogni tipo ha una sagoma disegnata (spada, spadone, ascia, mazza, pugnali, archi, balestra, scudi per taglia, armature per peso, vesti, amuleti, bastoni, libri, incantesimi, pozioni, fiori) e ogni oggetto ha un dettaglio di colore suo (dal nome). Spariscono da sole quando un oggetto ha la sua icona vera (`DatiOggetto.icona`).
+- **File nuovo:** `Assets/Scripts/Interfaccia/IconeProvvisorie.cs`. **Toccati:** `GraficaMenu.cs` (`Icona` chiama le sagome prima dell'iniziale), `FormeOggetti.cs` (`ColoreMagia` pubblico).
+- Bottega, monete, pozioni, tasto C e Stregone **provati in Unity dal Claude di Lorenzo** sul PC di Lorenzo, Console senza errori; scena `VillaggioLagoNero` già preparata sul ramo.
+
 ### 13 ottobre: tasto C per cambiare consumabile, regola delle pozioni cumulabili (serve un'occhiata di Giuseppe)
 Stesso ramo `lorenzoc/negozio-ilse`. Decisioni di Lorenzo:
 - **Cambia oggetto**: azione nuova `CambiaOggetto` in `Comandi.cs`, tasto **C** (Y / Triangolo sul pad), passa al consumabile dopo; `MenuComandi.cs` ora ha 14 azioni (7 per colonna). Testi in 8 lingue.

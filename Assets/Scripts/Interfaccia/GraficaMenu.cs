@@ -204,8 +204,8 @@ public static class GraficaMenu
         return Screen.width / s;
     }
 
-    // Icona di un oggetto: l'immagine fatta da Nazar se c'è; altrimenti una boccetta del suo colore (pozioni),
-    // un fiore del suo colore (fiori delle missioni) o l'iniziale del nome.
+    // Icona di un oggetto: l'immagine fatta da Nazar se c'è; altrimenti la sagoma provvisoria del suo tipo
+    // (IconeProvvisorie: spada, scudo, armatura, boccetta...) o, per i tipi senza sagoma, l'iniziale del nome.
     public static void Icona(Rect r, DatiOggetto oggetto, float alfa)
     {
         if (oggetto == null) return;
@@ -218,37 +218,10 @@ public static class GraficaMenu
             GUI.color = Color.white;
             return;
         }
-        if (IconaProvvisoria(r, oggetto, alfa)) return;
+        if (IconeProvvisorie.Disegna(r, oggetto, alfa)) return;   // sagoma provvisoria del tipo di oggetto
         string nome = oggetto.Nome;
         string iniziale = string.IsNullOrEmpty(nome) ? "?" : nome.Substring(0, 1).ToUpperInvariant();
         Scritta(r, iniziale, Iniziale, Testo, alfa);
-    }
-
-    // Boccetta (pozioni) o fiore (oggetti delle missioni a forma di fiore), finché Nazar non fa le icone vere.
-    static bool IconaProvvisoria(Rect r, DatiOggetto o, float alfa)
-    {
-        Vector2 c = r.center;
-        float s = Mathf.Min(r.width, r.height) / 60f;
-        if (o is DatiConsumabile pozione)
-        {
-            Rombo(c + new Vector2(0f, 6f * s), 34f * s, Con(pozione.colore, alfa));
-            Rombo(c + new Vector2(-5f * s, 1f * s), 8f * s, new Color(1f, 1f, 1f, 0.35f * alfa));   // riflesso
-            Riempi(new Rect(c.x - 4f * s, c.y - 24f * s, 8f * s, 14f * s), new Color(0.75f, 0.8f, 0.82f, 0.9f * alfa));
-            Riempi(new Rect(c.x - 6f * s, c.y - 28f * s, 12f * s, 5f * s), new Color(0.45f, 0.32f, 0.2f, alfa));
-            return true;
-        }
-        if (o is DatiOggettoMissione fiore && fiore.forma == DatiOggettoMissione.FormaProvvisoria.Fiore)
-        {
-            Riempi(new Rect(c.x - 2f * s, c.y, 4f * s, 26f * s), new Color(0.3f, 0.45f, 0.22f, alfa));
-            for (int k = 0; k < 4; k++)
-            {
-                float a = k * Mathf.PI * 0.5f;
-                Rombo(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 9f * s + new Vector2(0f, -6f * s), 14f * s, Con(fiore.colore, alfa));
-            }
-            Rombo(c + new Vector2(0f, -6f * s), 8f * s, new Color(1f, 0.9f, 0.6f, alfa));
-            return true;
-        }
-        return false;
     }
 
     // Bordi scuri e sfumatura in basso, su tutto lo schermo (fuori dal foglio virtuale).
