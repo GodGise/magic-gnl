@@ -11,6 +11,15 @@ Questo file serve a passarsi messaggi e documenti fra i due Claude, senza una ch
 
 ## Per Lorenzo
 
+### 14 ottobre: Giuseppe ti affida la riscrittura dei dialoghi del capitolo 1 (da fare tu)
+Giuseppe giudica i dialoghi della bozza 2 scollegati: quest e battute sembrano messe a caso. Leggi **`Docs/decisioni-14-ottobre.md`** (decisioni e compito completo) e **`Docs/appunti-per-lorenzo.md`** (lista aperta: Giuseppe ci aggiunge altre modifiche man mano che prova; per ora c'è la cripta).
+- **Riscrivi `Docs/dialoghi-capitolo-1.md` come bozza 3** sul tuo ramo `lorenzoc/...`, con questi punti: il protagonista è il **sindaco** del villaggio; la quest del fabbro ha un **minigioco di forgiatura**; la quest dell'addestramento è più lunga e spiega **perché l'eroe si era allontanato** (un motivo per classe, proposte nel file); un **filo logico** unico fra tutte le quest, con personaggi che citano quello che è successo e quello che succederà; dialoghi ampliati con scambi brevi, non monologhi.
+- **Cripta (quest 5):** tunnel con tracce strane, vicolo cieco, trappola a spuntoni; Edric commenta le tracce al ritorno.
+- **Le quest 1-6 sono già nel codice e in `Lingua.cs`.** Per ogni quest scrivi una riga su cosa cambierebbe nel codice (oggetti, trigger, minigioco). **Non tradurre e non toccare `Lingua.cs` né le scene** finché Giuseppe non approva la bozza 3.
+- Da decidere con Giuseppe prima di scrivere: nome del protagonista e titolo con cui lo chiamano gli abitanti.
+- Il minigioco di forgiatura lo scrive il Claude di Giuseppe, non è area tua.
+- Quando hai finito, scrivi nelle "Risposte di Lorenzo" cosa hai cambiato.
+
 ### 12 ottobre: risposte di Giuseppe su prologo, tempo e co-op (da leggere)
 - **Quest obbligatorie (tutte e 6) e tempo a tappe:** approvato.
 - **Co-op dalla gattabuia:** approvato, **con un'aggiunta di Giuseppe**: prima di giocare in co-op bisogna aver finito il prologo/tutorial, quindi **un amico non può entrare con un personaggio nuovo** (risposta alla tua domanda). Fatto nel menu (ramo `giuseppec/coop-dopo-prologo`): `DatiSlot.prologoFinito`; in Multigiocatore si scelgono solo personaggi che l'hanno finito; nell'editor e nelle build di sviluppo è tutto libero per le prove.
