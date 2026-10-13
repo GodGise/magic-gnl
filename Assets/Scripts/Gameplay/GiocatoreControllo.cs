@@ -7,6 +7,9 @@ using UnityEngine.InputSystem;
 //   - Sprint:   tieni premuto Shift (o la pressione della levetta sinistra del pad) mentre ti muovi.
 //               Si corre più veloci ma la resistenza scende ogni secondo; a resistenza zero lo sprint
 //               si ferma e ricomincia solo quando ne è tornata un po'.
+//               Mentre si esplora lo sprint è gratis (Lorenzo, 13 ottobre): la resistenza scende solo "in
+//               combattimento", cioè con un nemico vivo vicino (sveglio o no), un nemico che ti insegue, o per
+//               qualche secondo dopo un colpo ricevuto. Raggio e durata si regolano nell'Inspector.
 // Le tre mosse fondamentali sono
 //   - Schivata: Spazio / tasto B (Xbox) o Cerchio (PS). Breve invulnerabilità all'inizio.
 //   - Parata:   tieni premuto il tasto destro del mouse / LB (Xbox) o L1 (PS). Riduce il danno
@@ -74,6 +77,16 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     [SerializeField] float costoSprintAlSecondo = 15f;
     [Tooltip("Resistenza minima per iniziare uno sprint (evita che parta e si fermi di continuo a barra quasi vuota).")]
     [SerializeField] float resistenzaMinimaSprint = 10f;
+
+    [Header("Sprint mentre si esplora")]
+    [Tooltip("Se attivo, lo sprint consuma resistenza solo in combattimento: esplorando si corre gratis.")]
+    [SerializeField] bool sprintGratisEsplorando = true;
+    [Tooltip("Metri: un nemico vivo più vicino di così, sveglio o no, fa consumare resistenza allo sprint. Manichini e sagome non contano.")]
+    [SerializeField] float raggioNemiciVicini = 15f;
+    [Tooltip("Metri: un nemico che ti sta inseguendo conta anche da più lontano, fino a questa distanza.")]
+    [SerializeField] float raggioNemiciInseguono = 40f;
+    [Tooltip("Secondi dopo l'ultimo colpo ricevuto (anche parato o schivato) in cui si resta in combattimento.")]
+    [SerializeField] float durataCombattimento = 5f;
 
     [Header("Movimento (altro)")]
     [SerializeField] float velocitaRotazione = 720f;
@@ -216,6 +229,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     float inizioGestoFodero = -10f;
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2, comandoAbilita;
     bool staSprintando;
+    float ultimoColpoRicevuto = -100f;
+    float prossimoControlloNemici;
+    bool nemiciVicini;
 
     ArmaImpugnata arma = ArmaImpugnata.Spada;
     bool haBastone;
@@ -531,7 +547,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         {
             velocita = velocitaSprint;
             // Spendere resistenza ogni frame ferma anche la ricarica, come per le altre azioni.
-            resistenza.Spendi(costoSprintAlSecondo * dt);
+            // Esplorando (nessun nemico vicino) lo sprint non costa niente e la barra si ricarica.
+            if (!sprintGratisEsplorando || InCombattimento) resistenza.Spendi(costoSprintAlSecondo * dt);
         }
         // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
         return direzioneInput * velocita * velocitaArmatura * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
@@ -563,6 +580,48 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             inizioGestoFodero = Time.time;
             Suoni.Suona(Suono.CambioArma, transform.position + Vector3.up, 0.6f, 1.1f);
         }
+    }
+
+    // ---------- In combattimento o in esplorazione ----------
+
+    // Vero se c'è un nemico vivo vicino (sveglio o no), uno che ti insegue da più lontano,
+    // o se hai ricevuto un colpo da poco. Lo usa lo sprint per decidere se consumare resistenza.
+    public bool InCombattimento
+    {
+        get
+        {
+            if (Time.time - ultimoColpoRicevuto < durataCombattimento) return true;
+            // Cercare i nemici a ogni fotogramma non serve: basta 4 volte al secondo.
+            if (Time.time >= prossimoControlloNemici)
+            {
+                prossimoControlloNemici = Time.time + 0.25f;
+                nemiciVicini = CercaNemiciVicini();
+            }
+            return nemiciVicini;
+        }
+    }
+
+    bool CercaNemiciVicini()
+    {
+        Vector3 qui = transform.position;
+        float vicini2 = raggioNemiciVicini * raggioNemiciVicini;
+        float inseguono2 = raggioNemiciInseguono * raggioNemiciInseguono;
+        foreach (var nemico in RegistroNemici.Tutti)
+        {
+            if (nemico == null || nemico.Morto || !nemico.isActiveAndEnabled) continue;
+            float distanza2 = (nemico.transform.position - qui).sqrMagnitude;
+            if (distanza2 > inseguono2 || !NemicoVero(nemico)) continue;
+            if (distanza2 <= vicini2) return true;
+            if (Time.time - nemico.UltimoInseguimento < 1f) return true;   // ti (o vi) sta inseguendo
+        }
+        return false;
+    }
+
+    // Un nemico vero insegue o balza (InseguimentoNemico, RattoGigante) oppure attacca da solo.
+    // Manichini e sagome dell'allenamento non attaccano e non contano.
+    static bool NemicoVero(Bersaglio b)
+    {
+        return b.attaccaIlGiocatore || b.GetComponent<InseguimentoNemico>() != null || b.GetComponent<RattoGigante>() != null;
     }
 
     // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
@@ -1334,6 +1393,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false, Bersaglio attaccante = null)
     {
         if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
+        ultimoColpoRicevuto = Time.time;   // anche se lo schivi o lo pari, sei in combattimento
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {

@@ -68,6 +68,10 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: lo sprint non consuma resistenza mentre si esplora (solo informazione)
+Decisione di Lorenzo, ramo `lorenzoc/stamina-esplorazione`. Lo sprint consuma resistenza **solo in combattimento**: con un nemico vivo entro **15 m** (sveglio o no; manichini e sagome non contano), con un nemico che insegue entro 40 m, o per **5 s** dopo un colpo ricevuto (anche parato o schivato). Esplorando si corre gratis e la barra si ricarica. Schivata, attacco e parata costano come prima. Numeri regolabili nell'Inspector di `GiocatoreControllo` (sezione "Sprint mentre si esplora"; si può anche spegnere).
+- **File condiviso toccato:** solo `GiocatoreControllo.cs` (nuova proprietà pubblica `InCombattimento`, utile anche per altro, per esempio la musica di combattimento).
+
 ### 12 ottobre, notte: quest 4 del prologo e pozioni con il tasto F (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/quest-4` (parte da `lorenzoc/vicoli-villaggio`: va unito dopo la #62). Finita la quest 3 compare "Vai dall'erborista Ilse": il blocco "Erborista" è sostituito dalla **bottega di Ilse**, vuota dentro (bancone, mensole con vasetti, erbe appese, calderone verde). Ilse chiede **tre Fiori di riva**, nell'acqua bassa della riva (a nord del molo, più a nord e a sud); l'obiettivo conta "Fiori di riva raccolti: N/3" e la bussola indica il fiore più vicino. Portati i fiori, Ilse dà **due Pozioni di Ilse** (+60 vita in 1 secondo): una da bere subito (la vita persa con i ratti), l'altra per dopo. Bevuta la pozione con **F**, Ilse racconta del lago e la quest finisce.
 - **Decisione di Lorenzo:** i consumabili si usano con **F** (si cambia in Opzioni > Comandi, voce "Usa oggetto"; freccia giù sul pad). Se premi F durante un attacco o una schivata, la pozione parte appena finiscono.
