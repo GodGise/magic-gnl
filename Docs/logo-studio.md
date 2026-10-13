@@ -23,7 +23,7 @@ Prima **schermo nero e silenzio per 3 secondi**; poi parte l'animazione (e il su
 | 2,3 - 3,3 | Una scintilla con la scia cala dall'alto, sempre più veloce, e cade nel lago |
 | **3,3** | **Impatto**: la scintilla tocca il lago e la **runa centrale si accende**. Lampo sullo schermo, tremito, onde nel lago, onda d'urto, raggi di luce, esplosione di scintille (circa 300) e gocce che schizzano; le rune si accendono tutte insieme |
 | 3,3 - 5,0 | Pausa: il sigillo resta acceso, le rune pulsano a onda, le braci salgono. Vignetta scura ai bordi dello schermo, braci grandi sfocate in lontananza |
-| 5,0 - 6,1 | Il sigillo **sale in alto e rimpicciolisce** |
+| 5,0 - 6,1 | Il sigillo **sale un po' e rimpicciolisce**; sigillo, nome e "presenta" formano un gruppo **centrato nello schermo** |
 | 5,5 - 7,4 | "GNL STUDIO" compare **al centro dello schermo**: lettere una a una che si stringono, filo di luce con rombo |
 | 7,0 - 8,0 | "presenta" (tradotto nelle 8 lingue) |
 | 9,0 - 10,0 | Dissolvenza al nero |
@@ -33,8 +33,9 @@ Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione
 
 ## Il suono (versione attuale)
 
-Il suono si **aggancia da solo**: il gioco cerca nel file `logo-studio` il **colpo** (il punto più forte, finestra di 20 ms con più energia) e fa partire il file in modo che il colpo cada quando la runa centrale si accende (6,3 s dall'avvio). Il file può avere qualsiasi silenzio all'inizio e qualsiasi durata: non serve misurare né tagliare. Nella Console di Unity compare una riga `[Logo]` con il punto in cui ha trovato il colpo. Per ritocchi fini nell'editor di Unity: durante il logo **F3** = suono 0,1 s più presto, **F4** = 0,1 s più tardi, **F5** = azzera; con **Maiusc** premuto i passi sono da 0,01 s, con **Ctrl** da 0,5 s (vale dalla prova successiva, si ricorda tra una prova e l'altra; in basso a sinistra c'è il valore). Per renderlo definitivo si copia il valore nella costante `CorrezioneSuono` di `LogoStudio.cs` (positivo = più tardi).
-Se il file non si può leggere, parte con l'animazione senza aggancio.
+Il file `logo-studio` è quello **montato da Giuseppe su CapCut** sul video della registrazione del logo (13 ottobre): nel file l'istante 0 è l'inizio della registrazione, il suono d'apertura parte a circa 3,2 s, **le rune cominciano ad accendersi a 4,43 s** e il colpo (impatto metallico) è a circa 6,0 s. Durata 13,2 s.
+L'audio è l'**orologio dell'animazione**: il file parte subito e, finché suona, l'animazione segue la sua posizione di lettura (così i blocchi del PC non possono sfasare). Il colpo secco nel file è a 6,376 s (il colpo acuto, misurato) (`ColpoNelFile`) e la runa centrale si accende a 3,0 + 3,3 = 6,3 s: `Differenza` = -0,08 s. Se il file viene rimontato, cambiare `ColpoNelFile`.
+**Se cambi il file:** tienilo montato nello stesso modo (rune a 4,43 s, tutto il resto riferito a quell'istante) e non serve toccare il codice. Per ritocchi fini nell'editor: durante il logo **F3/F4** (passi da 0,1 s, **Maiusc** 0,01 s, **Ctrl** 0,5 s), **F5** azzera; il numero in basso a sinistra è il ritocco **in più** rispetto alla costante. Per renderlo definitivo si somma alla costante.
 Le note qui sotto ("dopo il nero", secondi dall'animazione) valgono come idea del sonoro; per il file valgono i secondi sopra, dall'avvio del gioco.
 
 
@@ -53,3 +54,14 @@ Se nell'editor si salta con F2, il suono sfuma da solo in mezzo secondo.
 ## Cosa cambia nel codice
 
 `Assets/Scripts/Interfaccia/LogoStudio.cs` si crea da solo all'avvio, solo se la scena è `Menu`: ferma `MenuPrincipale` (non parte né la musica né la sequenza del titolo) fino a logo finito. I tempi sono costanti all'inizio del file. In "Opzioni" non c'è modo di spegnerlo; per le prove nell'editor basta partire da un'altra scena o premere F2.
+
+## Soluzione definitiva: video con il suono dentro (14 ottobre)
+
+Per non avere più problemi di sincronia, il logo può essere un **video finito** (immagini + suono montati insieme, es. su CapCut).
+- Se esiste `Assets/StreamingAssets/logo-studio.mp4`, il gioco riproduce quello (VideoPlayer) e basta.
+- Se non esiste, si usa l'animazione disegnata dal codice (con il suono agganciato come orologio).
+- Per ottenere il video senza audio da montare: pacchetto Unity **Recorder** (aggiunto in `manifest.json`), Window > General > Recorder > Recorder Window, Movie Recorder, MP4, 30 fps, Game View 1920x1080; durante la registrazione la scritta "Solo editor" e il suono vengono disattivati da soli (`Time.captureFramerate`).
+
+## Scintille che si disperdono (14 ottobre)
+
+Dietro il sigillo partono altre ~400 scintille che volano fino ai bordi dello schermo: una grande raffica all'impatto (230, alcune con alone) e poi un flusso più lento che continua fino a metà della scritta (170). In `LogoStudio.cs`, punto "6)" dell'elenco delle particelle.
