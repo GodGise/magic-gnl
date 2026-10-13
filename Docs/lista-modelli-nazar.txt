@@ -141,6 +141,20 @@ Razzia (la notte dell'attacco)
 [ ] 42. fuoco-01: mucchio di macerie in fiamme (le fiamme le fa il gioco,
         tu fai solo legna e macerie)
 [ ] 43. macerie-01/02: travi e assi bruciate a terra
+Razzia, aggiunti il 13 ottobre (Lorenzo). Nel gioco ora ci sono cubi e
+particelle provvisorie (CasaInRovina): servono i pezzi veri.
+[ ] 43b. casa-01-danneggiata (e per ogni casa): stessa casa con assi
+        rotte, macchie nere di fuoco, una finestra sfondata. Texture
+        256-512 px: legno-annerito, paglia-bruciata, pietra-affumicata.
+[ ] 43c. casa-01-crollata: tetto caduto dentro, restano muri bassi e
+        travi nere (la casa "distrutta" del gioco è alta meno di metà).
+[ ] 43d. porta-sfondata-01: porta di assi spaccata, da stendere a terra.
+[ ] 43e. texture di fiamme e fumo per le particelle (64-128 px, a
+        riquadri se vuoi animarle): fiamma-01, fumo-01, scintilla-01.
+[ ] 43f. torcia-orco-01: bastone con stracci in fiamme, in mano agli orchi.
+Taverna dentro (zona a parte, scena Taverna)
+[ ] 43g. bancone-01, sgabello-01, tavolo-taverna-01 con panche,
+        boccale-01, botte-grande-01, camino-01, lampada-appesa-01.
 
 -------------------------------------------------------------
 PARTE 4 - LA GATTABUIA (la prigione degli orchi)
@@ -187,8 +201,14 @@ Non iniziarli da solo: ne parliamo quando le parti sopra sono avanti.
 [ ] 70. protagonista: Guerriero, Ladro, Stregone (stesso corpo, vestiti e
         armi diversi)
 [ ] 71. orco-01: orco normale, nemico base
+[ ] 71b. orco-corazzato-01: come orco-01 con elmo a corna corte,
+        spallacci e piastra sul petto, e ascia-orchesca-01 (lama larga e
+        storta). Animazioni della razzia per tutti gli orchi: colpo alla
+        parete dall'alto, colpo di lato alla porta, calcio, torcia
+        appoggiata al legno, urlo, corsa, ritirata.
 [ ] 72. orco-enorme: alto come una porta, armatura fatta di ossa
-        (il nemico della notte della razzia)
+        (il nemico della notte della razzia). Animazione speciale:
+        salto giù dall'alto in piazza, atterraggio pesante e ruggito.
 [ ] 73. druido: vecchio stregone della natura, il boss finale
 [ ] 74. reliquia-01: l'oggetto antico che cercano gli orchi
 

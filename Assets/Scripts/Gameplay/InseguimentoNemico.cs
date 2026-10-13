@@ -16,6 +16,8 @@ using UnityEngine;
 // Mentre insegue segue il bersaglio scelto da Bersaglio: ogni 7 s passa a chi gli fa più danno, se è entro 25 m.
 // Allerta: se vede un'esecuzione furtiva entro 8 m (senza muri in mezzo) si gira a guardare e per 15 s non è ignaro:
 // niente esecuzioni furtive e niente bonus del Dardo d'ombra su di lui.
+// Razzia (RazziaVillaggio, RazziatoreOrco): CambiaPosto sposta il "suo posto" (dove torna e sta fermo), VaiAlPosto lo fa
+// andare lì (correndo, vede e insegue come sempre), Ritirati lo fa scappare verso un punto senza più guardare nessuno.
 // Co-op: vede e insegue il giocatore più vicino fra quelli che vede (vedi ObiettiviNemici). Pensa solo sul PC
 // di chi ospita; sugli altri PC riceve da MondoRete solo se sta inseguendo, se è sotto esecuzione e il "!".
 [RequireComponent(typeof(Bersaglio))]
@@ -71,6 +73,59 @@ public class InseguimentoNemico : MonoBehaviour
     // Per MondoRete: vero mentre insegue qualcuno.
     public bool StaInseguendo => stato == Stato.Insegue;
 
+    // ---------- Razzia ----------
+
+    bool inRitirata, correVersoIlPosto;
+    // Vero mentre scappa (ritirata): non vede, non insegue, non attacca.
+    public bool InRitirata => inRitirata;
+    // Vero quando è fermo al suo posto (non insegue, non torna, non scappa).
+    public bool AlPosto => stato == Stato.Fermo && !inRitirata;
+    // Vero quando è arrivato al punto della ritirata.
+    public bool Arrivato => inRitirata && OrizzontaleVerso(posto) < 1f;
+
+    // Il nuovo "posto": dove torna dopo un inseguimento e dove sta fermo, guardando verso "avanti".
+    public void CambiaPosto(Vector3 punto, Vector3 avanti)
+    {
+        posto = punto;
+        avanti.y = 0f;
+        if (avanti.sqrMagnitude > 0.001f) sguardoIniziale = Quaternion.LookRotation(avanti);
+    }
+
+    // Va al suo posto (correndo se richiesto). Se strada facendo vede un giocatore, lo insegue.
+    public void VaiAlPosto(bool correndo)
+    {
+        if (bersaglio.Morto || stato == Stato.Insegue) return;
+        correVersoIlPosto = correndo;
+        stato = Stato.Torna;
+    }
+
+    // Scappa verso "punto": non guarda più nessuno e non attacca (anche se colpito).
+    public void Ritirati(Vector3 punto)
+    {
+        inRitirata = true;
+        posto = punto;
+        stato = Stato.Torna;
+        bersaglio.attaccaIlGiocatore = false;
+        bersaglio.Obiettivo = null;
+        giocatore = null;
+    }
+
+    // Quanto si gira a guardarsi intorno da fermo (0 = guarda sempre dritto, per esempio mentre spacca una porta).
+    public void ImpostaSguardo(float gradi) => guardaIntorno = Mathf.Max(0f, gradi);
+    // Fin dove vede e quanto è largo il campo visivo.
+    public void ImpostaVista(float distanza, float angolo)
+    {
+        distanzaVista = Mathf.Max(1f, distanza);
+        angoloVisivo = Mathf.Clamp(angolo, 10f, 360f);
+    }
+
+    float OrizzontaleVerso(Vector3 punto)
+    {
+        Vector3 d = punto - transform.position;
+        d.y = 0f;
+        return d.magnitude;
+    }
+
     void Awake()
     {
         bersaglio = GetComponent<Bersaglio>();
@@ -110,6 +165,14 @@ public class InseguimentoNemico : MonoBehaviour
         }
         if (effetti == null) effetti = EffettiNemico.Di(this);
 
+        // In ritirata: corre al punto e basta.
+        if (inRitirata)
+        {
+            bersaglio.attaccaIlGiocatore = false;
+            if (!bersaglio.StaAttaccando) CamminaVerso(posto, velocitaInseguimento * 1.1f, 0.8f, dt);
+            return;
+        }
+
         // Una Bambola di ossa vicina lo attira: insegue lei, anche senza vederla.
         var esca = bersaglio.Boss ? null : ObiettiviNemici.Esca(transform.position);   // i boss ignorano le Bambole
         if (esca != null && !ReferenceEquals(esca, giocatore))
@@ -145,10 +208,11 @@ public class InseguimentoNemico : MonoBehaviour
 
             case Stato.Torna:
                 if (CercaChiVede()) { SiAccorge(); break; }
-                if (CamminaVerso(posto, velocitaRitorno, 0.3f, dt))
+                if (CamminaVerso(posto, correVersoIlPosto ? velocitaInseguimento : velocitaRitorno, 0.3f, dt))
                 {
                     stato = Stato.Fermo;
                     tempoSguardo = 0f;
+                    correVersoIlPosto = false;
                 }
                 break;
         }
@@ -213,7 +277,7 @@ public class InseguimentoNemico : MonoBehaviour
     void SiAccorge()
     {
         if (Rete.Ospite) return;   // lo decide l'host (che manda il "!" con AllarmeDaRete)
-        if (bersaglio.Morto || inEsecuzione) return;
+        if (bersaglio.Morto || inEsecuzione || inRitirata) return;
         // Colpito alle spalle senza aver visto nessuno: insegue il giocatore più vicino.
         if (!ObiettiviNemici.Valido(giocatore) && !CercaChiVede())
         {
@@ -333,6 +397,7 @@ public class InseguimentoNemico : MonoBehaviour
         giocatore = null;
         allertaFino = 0f;
         inEsecuzione = false;
+        inRitirata = false;
         bersaglio.attaccaIlGiocatore = false;
         bersaglio.Obiettivo = null;
     }
