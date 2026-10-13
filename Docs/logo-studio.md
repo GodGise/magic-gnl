@@ -33,8 +33,9 @@ Totale dall'avvio del gioco: circa 13,4 secondi (3 di nero + 10,35 di animazione
 
 ## Il suono (versione attuale)
 
-Il suono si **aggancia da solo**: il gioco cerca nel file `logo-studio` il **colpo** (il punto più forte, finestra di 20 ms con più energia) e fa partire il file in modo che il colpo cada quando la runa centrale si accende (6,3 s dall'avvio). Il file può avere qualsiasi silenzio all'inizio e qualsiasi durata: non serve misurare né tagliare. Nella Console di Unity compare una riga `[Logo]` con il punto in cui ha trovato il colpo. Per ritocchi fini nell'editor di Unity: durante il logo **F3** = suono 0,1 s più presto, **F4** = 0,1 s più tardi, **F5** = azzera; con **Maiusc** premuto i passi sono da 0,01 s, con **Ctrl** da 0,5 s (vale dalla prova successiva, si ricorda tra una prova e l'altra; in basso a sinistra c'è il valore). Per renderlo definitivo si copia il valore nella costante `CorrezioneSuono` di `LogoStudio.cs` (positivo = più tardi).
-Se il file non si può leggere, parte con l'animazione senza aggancio.
+Il file `logo-studio` è quello **montato da Giuseppe su CapCut** sul video della registrazione del logo (13 ottobre): nel file l'istante 0 è l'inizio della registrazione, il suono d'apertura parte a circa 3,2 s, **le rune cominciano ad accendersi a 4,43 s** e il colpo (impatto metallico) è a circa 6,0 s. Durata 13,2 s.
+Nel gioco le rune si accendono a 4,3 s dall'avvio (3,0 di nero + 1,3). Quindi il file parte **insieme al gioco, saltando i primi 0,13 s** (silenzio): costante `PartenzaSuono = -0.13f` in `LogoStudio.cs`. Non c'è più nessuna ricerca automatica del colpo.
+**Se cambi il file:** tienilo montato nello stesso modo (rune a 4,43 s, tutto il resto riferito a quell'istante) e non serve toccare il codice. Per ritocchi fini nell'editor: durante il logo **F3/F4** (passi da 0,1 s, **Maiusc** 0,01 s, **Ctrl** 0,5 s), **F5** azzera; il numero in basso a sinistra è il ritocco **in più** rispetto alla costante. Per renderlo definitivo si somma alla costante.
 Le note qui sotto ("dopo il nero", secondi dall'animazione) valgono come idea del sonoro; per il file valgono i secondi sopra, dall'avvio del gioco.
 
 

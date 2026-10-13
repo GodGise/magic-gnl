@@ -19,15 +19,15 @@ public class LogoStudio : MonoBehaviour
     // Prima schermo nero e silenzio per 3 secondi; poi parte l'animazione (e il suono).
     const float AttesaNera = 3.0f;
 
-    // Il suono si aggancia da solo: il gioco cerca nel file audio il COLPO (il punto più forte) e fa partire il file in modo che
-    // il colpo cada proprio quando la runa centrale si accende (MomentoLampo). Il file può avere qualsiasi silenzio all'inizio.
-    // Per ritocchi fini: secondi di correzione, positivo = suono più tardi, negativo = più presto.
-    // Nell'editor di Unity si regola anche con i tasti (vedi sotto); quel valore si somma a questo.
-    const float CorrezioneSuono = -1.04f;   // regolata a orecchio da Giuseppe nell'editor (13 ottobre)
-    const string ChiaveCorrezione = "LogoStudio.CorrezioneSuono";
+    // Il suono è il file "logo-studio" montato da Giuseppe su CapCut (13 ottobre) sul video del logo: nel file l'istante 0 è l'inizio
+    // della registrazione, e le rune cominciano ad accendersi a 4,43 s. Nel gioco le rune si accendono a AttesaNera + InizioRune = 4,3 s
+    // dall'avvio, quindi il file deve partire 0,13 s "prima": si salta il primo 0,13 s del file (è silenzio).
+    // Positivo = il file parte più tardi; negativo = si salta l'inizio del file. Per ritocchi fini, nell'editor: F3/F4 (vedi sotto).
+    const float PartenzaSuono = -0.13f;
+    const string ChiaveCorrezione = "LogoStudio.RitoccoSuono";   // chiave nuova: azzera i vecchi tentativi salvati nell'editor
 
-    // Correzione totale: la costante più, solo nell'editor, la regolazione fatta con F3/F4 (salvata tra una prova e l'altra).
-    static float CorrezioneTotale => CorrezioneSuono + (Application.isEditor ? PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) : 0f);
+    // Partenza totale: la costante più, solo nell'editor, il ritocco fatto con F3/F4 (salvato tra una prova e l'altra).
+    static float CorrezioneTotale => PartenzaSuono + (Application.isEditor ? PlayerPrefs.GetFloat(ChiaveCorrezione, 0f) : 0f);
 
     // ---------- momenti (secondi dall'inizio dell'animazione, cioè dopo il nero iniziale) ----------
     const float InizioEsterno = 0.0f, DurataEsterno = 1.4f;   // il filo esterno si accende e comincia a girare piano
@@ -119,15 +119,10 @@ public class LogoStudio : MonoBehaviour
         if (suono != null)
         {
             sorgente.clip = suono;
-            float colpo = TrovaColpo(suono);
-            if (colpo >= 0f)
-            {
-                // il file deve far cadere il colpo a (nero + MomentoLampo) secondi dall'avvio
-                float partenza = AttesaNera + MomentoLampo - colpo + CorrezioneTotale;
-                partenzaSuono = Mathf.Max(0f, partenza);
-                saltoNelFile = Mathf.Max(0f, -partenza);
-                Debug.Log("[Logo] Colpo trovato a " + colpo.ToString("0.00") + " s nel file (durata " + suono.length.ToString("0.00") + " s): il file parte a " + partenzaSuono.ToString("0.00") + " s dall'avvio");
-            }
+            float partenza = CorrezioneTotale;
+            partenzaSuono = Mathf.Max(0f, partenza);
+            saltoNelFile = Mathf.Max(0f, -partenza);
+            Debug.Log("[Logo] Il file parte a " + partenzaSuono.ToString("0.00") + " s dall'avvio, saltando i primi " + saltoNelFile.ToString("0.00") + " s del file (durata " + suono.length.ToString("0.00") + " s)");
         }
 
         var caso = new System.Random(7);
@@ -181,38 +176,6 @@ public class LogoStudio : MonoBehaviour
             float ang = R() * Mathf.PI * 2f, raggio = Mathf.Sqrt(R()) * 470f;
             particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = new Vector2((R() - 0.5f) * 0.6f, -1f),
                 nascita = 0.8f + R() * 7.2f, velocita = 18f + R() * 38f, vita = 2.2f + R() * 2.4f, taglia = 2f + R() * 3.5f, salita = 0f, tipo = 1 });
-        }
-    }
-
-    // Cerca nel file il colpo: la finestra di 20 ms con più energia. Ritorna i secondi dall'inizio del file, o -1 se non riesce a leggerlo.
-    static float TrovaColpo(AudioClip clip)
-    {
-        try
-        {
-            int canali = clip.channels;
-            var campioni = new float[clip.samples * canali];
-            if (!clip.GetData(campioni, 0))
-            {
-                Debug.LogWarning("[Logo] Non riesco a leggere il file audio: il suono parte con l'animazione senza aggancio.");
-                return -1f;
-            }
-            int finestra = Mathf.Max(1, clip.frequency / 50);    // 20 ms
-            int passo = Mathf.Max(1, finestra / 2);
-            float migliore = 0f; int posizione = -1;
-            for (int inizio = 0; inizio + finestra <= clip.samples; inizio += passo)
-            {
-                float energia = 0f;
-                for (int i = inizio; i < inizio + finestra; i++)
-                    for (int ch = 0; ch < canali; ch++) { float v = campioni[i * canali + ch]; energia += v * v; }
-                if (energia > migliore) { migliore = energia; posizione = inizio; }
-            }
-            if (posizione < 0) return -1f;
-            return (float)posizione / clip.frequency;
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning("[Logo] Errore nel leggere il file audio (" + e.Message + ")");
-            return -1f;
         }
     }
 
@@ -399,7 +362,7 @@ public class LogoStudio : MonoBehaviour
             var piccolo = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.LowerLeft };
             GUI.color = new Color(1f, 1f, 1f, 0.55f);
             GUI.Label(new Rect(20f, GraficaMenu.Altezza - 60f, 1400f, 40f),
-                "Solo editor - Correzione suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
+                "Solo editor - Partenza suono: " + CorrezioneTotale.ToString("+0.00;-0.00;0.00") + " s   (F3 = suono più presto, F4 = più tardi; Maiusc = passi da 0,01 s, Ctrl = 0,5 s; F5 = azzera; vale dalla prova successiva)", piccolo);
             GUI.color = Color.white;
         }
     }
