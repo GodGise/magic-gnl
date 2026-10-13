@@ -96,8 +96,10 @@ public static class CreaTaverna
         Imposta(uscita, "verso", PassaggioScena.Verso.Esci);
         Imposta(uscita, "scena", NomeScena);
         Imposta(uscita, "chiaveAzione", "hud.esci_taverna");
-        Imposta(uscita, "raggio", 1.8f);
+        Imposta(uscita, "raggio", 2.6f);
         uscita.enabled = false;
+        // una lanterna sopra la porta, così l'uscita si trova subito
+        Luce("Lanterna della porta", porta.transform, new Vector3(0f, 2.8f, 0.6f), new Color(1f, 0.75f, 0.45f), 6f, 1.4f);
 
         var zona = Vuoto("Zona camera (taverna)", radice, new Vector3(Largo / 2f, 0f, Profondo / 2f)).AddComponent<ZonaCamera>();
         Imposta(zona, "dimensioni", new Vector3(Largo, Alto, Profondo));

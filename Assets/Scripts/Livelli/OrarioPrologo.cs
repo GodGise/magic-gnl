@@ -66,6 +66,11 @@ public class OrarioPrologo : MonoBehaviour
 
     void Update()
     {
+        if (ultimaQuestAlle >= 0f && Time.time >= ultimaQuestAlle)
+        {
+            ultimaQuestAlle = -1f;
+            allUltimaQuest.Invoke();
+        }
         if (TempoLibero) return;
         var ciclo = CicloGiornoNotte.Istanza;
         if (ciclo == null) return;
@@ -92,8 +97,12 @@ public class OrarioPrologo : MonoBehaviour
         }
         if (oreDopoLeQuest != null && oreDopoLeQuest.Length > 0)
             VaiA(oreDopoLeQuest[Mathf.Min(n - 1, oreDopoLeQuest.Length - 1)], secondiPassaggio);
-        if (n == questDaFinire - 1) allUltimaQuest.Invoke();
+        // un attimo dopo: chi ha chiuso la quest toglie il suo obiettivo nello stesso evento, e non deve cancellare
+        // quello della quest 6 (successo alla fine della quest 5: "Raggiungi la taverna" spariva subito)
+        if (n == questDaFinire - 1) ultimaQuestAlle = Time.time + 0.5f;
     }
+
+    float ultimaQuestAlle = -1f;
 
     // Notte di colpo, senza passaggio: le quest contano tutte finite e "Alla razzia" parte al prossimo fotogramma.
     public void NotteSubito()
