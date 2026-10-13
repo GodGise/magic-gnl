@@ -631,7 +631,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Manichini e sagome dell'allenamento non attaccano e non contano.
     static bool NemicoVero(Bersaglio b)
     {
-        return b.attaccaIlGiocatore || b.GetComponent<InseguimentoNemico>() != null || b.GetComponent<RattoGigante>() != null;
+        return b.attaccaIlGiocatore || b.GetComponent<InseguimentoNemico>() != null || b.GetComponent<RattoGigante>() != null
+            || b.GetComponent<ScheletroVivente>() != null;
     }
 
     // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
@@ -1486,6 +1487,28 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
         Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f);
+    }
+
+    // Sposta il giocatore di colpo in un altro punto (passaggi fra zone, per esempio l'ingresso della cripta),
+    // fermo e senza cadere. Lo usa CaricamentoZona.
+    public void Teletrasporta(Vector3 dove, Quaternion rotazione)
+    {
+        controller.enabled = false;
+        transform.SetPositionAndRotation(dove, rotazione);
+        controller.enabled = true;
+        velocitaVerticale = 0f;
+        var camera = cameraSeguita != null ? cameraSeguita : Camera.main != null ? Camera.main.GetComponent<CameraTerzaPersona>() : null;
+        if (camera != null) camera.AllineaDietro();
+    }
+
+    // Il punto in cui si rinasce adesso, e come cambiarlo (le zone come la cripta lo spostano all'ingresso e,
+    // uscendo, rimettono quello di prima).
+    public Vector3 PuntoRinascita => puntoRinascita;
+    public Quaternion RotazioneRinascita => rotazioneRinascita;
+    public void ImpostaRinascita(Vector3 posizione, Quaternion rotazione)
+    {
+        puntoRinascita = posizione;
+        rotazioneRinascita = rotazione;
     }
 
     // Chiamato da un Checkpoint quando il giocatore lo raggiunge: da ora si rinasce lì.

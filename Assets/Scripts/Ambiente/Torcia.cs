@@ -2,7 +2,8 @@ using UnityEngine;
 
 // Torcia: luce calda che tremola come una fiamma.
 // A cosa serve: di notte illumina strade e piazze; di giorno resta accesa ma debole.
-// Legge il valore "Buio" del CicloGiornoNotte; se nella scena non c'è, resta sempre al massimo.
+// Legge il valore "Buio" del CicloGiornoNotte; se nella scena non c'è, o si è in una zona sotto terra (CaricamentoZona),
+// resta sempre al massimo.
 // Come montarlo: su un oggetto con una luce di tipo Point (la richiede da solo).
 // Il menu "magic-gnl > Crea zona di prova" mette già diverse torce.
 [RequireComponent(typeof(Light))]
@@ -26,7 +27,8 @@ public class Torcia : MonoBehaviour
 
     void Update()
     {
-        float buio = CicloGiornoNotte.Istanza != null ? CicloGiornoNotte.Istanza.Buio : 1f;
+        // sotto terra (cripta e altre zone chiuse) è sempre buio
+        float buio = CaricamentoZona.InZona || CicloGiornoNotte.Istanza == null ? 1f : CicloGiornoNotte.Istanza.Buio;
         float fiamma = 1f - tremolio + tremolio * 2f * Mathf.PerlinNoise(seme, Time.time * velocitaTremolio);
         luce.intensity = intensitaMassima * Mathf.Lerp(quotaDiGiorno, 1f, buio) * fiamma;
     }

@@ -115,6 +115,14 @@ public class CameraTerzaPersona : MonoBehaviour
         guardaPad.Dispose();
     }
 
+    // Mette la camera dietro al personaggio (dopo un passaggio di colpo, per esempio entrando nella cripta).
+    public void AllineaDietro()
+    {
+        if (bersaglio == null) return;
+        rotazioneOrizzontale = bersaglio.eulerAngles.y;
+        inclinazione = 15f;
+    }
+
     void LateUpdate()
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) BloccaCursore(false);

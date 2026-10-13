@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 // "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta);
 // "Togli 50 di vita al giocatore" serve a provare le pozioni (tasto F).
 // Bottega e monete: "Apri la bottega di Ilse" porta da Ilse e apre il negozio anche prima della quest 4;
-// "Dai 100 lacrime" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
+// "Dai 100 monete" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -37,6 +37,39 @@ public static class ProvaPrologo
         Debug.Log("Prova prologo: nessun fiore di riva da raccogliere.");
     }
 
+    // Porta al mausoleo del cimitero e apre l'ingresso della cripta anche prima della quest 5.
+    [MenuItem(Cartella + "Vai alla cripta (ingresso aperto)")]
+    static void Cripta()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var ingresso = TrovaOggetto("Ingresso della cripta");
+        if (ingresso == null) { Debug.LogWarning("Prova prologo: manca l'ingresso della cripta (prepara la quest 5)."); return; }
+        var passaggio = ingresso.GetComponent<PassaggioScena>();
+        if (passaggio != null) passaggio.enabled = true;
+        Vai("Ingresso della cripta");
+    }
+
+    // Dentro la cripta: porta davanti alla leva, al baule o alla scala dell'uscita.
+    [MenuItem(Cartella + "Cripta: vai alla leva")] static void CriptaLeva() => Vai("Leva del cancello");
+    [MenuItem(Cartella + "Cripta: vai al baule")] static void CriptaBaule() => Vai("Baule della prima guardia");
+    [MenuItem(Cartella + "Cripta: vai all'uscita")] static void CriptaUscita() => Vai("Scala dell'uscita");
+
+    // Toglie 20 di vita a ogni scheletro vivo (per provare in fretta la cripta).
+    [MenuItem(Cartella + "Ferisci gli scheletri della cripta (-20)")]
+    static void FerisciScheletri()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        int quanti = 0;
+        foreach (var s in Object.FindObjectsByType<ScheletroVivente>(FindObjectsSortMode.None))
+        {
+            var b = s.GetComponent<Bersaglio>();
+            if (b == null || b.Morto) continue;
+            b.RiceviColpo(20f, b.transform.position + Vector3.up);
+            quanti++;
+        }
+        Debug.Log("Prova prologo: feriti " + quanti + " scheletri.");
+    }
+
     [MenuItem(Cartella + "Apri la bottega di Ilse")]
     static void Bottega()
     {
@@ -48,14 +81,14 @@ public static class ProvaPrologo
         negozio.Apri();
     }
 
-    [MenuItem(Cartella + "Dai 100 lacrime")]
-    static void Lacrime()
+    [MenuItem(Cartella + "Dai 100 monete")]
+    static void Monete()
     {
         if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
         var g = Object.FindFirstObjectByType<GiocatoreControllo>();
         if (g == null) return;
         Borsa.Di(g).Aggiungi(100);
-        Debug.Log("Prova prologo: lacrime nella borsa " + Borsa.Di(g).Quante + ".");
+        Debug.Log("Prova prologo: monete nella borsa " + Borsa.Di(g).Quante + ".");
     }
 
     [MenuItem(Cartella + "Dai 3 fiori di ogni tipo")]
@@ -118,9 +151,10 @@ public static class ProvaPrologo
             return;
         }
         GameObject meta = null;
-        foreach (var radice in SceneManager.GetActiveScene().GetRootGameObjects())
-            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
-                if (t.name == nome) { meta = t.gameObject; break; }
+        for (int k = 0; k < SceneManager.sceneCount && meta == null; k++)   // anche nella cripta, se è caricata
+            foreach (var radice in SceneManager.GetSceneAt(k).GetRootGameObjects())
+                foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+                    if (t.name == nome) { meta = t.gameObject; break; }
         var giocatore = Object.FindFirstObjectByType<GiocatoreControllo>();
         if (meta == null || giocatore == null)
         {

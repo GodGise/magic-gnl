@@ -11,8 +11,8 @@ using UnityEngine;
 // Fiori in   Assets/Dati/Oggetti/Missioni/    (fiore-di-riva, cardo-nero, lunaria)
 // Pozioni in Assets/Dati/Oggetti/Consumabili/ (pozione-di-ilse, tonico-di-cardo, infuso-di-lunaria, balsamo-di-riva,
 //                                              elisir-del-crepuscolo)
-// Ricette in Assets/Dati/Ricette/             (prefisso "ilse-"): baratto (fiori -> pozione), compra (Lacrime del
-//                                              lago -> pozione, costa molto di più) e vendi (fiore -> Lacrime)
+// Ricette in Assets/Dati/Ricette/             (prefisso "ilse-"): baratto (fiori -> pozione), compra (monete ->
+//                                              pozione, costa molto di più) e vendi (fiore -> monete)
 // Quelli che esistono già non vengono toccati: i numeri si cambiano poi dall'Inspector, oggetto per oggetto.
 // Lo usa anche "magic-gnl > Prologo: prepara la quest 4" per riempire la bottega di Ilse.
 // Per mettere i nuovi fiori nel mondo: oggetto vuoto + componente OggettoRaccoglibile con "Oggetto" = il fiore.
@@ -56,7 +56,7 @@ public static class CreaErbe
     internal static DatiConsumabile ElisirDelCrepuscolo => Pozione("elisir-del-crepuscolo", "Elisir del crepuscolo", "elisir_del_crepuscolo", new Color(0.55f, 0.25f, 0.75f),
         p => { p.cura = 40f; p.durataCura = 1f; p.riduzioneDanniPercento = 10f; p.manaMassimoPercento = 5f; p.durataEffetto = 180f; p.cumulabile = false; p.attesa = 1.5f; });
 
-    // ---------- le voci della bottega di Ilse (prezzi provvisori in Lacrime del lago, Docs/monete.md) ----------
+    // ---------- le voci della bottega di Ilse (prezzi provvisori in monete d'oro, Docs/monete.md) ----------
 
     internal static DatiRicetta[] RicetteIlse()
     {
@@ -71,7 +71,7 @@ public static class CreaErbe
             Ricetta("ilse-infuso-di-lunaria", InfusoDiLunaria, 1, 0, 0, (lunaria, 2)),
             Ricetta("ilse-balsamo-di-riva", BalsamoDiRiva, 1, 0, 0, (riva, 2), (cardo, 1)),
             Ricetta("ilse-elisir-del-crepuscolo", ElisirDelCrepuscolo, 1, 0, 0, (riva, 1), (cardo, 1), (lunaria, 1)),
-            // compra con le Lacrime: quando mancano i fiori (circa 3-5 volte più caro dei fiori venduti)
+            // compra con le monete: quando mancano i fiori (circa 3-5 volte più caro dei fiori venduti)
             Ricetta("ilse-compra-pozione-di-ilse", PozioneDiIlse, 1, 30, 0),
             Ricetta("ilse-compra-tonico-di-cardo", TonicoDiCardo, 1, 35, 0),
             Ricetta("ilse-compra-infuso-di-lunaria", InfusoDiLunaria, 1, 40, 0),

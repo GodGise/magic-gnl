@@ -6,9 +6,9 @@ using UnityEngine.InputSystem;
 // Un negozio del mercato del villaggio: la bottega di Ilse e, in futuro, fabbro, oste e altri mercanti, ognuno con
 // le sue cose (decisioni di Lorenzo, 13 ottobre; chi vende cosa in Docs/monete.md).
 // A cosa serve: vicino al negoziante compare "E  Commercia: Ilse"; premendo il tasto si apre la finestra della bottega.
-//   - in alto le schede: Baratto (fiori per pozioni, il modo più conveniente), Compra (con le Lacrime del lago,
-//     costa di più), Vendi (fiori per Lacrime). Si vedono solo le schede che hanno qualcosa. Q e R (LB e RB) o un clic
-//     cambiano scheda; in alto a destra le Lacrime che hai (Borsa);
+//   - in alto le schede: Baratto (fiori per pozioni, il modo più conveniente), Compra (con le monete,
+//     costa di più), Vendi (fiori per monete). Si vedono solo le schede che hanno qualcosa. Q e R (LB e RB) o un clic
+//     cambiano scheda; in alto a destra le monete che hai (Borsa);
 //   - a sinistra l'elenco della scheda: quelle che puoi fare sono accese, le altre spente;
 //   - a destra il dettaglio della voce scelta: descrizione, effetti, cosa serve (verde = ce l'hai, rosso = manca),
 //     cosa ricevi e il pulsante "Scambia" / "Compra" / "Vendi".
@@ -298,7 +298,7 @@ public class Negozio : MonoBehaviour
         GraficaMenu.Scritta(new Rect(0, 40, L, 80), titolo, GraficaMenu.Intestazione, GraficaMenu.Testo, alfa);
         GraficaMenu.Divisore(L * 0.5f, 128f, 640f, alfa);
 
-        // le Lacrime che hai, in alto a destra
+        // le monete che hai, in alto a destra
         var stileBorsa = new GUIStyle(GraficaMenu.Valore) { alignment = TextAnchor.MiddleRight, fontSize = 30 };
         GraficaMenu.Scritta(new Rect(L - 560f, 60f, 400f, 44f), Borsa.Testo(borsa.Quante), stileBorsa, GraficaMenu.Testo, alfa);
         Borsa.Disegna(new Vector2(L - 130f, 82f), 34f, alfa);
@@ -413,7 +413,7 @@ public class Negozio : MonoBehaviour
         return false;
     }
 
-    // La seconda riga di una voce: "Fiore di riva 3/3", "30 lacrime" o, vendendo, "Ne hai 3  ·  +4 lacrime".
+    // La seconda riga di una voce: "Fiore di riva 3/3", "30 monete" o, vendendo, "Ne hai 3  ·  +4 monete".
     string RigaCosto(DatiRicetta r)
     {
         var parti = new List<string>();

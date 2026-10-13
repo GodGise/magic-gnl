@@ -1,10 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 // Baule da aprire con E, con un oggetto dentro.
 // A cosa serve: quando il giocatore è vicino compare "E  Apri il baule"; premendo E il coperchio si
-// alza, dal baule esce una luce dorata e il giocatore riceve il contenuto (oggi: il bastone magico).
+// alza, dal baule esce una luce dorata e il giocatore riceve il contenuto: il bastone magico della chiesetta, oppure
+// un oggetto qualsiasi (Contenuto = Oggetto, campo "Oggetto": finisce nello zaino, per esempio il medaglione della
+// cripta). "Quando Aperto" parte dopo aver dato il contenuto (per esempio per cambiare l'obiettivo).
 // Si apre una volta sola.
 // Come montarlo:
 //   1. GameObject > Create Empty, mettilo a terra e giralo (Rotation Y) con il davanti verso chi arriva.
@@ -14,9 +17,13 @@ using UnityEngine.InputSystem;
 // Co-op: il baule si apre per tutti, ma il contenuto lo riceve solo chi l'ha aperto.
 public class Baule : MonoBehaviour, IOggettoCondiviso
 {
-    public enum Contenuto { BastoneMagico }
+    public enum Contenuto { BastoneMagico, Oggetto }
 
     [SerializeField] Contenuto contenuto = Contenuto.BastoneMagico;
+    [Tooltip("Con Contenuto = Oggetto: l'oggetto che finisce nello zaino.")]
+    [SerializeField] DatiOggetto oggetto;
+    [Tooltip("Cosa succede quando chi l'ha aperto ha ricevuto il contenuto.")]
+    [SerializeField] UnityEvent quandoAperto;
     [Tooltip("Distanza (in orizzontale) entro cui si può aprire.")]
     [SerializeField] float raggioInterazione = 2f;
     [Tooltip("Secondi che impiega il coperchio ad aprirsi.")]
@@ -136,7 +143,17 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
                 if (giocatore != null) giocatore.SbloccaBastone();
                 MessaggiSchermo.Mostra(Lingua.T("hud.trovato_bastone"), 5f);
                 break;
+            case Contenuto.Oggetto:
+                if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
+                if (giocatore != null && oggetto != null)
+                {
+                    Zaino.Di(giocatore).Aggiungi(oggetto);
+                    MessaggiSchermo.Mostra(Lingua.T("hud.raccolto") + ": " + oggetto.Nome, 5f);
+                    Suoni.Suona(Suono.Raccolta, giocatore.transform.position + Vector3.up, 0.8f);
+                }
+                break;
         }
+        quandoAperto?.Invoke();
     }
 
     // Baule a blocchi: cassa di legno con fasce di ferro e coperchio incernierato dietro.

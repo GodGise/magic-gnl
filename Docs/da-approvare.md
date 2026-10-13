@@ -73,6 +73,13 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: quest 5, la cripta della prima guardia in una scena a parte (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/quest-5` (parte da `lorenzoc/negozio-ilse`: va unito dopo la #79). Decisioni di Lorenzo: la cripta è una **scena a parte** (`Assets/Scenes/Cripta.unity`, aggiunta alle Build Settings) per non caricare troppo il mondo. Dal mausoleo del cimitero "E  Entra nella cripta" → schermata di caricamento → dentro la cripta. La scena si carica in aggiunta al villaggio (che si nasconde), così zaino, monete e quest restano; uscendo si torna al cimitero.
+- **Cripta:** ingresso vuoto, poi corridoi con **4 scheletri viventi** (45 vita, 12 danno, un colpo ogni 1,3 s; tre colpi a turno: fendente, rovescio, calata; dopo ogni colpo si riposizionano), cancello chiuso, leva in una stanza laterale, sala della prima guardia con il baule. Nel baule il **Medaglione della prima guardia** (amuleto per tutte le classi: vita massima +5%, +2 vita per nemico ucciso).
+- **Quest:** fine quest 4 → Edric racconta la leggenda → cripta → medaglione → "Porta il medaglione a Edric" → quest 5 finita. Comandi "Cripta: crea la scena della cripta" e "Prologo: prepara la quest 5".
+- **Provato in Unity** dal Claude di Lorenzo: caricamento, scheletri che attaccano, baule, uscita e ritorno al cimitero, Console senza errori. **Corretto provando:** Edric stava nel cortile di studio che c'è solo per lo Stregone, quindi Guerriero e Ladro non potevano finire la quest; ora Edric c'è per tutti (`ComponentiPerClasse` tiene il suo dialogo della quest 2 solo per lo Stregone). Cripta schiarita (prima gli scheletri non si vedevano).
+- **File di tutti toccati:** `Bersaglio.cs`, `GiocatoreControllo.cs`, `CameraTerzaPersona.cs`, `Torcia.cs`, `Baule.cs`, `Leva.cs`, `UsoConsumabili.cs`, `InventarioGioco.cs` (nomi lunghi su una riga), `Lingua.cs`, `ProjectSettings/EditorBuildSettings.asset` (scena Cripta).
+
 ### 13 ottobre: icone provvisorie per tutti gli oggetti, prove fatte in Unity (serve un'occhiata di Giuseppe)
 Stesso ramo `lorenzoc/negozio-ilse`. Nell'inventario gli oggetti si vedevano solo come iniziali. Ora ogni tipo ha una sagoma disegnata (spada, spadone, ascia, mazza, pugnali, archi, balestra, scudi per taglia, armature per peso, vesti, amuleti, bastoni, libri, incantesimi, pozioni, fiori) e ogni oggetto ha un dettaglio di colore suo (dal nome). Spariscono da sole quando un oggetto ha la sua icona vera (`DatiOggetto.icona`).
 - **File nuovo:** `Assets/Scripts/Interfaccia/IconeProvvisorie.cs`. **Toccati:** `GraficaMenu.cs` (`Icona` chiama le sagome prima dell'iniziale), `FormeOggetti.cs` (`ColoreMagia` pubblico).

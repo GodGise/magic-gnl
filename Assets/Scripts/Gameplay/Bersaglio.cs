@@ -34,6 +34,8 @@ public class Bersaglio : MonoBehaviour
     [SerializeField] float spintaQuandoColpito = 0.3f;
     [Tooltip("Boss o miniboss: niente esecuzione furtiva, niente blocchi, stordimenti e spinte; rallentamenti a metà.")]
     [SerializeField] bool boss = false;
+    [Tooltip("Arma della figura provvisoria (la mazza per gli orchi, la spada per gli scheletri della cripta).")]
+    [SerializeField] AspettoUmanoide.Arma armaFigura = AspettoUmanoide.Arma.Mazza;
 
     [Header("Chi prendere di mira")]
     [Tooltip("Ogni quanti secondi passa al giocatore che gli fa più danno.")]
@@ -92,7 +94,8 @@ public class Bersaglio : MonoBehaviour
     // Letti da AnimazioneUmanoide: durante il preavviso il nemico carica il colpo, poi colpisce.
     public bool StaAttaccando => staAttaccando;
     public float TempoAttacco => Time.time - inizioAttacco;
-    public float DurataPreavviso => preavviso;
+    public float DurataPreavviso => preavvisoAttuale > 0f ? preavvisoAttuale : preavviso;
+    float preavvisoAttuale;
     public int NumeroAttacco { get; private set; } // cresce a ogni attacco: serve a cambiare movimento
     float prossimoAttacco;
     float sbilanciatoFino; // dopo una parata perfetta del giocatore non attacca fino a questo momento
@@ -111,7 +114,7 @@ public class Bersaglio : MonoBehaviour
     void Awake()
     {
         statistiche = Statistiche.Di(this);
-        AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f), AspettoUmanoide.Arma.Mazza);
+        AspettoUmanoide.Prepara(gameObject, new Color(0.35f, 0.04f, 0.04f), armaFigura);
 
         // Solo le parti accese: la forma originale nascosta dalla figura umana resta spenta.
         var parti = new List<Renderer>();
@@ -172,7 +175,7 @@ public class Bersaglio : MonoBehaviour
 
         // Attacca solo se il giocatore è abbastanza vicino da vedere il preavviso.
         if (Vector3.Distance(transform.position, giocatore.Corpo.position) <= portataAttacco * 2f)
-            StartCoroutine(Attacca());
+            StartCoroutine(Attacca(preavviso, portataAttacco, -1));
         else
             prossimoAttacco = Time.time + 0.5f;
     }
@@ -232,11 +235,25 @@ public class Bersaglio : MonoBehaviour
         prossimoAttacco = Time.time + IntervalloAttacchi;
     }
 
-    IEnumerator Attacca()
+    // Un attacco comandato da fuori (per esempio ScheletroVivente, che sceglie lui quando e quale colpo):
+    // "preavvisoColpo" secondi di rosso, poi il colpo se il giocatore è entro "portata". "movimento" sceglie il
+    // movimento dell'animazione (0 orizzontale, 1 rovescio, 2 dall'alto). Falso se sta già attaccando o è morto.
+    public bool AttaccaOra(IObiettivoNemico chi, float preavvisoColpo, float portata, int movimento)
+    {
+        if (morto || staAttaccando || chi == null) return false;
+        giocatore = chi;
+        StartCoroutine(Attacca(preavvisoColpo, portata, movimento));
+        return true;
+    }
+
+    IEnumerator Attacca(float preavvisoColpo, float portata, int movimento)
     {
         staAttaccando = true;
         inizioAttacco = Time.time;
+        preavvisoAttuale = preavvisoColpo;
         NumeroAttacco++;
+        // movimento scelto: l'animazione usa (NumeroAttacco - 1) % 3
+        if (movimento >= 0) NumeroAttacco += ((movimento - (NumeroAttacco - 1)) % 3 + 3) % 3;
         var preso = giocatore;
         MondoRete.InviaAttacco(this);
 
@@ -245,14 +262,14 @@ public class Bersaglio : MonoBehaviour
         if (verso.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(verso);
 
         ImpostaColore(Color.red);
-        yield return new WaitForSeconds(preavviso);
+        yield return new WaitForSeconds(preavvisoColpo);
 
         if (!morto)
         {
             RipristinaColori();
             Suoni.Suona(Suono.Fendente, transform.position + Vector3.up, 0.8f, 0.75f);
             // Il danno lo calcola chi è colpito (vedi GiocatoreControllo.ColpitoDaNemico), con la sua armatura.
-            if (ObiettiviNemici.Esiste(preso) && !preso.Invisibile && Vector3.Distance(transform.position, preso.Corpo.position) <= portataAttacco)
+            if (ObiettiviNemici.Esiste(preso) && !preso.Invisibile && Vector3.Distance(transform.position, preso.Corpo.position) <= portata)
                 preso.ColpitoDaNemico(this);
         }
 
@@ -355,6 +372,7 @@ public class Bersaglio : MonoBehaviour
     // Come Attacca, ma senza danno: il danno lo decide l'host.
     IEnumerator AttaccoSoloAspetto()
     {
+        preavvisoAttuale = 0f;
         staAttaccando = true;
         inizioAttacco = Time.time;
         ImpostaColore(Color.red);
