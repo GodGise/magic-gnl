@@ -17,6 +17,8 @@ using UnityEngine.Events;
 //   3. "All'ultima quest" si attiva quando sono finite tutte tranne l'ultima: serve per accendere la quest 6
 //      (per esempio attivare Hobb in taverna).
 //   4. "Alla razzia" si attiva quando, dopo l'ultima quest, il cielo è diventato notte: qui si fa partire la razzia.
+//   5. "NotteSubito" salta al buio di colpo (conta finite tutte le quest): la usa l'uscita dalla taverna (quest 6), così
+//      fuori è già notte e la razzia è già cominciata quando lo schermo torna chiaro.
 // Le ore e i secondi del passaggio si regolano dall'Inspector. Per provare senza fare le quest: tasto destro sul
 // componente > "Prova: finisci la prossima quest".
 // Il prologo si gioca da soli (il co-op si apre dalla gattabuia), quindi l'ora la decide solo questo PC.
@@ -64,6 +66,11 @@ public class OrarioPrologo : MonoBehaviour
 
     void Update()
     {
+        if (ultimaQuestAlle >= 0f && Time.time >= ultimaQuestAlle)
+        {
+            ultimaQuestAlle = -1f;
+            allUltimaQuest.Invoke();
+        }
         if (TempoLibero) return;
         var ciclo = CicloGiornoNotte.Istanza;
         if (ciclo == null) return;
@@ -90,7 +97,21 @@ public class OrarioPrologo : MonoBehaviour
         }
         if (oreDopoLeQuest != null && oreDopoLeQuest.Length > 0)
             VaiA(oreDopoLeQuest[Mathf.Min(n - 1, oreDopoLeQuest.Length - 1)], secondiPassaggio);
-        if (n == questDaFinire - 1) allUltimaQuest.Invoke();
+        // un attimo dopo: chi ha chiuso la quest toglie il suo obiettivo nello stesso evento, e non deve cancellare
+        // quello della quest 6 (successo alla fine della quest 5: "Raggiungi la taverna" spariva subito)
+        if (n == questDaFinire - 1) ultimaQuestAlle = Time.time + 0.5f;
+    }
+
+    float ultimaQuestAlle = -1f;
+
+    // Notte di colpo, senza passaggio: le quest contano tutte finite e "Alla razzia" parte al prossimo fotogramma.
+    public void NotteSubito()
+    {
+        if (TempoLibero) return;
+        for (int i = 1; i <= questDaFinire; i++) finite.Add(i);
+        VaiA(oraDellaRazzia, 0f);
+        partenza = arrivo;
+        versoLaNotte = true;
     }
 
     void VaiA(float ora, float secondi)

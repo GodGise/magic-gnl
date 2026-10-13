@@ -205,7 +205,6 @@ public class UsoConsumabili : MonoBehaviour
         GUI.depth = 10;
         GraficaMenu.PreparaStili();
         GraficaMenu.FoglioIntero();
-        DisegnaEffetti();
         var oggetto = Pronto();
         if (oggetto == null) return;
         var centro = new Vector2(110f, GraficaMenu.Altezza - 320f);
@@ -231,25 +230,6 @@ public class UsoConsumabili : MonoBehaviour
             var piccolo = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 18 };
             GraficaMenu.Scritta(new Rect(tasto.x + 26f, centro.y + 12f, 360f, 24f),
                 Comandi.NomeTasto(Azione.CambiaOggetto) + "  " + Lingua.T("hud.cambia_oggetto"), piccolo, GraficaMenu.Testo, 0.75f);
-        }
-    }
-
-    // Gli effetti a tempo delle pozioni bevute, sopra il rombo: "Danni subiti -10%  2:41", "Mana massimo +5%  1:10".
-    void DisegnaEffetti()
-    {
-        var effetti = giocatore.GetComponent<EffettiPozioni>();
-        if (effetti == null) return;
-        var stile = new GUIStyle(GraficaMenu.Etichetta) { alignment = TextAnchor.MiddleLeft, fontSize = 20 };
-        float y = GraficaMenu.Altezza - 410f;
-        foreach (EffettiPozioni.Tipo tipo in System.Enum.GetValues(typeof(EffettiPozioni.Tipo)))
-        {
-            float totale = effetti.Totale(tipo);
-            if (totale <= 0f) continue;
-            string chiave = tipo == EffettiPozioni.Tipo.RiduzioneDanni ? "eff.breve_danni" : "eff.breve_mana";
-            string testo = string.Format(Lingua.T(chiave), Mathf.RoundToInt(totale)) + "   " + EffettiPozioni.Orologio(effetti.SecondiRimasti(tipo));
-            GraficaMenu.Rombo(new Vector2(78f, y + 14f), 12f, tipo == EffettiPozioni.Tipo.RiduzioneDanni ? new Color(0.55f, 0.35f, 0.65f) : new Color(0.35f, 0.5f, 0.95f));
-            GraficaMenu.Scritta(new Rect(94f, y, 420f, 28f), testo, stile, GraficaMenu.Testo, 1f);
-            y -= 32f;
         }
     }
 }

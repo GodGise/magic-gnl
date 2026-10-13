@@ -49,6 +49,39 @@ public static class ProvaPrologo
         Vai("Ingresso della cripta");
     }
 
+    // Quest 6: apre l'ingresso della taverna (come dopo la quest 5) e porta lì davanti.
+    [MenuItem(Cartella + "Vai alla taverna (ingresso aperto)")]
+    static void Taverna()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var ingresso = TrovaOggetto("Ingresso della taverna");
+        if (ingresso == null) { Debug.LogWarning("Prova prologo: manca l'ingresso della taverna (prepara la quest 6 e la razzia)."); return; }
+        var passaggio = ingresso.GetComponent<PassaggioScena>();
+        if (passaggio != null) passaggio.enabled = true;
+        Vai("Ingresso della taverna");
+    }
+
+    // Razzia: parte subito (notte di colpo), senza fare le quest.
+    [MenuItem(Cartella + "Razzia: fai partire subito")]
+    static void RazziaSubito()
+    {
+        if (!Application.isPlaying || RazziaVillaggio.Istanza == null) { Debug.LogWarning("Prova prologo: serve il Play nel villaggio con la razzia preparata."); return; }
+        if (OrarioPrologo.Istanza != null && !OrarioPrologo.Istanza.TempoLibero) OrarioPrologo.Istanza.NotteSubito();
+        else RazziaVillaggio.Istanza.Inizia();
+    }
+
+    [MenuItem(Cartella + "Razzia: abbatti l'ondata in corso (ne restano 2)")]
+    static void RazziaAbbatti()
+    {
+        if (Application.isPlaying && RazziaVillaggio.Istanza != null) RazziaVillaggio.Istanza.ProvaAbbatti();
+    }
+
+    [MenuItem(Cartella + "Razzia: salta il minuto di tamburi")]
+    static void RazziaTamburi()
+    {
+        if (Application.isPlaying && RazziaVillaggio.Istanza != null) RazziaVillaggio.Istanza.ProvaSaltaTamburi();
+    }
+
     // Dentro la cripta: porta davanti alla leva, al baule o alla scala dell'uscita.
     [MenuItem(Cartella + "Cripta: vai alla leva")] static void CriptaLeva() => Vai("Leva del cancello");
     [MenuItem(Cartella + "Cripta: vai al baule")] static void CriptaBaule() => Vai("Baule della prima guardia");

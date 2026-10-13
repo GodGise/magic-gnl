@@ -8,7 +8,9 @@ public enum Suono
     Fendente, Schivata, ImpattoColpo, Parata, GuardiaRotta, Colpito, Morte, Rinascita,
     ColpoMuro, CrolloMuro, Leva, PortaPietra, FuocoAcceso, ScattoTrappola, Spuntoni, MorteNemico,
     Raccolta, Serratura, BauleAperto, CambioArma, SferaLancio, SferaImpatto, Negato,
-    PassoAcqua
+    PassoAcqua,
+    // razzia degli orchi (Lorenzo, 13 ottobre)
+    Tamburo, UrloOrco, Rombo, LegnoRotto, Crepitio
 }
 
 // Suoni provvisori creati direttamente dal codice, senza file audio.
@@ -47,6 +49,24 @@ public static class Suoni
         sorgente.pitch = tono * Random.Range(0.94f, 1.06f);
         sorgente.Play();
     }
+
+    // Suona un suono "dappertutto", senza posizione (per esempio i tamburi lontani della razzia o il terremoto):
+    // si sente uguale ovunque sia il giocatore.
+    public static void SuonaOvunque(Suono suono, float volume = 1f)
+    {
+        AudioClip clip = Prendi(suono, Random.Range(0, Varianti(suono)));
+        if (clip == null) return;
+        if (sorgente2D == null)
+        {
+            var oggetto = new GameObject("Suoni senza posizione (creati dal codice)");
+            sorgente2D = oggetto.AddComponent<AudioSource>();
+            sorgente2D.playOnAwake = false;
+            sorgente2D.spatialBlend = 0f;
+        }
+        sorgente2D.PlayOneShot(clip, Mathf.Clamp01(volume * VolumeGenerale * Impostazioni.VolumeEffetti));
+    }
+
+    static AudioSource sorgente2D;
 
     // Un piccolo gruppo di sorgenti audio usate a turno, così più suoni possono sovrapporsi.
     static AudioSource ProssimaSorgente()
@@ -89,7 +109,12 @@ public static class Suoni
             case Suono.ColpoMuro:
                 return 2;
             case Suono.ImpattoColpo:
+            case Suono.UrloOrco:
+            case Suono.LegnoRotto:
                 return 3;
+            case Suono.Tamburo:
+            case Suono.Crepitio:
+                return 2;
             default:
                 return 1;
         }
@@ -142,6 +167,11 @@ public static class Suoni
             case Suono.SferaLancio: return SferaLancio(caso);
             case Suono.SferaImpatto: return SferaImpatto(caso);
             case Suono.Negato: return Negato();
+            case Suono.Tamburo: return Tamburo(caso);
+            case Suono.UrloOrco: return UrloOrco(caso);
+            case Suono.Rombo: return Rombo(caso);
+            case Suono.LegnoRotto: return LegnoRotto(caso);
+            case Suono.Crepitio: return Crepitio(caso);
         }
         return Vuoto(0.1f);
     }
@@ -590,6 +620,112 @@ public static class Suoni
         {
             float t = T(i);
             d[i] = Seno(196f, t) * Busta(t, 0.005f, 18f) * 0.5f + Seno(147f, t) * Busta(t - 0.12f, 0.005f, 14f) * 0.5f;
+        }
+        return d;
+    }
+
+    // ---------- Razzia ----------
+
+    // Tamburo da guerra: un colpo basso e lungo sulla pelle tesa, con il "tump" che scende di tono.
+    static float[] Tamburo(System.Random caso)
+    {
+        float[] d = Vuoto(0.9f);
+        float fase = 0f, basso = 0f;
+        float tono = 72f + (float)caso.NextDouble() * 14f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            fase += 2f * Mathf.PI * Mathf.Lerp(tono * 1.6f, tono, Mathf.Clamp01(t / 0.08f)) / Frequenza;
+            basso += 0.15f * (Rumore(caso) - basso);
+            d[i] = Mathf.Sin(fase) * Busta(t, 0.003f, 4.5f) + basso * Busta(t, 0.001f, 30f) * 0.9f
+                 + Mathf.Sin(fase * 1.5f) * Busta(t, 0.003f, 9f) * 0.25f;
+        }
+        return d;
+    }
+
+    // Urlo d'orco: un ringhio basso e roco che sale e poi cade, con il fiato rumoroso sopra.
+    static float[] UrloOrco(System.Random caso)
+    {
+        float durata = 1.1f + (float)caso.NextDouble() * 0.4f;
+        float[] d = Vuoto(durata);
+        float fase = 0f, basso = 0f, filtro = 0f;
+        float tono = 85f + (float)caso.NextDouble() * 40f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            float s = t / durata;
+            float f = tono * (1f + 0.5f * Mathf.Sin(s * Mathf.PI)) * (1f + 0.04f * Mathf.Sin(t * 38f));
+            fase += f / Frequenza;
+            float dente = 2f * (fase - Mathf.Floor(fase)) - 1f;   // onda a dente di sega: roca
+            basso += 0.35f * (Rumore(caso) - basso);
+            float voce = dente * 0.7f + basso * 0.5f;
+            filtro += 0.18f * (voce - filtro);
+            float busta = Mathf.Clamp01(t / 0.12f) * Mathf.Clamp01((durata - t) / 0.35f);
+            d[i] = filtro * busta;
+        }
+        return d;
+    }
+
+    // Rombo della terra che trema: rumore molto basso che cresce e cala a ondate, con un tono profondo sotto.
+    static float[] Rombo(System.Random caso)
+    {
+        const float durata = 3.5f;
+        float[] d = Vuoto(durata);
+        float basso = 0f, lento = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            basso += 0.02f * (Rumore(caso) - basso);
+            lento += 0.004f * (Rumore(caso) - lento);
+            float onde = 0.6f + 0.4f * Mathf.Sin(t * 5.3f) * Mathf.Sin(t * 1.7f);
+            float busta = Mathf.Clamp01(t / 0.6f) * Mathf.Clamp01((durata - t) / 0.8f);
+            d[i] = (basso * 4f + lento * 6f + Seno(34f, t) * 0.25f) * onde * busta;
+        }
+        return d;
+    }
+
+    // Legno che si spacca: uno schiocco secco e qualche scricchiolio subito dopo (porte sfondate, assi rotte).
+    static float[] LegnoRotto(System.Random caso)
+    {
+        float[] d = Vuoto(0.6f);
+        float[] colpi = { 0f, 0.05f + (float)caso.NextDouble() * 0.04f, 0.14f + (float)caso.NextDouble() * 0.08f, 0.3f };
+        float tono = 220f + (float)caso.NextDouble() * 120f;
+        float basso = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            basso += 0.5f * (Rumore(caso) - basso);
+            float somma = 0f;
+            for (int k = 0; k < colpi.Length; k++)
+            {
+                float b = Busta(t - colpi[k], 0.001f, 45f + k * 10f) / (1f + k * 0.6f);
+                somma += (basso * 0.9f + Seno(tono * (1f + k * 0.3f), t) * 0.4f) * b;
+            }
+            d[i] = somma + Seno(95f, t) * Busta(t, 0.002f, 14f) * 0.4f;
+        }
+        return d;
+    }
+
+    // Fuoco che crepita: tanti schiocchi piccoli sparsi su un soffio di rumore.
+    static float[] Crepitio(System.Random caso)
+    {
+        const float durata = 1.4f;
+        float[] d = Vuoto(durata);
+        float[] colpi = new float[22];
+        for (int k = 0; k < colpi.Length; k++) colpi[k] = (float)caso.NextDouble() * (durata - 0.05f);
+        float basso = 0f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            basso += 0.08f * (Rumore(caso) - basso);
+            float somma = basso * 0.6f * Mathf.Clamp01(t / 0.2f) * Mathf.Clamp01((durata - t) / 0.3f);
+            for (int k = 0; k < colpi.Length; k++)
+            {
+                float dt = t - colpi[k];
+                if (dt < 0f || dt > 0.02f) continue;
+                somma += Rumore(caso) * Busta(dt, 0.0003f, 260f) * 0.8f;
+            }
+            d[i] = somma;
         }
         return d;
     }

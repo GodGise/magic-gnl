@@ -116,6 +116,20 @@ public class CameraTerzaPersona : MonoBehaviour
     }
 
     // Mette la camera dietro al personaggio (dopo un passaggio di colpo, per esempio entrando nella cripta).
+    // Fa tremare la camera (per esempio il terremoto prima dell'orco enorme): "forza" in metri, per "secondi".
+    // Se arriva un tremore più forte mentre ce n'è già uno, vince il più forte.
+    public static void Scuoti(float forza, float secondi)
+    {
+        if (Time.time < scossaFino && forza < scossaForza) { scossaFino = Mathf.Max(scossaFino, Time.time + secondi); return; }
+        scossaForza = forza;
+        scossaDurata = Mathf.Max(0.05f, secondi);
+        scossaFino = Time.time + secondi;
+    }
+
+    static float scossaForza, scossaDurata, scossaFino;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void AzzeraScossa() => scossaFino = 0f;
+
     public void AllineaDietro()
     {
         if (bersaglio == null) return;
@@ -210,6 +224,13 @@ public class CameraTerzaPersona : MonoBehaviour
         avanti.y = 0f;
         Vector3 puntoGuardato = fuoco + avanti.normalized * (distanzaSguardoAvanti * Mathf.Max(0f, vicinanza));
         transform.SetPositionAndRotation(posizione, Quaternion.LookRotation(puntoGuardato - posizione));
+        if (Time.time < scossaFino)
+        {
+            // il tremore cala verso la fine
+            float forza = scossaForza * Mathf.Clamp01((scossaFino - Time.time) / Mathf.Min(scossaDurata, 0.8f));
+            float t = Time.time * 23f;
+            transform.position += new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, Mathf.PerlinNoise(t, t * 0.5f) - 0.5f) * (2f * forza);
+        }
 
         // Se nonostante tutto la camera finisce addosso al personaggio, lo nasconde invece di
         // mostrare l'interno del suo corpo.
