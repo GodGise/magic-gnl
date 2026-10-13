@@ -20,7 +20,7 @@ Scritta il 10 ottobre 2026 dal Claude di Giuseppe, guardando il codice e i docum
 - **"Uscire" = una demo su Steam** con il capitolo 1 (o un po' meno), per avere qualcosa di concreto e tenere alto il morale. Il gioco completo viene dopo. La durata minima di 2 ore (limite del rimborso su Steam) vale per il gioco venduto, non per la demo.
 - **Giorno e notte:** già decisi, 45 minuti di giorno e 50 di notte.
 - **Come cade l'eroe:** scontro normale contro l'orco della piazza, che dopo 3 minuti diventa invulnerabile; chi muore si risveglia nella gattabuia (proposta di Lorenzo, approvata).
-- **Gattabuia dopo la fuga:** **crolla**, come una vendetta contro gli orchi.
+- **Gattabuia dopo la fuga:** **crolla**, come una vendetta contro gli orchi. **Niente campo base lì**: le tane degli orchi sono collegate da un enorme sistema di caverne e ne arriverebbero altri (Giuseppe, 13 ottobre).
 - **Dialoghi e sonoro:** li fa Giuseppe (i dialoghi li rivede anche Lorenzo).
 - **Scena `VillaggioLagoNero.unity`:** la gestisce Lorenzo, perché Giuseppe sta finendo le impostazioni e altre cose.
 
