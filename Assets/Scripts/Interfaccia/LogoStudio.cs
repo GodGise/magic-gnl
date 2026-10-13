@@ -185,6 +185,21 @@ public class LogoStudio : MonoBehaviour
             particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = new Vector2((R() - 0.5f) * 0.6f, -1f),
                 nascita = 0.8f + R() * 7.2f, velocita = 18f + R() * 38f, vita = 2.2f + R() * 2.4f, taglia = 2f + R() * 3.5f, salita = 0f, tipo = 1 });
         }
+        // 6) scintille che partono da dietro il sigillo e si disperdono nell'aria, fino ai bordi dello schermo
+        //    6a) all'impatto: una grande raffica in tutte le direzioni (alcune con alone)
+        for (int n = 0; n < 230; n++)
+        {
+            float ang = R() * Mathf.PI * 2f, raggio = 120f + R() * 360f;
+            particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = Dir(ang + (R() - 0.5f) * 0.5f),
+                nascita = MomentoLampo + 0.02f + R() * 0.25f, velocita = 450f + R() * 1100f, vita = 1.3f + R() * 1.9f, taglia = 2.5f + R() * 5f, salita = -20f + R() * 90f, tipo = n % 4 == 0 ? 2 : 0 });
+        }
+        //    6b) dopo l'impatto: scintille che continuano a staccarsi dal sigillo e a volare via, più piano
+        for (int n = 0; n < 170; n++)
+        {
+            float ang = R() * Mathf.PI * 2f, raggio = 180f + R() * 300f;
+            particelle.Add(new Particella { origine = new Vector2(512f, 512f) + Dir(ang) * raggio, direzione = Dir(ang + (R() - 0.5f) * 0.9f),
+                nascita = MomentoLampo + 0.4f + R() * 5.2f, velocita = 160f + R() * 520f, vita = 1.2f + R() * 1.8f, taglia = 2f + R() * 4f, salita = 10f + R() * 60f, tipo = n % 5 == 0 ? 2 : 0 });
+        }
     }
 
     // Secondi dall'inizio dell'animazione: negativo durante il nero iniziale.
