@@ -1581,7 +1581,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
             if (conBastone)
             {
-                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(ManaMassimo));
+                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana + 0.01f) + " / " + Mathf.CeilToInt(ManaMassimo));
                 DisegnaBarra(new Rect(20, 136, 450, 10), Mana / ManaMassimo, new Color(0.25f, 0.45f, 0.95f));
             }
         }

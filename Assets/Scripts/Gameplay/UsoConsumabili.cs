@@ -187,7 +187,10 @@ public class UsoConsumabili : MonoBehaviour
         }
         var effetti = EffettiPozioni.Di(giocatore);
         effetti.Aggiungi(EffettiPozioni.Tipo.RiduzioneDanni, oggetto.riduzioneDanniPercento, oggetto.durataEffetto, oggetto.cumulabile);
+        float manaPrima = giocatore.ManaMassimo;
         effetti.Aggiungi(EffettiPozioni.Tipo.ManaMassimo, oggetto.manaMassimoPercento, oggetto.durataEffetto, oggetto.cumulabile);
+        // il mana in più arriva subito: la barra piena resta piena
+        if (giocatore.ManaMassimo > manaPrima) giocatore.RidaiMana(giocatore.ManaMassimo - manaPrima);
         string elenco = oggetto.Effetti();
         string testo = oggetto.Nome + (elenco.Length > 0 ? "   " + elenco : "");
         MessaggiSchermo.Mostra(testo, 2.5f);
