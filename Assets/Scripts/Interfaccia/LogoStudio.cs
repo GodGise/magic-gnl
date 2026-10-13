@@ -44,7 +44,7 @@ public class LogoStudio : MonoBehaviour
 
     // Il sigillo: grandezza e posizione (in pixel del foglio virtuale 1920x1080)
     const float LatoGrande = 770f, LatoPiccolo = 440f;
-    const float YCentro = 540f, YAlto = 262f;
+    const float YCentro = 540f, YAlto = 420f;   // YAlto: il sigillo finale, sopra al nome; con il nome il gruppo sta al centro dello schermo
 
     // Una volta per avvio del gioco (nell'editor con "Reload Domain" spento si azzera da solo).
     static bool giaMostrato;
@@ -447,7 +447,7 @@ public class LogoStudio : MonoBehaviour
     // Lettere con la spaziatura che si stringe: partono larghe e quasi invisibili, si raccolgono nel nome. Al centro dello schermo.
     void DisegnaNome(float t, float luce)
     {
-        const float yNome = 520f;   // alto del nome (corpo 92): il nome sta circa a metà schermo
+        const float yNome = 678f;   // alto del nome (corpo 92): sigillo, nome e "presenta" insieme stanno al centro dello schermo (da 215 a 880 su 1080)
         float p = Morbido((t - InizioNome) / DurataNome);
         if (p > 0f)
         {

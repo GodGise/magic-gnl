@@ -23,7 +23,7 @@ Prima **schermo nero e silenzio per 3 secondi**; poi parte l'animazione (e il su
 | 2,3 - 3,3 | Una scintilla con la scia cala dall'alto, sempre più veloce, e cade nel lago |
 | **3,3** | **Impatto**: la scintilla tocca il lago e la **runa centrale si accende**. Lampo sullo schermo, tremito, onde nel lago, onda d'urto, raggi di luce, esplosione di scintille (circa 300) e gocce che schizzano; le rune si accendono tutte insieme |
 | 3,3 - 5,0 | Pausa: il sigillo resta acceso, le rune pulsano a onda, le braci salgono. Vignetta scura ai bordi dello schermo, braci grandi sfocate in lontananza |
-| 5,0 - 6,1 | Il sigillo **sale in alto e rimpicciolisce** |
+| 5,0 - 6,1 | Il sigillo **sale un po' e rimpicciolisce**; sigillo, nome e "presenta" formano un gruppo **centrato nello schermo** |
 | 5,5 - 7,4 | "GNL STUDIO" compare **al centro dello schermo**: lettere una a una che si stringono, filo di luce con rombo |
 | 7,0 - 8,0 | "presenta" (tradotto nelle 8 lingue) |
 | 9,0 - 10,0 | Dissolvenza al nero |
