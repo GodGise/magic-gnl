@@ -68,6 +68,13 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 13 ottobre: monete (Lacrime del lago) e mercato (serve un'occhiata di Giuseppe, e un parere sul nome)
+Stesso ramo `lorenzoc/negozio-ilse`. Lorenzo ha chiesto monete legate alla storia, niente argento. Scelta provvisoria: **Lacrime del lago**, sassolini neri come vetro che il lago lascia sulla riva dopo le tempeste. Altre 4 proposte (Scaglie nere, Chiodi di guardia, Segni di veglia, Gocce di pece) in `Docs/monete.md`: **Giuseppe, dicci quale preferisci**; cambiare nome vuol dire cambiare solo i testi `valuta.*` in `Lingua.cs`.
+- **Mercato:** ogni mercante vende le sue cose (tabella in `Docs/monete.md`). Fatto solo Ilse: nella bottega tre schede, **Baratto** (fiori per pozioni, il più conveniente), **Compra** (pozioni con le Lacrime, circa 5 volte più caro), **Vendi** (fiori per Lacrime). Prezzi provvisori nello stesso documento.
+- **Da dove arrivano:** 15 all'inizio, 20 da Hobb alla fine della quest 3, vendendo i fiori. Le Lacrime si vedono nell'inventario (accanto a "Zaino") e nella bottega.
+- **File nuovi:** `Borsa.cs` (le monete del giocatore: un numero, non oggetti dello zaino), `DaiMonete.cs` (ricompense), `Docs/monete.md`. **Toccati:** `DatiRicetta.cs` (prezzo e ricavo), `Negozio.cs` (schede e borsa), `InventarioGioco.cs` (le Lacrime accanto allo zaino), `CreaErbe.cs`, `CreaPrologoQuest4.cs` (paga di Hobb), `Lingua.cs`, `CLAUDE.md`.
+- Le monete non si salvano ancora (come lo zaino).
+
 ### 13 ottobre: bottega di Ilse, fiori e pozioni (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/negozio-ilse` (parte da `lorenzoc/stamina-esplorazione`: va unito dopo). Decisione di Lorenzo: l'erboristeria di Ilse è un **negozio di baratto** (fiori per pozioni) e **ogni fiore ha uno scopo**: Fiore di riva = vita, Cardo nero = resistenza, Lunaria = mana. Cinque ricette, anche con fiori combinati (tabella in `Docs/erbe-e-pozioni.md`). Nella quest 4 Ilse, quando hai i 3 fiori, apre la bottega e sei tu a scambiarli con 2 Pozioni di Ilse; il primo scambio fa passare a "Bevi una pozione". Le monete non ci sono ancora: quando arriveranno saranno un oggetto da mettere nelle ricette, il negozio non cambia.
 - **File nuovi:** `Negozio.cs` (finestra della bottega, serve a qualsiasi mercante), `DatiRicetta.cs`, `Assets/Editor/CreaErbe.cs` (menu "magic-gnl > Erbe: crea fiori, pozioni e ricette"), `Docs/erbe-e-pozioni.md`.

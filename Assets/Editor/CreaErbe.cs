@@ -9,7 +9,8 @@ using UnityEngine;
 // Fiori in   Assets/Dati/Oggetti/Missioni/    (fiore-di-riva, cardo-nero, lunaria)
 // Pozioni in Assets/Dati/Oggetti/Consumabili/ (pozione-di-ilse, tonico-di-cardo, infuso-di-lunaria, balsamo-di-riva,
 //                                              elisir-del-crepuscolo)
-// Ricette in Assets/Dati/Ricette/             (una per pozione, prefisso "ilse-")
+// Ricette in Assets/Dati/Ricette/             (prefisso "ilse-"): baratto (fiori -> pozione), compra (Lacrime del
+//                                              lago -> pozione, costa molto di più) e vendi (fiore -> Lacrime)
 // Quelli che esistono già non vengono toccati: i numeri si cambiano poi dall'Inspector, oggetto per oggetto.
 // Lo usa anche "magic-gnl > Prologo: prepara la quest 4" per riempire la bottega di Ilse.
 // Per mettere i nuovi fiori nel mondo: oggetto vuoto + componente OggettoRaccoglibile con "Oggetto" = il fiore.
@@ -25,7 +26,7 @@ public static class CreaErbe
     static void Menu()
     {
         var r = RicetteIlse();
-        EditorUtility.DisplayDialog("Erbe", "Pronti " + r.Length + " ricette, 3 fiori e 5 pozioni in Assets/Dati (quelli che c'erano già non sono cambiati).", "Ok");
+        EditorUtility.DisplayDialog("Erbe", "Pronte " + r.Length + " voci della bottega di Ilse, 3 fiori e 5 pozioni in Assets/Dati (quelli che c'erano già non sono cambiati).", "Ok");
         Selection.activeObject = r[0];
     }
 
@@ -53,7 +54,7 @@ public static class CreaErbe
     internal static DatiConsumabile ElisirDelCrepuscolo => Pozione("elisir-del-crepuscolo", "Elisir del crepuscolo", "elisir_del_crepuscolo", new Color(0.55f, 0.25f, 0.75f),
         p => { p.cura = 40f; p.durataCura = 1f; p.mana = 40f; p.resistenza = 40f; p.attesa = 1.5f; });
 
-    // ---------- le ricette della bottega di Ilse ----------
+    // ---------- le voci della bottega di Ilse (prezzi provvisori in Lacrime del lago, Docs/monete.md) ----------
 
     internal static DatiRicetta[] RicetteIlse()
     {
@@ -62,11 +63,22 @@ public static class CreaErbe
         var lunaria = Lunaria;
         return new[]
         {
-            Ricetta("ilse-pozione-di-ilse", PozioneDiIlse, 2, (riva, 3)),
-            Ricetta("ilse-tonico-di-cardo", TonicoDiCardo, 1, (cardo, 2)),
-            Ricetta("ilse-infuso-di-lunaria", InfusoDiLunaria, 1, (lunaria, 2)),
-            Ricetta("ilse-balsamo-di-riva", BalsamoDiRiva, 1, (riva, 2), (cardo, 1)),
-            Ricetta("ilse-elisir-del-crepuscolo", ElisirDelCrepuscolo, 1, (riva, 1), (cardo, 1), (lunaria, 1)),
+            // baratto: il modo più conveniente
+            Ricetta("ilse-pozione-di-ilse", PozioneDiIlse, 2, 0, 0, (riva, 3)),
+            Ricetta("ilse-tonico-di-cardo", TonicoDiCardo, 1, 0, 0, (cardo, 2)),
+            Ricetta("ilse-infuso-di-lunaria", InfusoDiLunaria, 1, 0, 0, (lunaria, 2)),
+            Ricetta("ilse-balsamo-di-riva", BalsamoDiRiva, 1, 0, 0, (riva, 2), (cardo, 1)),
+            Ricetta("ilse-elisir-del-crepuscolo", ElisirDelCrepuscolo, 1, 0, 0, (riva, 1), (cardo, 1), (lunaria, 1)),
+            // compra con le Lacrime: quando mancano i fiori (circa 3-5 volte più caro dei fiori venduti)
+            Ricetta("ilse-compra-pozione-di-ilse", PozioneDiIlse, 1, 30, 0),
+            Ricetta("ilse-compra-tonico-di-cardo", TonicoDiCardo, 1, 35, 0),
+            Ricetta("ilse-compra-infuso-di-lunaria", InfusoDiLunaria, 1, 40, 0),
+            Ricetta("ilse-compra-balsamo-di-riva", BalsamoDiRiva, 1, 70, 0),
+            Ricetta("ilse-compra-elisir-del-crepuscolo", ElisirDelCrepuscolo, 1, 90, 0),
+            // vendi i fiori a Ilse
+            Ricetta("ilse-vendi-fiore-di-riva", null, 1, 0, 4, (riva, 1)),
+            Ricetta("ilse-vendi-cardo-nero", null, 1, 0, 5, (cardo, 1)),
+            Ricetta("ilse-vendi-lunaria", null, 1, 0, 7, (lunaria, 1)),
         };
     }
 
@@ -108,7 +120,7 @@ public static class CreaErbe
         return p;
     }
 
-    static DatiRicetta Ricetta(string file, DatiOggetto risultato, int quanti, params (DatiOggetto oggetto, int quanti)[] chiede)
+    static DatiRicetta Ricetta(string file, DatiOggetto risultato, int quanti, int prezzo, int ricavo, params (DatiOggetto oggetto, int quanti)[] chiede)
     {
         string percorso = Ricette + file + ".asset";
         var r = AssetDatabase.LoadAssetAtPath<DatiRicetta>(percorso);
@@ -117,6 +129,8 @@ public static class CreaErbe
         r = ScriptableObject.CreateInstance<DatiRicetta>();
         r.da = risultato;
         r.quantiDa = quanti;
+        r.prezzo = prezzo;
+        r.ricavo = ricavo;
         r.chiede = new DatiRicetta.Ingrediente[chiede.Length];
         for (int i = 0; i < chiede.Length; i++) r.chiede[i] = new DatiRicetta.Ingrediente { oggetto = chiede[i].oggetto, quanti = chiede[i].quanti };
         AssetDatabase.CreateAsset(r, percorso);

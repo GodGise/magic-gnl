@@ -6,7 +6,7 @@ Decisione di Lorenzo, 13 ottobre 2026. Proposta di fiori e ricette del Claude di
 
 L'erboristeria di Ilse è un **negozio di baratto**: si portano fiori e si ricevono pozioni. **Ogni fiore ha uno scopo** e ogni fiore, o combinazione di fiori, dà una pozione precisa. Nel prologo serve solo la pozione della vita (quest 4); le altre ricette si vedono già nella bottega, spente finché non si hanno i fiori.
 
-Le **monete** non ci sono ancora. Quando arriveranno saranno un oggetto come gli altri: basterà metterle fra gli ingredienti di una ricetta ("5 Monete → 1 Pozione di Ilse", per comprare) o come risultato ("1 Cardo nero → 2 Monete", per vendere). Il negozio non va rifatto.
+Si può anche **comprare** con le monete, le **Lacrime del lago**, quando mancano i fiori (costa molto di più), e **vendere** i fiori a Ilse. Monete, prezzi e mercato: `Docs/monete.md`.
 
 ## I fiori
 
@@ -36,7 +36,6 @@ Tutti i numeri si cambiano dall'Inspector: le pozioni in `Assets/Dati/Oggetti/Co
 - **Unguento d'ombra**: passi più silenziosi per qualche minuto (furtività del Ladro).
 - **Olio di brace**: l'arma brucia per un minuto (più danno ai ragni e ai non morti).
 - **Vista notturna**: la nebbia si dirada per un po'.
-- **Monete**: comprare e vendere da Ilse e da altri mercanti (fabbro, oste).
 
 ## Come funziona nel codice
 
