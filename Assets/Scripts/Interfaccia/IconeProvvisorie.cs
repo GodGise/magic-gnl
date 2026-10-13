@@ -60,7 +60,7 @@ public static class IconeProvvisorie
             case DatiScudo sc: Scudo(sc, dettaglio); return true;
             case DatiArmatura v: Armatura(v, dettaglio); return true;
             case DatiAmuleto am: Amuleto(am, dettaglio); return true;
-            case DatiBastone b: Bastone(b, FormeOggetti.ColoreMagia(b.magia, new Color(0.45f, 0.75f, 1f))); return true;
+            case DatiBastone b: Bastone(b, FormeOggetti.ColoreMagia(b.magia, new Color(0.45f, 0.75f, 1f)), dettaglio); return true;
             case DatiLibro l: Libro(FormeOggetti.ColoreMagia(l.magia, Cuoio), dettaglio); return true;
             case DatiIncantesimo i: Incantesimo(i.colore); return true;
         }
@@ -229,8 +229,20 @@ public static class IconeProvvisorie
         Color bordo = veste ? FormeOggetti.ColoreMagia(v.magia, dettaglio) : col * 0.7f;
         bordo.a = 1f;
         Quadro(new Vector2(0f, -14f), 38f, 10f, col);                       // spalle
-        Quadro(new Vector2(0f, veste ? 6f : 2f), 26f, veste ? 40f : 32f, col);   // busto
-        Quadro(new Vector2(0f, veste ? 26f : 18f), veste ? 32f : 26f, 3f, bordo);   // orlo o cintura
+        if (veste)
+        {
+            // veste lunga che si allarga verso il basso, con le maniche larghe
+            for (int k = 0; k < 5; k++) Quadro(new Vector2(0f, -4f + k * 7f), 24f + k * 4f, 8f, col);
+            Quadro(new Vector2(-19f, -4f), 8f, 16f, col);
+            Quadro(new Vector2(19f, -4f), 8f, 16f, col);
+            Quadro(new Vector2(0f, 28f), 42f, 3f, bordo);                   // orlo
+            Quadro(new Vector2(0f, 6f), 4f, 40f, bordo * 0.85f + new Color(0f, 0f, 0f, 0.15f));   // bordura davanti
+        }
+        else
+        {
+            Quadro(new Vector2(0f, 2f), 26f, 32f, col);                     // busto
+            Quadro(new Vector2(0f, 18f), 26f, 3f, bordo);                   // cintura
+        }
         Quadro(new Vector2(0f, -10f), 8f, 6f, bordo * 0.8f);                // scollo
         Rombo(new Vector2(0f, veste ? 0f : 4f), 7f, dettaglio);             // fibbia
         if (v.peso == DatiArmatura.Peso.Pesante)
@@ -242,14 +254,16 @@ public static class IconeProvvisorie
         bool arcano = am.tipo == DatiAmuleto.Tipo.Arcano;
         Barra(new Vector2(-9f, -14f), 24f, 2f, 60f, Oro);   // catenella
         Barra(new Vector2(9f, -14f), 24f, 2f, -60f, Oro);
+        // arcani: montatura scura e pietra più cupa, ma ognuno con il suo colore
         Rombo(new Vector2(0f, 6f), 26f, arcano ? OmbraScura : Oro);
-        Rombo(new Vector2(0f, 6f), 18f, arcano ? new Color(0.55f, 0.3f, 0.85f) : dettaglio);
+        Rombo(new Vector2(0f, 6f), 18f, arcano ? Color.Lerp(dettaglio, new Color(0.3f, 0.12f, 0.45f), 0.45f) : dettaglio);
+        if (arcano) Rombo(new Vector2(0f, 6f), 6f, new Color(0.08f, 0.05f, 0.12f));   // occhio scuro al centro
         Rombo(new Vector2(-3f, 3f), 5f, new Color(1f, 1f, 1f, 0.55f));   // riflesso
     }
 
     // ---------- magia ----------
 
-    static void Bastone(DatiBastone b, Color gemma)
+    static void Bastone(DatiBastone b, Color gemma, Color dettaglio)
     {
         bool verga = b.tipo == DatiBastone.Tipo.Verga;
         const float angolo = -60f;
@@ -259,7 +273,9 @@ public static class IconeProvvisorie
         GraficaMenu.Alone(new Rect(c.x + (punta.x - 14f) * s, c.y + (punta.y - 14f) * s, 28f * s, 28f * s), A(new Color(gemma.r, gemma.g, gemma.b, 0.5f)));
         Rombo(punta, verga ? 9f : 12f, gemma);
         Rombo(punta, verga ? 4f : 5f, Color.white);
-        if (!verga) Barra(punta + Lungo(angolo, -7f), 8f, 7f, angolo, Oro);   // ghiera
+        // ghiera e legature del colore del dettaglio: bastoni della stessa scuola restano diversi
+        Barra(punta + Lungo(angolo, verga ? -6f : -8f), 6f, verga ? 5f : 7f, angolo, dettaglio);
+        Barra(Lungo(angolo, -4f), 4f, verga ? 5f : 6.5f, angolo, dettaglio);
     }
 
     static void Libro(Color copertina, Color dettaglio)
