@@ -118,6 +118,8 @@ public static class ProvaClasse
         {
             var oggetto = AssetDatabase.LoadAssetAtPath<DatiOggetto>(AssetDatabase.GUIDToAssetPath(guid));
             if (oggetto == null || !Usabile(oggetto, classe) || zaino.Contiene(oggetto)) continue;
+            // le pozioni rispettano il massimo dello zaino (3 all'inizio del gioco), come in partita
+            if (oggetto is DatiConsumabile && !zaino.PostoPerConsumabili(1)) continue;
             zaino.Aggiungi(oggetto);
             messi++;
         }

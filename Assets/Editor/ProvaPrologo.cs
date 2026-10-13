@@ -8,6 +8,8 @@ using UnityEngine.SceneManagement;
 // Come si usa: in Play, menu "magic-gnl > Prova prologo > Vai da ...". Non va montato su niente.
 // "Ferisci i ratti del granaio" toglie 20 di vita a ogni ratto (per provare la fine della quest 3 in fretta);
 // "Togli 50 di vita al giocatore" serve a provare le pozioni (tasto F).
+// Bottega e monete: "Apri la bottega di Ilse" porta da Ilse e apre il negozio anche prima della quest 4;
+// "Dai 100 lacrime" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -33,6 +35,42 @@ public static class ProvaPrologo
             if (f != null && f.activeSelf) { Vai("Fiore di riva " + i); return; }
         }
         Debug.Log("Prova prologo: nessun fiore di riva da raccogliere.");
+    }
+
+    [MenuItem(Cartella + "Apri la bottega di Ilse")]
+    static void Bottega()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var negozio = Object.FindFirstObjectByType<Negozio>(FindObjectsInactive.Include);
+        if (negozio == null) { Debug.LogWarning("Prova prologo: nessun Negozio nella scena (prepara la quest 4)."); return; }
+        Vai("Ilse");
+        negozio.enabled = true;
+        negozio.Apri();
+    }
+
+    [MenuItem(Cartella + "Dai 100 lacrime")]
+    static void Lacrime()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var g = Object.FindFirstObjectByType<GiocatoreControllo>();
+        if (g == null) return;
+        Borsa.Di(g).Aggiungi(100);
+        Debug.Log("Prova prologo: lacrime nella borsa " + Borsa.Di(g).Quante + ".");
+    }
+
+    [MenuItem(Cartella + "Dai 3 fiori di ogni tipo")]
+    static void Fiori()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var g = Object.FindFirstObjectByType<GiocatoreControllo>();
+        if (g == null) return;
+        var zaino = Zaino.Di(g);
+        foreach (string file in new[] { "fiore-di-riva", "cardo-nero", "lunaria" })
+        {
+            var fiore = AssetDatabase.LoadAssetAtPath<DatiOggetto>("Assets/Dati/Oggetti/Missioni/" + file + ".asset");
+            for (int i = 0; i < 3 && fiore != null; i++) zaino.Aggiungi(fiore);
+        }
+        Debug.Log("Prova prologo: 3 fiori di riva, 3 cardi neri e 3 lunarie nello zaino.");
     }
 
     static GameObject TrovaOggetto(string nome)
