@@ -43,3 +43,6 @@ desktop.ini
 # Scena di prova: si ricrea dal menu "magic-gnl > Crea scena di prova"
 /Assets/Scenes/ScenaProva.unity
 /Assets/Scenes/ScenaProva.unity.meta
+
+# Registrazioni di prova del Recorder di Unity
+/Recordings/
