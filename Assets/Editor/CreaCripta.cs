@@ -18,9 +18,15 @@ using static AiutiPrologo;
 //   B  baule con il Medaglione della prima guardia
 //   C  sarcofago                   O  mucchio di ossa
 //   F  lunaria da raccogliere
+//   R  tunnel con tracce strane (graffi sui muri, segni di trascinamento sul pavimento)
+//   X  trappola a spuntoni           K  vicolo cieco: le impronte finiscono contro la roccia
 // Il percorso: ingresso vuoto e silenzioso -> corridoio centrale con 4 scheletri sparsi (a ovest, a est, nell'ossario
 // a sud-ovest e nel corridoio nord-est) -> cancello chiuso della sala della prima guardia -> leva nella stanza a
 // nord-ovest -> sala con il sarcofago della guardia, la sua statua e il baule. Nella camera a nord-est due lunarie.
+// In fondo al corridoio centrale, a est (Giuseppe, 14 ottobre): un tunnel buio con tracce strane (graffi, segni di
+// qualcosa trascinato, impronte bagnate) che finisce in un vicolo cieco, con una trappola a spuntoni poco prima della
+// fine. Le impronte arrivano alla roccia e spariscono: chi o cosa le ha lasciate non si dice. Entrando nel tunnel
+// parte il segnale q5.tracce: al ritorno Edric ne parla (vedi CreaPrologoQuest5).
 // La cripta sta lontano dal villaggio (X 3000), così le due scene caricate insieme non si toccano.
 // Collegamenti della quest dentro la cripta (passano da PonteMissioni, che parla con Missioni del villaggio):
 //   arrivo -> "Trova la tomba della prima guardia";
@@ -42,27 +48,27 @@ public static class CreaCripta
 
     static readonly string[] Mappa =
     {
-        "###########################",
-        "#.....###T.......T###....T#",
-        "#TL...###.C..C..C.###.C.C.#",
-        "#.....###....B....###....F#",
-        "#.....###.........###F....#",
-        "###.#####T.......T#####.###",
-        "###.#####.........#####.###",
-        "###.#########G#########S###",
-        "###T#########.#########T###",
-        "###.#########Z#########.###",
-        "###.#########.#########.###",
-        "###.T...S....T....S...T.###",
-        "######.######.######.######",
-        "####T...O####.####O...T####",
-        "####.OS..####.####.....####",
-        "####.....####.####...O.####",
-        "##########.......##########",
-        "##########T.....T##########",
-        "##########...A...##########",
-        "##########...U...##########",
-        "###########################",
+        "###################################",
+        "#.....###T.......T###....T#########",
+        "#TL...###.C..C..C.###.C.C.#########",
+        "#.....###....B....###....F#########",
+        "#.....###.........###F....#########",
+        "###.#####T.......T#####.###########",
+        "###.#####.........#####.###########",
+        "###.#########G#########S###########",
+        "###T#########.#########T###########",
+        "###.#########Z#########.###########",
+        "###.#########.#########.###########",
+        "###.T...S....T....S...T.RRRRRXR.K##",
+        "######.######.######.##############",
+        "####T...O####.####O...T############",
+        "####.OS..####.####.....############",
+        "####.....####.####...O.############",
+        "##########.......##################",
+        "##########T.....T##################",
+        "##########...A...##################",
+        "##########...U...##################",
+        "###################################",
     };
 
     static int Righe => Mappa.Length;
@@ -140,6 +146,9 @@ public static class CreaCripta
                     case 'C': Sarcofago(oggetti, p, r == 2 && c == 13); break;
                     case 'O': Ossa(oggetti, p, r * 31 + c); break;
                     case 'F': Lunaria(oggetti, p); break;
+                    case 'R': Tracce(oggetti, p, r, c, Cella(r, c - 1) != 'R', ponte); break;
+                    case 'X': Trappola(oggetti, p); break;
+                    case 'K': VicoloCieco(oggetti, p, r, c); break;
                 }
             }
         SalaDellaGuardia(oggetti);
@@ -383,6 +392,59 @@ public static class CreaCripta
         Imposta(r, "oggetto", AssetDatabase.LoadAssetAtPath<DatiOggetto>(PercorsoLunaria));
         Imposta(r, "distanza", 2f);
         Luce("Bagliore della lunaria", o.transform, new Vector3(0f, 0.6f, 0f), new Color(0.75f, 0.8f, 1f), 3f, 0.6f);
+    }
+
+    // ---------- il tunnel delle tracce (14 ottobre) ----------
+
+    static Material Graffio => Materiale("cripta-graffio", new Color(0.07f, 0.065f, 0.06f));
+    static Material Bagnato => Materiale("cripta-bagnato", new Color(0.02f, 0.035f, 0.05f));
+
+    // Graffi a tre a tre sui muri del tunnel e segni di trascinamento sul pavimento. Nella prima casella, chi entra
+    // fa partire il segnale q5.tracce (Edric ne parlerà).
+    static void Tracce(Transform genitore, Vector3 p, int r, int c, bool ingresso, PonteMissioni ponte)
+    {
+        var t = Vuoto("Tracce", genitore, p).transform;
+        var caso = new System.Random(r * 53 + c);
+        // trascinamento: due strisce lunghe e storte sul pavimento, verso est
+        for (int i = 0; i < 2; i++)
+            Decoro("Segno trascinato", t, new Vector3(0f, 0.012f, -0.35f + i * 0.6f + (float)caso.NextDouble() * 0.2f), new Vector3(Casella, 0.01f, 0.12f), Graffio,
+                new Vector3(0f, (float)caso.NextDouble() * 10f - 5f, 0f));
+        // graffi: tre righe parallele, inclinate, su uno dei due muri
+        float lato = caso.NextDouble() < 0.5 ? 1f : -1f;
+        float altezza = 0.6f + (float)caso.NextDouble() * 1.6f;
+        for (int i = 0; i < 3; i++)
+            Decoro("Graffio", t, new Vector3(-0.3f + i * 0.14f, altezza + i * 0.05f, lato * (Casella / 2f - 0.02f)), new Vector3(0.05f, 0.7f, 0.02f), Graffio,
+                new Vector3(0f, 0f, 35f));
+        if (!ingresso) return;
+        var zona = Vuoto("Nel tunnel delle tracce", t).AddComponent<ZonaArrivo>();
+        Imposta(zona, "raggio", 1.8f);
+        if (ponte != null) Su(Evento(zona, "allArrivo"), ponte.Segnale, "q5.tracce");
+    }
+
+    // La trappola a spuntoni del vicolo cieco: per chi esplora per curiosità.
+    static void Trappola(Transform genitore, Vector3 p)
+    {
+        var o = Vuoto("Trappola a spuntoni", genitore, p);
+        var trappola = o.AddComponent<TrappolaSpuntoni>();
+        Imposta(trappola, "dimensioni", new Vector2(Casella - 0.4f, Casella - 0.4f));
+        Imposta(trappola, "danno", 30f);
+        // la stessa traccia continua anche sopra la trappola, così non si nota
+        Decoro("Segno trascinato", o.transform, new Vector3(0f, 0.012f, 0f), new Vector3(Casella, 0.01f, 0.12f), Graffio);
+    }
+
+    // Il vicolo cieco: impronte bagnate che arrivano fino alla roccia e lì finiscono; un alone umido sul muro.
+    static void VicoloCieco(Transform genitore, Vector3 p, int r, int c)
+    {
+        var t = Vuoto("Vicolo cieco", genitore, p).transform;
+        for (int i = 0; i < 5; i++)
+        {
+            float x = -Casella / 2f + 0.3f + i * 0.5f;
+            float z = (i % 2 == 0 ? -0.18f : 0.18f);
+            Decoro("Impronta bagnata", t, new Vector3(x, 0.013f, z), new Vector3(0.28f, 0.01f, 0.14f), Bagnato);
+        }
+        Decoro("Alone umido", t, new Vector3(Casella / 2f - 0.04f, 1.2f, 0f), new Vector3(0.03f, 1.8f, 1.1f), Bagnato);
+        Decoro("Pozza nera", t, new Vector3(Casella / 2f - 0.5f, 0.014f, 0f), new Vector3(0.8f, 0.01f, 1f), Bagnato, new Vector3(0f, 25f, 0f));
+        Luce("Luce fioca del lago", t, new Vector3(Casella / 2f - 0.6f, 0.4f, 0f), new Color(0.35f, 0.5f, 0.8f), 3.5f, 0.5f);
     }
 
     // La sala: due colonne per lato e la statua della guardia contro il muro nord, sopra il sarcofago.
