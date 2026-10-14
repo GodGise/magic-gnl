@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 // A cosa serve: segue il giocatore; si ruota con il mouse o con la levetta destra del pad.
 // Il cursore viene bloccato al centro: Esc lo libera, un clic nella finestra di gioco lo riblocca.
 // Con l'aggancio del bersaglio attivo la camera si gira da sola verso il nemico agganciato
-// e il mouse non la ruota (la rotellina serve a cambiare nemico).
+// e il mouse non la ruota (uno scatto del mouse serve a cambiare nemico, vedi AggancioBersaglio).
 // Collisione: la camera non attraversa muri, strutture e pavimento. Se qualcosa si mette tra il
 // personaggio e la camera, questa si avvicina al personaggio in modo graduale (parte un po' prima
 // del muro); quando lo spazio torna libero si allontana piano piano fino alla distanza normale.
@@ -15,6 +15,7 @@ using UnityEngine.InputSystem;
 // Il mouse la può spostare, ma finché si è nella strettoia torna sempre dietro.
 // Negli spazi stretti la camera "si assottiglia": il suo spessore nei controlli si riduce a quello che
 // entra fra i muri, e il piano di taglio vicino (near clip) si accorcia, così non si vede dentro i muri.
+// Stanze piccole (ZonaCamera, per esempio dentro una casa): la camera si avvicina e non guarda troppo dall'alto.
 // Come montarlo: sulla Main Camera, trascinando il personaggio nel campo "Bersaglio".
 public class CameraTerzaPersona : MonoBehaviour
 {
@@ -64,6 +65,7 @@ public class CameraTerzaPersona : MonoBehaviour
     GiocatoreControllo giocatore;
     float inclinazione = 20f;
     float distanzaAttuale;
+    float distanzaZona, inclinazioneZona;   // limiti delle ZonaCamera (stanze piccole), con passaggio morbido
     AggancioBersaglio aggancio;
     Collider corpoPersonaggio;
     readonly List<Renderer> partiNascoste = new List<Renderer>();
@@ -75,6 +77,8 @@ public class CameraTerzaPersona : MonoBehaviour
     void Awake()
     {
         distanzaAttuale = distanza;
+        distanzaZona = distanza;
+        inclinazioneZona = inclinazioneMassima;
         obiettivo = GetComponent<Camera>();
         if (obiettivo != null) tagliaVicinoNormale = obiettivo.nearClipPlane;
 
@@ -111,6 +115,28 @@ public class CameraTerzaPersona : MonoBehaviour
         guardaPad.Dispose();
     }
 
+    // Mette la camera dietro al personaggio (dopo un passaggio di colpo, per esempio entrando nella cripta).
+    // Fa tremare la camera (per esempio il terremoto prima dell'orco enorme): "forza" in metri, per "secondi".
+    // Se arriva un tremore più forte mentre ce n'è già uno, vince il più forte.
+    public static void Scuoti(float forza, float secondi)
+    {
+        if (Time.time < scossaFino && forza < scossaForza) { scossaFino = Mathf.Max(scossaFino, Time.time + secondi); return; }
+        scossaForza = forza;
+        scossaDurata = Mathf.Max(0.05f, secondi);
+        scossaFino = Time.time + secondi;
+    }
+
+    static float scossaForza, scossaDurata, scossaFino;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void AzzeraScossa() => scossaFino = 0f;
+
+    public void AllineaDietro()
+    {
+        if (bersaglio == null) return;
+        rotazioneOrizzontale = bersaglio.eulerAngles.y;
+        inclinazione = 15f;
+    }
+
     void LateUpdate()
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) BloccaCursore(false);
@@ -133,12 +159,23 @@ public class CameraTerzaPersona : MonoBehaviour
         }
         else
         {
-            Vector2 mouse = Cursor.lockState == CursorLockMode.Locked ? guardaMouse.ReadValue<Vector2>() * sensibilitaMouse : Vector2.zero;
-            Vector2 pad = guardaPad.ReadValue<Vector2>() * (sensibilitaPad * Time.deltaTime);
+            // La sensibilità e l'asse verticale invertito si scelgono in Opzioni > Controlli (vedi Impostazioni).
+            float scelta = Impostazioni.SensibilitaCamera;
+            float segnoVerticale = Impostazioni.AsseVerticaleInvertito ? -1f : 1f;
+            Vector2 mouse = Cursor.lockState == CursorLockMode.Locked ? guardaMouse.ReadValue<Vector2>() * (sensibilitaMouse * scelta) : Vector2.zero;
+            Vector2 pad = guardaPad.ReadValue<Vector2>() * (sensibilitaPad * scelta * Time.deltaTime);
 
             rotazioneOrizzontale += mouse.x + pad.x;
-            inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y), inclinazioneMinima, inclinazioneMassima);
+            inclinazione = Mathf.Clamp(inclinazione - (mouse.y + pad.y) * segnoVerticale, inclinazioneMinima, inclinazioneMassima);
         }
+
+        // Nelle stanze piccole (ZonaCamera) la camera sta più vicina e non guarda troppo dall'alto.
+        float distanzaVoluta = distanza, inclinazioneVoluta = inclinazioneMassima;
+        ZonaCamera.Limiti(bersaglio.position, ref distanzaVoluta, ref inclinazioneVoluta);
+        float morbidoZona = 1f - Mathf.Exp(-4f * Time.deltaTime);
+        distanzaZona = Mathf.Lerp(distanzaZona, distanzaVoluta, morbidoZona);
+        inclinazioneZona = Mathf.Lerp(inclinazioneZona, inclinazioneVoluta, morbidoZona);
+        if (inclinazione > inclinazioneZona) inclinazione = inclinazioneZona;
 
         AllineaNellaStrettoia();
 
@@ -159,7 +196,7 @@ public class CameraTerzaPersona : MonoBehaviour
 
         // Il limite duro non ha distanza minima: se il muro è più vicino, la camera resta prima del muro
         // (al massimo nasconde il personaggio), invece di finirci dentro.
-        float distanzaDura = Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, true), 0.05f);
+        float distanzaDura = Mathf.Max(PrimoOstacolo(fuoco, indietro, distanzaZona, raggio, true), 0.05f);
         float distanzaObiettivo = Mathf.Min(distanzaDura, DistanzaLibera(fuoco, indietro, anticipo, false));
 
         // La camera si avvicina (o si allontana) in modo graduale verso la distanza obiettivo.
@@ -187,6 +224,13 @@ public class CameraTerzaPersona : MonoBehaviour
         avanti.y = 0f;
         Vector3 puntoGuardato = fuoco + avanti.normalized * (distanzaSguardoAvanti * Mathf.Max(0f, vicinanza));
         transform.SetPositionAndRotation(posizione, Quaternion.LookRotation(puntoGuardato - posizione));
+        if (Time.time < scossaFino)
+        {
+            // il tremore cala verso la fine
+            float forza = scossaForza * Mathf.Clamp01((scossaFino - Time.time) / Mathf.Min(scossaDurata, 0.8f));
+            float t = Time.time * 23f;
+            transform.position += new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, Mathf.PerlinNoise(t, t * 0.5f) - 0.5f) * (2f * forza);
+        }
 
         // Se nonostante tutto la camera finisce addosso al personaggio, lo nasconde invece di
         // mostrare l'interno del suo corpo.
@@ -197,7 +241,7 @@ public class CameraTerzaPersona : MonoBehaviour
     // "raggio" è lo spessore della camera nel controllo.
     float DistanzaLibera(Vector3 fuoco, Vector3 indietro, float raggio, bool contaGiaToccati)
     {
-        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanza, raggio, contaGiaToccati), distanzaMinima);
+        return Mathf.Max(PrimoOstacolo(fuoco, indietro, distanzaZona, raggio, contaGiaToccati), distanzaMinima);
     }
 
     // Distanza dal primo ostacolo partendo da "da" verso "direzione" (o distanzaMassima se non c'è niente).

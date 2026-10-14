@@ -11199,9 +11199,9 @@ MonoBehaviour:
   volumeTitolo: 0.8
   ritardoPremi: 2.5
   durataPremi: 1.5
-  durataTransizione: 3.5
-  puntoMusica: 0.55
-  puntoMenu: 0.7
+  durataTransizione: 4.5
+  puntoMusica: 0
+  puntoMenu: 1
   ritardoSuonoTransizione: 0.5
   saltoConF2: 1
   numeroBraci: 46

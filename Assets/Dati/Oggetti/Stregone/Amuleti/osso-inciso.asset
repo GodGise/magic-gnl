@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667f5a233d940da4790324f38e74baf5, type: 3}
+  m_Name: osso-inciso
+  m_EditorClassIdentifier: Assembly-CSharp::DatiAmuleto
+  nomeDiLavoro: Osso inciso
+  chiaveNome: oggetto.osso_inciso.nome
+  chiaveDescrizione: oggetto.osso_inciso.descrizione
+  classe: 2
+  tutteLeClassi: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  tipo: 0
+  bonus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: 0
+    furtivita: 0
+    resistenzaMassimaPercento: 0
+    manaMassimo: 15
+    manaMassimoPercento: 0
+    recuperoMana: 0
+    vitaPerUccisione: 0
+  malus:
+    fonte: 
+    armatura: 0
+    armaturaPercento: 0
+    bonusDanno: 0
+    probabilitaCritico: 0
+    moltiplicatoreCritico: 0
+    velocitaParata: 0
+    velocitaAttacco: 0
+    vitaMassimaPercento: -7
+    furtivita: 0
+    resistenzaMassimaPercento: 0
+    manaMassimo: 0
+    manaMassimoPercento: 0
+    recuperoMana: 0
+    vitaPerUccisione: 0
+  magia:
+    caricaSecondi: 0
+    caricaPercento: 0
+    recuperoPercento: 0
+    attesaPercento: 0
+    costoPercento: 0
+    dannoPercento: 0
+    brace:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    lagoNero:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    ombra:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    evocazione:
+      dannoPercento: 0
+      durataEffettiPercento: 0
+      ignoraArmatura: 0
+    vitaEvocazioniPercento: 0
+    durataEvocazioniPercento: 0
+    caricaEvocazioniPercento: 0
+    doppiaEvocazione: 0
+    caselleExtra: 0
+  effetto: 0
+  valore: 0
+  ricarica: 0

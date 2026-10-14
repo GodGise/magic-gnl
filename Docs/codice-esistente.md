@@ -62,7 +62,7 @@ Tutto su `main`, provato da Giuseppe in Unity.
 
 | File | Cosa fa |
 | --- | --- |
-| `Assets/Scripts/Gameplay/AggancioBersaglio.cs` | Aggancio del bersaglio (lock-on): clic della rotellina o pressione della levetta destra per agganciare e sganciare; rotellina o levetta destra per cambiare nemico. Da agganciato il personaggio guarda sempre il nemico e la camera lo segue. Quadratino rosso sopra il bersaglio |
+| `Assets/Scripts/Gameplay/AggancioBersaglio.cs` | Aggancio del bersaglio (lock-on): clic della rotellina o pressione della levetta destra per agganciare e sganciare; uno scatto del mouse (o della levetta destra) verso un nemico per cambiare bersaglio; la rotellina non cambia più nemico (con lo Stregone sceglie l'incantesimo). Da agganciato il personaggio guarda sempre il nemico e la camera lo segue. Quadratino rosso sopra il bersaglio |
 | `Assets/Scripts/Ambiente/CicloGiornoNotte.cs` | Sole, luna, luce, nebbia e cielo che cambiano con l'ora. 45 minuti reali di luce e 50 di notte; si parte alle 21; tenendo premuto T il tempo accelera |
 | `Assets/Scripts/Ambiente/Torcia.cs` | Luce che tremola come una fiamma, più forte di notte |
 | `Assets/Scripts/Ambiente/EffettoRetro.cs` | Immagine a bassa risoluzione in stile PS2; F2 la accende e la spegne |

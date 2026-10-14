@@ -1,204 +1,351 @@
-LISTA MODELLI PER NAZAR - magic-GNL
-Aggiornata il 7 ottobre 2026. Sostituisce la lista vecchia.
-====================================
+LISTA COMPLETA DELLA GRAFICA - Sun of the Black Lake (magic-GNL)
+Aggiornata il 13 ottobre 2026 (Lorenzo e il suo Claude). Sostituisce le
+liste vecchie. È TUTTO quello che oggi nel gioco è una forma provvisoria
+(cubi, cilindri, colori, disegni fatti dal codice) e che serve in versione
+definitiva per il capitolo 1.
+====================================================================
 
-DOVE SIAMO (in breve)
-Il gioco inizia a VILLAGGIO LAGO NERO, di notte, durante la razzia degli
-orchi: il protagonista combatte e perde contro un orco enorme.
-Si risveglia sotto terra nella GATTABUIA, la prigione degli orchi:
-celle, sotterranei, grotte, uscita in superficie (bosco).
-Poi torna al villaggio, che ora è in ROVINA (bruciato).
-Il villaggio serve quindi in DUE VERSIONI: intatto (di notte, durante la
-razzia) e distrutto (dopo).
-La mappa del villaggio vista dall'alto è in Docs/mappe/villaggio-lago-nero.png:
-guardala prima di fare le case, ti dice cosa c'è e dove.
+COME LEGGERLA
+- [x] = già fatto (c'è il file nella repository, va solo collegato al gioco)
+- [ ] = da fare
+- Tra parentesi il nome del file da usare (minuscolo con trattini).
+- (M) = modello 3D, (T) = texture, (I) = icona 2D, (A) = animazione,
+  (E) = effetto (immagini per particelle).
+- Priorità: P1 serve subito per la demo del capitolo 1, P2 dopo, P3 si
+  può aspettare.
 
-Il codice delle armi e dell'inventario è GIÀ PRONTO: ogni oggetto ha un
-campo "modello" che aspetta solo il tuo file. Per questo le armi sono la
-prima cosa della lista: appena le carichi si vedono nel gioco.
+DOVE SIAMO
+Il capitolo 1: di GIORNO a Villaggio Lago Nero (tutorial e 6 quest), la
+sera in TAVERNA, di NOTTE la RAZZIA degli orchi (due ondate) e lo scontro
+perso con l'ORCO ENORME, il risveglio nella GATTABUIA, la fuga per
+sotterranei e GROTTE, il CARCERIERE, l'uscita nel BOSCO MORTO.
+Mappa del villaggio: Docs/mappe/villaggio-lago-nero.png.
 
--------------------------------------------------------------
+--------------------------------------------------------------------
 REGOLE PER TUTTI I MODELLI
--------------------------------------------------------------
+--------------------------------------------------------------------
 - Stile PlayStation 2: pochi poligoni, texture piccole (256 o 512 px),
   niente dettagli minuti. Meglio una bella texture che tanti poligoni.
-- Limiti di poligoni (triangoli) indicativi, da confermare insieme dopo
-  i primi modelli:
-    oggetto piccolo (sasso, secchio, amuleto)   fino a 300
+- Triangoli indicativi:
+    oggetto piccolo (sasso, amuleto, fiore)     fino a 300
     arma o scudo                                 300 - 800
     mobile, carro, barca                         300 - 1000
     casa intera                                  1000 - 3000
-    personaggio                                  3000 - 6000
-- Scala: 1 unità di Blender = 1 metro. Una porta è alta circa 2 metri,
-  una persona 1,80.
-- Punto di origine (pivot):
-    oggetti e case: alla base, al centro;
-    armi: nel punto dove la mano impugna;
-    scudi: sulla maniglia dietro lo scudo.
-- Nomi: minuscolo con trattini e numero di variante (casa-01, casa-02).
-- Esportazione in FBX nella cartella giusta qui sotto, dentro
-  Assets/Art/Modelli/  (armi/, scudi/, armature/, amuleti/, villaggio/,
-  prigione/, grotte/, natura/, personaggi/).
-- Mai copiare modelli o texture da altri giochi o siti: solo cose fatte da
-  te o con licenza libera CC0 (per esempio texture di ambientcg.com o
-  polyhaven.com, che sono CC0).
+    personaggio o nemico                         3000 - 6000
+- Scala: 1 unità = 1 metro. Porta alta 2 m, persona 1,80 m.
+- Pivot: oggetti e case alla base al centro; armi dove la mano impugna;
+  scudi sulla maniglia; porte, coperchi e leve sulla cerniera.
+- FBX in Assets/Art/Modelli/<cartella>/, texture in Assets/Art/Texture/,
+  icone in Assets/Art/Icone/ (PNG 256x256, sfondo trasparente, Texture
+  Type: Sprite).
+- Mai copiare da altri giochi o siti: solo cose fatte da te o CC0
+  (ambientcg.com, polyhaven.com).
+- Ramo nazar/... (o nazarc/... con Claude), annuncio su Discord prima di
+  iniziare, carica anche i .meta, niente render o video.
+- Spunta [x] le voci finite.
 
--------------------------------------------------------------
-COME SI LAVORA
--------------------------------------------------------------
-1. Prima di iniziare scrivi nel canale Discord dei lavori in corso cosa fai,
-   per esempio: "Nazar: oggi le spade, tocco Assets/Art/Modelli/armi/".
-2. Fai un ramo con il tuo nome e il lavoro: nazar/armi-guerriero
-   (se ti aiuti con Claude: nazarc/armi-guerriero).
-   In GitHub Desktop: Current branch, New branch, poi Publish branch.
-3. A fine giornata: Commit, Push, e scrivi nel canale cosa hai caricato.
-4. Carica anche i file .meta che Unity crea accanto ai tuoi FBX.
-5. Non caricare render, video o versioni di prova: occupano lo spazio
-   condiviso di GitHub.
-6. Spunta [x] le voci finite in questo file, così sappiamo a che punto sei.
+====================================================================
+PARTE 0 - GIÀ FATTO (da collegare al gioco)
+====================================================================
+[x] spada-01 (Modelli/armi)            -> diventa la spada-vecchia-vita?
+[x] pozzo-01 (Modelli/villaggio)       -> pozzo della piazza
+[x] albero-01 (Modelli/natura)
+[x] Axe (World/Item/Axe)               -> ascia-legna? da rinominare
+[x] Bow_01 (World/Item/Bow)            -> arco-corto-da-caccia? da rinominare
+[x] Cemetery, Stone, Grass, Ruines_Wall, Well, Tree_Brown01
+    (World/Ambient): cimitero, sasso, erba, muro in rovina, pozzo, albero
+NOTA: ci sono due cartelle (Assets/Art/Modelli e Assets/Art/World) e due
+pozzi: decidere con Giuseppe quale tenere e rinominare in italiano.
 
--------------------------------------------------------------
-PARTE 1 - ARMI E OGGETTI DEL GUERRIERO  (priorità massima)
-Il codice è pronto: appena ci sono si vedono nel gioco e nell'inventario.
-Tra parentesi la chiave dell'oggetto: usa lo stesso nome per il file.
--------------------------------------------------------------
-Armi (cartella armi/)
-[ ] 1. spada-vecchia-vita: la spada semplice del protagonista, usurata,
-       lama lunga circa 90 cm
-[ ] 2. spada-capitano: spada più curata, guardia decorata
-[ ] 3. ascia-legna: ascia da legna da contadino, manico di legno lungo
-       (è l'arma con cui il protagonista combatte la notte della razzia)
-[ ] 4. ascia-boia: ascia grande dalla lama larga e minacciosa
-[ ] 5. mazza-ferrata: bastone di legno con punte e fasce di ferro
-[ ] 6. martello-ossa: martello degli orchi fatto di ossa legate
-[ ] 7. spadone-cavaliere: spada a due mani, lunga circa 1,5 metri
+====================================================================
+PARTE 1 - IL PROTAGONISTA (P1)
+====================================================================
+[ ] 1. (M) protagonista: un corpo solo, con 3 vestiti di partenza
+       (Guerriero, Ladro, Stregone). Scheletro per le animazioni.
+[ ] 2. (A) animazioni del protagonista:
+       fermo, cammina, corre, scatto; schivata (avanti, indietro, lati);
+       parata (alzata, tenuta, colpo parato, guardia rotta); tre attacchi
+       in combo (orizzontale, rovescio, dall'alto); attacco con arma a due
+       mani; colpito, barcolla, a terra (co-op), si rialza, muore;
+       esecuzione furtiva (presa e taglio); lancio d'incantesimo (carica e
+       spinta); tiro con l'arco (incocca, mira, scocca); beve una pozione;
+       raccoglie, apre un baule, tira una leva, forza la sbarra della cella;
+       arma nel fodero (strettoie); passa di fianco nelle strettoie;
+       nell'acqua bassa.
+[ ] 3. (M) fodero sulla schiena e faretra.
 
-Scudi (cartella scudi/)
-[ ] 8. scudo-vecchia-vita: scudo rotondo medio di legno, bordo di ferro
-[ ] 9. pavese-quercia: scudo grande e alto, quasi quanto una persona
-[ ] 10. brocchiere-ferro: scudo piccolo e tondo, tutto di ferro
+====================================================================
+PARTE 2 - ARMI, SCUDI, ARMATURE, AMULETI (P1)
+Ogni oggetto: modello (M) + icona (I) 256x256 con lo stesso nome.
+Il codice è pronto: ogni oggetto ha il campo "modello" e il campo "icona".
+====================================================================
+GUERRIERO
+Armi (Modelli/armi)
+[ ] 4. spada-della-vecchia-vita: spada semplice usurata, lama 90 cm
+[ ] 5. spada-del-capitano: guardia decorata
+[ ] 6. ascia-da-legna: da contadino, manico lungo
+[ ] 7. ascia-del-boia: lama larga e minacciosa
+[ ] 8. mazza-ferrata: legno con punte e fasce di ferro
+[ ] 9. martello-di-ossa: martello degli orchi di ossa legate
+[ ] 10. spadone-del-cavaliere: a due mani, 1,5 m
+Scudi (Modelli/scudi)
+[ ] 11. scudo-della-vecchia-vita: tondo di legno, bordo di ferro
+[ ] 12. pavese-di-quercia: grande, quasi quanto una persona
+[ ] 13. brocchiere-di-ferro: piccolo, tutto di ferro
+Armature (Modelli/armature): a terra o su un manichino, più indossata sul
+protagonista
+[ ] 14. giubba-di-cuoio
+[ ] 15. cotta-di-maglia-rattoppata
+[ ] 16. corazza-di-piastre-annerite
+[ ] 17. catena-del-carceriere (bottino del Carceriere)
+Amuleti (Modelli/amuleti): ciondoli con laccio
+[ ] 18. zanna-di-lupo   [ ] 19. occhio-di-corvo   [ ] 20. pietra-del-focolare
+[ ] 21. cuore-di-brace  [ ] 22. respiro-del-lago  [ ] 23. sangue-antico
 
-Armature (cartella armature/). Per ora basta la versione "appoggiata a
-terra o su un manichino" che si raccoglie; quella indossata arriva con il
-personaggio.
-[ ] 11. giubba-cuoio: giubba di cuoio imbottito
-[ ] 12. cotta-maglia: cotta di maglia rattoppata
-[ ] 13. corazza-piastre: corazza di piastre annerite
+LADRO
+Armi corte
+[ ] 24. pugnale-da-scuoiare     [ ] 25. pugnale-ricurvo-degli-orchi
+[ ] 26. pugnali-gemelli (due)   [ ] 27. stiletto-d-ombra
+[ ] 28. stiletto-del-tagliagole
+Armi a distanza
+[ ] 29. arco-corto-da-caccia    [ ] 30. arco-d-osso-degli-orchi
+[ ] 31. arco-lungo-di-tasso     [ ] 32. balestra-da-posta
+[ ] 33. balestra-del-carceriere
+[ ] 34. freccia-01 e dardo-balestra-01 (si vedono in volo)
+Armature
+[ ] 35. giubba-scura   [ ] 36. corpetto-di-cuoio-rinforzato
+[ ] 37. manto-dell-ombra
+Amuleti
+[ ] 38. dente-di-vipera   [ ] 39. fiato-del-predatore
+[ ] 40. goccia-di-sangue-nero   [ ] 41. laccio-del-borsaiolo
+[ ] 42. piuma-di-civetta   [ ] 43. ultimo-respiro
 
-Amuleti (cartella amuleti/): piccoli ciondoli con laccio
-[ ] 14. zanna-lupo
-[ ] 15. occhio-corvo: piuma nera con una pietra scura
-[ ] 16. pietra-focolare: pietra tonda con una venatura arancione
-[ ] 17. cuore-brace: pietra rossa che sembra ardere
-[ ] 18. respiro-lago: goccia di vetro azzurro scuro
-[ ] 19. sangue-antico: fiala o pietra rosso scuro
+STREGONE
+Bastoni (pietra o gemma in cima che si illumina)
+[ ] 44. bastone-della-vecchia-vita   [ ] 45. bastone-di-quercia-nera
+[ ] 46. bastone-del-lago   [ ] 47. bastone-del-cimitero
+[ ] 48. bastone-d-ossidiana   [ ] 49. verga-d-osso
+Libri (si portano alla cintura o in mano)
+[ ] 50. libro-della-vecchia-vita   [ ] 51. libro-delle-braci
+[ ] 52. libro-del-lago-nero   [ ] 53. libro-dei-sussurri
+[ ] 54. libro-dell-evocatore
+Vesti
+[ ] 55. tunica-stracciata   [ ] 56. manto-di-cenere
+[ ] 57. veste-dell-evocatore
+Amuleti
+[ ] 58. cenere-benedetta   [ ] 59. cristallo-opaco
+[ ] 60. cuore-del-lago-nero   [ ] 61. occhio-del-lago
+[ ] 62. osso-inciso   [ ] 63. sigillo-del-focolare
 
-Icone: per ogni oggetto anche un'immagine quadrata 256x256 px (l'oggetto
-su sfondo trasparente, PNG), cartella Assets/Art/Icone/, stesso nome.
-Servono all'inventario. Va bene un render dall'alto dello stesso modello.
-In Unity, nelle impostazioni dell'immagine, metti Texture Type: Sprite.
+PER TUTTE LE CLASSI
+[ ] 64. medaglione-della-prima-guardia (quest 5, cripta): bronzo antico
+        con l'occhio inciso
+Armi improvvisate della gattabuia
+[ ] 65. sbarra-arrugginita (la prima arma, dalla cella)
+[ ] 66. osso-lungo   [ ] 67. catenaccio   [ ] 68. mannaia-del-macellaio
+[ ] 69. pugnale-arrugginito   [ ] 70. mazza-chiodata
+[ ] 71. mannaia-affilata
+Amuleti deboli del Carceriere
+[ ] 72. dente-d-orco   [ ] 73. lacci-di-cuoio   [ ] 74. pietra-torbida-del-lago
 
--------------------------------------------------------------
-PARTE 2 - ARMI DEGLI ALTRI DUE PERSONAGGI
--------------------------------------------------------------
-[ ] 20. arco-01: arco semplice di legno (Ladro)
-[ ] 21. freccia-01 e faretra-01
-[ ] 22. pugnale-01: pugnale corto (Ladro)
-[ ] 23. bastone-incantato-01: bastone di legno nodoso con una pietra in
-        cima (Stregone)
-[ ] 24. libro-incantesimi-01: libro vecchio con copertina di cuoio (Stregone)
+====================================================================
+PARTE 3 - POZIONI, FIORI, MONETE (P1)
+====================================================================
+Fiori (si raccolgono nel mondo, Modelli/natura) + icona
+[ ] 75. fiore-di-riva (azzurro, acqua bassa del lago)
+[ ] 76. cardo-nero (viola scuro, fra i sassi)
+[ ] 77. lunaria (bianco-argento, si apre di notte, brilla appena)
+Pozioni (boccette) + icona
+[ ] 78. pozione-di-ilse (rossa)   [ ] 79. tonico-di-cardo (verde oliva)
+[ ] 80. infuso-di-lunaria (blu)   [ ] 81. balsamo-di-riva (rosa)
+[ ] 82. elisir-del-crepuscolo (viola)
+[ ] 83. (I) moneta-d-oro: icona della moneta (borsa e negozio)
+[ ] 84. (M) borsa-monete-01 e mucchietto-monete-01 (bottino a terra)
 
--------------------------------------------------------------
-PARTE 3 - VILLAGGIO LAGO NERO (inizio del gioco)
-Case vecchie di legno e pietra, tetti di paglia o di assi, immerse nella
-natura. Fai prima la versione INTATTA; poi per ogni casa una variante
-BRUCIATA (tetto crollato, travi annerite) per il villaggio in rovina.
--------------------------------------------------------------
-Case
-[ ] 25. casa-01/02/03: case piccole del borgo, una diversa dall'altra
-        (servono tante, una accanto all'altra intorno alla piazza)
-[ ] 26. casa-eroe-01: la casa del protagonista, un po' fuori dal centro
-[ ] 27. le stesse case in versione bruciata: casa-01-bruciata, ecc.
-Edifici importanti (guarda la mappa)
-[ ] 28. taverna-01: più grande delle case, con insegna appesa
-[ ] 29. fabbro-01: bottega aperta con forgia e incudine
-[ ] 30. mercante-01 ed erborista-01: botteghe sulla piazzetta
-[ ] 31. tempio-01: piccolo tempio di pietra a nord del villaggio
+====================================================================
+PARTE 4 - INCANTESIMI DELLO STREGONE (P2): icone ed effetti
+Ogni incantesimo: icona (I) 256x256 + immagini per le particelle (E).
+====================================================================
+[ ] 85. scintilla              [ ] 86. palla-di-fuoco
+[ ] 87. scheggia-di-ghiaccio   [ ] 88. dardo-d-ombra
+[ ] 89. onda-del-lago          [ ] 90. pozza-nera
+[ ] 91. scia-di-brace          [ ] 92. velo-di-nebbia
+[ ] 93. passo-d-ombra          [ ] 94. fuoco-fatuo (M: fiammella che vola)
+[ ] 95. spirito-del-lupo (M + A: lupo spettrale, corre, morde, svanisce)
+[ ] 96. bambola-di-ossa (M + A: pupazzo di ossa che si trasforma e attira
+        i nemici)
+
+====================================================================
+PARTE 5 - NEMICI (P1)
+Ognuno: modello con scheletro (M) + animazioni (A). Per tutti:
+fermo, cammina, corre, preavviso del colpo, colpo, colpito, sbilanciato
+(dopo una parata perfetta), muore, giustiziato alle spalle.
+====================================================================
+[ ] 97. orco-sgherro: l'orco base, con mazza
+        Animazioni della razzia: colpo alla parete dall'alto, colpo di lato
+        alla porta, calcio, torcia appoggiata al legno, urlo, ritirata.
+[ ] 98. orco-corazzato: elmo con corna corte, spallacci, piastra sul petto
+[ ] 99. ascia-orchesca-01: lama larga e storta (arma del corazzato)
+[ ] 100. torcia-orco-01: bastone con stracci in fiamme
+[ ] 101. orco-enorme: alto 4,6 m, armatura fatta di ossa, mazza enorme.
+         Animazioni in più: salto giù in piazza, atterraggio pesante,
+         ruggito, colpo a terra.
+[ ] 102. orco-macellaio (gattabuia): grembiule sporco, mannaia; animazione
+         "macella sul tavolo" (ignaro).
+[ ] 103. orco-di-pattuglia (gattabuia): con lancia o torcia.
+[ ] 104. carceriere: miniboss della gattabuia, grosso, catene e chiavi
+         (mosse in Docs/gattabuia.md).
+[ ] 105. scheletro-vivente (cripta): con spada; tre colpi (fendente,
+         rovescio, calata), si riposiziona.
+[ ] 106. ratto-gigante (granaio, quest 3): morso, salto, fuga.
+[ ] 107. parassita-delle-grotte: ragno deforme con 6 zampe, grande metà
+         del personaggio; corre sui muri, salta.
+[ ] 108. druido (boss finale, P3).
+
+====================================================================
+PARTE 6 - PERSONAGGI DEL VILLAGGIO (P1)
+Modello (M) + poche animazioni (A): fermo, parla (gesti), cammina.
+====================================================================
+[ ] 109. maren (moglie del protagonista)
+[ ] 110. tobin (il figlio, bambino); anche "addormentato in braccio"
+[ ] 111. brannoc (fabbro, grembiule di cuoio)
+[ ] 112. edric (anziano del tempio, veste)
+[ ] 113. hobb (oste della taverna, grosso)
+[ ] 114. ilse (erborista)
+[ ] 115. abitanti-01/02/03 e clienti della taverna (vecchio pescatore...)
+[ ] 116. (A) Maren che entra in taverna con Tobin in braccio.
+
+====================================================================
+PARTE 7 - VILLAGGIO LAGO NERO (P1)
+Ogni casa in 3 versioni: INTATTA, DANNEGGIATA (assi rotte, macchie nere,
+finestre sfondate), CROLLATA (tetto caduto, muri bassi, travi nere).
+====================================================================
+Case ed edifici
+[ ] 117. casa-01/02/03/04: case del borgo (ne servono tante, diverse)
+[ ] 118. casa-dell-eroe: fuori e DENTRO (camino, lettino di Tobin,
+         tavolo, letto) - quest 1
+[ ] 119. capanno-legna con catasta (quest 1)
+[ ] 120. taverna: fuori, con insegna appesa
+[ ] 121. fabbro: bottega aperta, forgia, incudine, cortile con manichino
+         da allenamento e sagoma da tiro (quest 2)
+[ ] 122. tempio con abside rotonda + cortile di studio di Edric (quest 2,
+         Stregone)
+[ ] 123. granaio di Hobb sul lago, dentro e fuori (quest 3)
+[ ] 124. bottega dell'erborista (Ilse): banco, vasi, erbe appese (quest 4)
+[ ] 125. mercante
+[ ] 126. mausoleo del cimitero con la scala che scende (quest 5)
+[ ] 127. porta-casa-01 e porta-sfondata-01 (stesa a terra)
 Piazza e strade
-[ ] 32. pozzo-01: pozzo di pietra al centro della piazza
-[ ] 33. bancarella-01: banco del mercato con telo
-[ ] 34. carro-01: carro di legno
-[ ] 35. recinto-legno-01: pezzo di staccionata che si ripete
-[ ] 36. lanterna-palo-01: palo con lanterna
-[ ] 37. barile, cassa, sacco, cesta: piccoli oggetti da sparpagliare
-[ ] 38. orto-01: aiuola coltivata con pali
+[ ] 128. pozzo della piazza (c'è: da collegare)
+[ ] 129. bancarella-01, carro-01, recinto-legno-01, lanterna-palo-01,
+         torcia-strada-01 (43 torce: si accendono di notte)
+[ ] 130. barile, cassa, sacco, cesta, secchio
+[ ] 131. orto-01 con pali
 Lago
-[ ] 39. molo-01: pezzo di molo di legno su pali, che si ripete
-[ ] 40. barca-01/02: barchette a remi
+[ ] 132. molo-01 (pezzo che si ripete) e barca-01/02/03
+[ ] 133. riva: sabbia, canne, sassi bagnati; acqua del lago nero (T)
 Cimitero
-[ ] 41. lapide-01/02/03 e croce-legno-01
-Razzia (la notte dell'attacco)
-[ ] 42. fuoco-01: mucchio di macerie in fiamme (le fiamme le fa il gioco,
-        tu fai solo legna e macerie)
-[ ] 43. macerie-01/02: travi e assi bruciate a terra
+[ ] 134. lapide-01/02/03, croce-legno-01, tomba-01, recinto basso
+         (il cimitero c'è in World/Ambient: verificare)
+Natura intorno
+[ ] 135. albero-01/02/03 (uno c'è), cespuglio, erba (c'è), sassi (c'è),
+         ceppo, tronco caduto
+Terreno (T)
+[ ] 136. terra, erba, strada battuta, ciottoli della piazza, sabbia, fango
+Razzia
+[ ] 137. macerie-01/02: travi e assi bruciate a terra
+[ ] 138. (T) legno-annerito, paglia-bruciata, pietra-affumicata
+[ ] 139. (E) fiamma-01, fumo-01, scintilla-01, polvere-01 (64-128 px,
+         a riquadri se animate): oggi le fiamme delle case sono macchie
+         tonde fatte dal codice.
 
--------------------------------------------------------------
-PARTE 4 - LA GATTABUIA (la prigione degli orchi)
-Pietra, ferro, legno marcio, roccia.
--------------------------------------------------------------
-[ ] 44. muro-pietra-01: pezzo di muro dritto, largo 2 metri, si ripete
-[ ] 45. muro-pietra-angolo-01
-[ ] 46. pavimento-pietra-01: pezzo 2x2 metri
-[ ] 47. sbarre-cella-01: parete di sbarre di ferro
-[ ] 48. porta-cella-01: porta di sbarre che si apre (cerniera su un lato:
-        il pivot va sulla cerniera)
-[ ] 49. catene-muro-01: catene con manette appese al muro
-[ ] 50. torcia-muro-01: torcia con supporto di ferro
-[ ] 51. paglia-01: mucchio di paglia (il letto del prigioniero)
-[ ] 52. secchio-01
-[ ] 53. tavolo-carceriere-01 e sgabello-01
-[ ] 54. chiave-cella-01: grossa chiave di ferro (oggetto da raccogliere)
-[ ] 55. scala-pietra-01: rampa di scale che sale
-[ ] 56. baule-01: baule di legno e ferro con coperchio che si apre
-        (coperchio separato, pivot sulla cerniera)
-[ ] 57. leva-muro-01: leva di ferro su una piastra (la leva separata)
+====================================================================
+PARTE 8 - TAVERNA DI HOBB, DENTRO (scena Taverna) (P1)
+====================================================================
+[ ] 140. sala: muri, pavimento di assi, travi del soffitto
+[ ] 141. bancone-01, sgabello-01, mensola con bottiglie, botte-grande-01
+[ ] 142. tavolo-taverna-01 con panche, boccale-01, candela-01
+[ ] 143. camino-01, lampada-appesa-01
 
--------------------------------------------------------------
-PARTE 5 - GROTTE E USCITA IN SUPERFICIE
--------------------------------------------------------------
-[ ] 58. sasso-01/02/03, roccia-01/02/03, masso-01/02
-[ ] 59. stalattite-01/02 e stalagmite-01/02
-[ ] 60. parete-grotta-01/02: pezzi di parete di roccia irregolare
-[ ] 61. radici-soffitto-01
-[ ] 62. funghi-01: gruppo di funghi (nel gioco li facciamo brillare)
-[ ] 63. ossa-01 e teschio-01
-[ ] 64. ponte-legno-01: passerella di legno marcio sopra un crepaccio
-[ ] 65. ragnatela-01: un piano con texture trasparente
-[ ] 66. uscita-grotta-01: l'apertura nella roccia da cui si esce
-[ ] 67. albero-morto-01/02/03: alberi secchi senza foglie
-[ ] 68. albero-01/02: alberi con chioma fatta con pochi piani
-[ ] 69. ceppo-01, tronco-caduto-01, cespuglio-01/02, erba-01
+====================================================================
+PARTE 9 - CRIPTA DELLA PRIMA GUARDIA (scena Cripta) (P1)
+====================================================================
+[ ] 144. muro-cripta-01, pavimento-lastre-01, soffitto, arco-01
+[ ] 145. scala-uscita (sale verso il mausoleo)
+[ ] 146. cancello-ferro-01 (si alza) e leva-muro-01
+[ ] 147. sarcofago-01 e sarcofago-della-prima-guardia (con la figura
+         scolpita e la spada di pietra)
+[ ] 148. statua-della-prima-guardia con lancia, colonne
+[ ] 149. baule-01 (coperchio separato, pivot sulla cerniera)
+[ ] 150. ossa-01, teschio-01, mucchio di ossa
+[ ] 151. torcia-muro-01
 
--------------------------------------------------------------
-PARTE 6 - PERSONAGGI (dopo, insieme a Giuseppe)
-Sono i modelli più difficili: hanno bisogno di scheletro e animazioni.
-Non iniziarli da solo: ne parliamo quando le parti sopra sono avanti.
--------------------------------------------------------------
-[ ] 70. protagonista: Guerriero, Ladro, Stregone (stesso corpo, vestiti e
-        armi diversi)
-[ ] 71. orco-01: orco normale, nemico base
-[ ] 72. orco-enorme: alto come una porta, armatura fatta di ossa
-        (il nemico della notte della razzia)
-[ ] 73. druido: vecchio stregone della natura, il boss finale
-[ ] 74. reliquia-01: l'oggetto antico che cercano gli orchi
+====================================================================
+PARTE 10 - GATTABUIA (P1)
+====================================================================
+[ ] 152. muro-pietra-01, angolo, pavimento-pietra-01
+[ ] 153. sbarre-cella-01, porta-cella-01 (pivot sulla cerniera), sbarra
+         che si piega
+[ ] 154. catene-muro-01, paglia-01, secchio-01
+[ ] 155. tavolo dei macellai con mannaie e cadaveri coperti
+[ ] 156. tavolo-carceriere-01, sgabello, chiave-cella-01
+[ ] 157. armeria: rastrelliere vuote, baule delle armi
+[ ] 158. fossa-comune-01, ossa e resti
+[ ] 159. scala-pietra-01 (scalinata), portone d'uscita grande
+[ ] 160. (A/E) crollo della gattabuia: massi che cadono, polvere
 
--------------------------------------------------------------
+====================================================================
+PARTE 11 - GROTTE E BOSCO MORTO (P2)
+====================================================================
+[ ] 161. sasso, roccia, masso (varianti), parete-grotta-01/02
+[ ] 162. stalattite e stalagmite, radici dal soffitto
+[ ] 163. funghi-01 (nel gioco brillano), ragnatela-01 (trasparente)
+[ ] 164. ponte-legno-01 marcio, buco nel muro, uscita-grotta-01
+[ ] 165. albero-morto-01/02/03, cespugli secchi, terra morta (T)
+
+====================================================================
+PARTE 12 - INTERFACCIA E MENU (P2)
+Oggi è tutta disegnata dal codice (rombi, linee, colori). Funziona, ma
+servono immagini vere nello stesso stile (bronzo, nero, brace).
+====================================================================
+[ ] 166. icone di tutti gli oggetti (vedi parti 2-4): oggi sono disegni
+         provvisori fatti dal codice (IconeProvvisorie.cs)
+[ ] 167. HUD: cornice delle barre (vita, resistenza, mana), rombi delle
+         armi, rombo della pozione, segnalini delle pozioni (scudo viola
+         = danni subiti in meno, goccia blu = mana in più)
+[ ] 168. bussola in alto e segnalino della meta
+[ ] 169. riquadro dei dialoghi e dei messaggi, riquadro dell'obiettivo
+[ ] 170. inventario: sfondo, caselle (arma, scudo, armatura, amuleto,
+         libri, consumabili), schede
+[ ] 171. negozio (bottega di Ilse): sfondo, voci baratto/compra/vendi
+[ ] 172. menu iniziale: sfondo (oggi una scena fatta di cubi: finestra,
+         acqua, sagoma), titolo "Sun of the Black Lake" disegnato
+[ ] 173. scelta della classe: tre ritratti (Guerriero, Ladro, Stregone)
+[ ] 174. tastiera disegnata delle Opzioni > Comandi
+[ ] 175. schermata di caricamento delle zone (oggi nero con il nome)
+[ ] 176. "!" sopra i nemici che ti vedono, rombo sul nemico agganciato,
+         nome sopra la testa in co-op
+[ ] 177. logo di GNL Studio: fatto (immagini in Resources/Logo); se
+         Nazar lo ridisegna basta sostituire i PNG
+[ ] 178. icona del gioco per Steam e per Windows, capsule di Steam (P3)
+
+====================================================================
+PARTE 13 - CIELO, LUCE, EFFETTI (P2)
+====================================================================
+[ ] 179. (T) cielo di giorno, tramonto, notte; luna; nebbia
+[ ] 180. (E) colpi: scintille sulla parata, sangue/polvere sul colpo,
+         lampo della parata perfetta, polvere della schivata
+[ ] 181. (E) preavviso rosso dei nemici (oggi il nemico diventa rosso)
+[ ] 182. (E) fiamma delle torce (oggi sfere arancioni)
+[ ] 183. (E) schizzi nell'acqua bassa del lago
+
+====================================================================
 ORDINE CONSIGLIATO
-1) Parte 1 (armi, scudi, poi armature e amuleti) con le icone.
-2) Parte 3 (villaggio): prima 2-3 case, la taverna e il pozzo, poi il resto.
-3) Parte 4 e 5.
-4) Parte 2 quando arrivano Ladro e Stregone.
-5) Parte 6 con Giuseppe.
+1) Parte 2 (armi del Guerriero) con le icone: si vedono subito.
+2) Parte 7: 2-3 case nelle tre versioni, taverna, pozzo (c'è).
+3) Parte 5: orco-sgherro con le animazioni (è il nemico più visto).
+4) Parte 1 e 6 con Giuseppe (corpi e animazioni).
+5) Parti 8-10 (taverna, cripta, gattabuia), poi 3, 4, 11, 12, 13.
 
 Se non sai come fare qualcosa (esportazione, scala, texture, GitHub),
 chiedilo al tuo Claude: ha la guida del progetto (CLAUDE.md e

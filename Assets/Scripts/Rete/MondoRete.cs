@@ -4,8 +4,12 @@ using UnityEngine;
 // Il "mondo condiviso" del co-op: nemici, ora del giorno e sfere magiche.
 // A cosa serve: chi ospita (host) è l'unico su cui i nemici pensano. Questo oggetto di rete:
 //   - dall'host manda a tutti, 12 volte al secondo, posizione e stato di ogni nemico e l'ora del giorno;
+//   - dall'host manda quanti giocatori ci sono e la vita dei nemici quando la difficoltà cambia (vedi DifficoltaCoop);
+//   - dall'host dice a tutti quando il gruppo è tutto a terra: si rinasce ai checkpoint e i boss ricominciano
+//     (vedi CombattimentoBoss); manda anche la vita piena dei boss ricominciati;
 //   - dall'host manda gli eventi dei nemici: attacco (preavviso rosso), colpito, sbilanciato, morto, rinato, "!";
-//   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette e le esecuzioni furtive;
+//   - da chi non ospita porta all'host i colpi ai nemici, le parate perfette, le esecuzioni furtive e gli effetti
+//     degli incantesimi (rallentamenti, blocchi, stordimenti, spinte: vedi EffettiNemico);
 //   - fa vedere a tutti le sfere magiche lanciate dagli altri (solo aspetto, il danno lo manda chi lancia);
 //   - porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere (IOggettoCondiviso): chi li usa lo chiede
 //     all'host, l'host li usa e lo dice a tutti; chi entra dopo riceve il loro stato.
@@ -101,6 +105,8 @@ public class MondoRete : NetworkBehaviour
             vite[i] = b != null ? b.Vita : 0f;
             morti[i] = (byte)(b != null && b.Morto ? 1 : 0);
         }
+        // Prima quanti giocatori ci sono (la difficoltà), poi la vita esatta di ogni nemico.
+        GiocatoriRpc((byte)DifficoltaCoop.Giocatori, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
         StatoRpc(numeri, vite, morti, RpcTarget.Single(parametri.Receive.SenderClientId, RpcTargetUse.Temp));
 
         var oggetti = RegistroCondivisi.Tutti;
@@ -160,6 +166,56 @@ public class MondoRete : NetworkBehaviour
         }
     }
 
+    // ---------- difficoltà (host -> tutti) ----------
+
+    // L'host dice a tutti quanti giocatori ci sono, con la vita nuova di ogni nemico (già ricalcolata sull'host).
+    public static void InviaDifficolta(int giocatori)
+    {
+        if (!SonoHost) return;
+        var nemici = RegistroNemici.Tutti;
+        var numeri = new int[nemici.Count];
+        var vite = new float[nemici.Count];
+        for (int i = 0; i < nemici.Count; i++)
+        {
+            numeri[i] = nemici[i] != null ? nemici[i].NumeroRete : -1;
+            vite[i] = nemici[i] != null ? nemici[i].Vita : 0f;
+        }
+        Istanza.DifficoltaRpc((byte)giocatori, numeri, vite);
+    }
+
+    [Rpc(SendTo.NotServer)]
+    void DifficoltaRpc(byte giocatori, int[] numeri, float[] vite)
+    {
+        DifficoltaCoop.ImpostaDaRete(giocatori);
+        for (int i = 0; i < numeri.Length; i++) RegistroNemici.Trova(numeri[i])?.ImpostaVitaDaRete(vite[i]);
+    }
+
+    // Per chi entra a partita iniziata: solo il numero di giocatori (la vita arriva con StatoRpc).
+    [Rpc(SendTo.SpecifiedInParams)]
+    void GiocatoriRpc(byte giocatori, RpcParams parametri)
+    {
+        DifficoltaCoop.ImpostaDaRete(giocatori);
+    }
+
+    // ---------- gruppo sconfitto (host -> tutti, vedi CombattimentoBoss) ----------
+
+    // Tutti i giocatori sono a terra o spettatori: ognuno rinasce al suo checkpoint. Le vite dei boss ricominciati
+    // arrivano a tutti con InviaDifficolta (stesso numero di giocatori, vite aggiornate).
+    public static void InviaGruppoSconfitto()
+    {
+        if (!SonoHost) return;
+        InviaDifficolta(DifficoltaCoop.Giocatori);
+        Istanza.GruppoSconfittoRpc();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    void GruppoSconfittoRpc()
+    {
+        foreach (var b in RegistroNemici.Tutti)
+            if (b != null && b.Boss) b.AzzeraScontro();
+        if (ObiettiviNemici.Locale != null) ObiettiviNemici.Locale.RinasciDopoSconfitta();
+    }
+
     // ---------- eventi dei nemici (host -> tutti) ----------
 
     public static void InviaAttacco(Bersaglio b) { if (SonoHost) Istanza.AttaccoRpc(b.NumeroRete, b.NumeroAttacco); }
@@ -216,6 +272,22 @@ public class MondoRete : NetworkBehaviour
     }
 
     public static void ChiediEsecuzione(Bersaglio b) { if (SonoOspite) Istanza.EsecuzioneRpc(b.NumeroRete); }
+
+    // Effetti degli incantesimi (rallentamento, blocco, stordimento, spinta): li applica l'host, dove il nemico pensa.
+    public static void ChiediEffetto(Bersaglio b, byte tipo, float valore, float durata, Vector3 punto)
+    {
+        if (SonoOspite) Istanza.EffettoRpc(b.NumeroRete, tipo, valore, durata, punto);
+    }
+
+    [Rpc(SendTo.Server)]
+    void EffettoRpc(int numero, byte tipo, float valore, float durata, Vector3 punto)
+    {
+        Bersaglio b = RegistroNemici.Trova(numero);
+        if (b == null || b.Morto) return;
+        var effetti = b.GetComponent<EffettiNemico>();
+        if (effetti == null) effetti = b.gameObject.AddComponent<EffettiNemico>();
+        effetti.ApplicaQui((EffettiNemico.Tipo)tipo, valore, durata, punto);
+    }
     public static void ChiediGiustizia(Bersaglio b, Vector3 daDove) { if (SonoOspite) Istanza.GiustiziaRpc(b.NumeroRete, daDove); }
 
     [Rpc(SendTo.Server)]

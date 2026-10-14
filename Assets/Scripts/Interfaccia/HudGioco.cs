@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 // Interfaccia in partita, nello stile dei menu (disegno approvato in Docs/interfaccia.md):
 //   - in alto a sinistra: Vita (con la scia chiara del danno appena subito), Resistenza e, se serve, Mana;
+//     accanto alla vita, un segnalino per ogni effetto di pozione attivo (scudo = danni subiti in meno, goccia
+//     blu = mana massimo in più): i puntini sopra dicono quante pozioni sono sommate, la riga sotto si svuota
+//     col tempo e negli ultimi 20 secondi il segnalino lampeggia (Lorenzo, 13 ottobre: niente conto alla rovescia);
 //   - in basso a sinistra: arma (tasto 1) e bastone (tasto 2, se lo hai) dentro due rombi, scudo e amuleto più piccoli;
 //     per il Ladro, al posto dello scudo, l'arma a distanza (tasto 2); se l'amuleto ha un'abilità (Ultimo respiro),
 //     un rombo con Q che si riempie mentre si ricarica, acceso quando è pronta e viola mentre si è invisibili;
@@ -29,6 +32,8 @@ public class HudGioco : MonoBehaviour
 
     public static void MostraAzione(string tasto, string testo)
     {
+        // "E" è il tasto per interagire: si mostra quello scelto dal giocatore in Opzioni > Comandi.
+        if (tasto == "E") tasto = Comandi.NomeTasto(Azione.Interagisci);
         azioneTasto = tasto;
         azioneTesto = testo;
         azioneFotogramma = Time.frameCount;
@@ -124,7 +129,9 @@ public class HudGioco : MonoBehaviour
 
         // barre in alto a sinistra (la vita si allunga se cresce il massimo)
         float vitaMax = Mathf.Max(1f, giocatore.VitaMassima);
-        Barra(80f, 70f, Mathf.Clamp(520f * vitaMax / 100f, 320f, 760f), 22f, giocatore.Vita / vitaMax, scia / vitaMax, ColoreVita,
+        float larghezzaVita = Mathf.Clamp(520f * vitaMax / 100f, 320f, 760f);
+        DisegnaPozioni(80f + larghezzaVita + 40f, 81f);
+        Barra(80f, 70f, larghezzaVita, 22f, giocatore.Vita / vitaMax, scia / vitaMax, ColoreVita,
             Lingua.T("stat.vita"), Mathf.CeilToInt(giocatore.Vita) + " / " + Mathf.CeilToInt(vitaMax));
         if (resistenza != null)
             Barra(80f, 128f, Mathf.Clamp(420f * resistenza.Massimo / 100f, 260f, 640f), 16f, resistenza.Attuale / Mathf.Max(1f, resistenza.Massimo), 0f,
@@ -137,6 +144,73 @@ public class HudGioco : MonoBehaviour
         DisegnaNemico(larghezza, altezza);
         DisegnaAzione(larghezza, altezza);
         DisegnaOra(larghezza);
+    }
+
+    // ---------- segnalini delle pozioni ----------
+
+    static readonly Color ColoreDifesa = new Color(0.62f, 0.42f, 0.72f);
+    static readonly Color ColoreManaPiu = new Color(0.4f, 0.58f, 1f);
+
+    // I segnalini degli effetti attivi, in fila a destra della barra della vita (centro del primo in x, y).
+    void DisegnaPozioni(float x, float y)
+    {
+        var effetti = giocatore.GetComponent<EffettiPozioni>();
+        if (effetti == null) return;
+        foreach (EffettiPozioni.Tipo tipo in System.Enum.GetValues(typeof(EffettiPozioni.Tipo)))
+        {
+            float totale = effetti.Totale(tipo);
+            if (totale <= 0f) continue;
+            bool difesa = tipo == EffettiPozioni.Tipo.RiduzioneDanni;
+            // quante pozioni sommate (una pozione = 10% di difesa o 5% di mana)
+            int pile = Mathf.Clamp(Mathf.RoundToInt(totale / (difesa ? 10f : 5f)), 1, 6);
+            Segnalino(new Vector2(x, y), difesa, pile, effetti.ParteRimasta(tipo), effetti.SecondiRimasti(tipo));
+            x += 80f;
+        }
+    }
+
+    static void Segnalino(Vector2 c, bool difesa, int pile, float parte, float secondi)
+    {
+        Color colore = difesa ? ColoreDifesa : ColoreManaPiu;
+        // negli ultimi 20 secondi lampeggia, sempre più in fretta
+        float alfa = 1f;
+        if (secondi < 20f)
+        {
+            float velocita = Mathf.Lerp(9f, 3f, secondi / 20f);
+            alfa = 0.45f + 0.55f * (0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * velocita));
+        }
+        const float lato = 40f;
+        GraficaMenu.Alone(new Rect(c.x - 34f, c.y - 34f, 68f, 68f), GraficaMenu.Con(colore, 0.35f * alfa));
+        GraficaMenu.Rombo(c, lato, GraficaMenu.Con(GraficaMenu.Bronzo, alfa));
+        GraficaMenu.Rombo(c, lato - 6f, new Color(0.025f, 0.025f, 0.035f, 0.92f * alfa));
+        if (difesa) Scudo(c, colore, alfa); else Goccia(c, colore, alfa);
+        // puntini: uno per pozione sommata
+        float inizio = c.x - (pile - 1) * 5f;
+        for (int i = 0; i < pile; i++)
+            GraficaMenu.Rombo(new Vector2(inizio + i * 10f, c.y - lato * 0.71f - 8f), 7f, GraficaMenu.Con(GraficaMenu.Selezione, alfa));
+        // la riga del tempo che si svuota
+        var riga = new Rect(c.x - 20f, c.y + lato * 0.71f + 6f, 40f, 4f);
+        GraficaMenu.Riempi(riga, new Color(0f, 0f, 0f, 0.6f * alfa));
+        GraficaMenu.Riempi(new Rect(riga.x, riga.y, riga.width * parte, riga.height), GraficaMenu.Con(colore, alfa));
+    }
+
+    // Uno scudo a punta fatto di rettangoli e un rombo.
+    static void Scudo(Vector2 c, Color colore, float alfa)
+    {
+        var col = GraficaMenu.Con(colore, alfa);
+        GraficaMenu.Riempi(new Rect(c.x - 9f, c.y - 10f, 18f, 12f), col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y + 2f), 18f, col);
+        GraficaMenu.Riempi(new Rect(c.x - 1f, c.y - 8f, 2f, 16f), GraficaMenu.Con(Color.black, 0.35f * alfa));
+        GraficaMenu.Riempi(new Rect(c.x - 9f, c.y - 10f, 18f, 3f), GraficaMenu.Con(Color.white, 0.25f * alfa));
+    }
+
+    // Una goccia di mana: un rombo con la punta in alto e un riflesso.
+    static void Goccia(Vector2 c, Color colore, float alfa)
+    {
+        var col = GraficaMenu.Con(colore, alfa);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y + 3f), 20f, col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y - 4f), 11f, col);
+        GraficaMenu.Rombo(new Vector2(c.x, c.y - 9f), 5f, col);
+        GraficaMenu.Rombo(new Vector2(c.x - 3f, c.y + 1f), 4f, GraficaMenu.Con(Color.white, 0.5f * alfa));
     }
 
     void Barra(float x, float y, float w, float h, float parte, float partescia, Color colore, string etichetta, string valore)
@@ -181,9 +255,21 @@ public class HudGioco : MonoBehaviour
     void DisegnaArmi(float altezza)
     {
         float y = altezza - 150f;
+        if (giocatore.Stregone && giocatore.Magia != null)
+        {
+            if (giocatore.StregoneCorpoACorpo)
+            {
+                // Stregone con un'arma improvvisata: l'arma in evidenza, gli incantesimi piccoli e grigi (non si usano).
+                RomboOggetto(new Vector2(110f, y), 118f, true, equipaggiamento != null ? equipaggiamento.Arma : null, null);
+                DisegnaIncantesimi(y + 16f, 240f, true);
+            }
+            else DisegnaIncantesimi(y);
+            return;
+        }
         bool spada = giocatore.Arma == GiocatoreControllo.ArmaImpugnata.Spada;
+        bool arcoInMano = giocatore.ArcoInMano;
         var e = equipaggiamento;
-        RomboOggetto(new Vector2(110f, y), 118f, spada, e != null ? e.Arma : null, "1");
+        RomboOggetto(new Vector2(110f, y), 118f, spada && !arcoInMano, e != null ? e.Arma : null, "1");
 
         float x = 240f;
         if (giocatore.HaBastone)
@@ -201,9 +287,15 @@ public class HudGioco : MonoBehaviour
         bool ladro = SceltaPartita.Classe == ClasseGiocatore.Ladro;
         if (ladro && e != null && e.ArmaDistanza != null)
         {
-            // il tiro con l'arco non c'è ancora: l'arco si vede, ma non si accende
-            RomboOggetto(new Vector2(x, y), 118f, false, e.ArmaDistanza, null);   // il tasto arriverà con il tiro
+            // arco o balestra: tasto 2 per prenderlo in mano (TiroConLArco), acceso quando è in mano
+            RomboOggetto(new Vector2(x, y), 118f, arcoInMano, e.ArmaDistanza, "2");
             x += 130f;
+        }
+        else if (SceltaPartita.Classe == ClasseGiocatore.Stregone && e != null && e.Libro != null)
+        {
+            // Stregone: il libro sta dove gli altri tengono lo scudo
+            RomboOggetto(new Vector2(x + 10f, y + 10f), 86f, false, e.Libro, null);
+            x += 100f;
         }
         else if (!ladro && e != null && e.Scudo != null)
         {
@@ -216,6 +308,50 @@ public class HudGioco : MonoBehaviour
             x += 84f;
         }
         if (giocatore.HaAbilitaOmbra) RomboAbilita(new Vector2(x + 10f, y + 16f), 70f);
+    }
+
+    // Stregone: i rombi delle caselle degli incantesimi, con il tasto (1-6). Quello scelto è più grande e acceso;
+    // sotto ogni rombo una barretta si riempie durante l'attesa e diventa color fiamma quando è pronto.
+    // Sopra la fila: il nome dell'incantesimo scelto e il suo costo in mana.
+    // Con "spenti" (Stregone che combatte con un'arma improvvisata) i rombi sono tutti piccoli e grigi, senza barrette né nome.
+    void DisegnaIncantesimi(float y, float x = 110f, bool spenti = false)
+    {
+        var magia = giocatore.Magia;
+        var e = equipaggiamento;
+        if (e == null) return;
+        int n = e.NumeroCaselle;
+        for (int i = 0; i < n; i++)
+        {
+            var inc = e.Incantesimo(i);
+            if (spenti)
+            {
+                var cs = new Vector2(x, y);
+                RomboOggetto(cs, 64f, false, inc, null);
+                GraficaMenu.Rombo(cs, 64f, new Color(0.08f, 0.08f, 0.1f, 0.65f));   // velo grigio sopra
+                x += 74f;
+                continue;
+            }
+            bool scelto = i == magia.Scelta;
+            float lato = scelto ? 112f : 84f;
+            var c = new Vector2(x, y + (scelto ? 0f : 14f));
+            RomboOggetto(c, lato, scelto, inc, (i + 1).ToString());
+            if (inc != null)
+            {
+                float pronto = magia.Pronto(inc);
+                var barra = new Rect(c.x - lato * 0.3f, c.y + lato * 0.62f, lato * 0.6f, 5f);
+                GraficaMenu.Riempi(barra, new Color(0f, 0f, 0f, 0.6f));
+                GraficaMenu.Riempi(new Rect(barra.x, barra.y, barra.width * pronto, barra.height),
+                    pronto >= 1f ? GraficaMenu.Selezione : new Color(0.35f, 0.45f, 0.75f));
+            }
+            x += scelto ? 118f : 96f;
+        }
+        var attuale = magia.Scelto;
+        if (attuale != null && !spenti)
+        {
+            var stile = new GUIStyle(GraficaMenu.Didascalia) { alignment = TextAnchor.MiddleLeft };
+            string testo = attuale.Nome + GraficaMenu.Separatore + Lingua.T("stat.mana") + " " + Mathf.CeilToInt(magia.Costo(attuale));
+            GraficaMenu.Scritta(new Rect(60f, y - 100f, 700f, 30f), testo, stile, giocatore.Mana >= magia.Costo(attuale) ? GraficaMenu.Testo : GraficaMenu.Spento, 1f);
+        }
     }
 
     // Abilità dell'amuleto (tasto Q): il rombo interno cresce mentre si ricarica; pronto = color fiamma,
@@ -237,11 +373,21 @@ public class HudGioco : MonoBehaviour
     }
 
     // Da morti: "Sei morto" grande al centro, rosso cupo, finché si rinasce.
+    // In co-op: "A terra" (aspetta un alleato) oppure, da spettatore, solo una riga in alto.
     void DisegnaMorte(float larghezza, float altezza)
     {
         if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Morto) return;
-        GraficaMenu.Riempi(new Rect(0f, altezza * 0.5f - 90f, larghezza, 180f), new Color(0f, 0f, 0f, 0.55f));
-        string testo = Lingua.T("hud.morto").ToUpperInvariant();
+        if (giocatore.StatoCaduta == GiocatoreControllo.Caduta.Spettatore)
+        {
+            GraficaMenu.Riempi(new Rect(0f, 40f, larghezza, 60f), new Color(0f, 0f, 0f, 0.5f));
+            GraficaMenu.Scritta(new Rect(0f, 40f, larghezza, 60f), Lingua.T("hud.spettatore"), GraficaMenu.Voce, GraficaMenu.Testo, 1f);
+            return;
+        }
+        bool aTerra = giocatore.StatoCaduta == GiocatoreControllo.Caduta.ATerra;
+        GraficaMenu.Riempi(new Rect(0f, altezza * 0.5f - 90f, larghezza, aTerra ? 240f : 180f), new Color(0f, 0f, 0f, 0.55f));
+        if (aTerra)
+            GraficaMenu.Scritta(new Rect(0f, altezza * 0.5f + 80f, larghezza, 50f), Lingua.T("hud.a_terra_aiuto"), GraficaMenu.Voce, GraficaMenu.Testo, 1f);
+        string testo = Lingua.T(aTerra ? "hud.a_terra" : "hud.morto").ToUpperInvariant();
         if (Lingua.Indice < 6) testo = GraficaMenu.Spaziato(testo);
         GraficaMenu.Scritta(new Rect(0f, altezza * 0.5f - 70f, larghezza, 140f), testo, GraficaMenu.Titolo, new Color(0.62f, 0.1f, 0.08f), 1f);
     }
@@ -251,7 +397,7 @@ public class HudGioco : MonoBehaviour
         Bersaglio nemico = aggancio != null ? aggancio.Attuale : null;
         if (nemico == null || nemico.Morto) return;
 
-        string nome = nemico.gameObject.name.Replace("(Clone)", "").Trim();
+        string nome = NomeTradotto.Di(nemico);   // tradotto se il nemico ha NomeTradotto
         GraficaMenu.Scritta(new Rect(0f, altezza - 214f, larghezza, 40f), nome, GraficaMenu.NomeClasse, GraficaMenu.Testo, 1f);
         float max = Mathf.Max(1f, nemico.VitaMassima);
         Barra(larghezza * 0.5f - 400f, altezza - 175f, 800f, 16f, VitaNemico(nemico) / max, sciaNemico / max, ColoreVita, null, null);
@@ -272,14 +418,35 @@ public class HudGioco : MonoBehaviour
     void DisegnaAzione(float larghezza, float altezza)
     {
         if (Time.frameCount - azioneFotogramma > 1 || string.IsNullOrEmpty(azioneTesto)) return;
-        float w = Mathf.Clamp(GraficaMenu.TestoSinistra.CalcSize(new GUIContent(azioneTesto)).x + 110f, 360f, 900f);
-        var r = new Rect(larghezza * 0.5f - w * 0.5f, altezza - 100f, w, 56f);
+        // il tasto: una lettera sta nel rombo; un nome lungo (per esempio "Mouse sinistro") in un riquadro
+        float kw = GraficaMenu.EtichettaGioco.CalcSize(new GUIContent(azioneTasto)).x;
+        bool lungo = kw > 36f;
+        float spazioTasto = lungo ? kw + 44f : 72f;
+        float w = Mathf.Clamp(GraficaMenu.TestoGioco.CalcSize(new GUIContent(azioneTesto)).x + spazioTasto + 38f, 360f, 1100f);
+        var r = new Rect(larghezza * 0.5f - w * 0.5f, altezza - 104f, w, 62f);
         GraficaMenu.Cornice(r, 0.95f, false);
-        var c = new Vector2(r.x + 40f, r.center.y);
-        GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
-        GraficaMenu.Scritta(new Rect(c.x - 20f, c.y - 14f, 40f, 28f), azioneTasto, GraficaMenu.Etichetta, new Color(0.05f, 0.05f, 0.06f), 1f);
-        var testo = new GUIStyle(GraficaMenu.TestoSinistra) { wordWrap = false };
-        GraficaMenu.Scritta(new Rect(r.x + 72f, r.y, r.width - 90f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
+        if (lungo)
+        {
+            var k = new Rect(r.x + 14f, r.y + 12f, kw + 16f, r.height - 24f);
+            GraficaMenu.Riempi(k, GraficaMenu.Bronzo);
+            ScrittaSenzaOmbra(k, azioneTasto);
+        }
+        else
+        {
+            var c = new Vector2(r.x + 40f, r.center.y);
+            GraficaMenu.Rombo(c, 30f, GraficaMenu.Bronzo);
+            ScrittaSenzaOmbra(new Rect(c.x - 20f, c.y - 16f, 40f, 32f), azioneTasto);
+        }
+        var testo = new GUIStyle(GraficaMenu.TestoGioco) { wordWrap = false };
+        GraficaMenu.Scritta(new Rect(r.x + spazioTasto, r.y, r.width - spazioTasto - 18f, r.height), azioneTesto, testo, GraficaMenu.Testo, 1f);
+    }
+
+    // Il tasto è scuro su fondo bronzo: con l'ombra nera di GraficaMenu.Scritta sembrava una lettera doppia.
+    static void ScrittaSenzaOmbra(Rect area, string testo)
+    {
+        GUI.color = new Color(0.05f, 0.05f, 0.06f);
+        GUI.Label(area, testo, GraficaMenu.EtichettaGioco);
+        GUI.color = Color.white;
     }
 
     void DisegnaOra(float larghezza)
@@ -289,8 +456,8 @@ public class HudGioco : MonoBehaviour
         float ora = ciclo.ora;
         string momento = ora >= 5f && ora < 7f ? "hud.alba" : ora >= 7f && ora < 17f ? "hud.giorno" : ora >= 17f && ora < 19f ? "hud.tramonto" : "hud.notte";
         int ore = Mathf.FloorToInt(ora), minuti = Mathf.FloorToInt((ora - ore) * 60f);
-        var r = new Rect(larghezza - 300f, 60f, 220f, 52f);
+        var r = new Rect(larghezza - 380f, 60f, 300f, 56f);
         GraficaMenu.Cornice(r, 0.8f, false);
-        GraficaMenu.Scritta(r, Lingua.T(momento) + GraficaMenu.Separatore + ore.ToString("00") + ":" + minuti.ToString("00"), GraficaMenu.Etichetta, GraficaMenu.Testo, 1f);
+        GraficaMenu.Scritta(r, Lingua.T(momento) + GraficaMenu.Separatore + ore.ToString("00") + ":" + minuti.ToString("00"), GraficaMenu.EtichettaGioco, GraficaMenu.Testo, 1f);
     }
 }

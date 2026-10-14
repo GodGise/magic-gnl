@@ -12,13 +12,16 @@ using UnityEngine.SceneManagement;
 // Le opzioni restano salvate (Impostazioni.cs). La classe scelta va in SceltaPartita.Classe.
 // "Nuova partita" carica la scena di gioco indicata in "Scena iniziale"; se non è nelle Build Settings
 // usa la "Scena di riserva" (ZonaProva).
+// Slot e nome: "Nuova partita", "Continua" e Multigiocatore passano dai 5 slot dei personaggi (Salvataggio.cs).
+// Slot vuoto: si scrive il nome (lettere latine, max 16; qui WASD, Spazio e Backspace servono al testo) e poi si sceglie la classe;
+// il personaggio viene salvato nello slot. Slot occupato: Gioca o Cancella (con conferma). "Continua" è attivo solo se c'è un personaggio.
 // Multigiocatore (co-op fino a 3, vedi ReteCoop): "Ospita una partita" (scelta della classe, poi la partita parte e
 // gli amici possono entrare) oppure "Entra in una partita" (si scrive l'indirizzo dell'host con numeri e punti,
 // Backspace cancella; poi la classe e il collegamento). Nella schermata Multigiocatore si vedono gli indirizzi di
 // questo PC da dare agli amici. Se l'host chiude o la connessione cade, si torna qui con un avviso.
 // Sequenza di avvio: schermo scuro e titolo che sfuma; "Premi un tasto" compare dopo qualche secondo e finche' non e'
 // del tutto visibile i tasti non contano (niente spam all'avvio). Alla pressione suona un colpo, il paesaggio passa da
-// sfumato (nebbia grigia) a colorato, entra la musica e compare il menu. Dopo la prima pressione gli altri tasti non
+// sfumato (nebbia grigia) a colorato, parte subito la musica e dopo circa 4-5 secondi compare il menu. Dopo la prima pressione gli altri tasti non
 // contano. Tempi regolabili dall'Inspector (campi "Sequenza di avvio"). F2 salta la sequenza (comodo per provare il gioco).
 // Musica: parte solo durante la transizione (sulla schermata del titolo c'e' silenzio). Sale lentamente e si spegne quando
 // inizia la partita. Se il campo "Musica" e' vuoto si carica Assets/Resources/Audio/Musica/menu-principale.
@@ -30,10 +33,9 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(AudioSource))]
 public class MenuPrincipale : MonoBehaviour
 {
-    [Header("Testi")]
-    [SerializeField] string titolo = "magic-GNL";
-    [Tooltip("Mostra la scritta \"nome provvisorio\" sotto il titolo, finché il nome del gioco non è deciso.")]
-    [SerializeField] bool nomeProvvisorio = true;
+    // Nome del gioco, deciso il 10 ottobre 2026. Sullo schermo va su due righe: "Sun of the" piccolo sopra,
+    // "Black Lake" grande sotto (tutto su una riga non entrerebbe con le lettere spaziate).
+    const string NomeSopra = "Sun of the", NomeSotto = "Black Lake";
 
     [Header("Partita")]
     [SerializeField] string scenaIniziale = "VillaggioLagoNero";
@@ -70,12 +72,12 @@ public class MenuPrincipale : MonoBehaviour
     [SerializeField] float ritardoPremi = 2.5f;
     [Tooltip("Durata della dissolvenza di Premi un tasto. I tasti si accettano solo a dissolvenza finita.")]
     [SerializeField] float durataPremi = 1.5f;
-    [Tooltip("Durata della transizione dopo la pressione (da sfumato a colorato).")]
-    [SerializeField] float durataTransizione = 3.5f;
-    [Tooltip("A che punto della transizione entra la musica (0 = subito, 1 = alla fine).")]
-    [SerializeField, Range(0f, 1f)] float puntoMusica = 0.55f;
-    [Tooltip("A che punto della transizione compare il menu.")]
-    [SerializeField, Range(0f, 1f)] float puntoMenu = 0.7f;
+    [Tooltip("Secondi di attesa dopo la pressione: parte la musica e il paesaggio si colora, poi compare il menu.")]
+    [SerializeField] float durataTransizione = 4.5f;
+    [Tooltip("A che punto della transizione entra la musica (0 = subito alla pressione, 1 = alla fine).")]
+    [SerializeField, Range(0f, 1f)] float puntoMusica = 0f;
+    [Tooltip("A che punto della transizione compare il menu (1 = alla fine, dopo che la musica è già partita).")]
+    [SerializeField, Range(0f, 1f)] float puntoMenu = 1f;
     [Tooltip("Dopo quanto dalla pressione parte l'onda sonora della transizione (se c'e').")]
     [SerializeField] float ritardoSuonoTransizione = 0.5f;
     [Tooltip("F2 salta la sequenza di avvio (comodo quando provi il gioco).")]
@@ -85,11 +87,19 @@ public class MenuPrincipale : MonoBehaviour
     [Tooltip("Quante braci salgono dal basso dello schermo.")]
     [SerializeField] int numeroBraci = 46;
 
-    enum Schermata { Titolo, Principale, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento }
+    enum Schermata { Titolo, Principale, Slot, AzioniSlot, ConfermaCancella, Nome, Classe, Opzioni, Crediti, Multigiocatore, Indirizzo, Collegamento, ConfermaEsci }
+
+    // Quali slot si possono scegliere: Nuova = solo i vuoti, Continua = solo gli occupati, Tutti = entrambi (multigiocatore).
+    enum ScopoSlot { Nuova, Continua, Tutti }
+    ScopoSlot scopo = ScopoSlot.Nuova;
+    int slotScelto = -1;                                  // lo slot su cui si sta lavorando
+    DatiSlot[] datiSlot = new DatiSlot[Salvataggio.NumeroSlot];   // copia letta all'apertura della schermata Slot
+    string nomeScritto = "";                              // il nome che si sta scrivendo
 
     // Come parte la partita dopo la scelta della classe: da soli, ospitando gli amici, o entrando da un amico.
     enum Modo { DaSolo, Ospita, Entra }
     Modo modo = Modo.DaSolo;
+    Impostazioni.Sezione sezioneOpzioni = Impostazioni.Sezione.Principale;   // quale pagina delle opzioni è aperta
     const string ChiaveIndirizzo = "UltimoIndirizzoHost";
     string indirizzo = "127.0.0.1";
     List<string> indirizziMiei = new List<string>();
@@ -201,19 +211,54 @@ public class MenuPrincipale : MonoBehaviour
         switch (nuova)
         {
             case Schermata.Principale:
-                elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => { modo = Modo.DaSolo; VaiA(Schermata.Classe); });
+                elenco.Aggiungi(() => Lingua.T("menu.nuova"), () => { modo = Modo.DaSolo; ApriSlot(ScopoSlot.Nuova); });
                 elenco.Aggiungi(() => Lingua.T("menu.multigiocatore"), () => VaiA(Schermata.Multigiocatore));
-                elenco.Aggiungi(() => Lingua.T("menu.continua"), null).attiva = false;
-                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => VaiA(Schermata.Opzioni));
+                elenco.Aggiungi(() => Lingua.T("menu.continua"), () => { modo = Modo.DaSolo; ApriSlot(ScopoSlot.Continua); }).attiva = Salvataggio.QualcunoEsiste;
+                elenco.Aggiungi(() => Lingua.T("menu.opzioni"), () => { sezioneOpzioni = Impostazioni.Sezione.Principale; VaiA(Schermata.Opzioni); });
                 elenco.Aggiungi(() => Lingua.T("menu.crediti"), () => VaiA(Schermata.Crediti));
-                elenco.Aggiungi(() => Lingua.T("menu.esci"), Esci);
+                elenco.Aggiungi(() => Lingua.T("menu.esci"), () => VaiA(Schermata.ConfermaEsci));
+                break;
+
+            // I cinque slot: personaggio salvato (nome e classe) oppure "Vuoto".
+            case Schermata.Slot:
+                for (int i = 0; i < datiSlot.Length; i++) datiSlot[i] = Salvataggio.Leggi(i);
+                for (int i = 0; i < datiSlot.Length; i++)
+                {
+                    int slot = i;
+                    var voce = elenco.Aggiungi(() => TestoSlot(slot), () => ScegliSlot(slot));
+                    // Multigiocatore: solo i personaggi che hanno finito il prologo (nelle prove sempre tutti).
+                    voce.attiva = scopo == ScopoSlot.Tutti ? Salvataggio.CoopLiberoNelleProve || (datiSlot[i] != null && datiSlot[i].prologoFinito)
+                        : (scopo == ScopoSlot.Nuova ? datiSlot[i] == null : datiSlot[i] != null);
+                }
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
+                elenco.selezione = PrimoSlotAttivo(slotScelto);
+                break;
+
+            // Un personaggio salvato: giocare con lui o cancellarlo.
+            case Schermata.AzioniSlot:
+                elenco.Aggiungi(() => Lingua.T("slot.gioca"), GiocaSlot);
+                elenco.Aggiungi(() => Lingua.T("slot.cancella"), () => VaiA(Schermata.ConfermaCancella));
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
+                break;
+
+            // Cancellare non si può annullare: prima la conferma, di partenza su "No".
+            case Schermata.ConfermaCancella:
+                elenco.Aggiungi(() => Lingua.T("comune.no"), () => VaiA(Schermata.AzioniSlot));
+                elenco.Aggiungi(() => Lingua.T("comune.si"), CancellaSlot);
+                break;
+
+            // Il nome: la prima voce mostra quello che si scrive (con il cursore che lampeggia).
+            case Schermata.Nome:
+                elenco.Aggiungi(() => Lingua.T("nome.etichetta") + ":  " + nomeScritto + (Mathf.Repeat(Time.unscaledTime, 1f) < 0.5f ? "_" : " "), ConfermaNome);
+                elenco.Aggiungi(() => Lingua.T("rete.continua"), ConfermaNome);
+                elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
                 break;
 
             case Schermata.Classe:
                 for (int i = 0; i < chiaviClassi.Length; i++)
                 {
                     int indice = i;
-                    elenco.Aggiungi(() => Lingua.T(chiaviClassi[indice]), () => IniziaPartita((ClasseGiocatore)indice));
+                    elenco.Aggiungi(() => Lingua.T(chiaviClassi[indice]), () => IniziaPartita((ClasseGiocatore)indice, true));
                 }
                 elenco.Aggiungi(() => Lingua.T("menu.indietro"), Indietro);
                 elenco.selezione = Mathf.Clamp((int)SceltaPartita.Classe, 0, chiaviClassi.Length - 1);
@@ -221,7 +266,13 @@ public class MenuPrincipale : MonoBehaviour
                 break;
 
             case Schermata.Opzioni:
-                Impostazioni.AggiungiVoci(elenco, () => VaiA(Schermata.Principale));
+                Impostazioni.AggiungiVoci(elenco, sezioneOpzioni, s => { sezioneOpzioni = s; VaiA(Schermata.Opzioni); }, IndietroOpzioni);
+                break;
+
+            // Uscire dal gioco: prima la conferma, di partenza su "No".
+            case Schermata.ConfermaEsci:
+                elenco.Aggiungi(() => Lingua.T("comune.no"), () => VaiA(Schermata.Principale));
+                elenco.Aggiungi(() => Lingua.T("comune.si"), Esci);
                 break;
 
             case Schermata.Crediti:
@@ -230,7 +281,7 @@ public class MenuPrincipale : MonoBehaviour
 
             case Schermata.Multigiocatore:
                 indirizziMiei = ReteCoop.IndirizziLocali();
-                elenco.Aggiungi(() => Lingua.T("rete.ospita"), () => { modo = Modo.Ospita; VaiA(Schermata.Classe); });
+                elenco.Aggiungi(() => Lingua.T("rete.ospita"), () => { modo = Modo.Ospita; ApriSlot(ScopoSlot.Tutti); });
                 elenco.Aggiungi(() => Lingua.T("rete.entra"), () => VaiA(Schermata.Indirizzo));
                 elenco.Aggiungi(() => Lingua.T("menu.indietro"), () => VaiA(Schermata.Principale));
                 break;
@@ -253,26 +304,113 @@ public class MenuPrincipale : MonoBehaviour
         switch (schermata)
         {
             case Schermata.Principale: VaiA(Schermata.Titolo); break;
-            case Schermata.Classe:
+            case Schermata.Slot:
                 if (modo == Modo.Ospita) VaiA(Schermata.Multigiocatore);
                 else if (modo == Modo.Entra) VaiA(Schermata.Indirizzo);
                 else VaiA(Schermata.Principale);
                 break;
-            case Schermata.Opzioni:
+            case Schermata.AzioniSlot: VaiA(Schermata.Slot); break;
+            case Schermata.ConfermaCancella: VaiA(Schermata.AzioniSlot); break;
+            case Schermata.Nome: VaiA(Schermata.Slot); break;
+            case Schermata.Classe: VaiA(Schermata.Nome); break;
+            case Schermata.Opzioni: IndietroOpzioni(); break;
             case Schermata.Crediti:
+            case Schermata.ConfermaEsci:
             case Schermata.Multigiocatore: VaiA(Schermata.Principale); break;
             case Schermata.Indirizzo: VaiA(Schermata.Multigiocatore); break;
             case Schermata.Collegamento: AnnullaCollegamento(); break;
         }
     }
 
+    // Indietro nelle opzioni: da una sezione (Audio, Video, Controlli) si torna alla pagina principale delle opzioni,
+    // con la selezione sulla sezione appena lasciata; dalla pagina principale si torna al menu.
+    void IndietroOpzioni()
+    {
+        if (sezioneOpzioni == Impostazioni.Sezione.Principale) { VaiA(Schermata.Principale); return; }
+        var da = sezioneOpzioni;
+        sezioneOpzioni = Impostazioni.Sezione.Principale;
+        VaiA(Schermata.Opzioni);
+        elenco.selezione = (int)da;   // le sezioni sono le voci 1, 2, 3 della pagina principale
+    }
+
+    // ---------- slot e nome del personaggio ----------
+
+    void ApriSlot(ScopoSlot nuovoScopo)
+    {
+        scopo = nuovoScopo;
+        slotScelto = -1;
+        VaiA(Schermata.Slot);
+        // "Nuova partita" con tutti gli slot occupati: si spiega perché non si può scegliere niente
+        if (scopo == ScopoSlot.Nuova && elenco.selezione >= datiSlot.Length) Avvisa(Lingua.T("slot.pieni"));
+        // Multigiocatore senza nessun personaggio che abbia finito il prologo: si spiega perché
+        if (scopo == ScopoSlot.Tutti && elenco.selezione >= datiSlot.Length) Avvisa(Lingua.T("slot.coop_blocco"));
+    }
+
+    // Prima voce attiva a partire da quella indicata (o dalla prima); se non ce ne sono, "Indietro".
+    int PrimoSlotAttivo(int da)
+    {
+        if (da >= 0 && da < datiSlot.Length && elenco.voci[da].attiva) return da;
+        for (int i = 0; i < datiSlot.Length; i++) if (elenco.voci[i].attiva) return i;
+        return datiSlot.Length;
+    }
+
+    string TestoSlot(int slot)
+    {
+        string numero = Lingua.T("slot.nome") + " " + (slot + 1);
+        var d = datiSlot[slot];
+        if (d == null) return numero + GraficaMenu.Separatore + Lingua.T("slot.vuoto");
+        string testo = numero + GraficaMenu.Separatore + d.nome + GraficaMenu.Separatore + Lingua.T(chiaviClassi[Mathf.Clamp(d.classe, 0, chiaviClassi.Length - 1)]);
+        if (scopo == ScopoSlot.Tutti && !d.prologoFinito && !Salvataggio.CoopLiberoNelleProve) testo += GraficaMenu.Separatore + Lingua.T("slot.prologo_da_finire");
+        return testo;
+    }
+
+    void ScegliSlot(int slot)
+    {
+        slotScelto = slot;
+        if (datiSlot[slot] == null) { nomeScritto = ""; VaiA(Schermata.Nome); }
+        else VaiA(Schermata.AzioniSlot);
+    }
+
+    void GiocaSlot()
+    {
+        var d = Salvataggio.Leggi(slotScelto);
+        if (d == null) { VaiA(Schermata.Slot); return; }
+        Salvataggio.Attiva(slotScelto);
+        IniziaPartita((ClasseGiocatore)Mathf.Clamp(d.classe, 0, chiaviClassi.Length - 1), false);
+    }
+
+    void CancellaSlot()
+    {
+        Salvataggio.Elimina(slotScelto);
+        slotScelto = -1;
+        // se non resta nessun personaggio e si stava continuando, si torna al menu
+        if (scopo == ScopoSlot.Continua && !Salvataggio.QualcunoEsiste) VaiA(Schermata.Principale);
+        else VaiA(Schermata.Slot);
+    }
+
+    void ConfermaNome()
+    {
+        nomeScritto = Salvataggio.PulisciNome(nomeScritto);
+        if (nomeScritto.Length == 0) { Avvisa(Lingua.T("nome.vuoto")); return; }
+        VaiA(Schermata.Classe);
+    }
+
     // ---------- multigiocatore ----------
 
-    // Lettere scritte dalla tastiera: nella schermata dell'indirizzo valgono solo numeri e punti.
+    // Lettere scritte dalla tastiera: nell'indirizzo valgono solo numeri e punti, nel nome lettere, numeri, spazio, apostrofo e trattino.
     void TestoScritto(char c)
     {
-        if (schermata != Schermata.Indirizzo || avvioInCorso) return;
-        if ((char.IsDigit(c) || c == '.') && indirizzo.Length < 15) indirizzo += c;
+        if (avvioInCorso) return;
+        if (schermata == Schermata.Indirizzo)
+        {
+            if ((char.IsDigit(c) || c == '.') && indirizzo.Length < 15) indirizzo += c;
+        }
+        else if (schermata == Schermata.Nome)
+        {
+            if (!Salvataggio.CarattereValido(c) || nomeScritto.Length >= Salvataggio.LunghezzaMassimaNome) return;
+            if (c == ' ' && (nomeScritto.Length == 0 || nomeScritto.EndsWith(" "))) return;
+            nomeScritto += c;
+        }
     }
 
     void ConfermaIndirizzo()
@@ -281,7 +419,7 @@ public class MenuPrincipale : MonoBehaviour
         PlayerPrefs.SetString(ChiaveIndirizzo, indirizzo);
         PlayerPrefs.Save();
         modo = Modo.Entra;
-        VaiA(Schermata.Classe);
+        ApriSlot(ScopoSlot.Tutti);
     }
 
     void AnnullaCollegamento()
@@ -308,7 +446,8 @@ public class MenuPrincipale : MonoBehaviour
 
     // ---------- azioni ----------
 
-    void IniziaPartita(ClasseGiocatore classe)
+    // nuovo = personaggio appena creato (slot, nome e classe scelti): si salva nello slot prima di partire.
+    void IniziaPartita(ClasseGiocatore classe, bool nuovo)
     {
         if (avvioInCorso) return;
         string scena = null;
@@ -318,6 +457,11 @@ public class MenuPrincipale : MonoBehaviour
         if (scena == null)
         {
             Avvisa(Lingua.T("menu.nessuna_scena") + " (" + scenaIniziale + " / " + scenaRiserva + ")");
+            return;
+        }
+        if (nuovo && !Salvataggio.Crea(slotScelto, nomeScritto, classe))
+        {
+            Avvisa(Lingua.T("slot.errore"));
             return;
         }
         SceltaPartita.Classe = classe;
@@ -398,6 +542,8 @@ public class MenuPrincipale : MonoBehaviour
 
         // durante la transizione verso il menu i comandi non contano: un solo tasto avvia la sequenza
         if (inTransizione) return;
+        // la schermata dei comandi (Opzioni > Comandi) legge da sola i suoi tasti, anche Esc
+        if (MenuComandi.Aperto || MenuComandi.FotogrammaChiusura == Time.frameCount) return;
 
         if (schermata == Schermata.Titolo)
         {
@@ -422,7 +568,11 @@ public class MenuPrincipale : MonoBehaviour
             return;
         }
 
-        var c = elenco.LeggiComandi();
+        var c = elenco.LeggiComandi(schermata == Schermata.Nome);
+
+        // Nome: Backspace cancella l'ultima lettera (con il nome vuoto non fa niente: per tornare indietro c'è Esc).
+        if (schermata == Schermata.Nome && tastiera != null && tastiera.backspaceKey.wasPressedThisFrame && nomeScritto.Length > 0)
+            nomeScritto = nomeScritto.Substring(0, nomeScritto.Length - 1);
 
         // Indirizzo: Backspace cancella l'ultima cifra (e torna indietro solo se non c'è più niente da cancellare).
         if (schermata == Schermata.Indirizzo && tastiera != null && tastiera.backspaceKey.wasPressedThisFrame && indirizzo.Length > 0)
@@ -540,7 +690,7 @@ public class MenuPrincipale : MonoBehaviour
     {
         if (clip == null || effetti == null) return;
         effetti.pitch = variaTono ? 1f + Random.Range(-variazioneTono, variazioneTono) : 1f;
-        effetti.PlayOneShot(clip, volume);
+        effetti.PlayOneShot(clip, volume * Impostazioni.VolumeEffetti);   // il volume effetti scelto in Opzioni > Audio
     }
 
     // I comandi non contano durante la transizione e mentre parte la partita.
@@ -592,6 +742,7 @@ public class MenuPrincipale : MonoBehaviour
         if (grigio > 0.001f)
             GraficaMenu.Riempi(new Rect(0, 0, Screen.width, Screen.height), new Color(0.30f, 0.32f, 0.37f, 0.62f * grigio));
         GraficaMenu.FoglioVirtuale();
+        if (MenuComandi.Aperto) return;   // sopra c'è la schermata dei comandi: il paesaggio resta, il menu no
         elenco.InizioGUI();
         DisegnaBraci();
 
@@ -603,10 +754,10 @@ public class MenuPrincipale : MonoBehaviour
         if (schermata != Schermata.Crediti)
         {
             GraficaMenu.Alone(new Rect(Larghezza * 0.5f - 720f, altoTitolo - 130f, 1440f, 400f), new Color(1f, 0.5f, 0.2f, 0.08f));
-            GraficaMenu.Scritta(new Rect(0, altoTitolo, Larghezza, 150), GraficaMenu.Spaziato(titolo.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
+            var sopra = new GUIStyle(GraficaMenu.Titolo) { fontSize = 40 };
+            GraficaMenu.Scritta(new Rect(0, altoTitolo - 6f, Larghezza, 46), GraficaMenu.Spaziato(NomeSopra.ToUpperInvariant()), sopra, GraficaMenu.Bronzo, 1f);
+            GraficaMenu.Scritta(new Rect(0, altoTitolo + 22f, Larghezza, 140), GraficaMenu.Spaziato(NomeSotto.ToUpperInvariant()), GraficaMenu.Titolo, GraficaMenu.Testo, 1f);
             GraficaMenu.Divisore(Larghezza * 0.5f, altoTitolo + 162f, 640f, 1f);
-            if (nomeProvvisorio)
-                GraficaMenu.Scritta(new Rect(0, altoTitolo + 180, Larghezza, 40), Lingua.T("menu.nome_provvisorio"), GraficaMenu.Sottotitolo, GraficaMenu.Spento, 1f);
         }
 
         switch (schermata)
@@ -647,6 +798,28 @@ public class MenuPrincipale : MonoBehaviour
             }
             case Schermata.Opzioni:
                 if (elenco.DisegnaOpzioni(370f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.ConfermaEsci:
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 360f, 1200f, 100f), Lingua.T("menu.conferma_esci"), GraficaMenu.Descrizione, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(480f, 440f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.Slot:
+                GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("slot.titolo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(420f, 980f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.AzioniSlot:
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 360f, 1200f, 60f), TestoSlot(slotScelto), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(460f, 520f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.ConfermaCancella:
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 600f, 340f, 1200f, 120f),
+                    Lingua.T("slot.conferma_cancella") + "\n" + TestoSlot(slotScelto), GraficaMenu.Descrizione, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(500f, 520f, comparsa, Bloccato)) return;
+                break;
+            case Schermata.Nome:
+                GraficaMenu.Scritta(new Rect(0, 348, Larghezza, 44), Lingua.T("nome.titolo"), GraficaMenu.Sottotitolo, GraficaMenu.Testo, comparsa);
+                if (elenco.DisegnaElenco(420f, 760f, comparsa, Bloccato)) return;
+                GraficaMenu.Scritta(new Rect(Larghezza * 0.5f - 560f, 725f, 1120f, 120f), Lingua.T("nome.aiuto"), GraficaMenu.Descrizione, GraficaMenu.Spento, comparsa);
                 break;
             case Schermata.Classe:
                 if (DisegnaClassi(comparsa)) return;

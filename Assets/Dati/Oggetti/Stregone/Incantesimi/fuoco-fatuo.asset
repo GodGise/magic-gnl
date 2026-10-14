@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb1f4b55875eeda45a661713ae705174, type: 3}
+  m_Name: fuoco-fatuo
+  m_EditorClassIdentifier: Assembly-CSharp::DatiIncantesimo
+  nomeDiLavoro: Fuoco fatuo
+  chiaveNome: oggetto.fuoco_fatuo.nome
+  chiaveDescrizione: oggetto.fuoco_fatuo.descrizione
+  classe: 2
+  tutteLeClassi: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  scuola: 3
+  effetto: 7
+  costoMana: 15
+  carica: 0.7
+  recupero: 0.4
+  attesa: 7
+  danno: 0
+  dannoAlSecondo: 0
+  moltiplicatoreIgnaro: 1
+  velocita: 18
+  portata: 22
+  grandezza: 1
+  colore: {r: 0.6, g: 0.9, b: 1, a: 1}
+  raggio: 0
+  lunghezza: 0
+  durata: 20
+  rallentamento: 0
+  durataRallentamento: 0
+  blocco: 0
+  stordimento: 0
+  spinta: 0
+  altezza: 0
+  rallentamentoDopo: 0
+  durataRallentamentoDopo: 0
+  velocitaInPiu: 0
+  moltiplicatoreSuccessivo: 1
+  rallentamentoInterruzione: 0
+  durataRallentamentoInterruzione: 0
+  massimoInsieme: 3
+  vitaEvocazione: 0
+  dannoEvocazione: 6
+  intervalloColpi: 1.5
+  vitaPerUccisione: 0
+  lunghezzaScia: 0
+  raggioAttrazione: 0
+  tempoTrasformazione: 0
+  vitaScheletro: 0
+  dannoScheletro: 0
+  intervalloScheletro: 1.6
+  durataScheletro: 0

@@ -7,6 +7,9 @@ using UnityEngine.InputSystem;
 //   - Sprint:   tieni premuto Shift (o la pressione della levetta sinistra del pad) mentre ti muovi.
 //               Si corre più veloci ma la resistenza scende ogni secondo; a resistenza zero lo sprint
 //               si ferma e ricomincia solo quando ne è tornata un po'.
+//               Mentre si esplora lo sprint è gratis (Lorenzo, 13 ottobre): la resistenza scende solo "in
+//               combattimento", cioè con un nemico vivo vicino (sveglio o no), un nemico che ti insegue, o per
+//               qualche secondo dopo un colpo ricevuto. Raggio e durata si regolano nell'Inspector.
 // Le tre mosse fondamentali sono
 //   - Schivata: Spazio / tasto B (Xbox) o Cerchio (PS). Breve invulnerabilità all'inizio.
 //   - Parata:   tieni premuto il tasto destro del mouse / LB (Xbox) o L1 (PS). Riduce il danno
@@ -15,13 +18,25 @@ using UnityEngine.InputSystem;
 //               durante il recupero si può annullare con una schivata o concatenare un altro attacco.
 // Morte e rinascita: quando la vita arriva a zero (o si cade nel vuoto) il personaggio muore e dopo
 // qualche secondo rinasce all'ultimo Checkpoint toccato, oppure al punto di partenza se non ne ha toccati.
+// In co-op (Lorenzo, 10 ottobre) a zero vita si va "a terra": un alleato vicino ti rialza tenendo premuto E per 3 s
+// (RianimaAlleato) e torni con il 30% della vita. Contro un boss si può andare a terra una sola volta per scontro:
+// la seconda si diventa spettatori (la camera segue un alleato) e si torna in gioco, accanto a un alleato, quando
+// lo scontro finisce. Se tutto il gruppo è a terra, si rinasce tutti al checkpoint e il boss ricomincia da capo
+// (CombattimentoBoss). Da soli, morendo contro un boss, il boss ricomincia da capo. Cadendo nel vuoto si rinasce
+// subito al checkpoint anche in co-op.
 // Acqua bassa (vedi AcquaBassa): nel lago, dove l'acqua arriva alle ginocchia, il personaggio va più piano.
 // Esecuzione furtiva: alle spalle di un nemico che non ti ha visto (vedi InseguimentoNemico), l'attacco con la
 // spada diventa un'esecuzione: il personaggio si mette dietro di lui, lo afferra e gli taglia la gola. Il nemico
 // muore sul colpo; durante l'esecuzione il giocatore non subisce danni. In basso compare l'avviso quando è possibile.
 // Bastone magico (proposta, si trova nel baule della chiesetta): tasto 2 per impugnarlo, 1 per tornare alla
 // spada. Con il bastone l'attacco lancia una sfera luminosa verso il nemico agganciato o il più vicino;
-// costa mana (terza barra), che si recupera sconfiggendo i nemici.
+// costa mana (terza barra). Il mana si ricarica da solo 2 s dopo l'ultimo lancio (da 0 a 100 in 17 s, Docs/mana.md)
+// e, per chi non è Stregone, un po' anche sconfiggendo i nemici.
+// Stregone (Docs/incantesimi-stregone.md): non ha la spada. Il tasto d'attacco lancia l'incantesimo della casella
+// scelta con i tasti 1-6 (vedi MagiaStregone, che decide carica, recupero, costo ed effetto). Passo d'ombra: invisibile
+// e più veloce per qualche secondo; il primo incantesimo lanciato così fa danno moltiplicato e fa finire l'effetto
+// (poi per un attimo si va più piano). Vesti: la Tunica stracciata fa perdere mana a ogni danno ricevuto, il Manto di
+// cenere fa spendere mana a ogni schivata.
 // Abilità dell'amuleto: tasto Q / croce su del pad. Con l'amuleto Ultimo respiro il personaggio svanisce
 // nell'ombra: per qualche secondo i nemici non lo vedono, smettono di inseguirlo e non lo attaccano.
 // L'invisibilità finisce allo scadere del tempo oppure appena si attacca.
@@ -62,6 +77,16 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     [SerializeField] float costoSprintAlSecondo = 15f;
     [Tooltip("Resistenza minima per iniziare uno sprint (evita che parta e si fermi di continuo a barra quasi vuota).")]
     [SerializeField] float resistenzaMinimaSprint = 10f;
+
+    [Header("Sprint mentre si esplora")]
+    [Tooltip("Se attivo, lo sprint consuma resistenza solo in combattimento: esplorando si corre gratis.")]
+    [SerializeField] bool sprintGratisEsplorando = true;
+    [Tooltip("Metri: un nemico vivo più vicino di così, sveglio o no, fa consumare resistenza allo sprint. Manichini e sagome non contano.")]
+    [SerializeField] float raggioNemiciVicini = 15f;
+    [Tooltip("Metri: un nemico che ti sta inseguendo conta anche da più lontano, fino a questa distanza.")]
+    [SerializeField] float raggioNemiciInseguono = 40f;
+    [Tooltip("Secondi dopo l'ultimo colpo ricevuto (anche parato o schivato) in cui si resta in combattimento.")]
+    [SerializeField] float durataCombattimento = 5f;
 
     [Header("Movimento (altro)")]
     [SerializeField] float velocitaRotazione = 720f;
@@ -120,6 +145,10 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     [SerializeField] float preparazioneIncantesimo = 0.3f;
     [Tooltip("Secondi dopo il lancio prima di poter rifare un'azione (la schivata si può fare subito).")]
     [SerializeField] float recuperoIncantesimo = 0.45f;
+    [Tooltip("Secondi dall'ultimo incantesimo prima che il mana cominci a ricaricarsi da solo.")]
+    [SerializeField] float pausaRicaricaMana = 2f;
+    [Tooltip("Secondi per ricaricare 100 di mana, una volta partita la ricarica (la velocità non cambia con il mana massimo; libri e amuleti la cambiano).")]
+    [SerializeField] float secondiPerCentoMana = 17f;
 
     [Header("Altro")]
     [Tooltip("Per quanti secondi un tasto premuto in anticipo resta valido.")]
@@ -157,9 +186,38 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Armi: la spada c'è sempre, il bastone magico si trova nel baule. Tasto 1 spada, tasto 2 bastone.
     public enum ArmaImpugnata { Spada, Bastone }
     public ArmaImpugnata Arma => arma;
-    public bool HaBastone => haBastone;
+    // Il bastone c'è se è stato trovato nel baule della chiesetta; lo Stregone lancia sempre incantesimi.
+    public bool HaBastone => haBastone || Stregone;
+    // La classe scelta nel menu è lo Stregone (vedi SceltaPartita): niente spada, solo incantesimi.
+    public bool Stregone => SceltaPartita.Classe == ClasseGiocatore.Stregone;
+    // Stregone senza bastone ma con un'arma di tutte le classi (armi improvvisate della gattabuia): combatte corpo a corpo.
+    public bool StregoneCorpoACorpo
+    {
+        get
+        {
+            if (!Stregone) return false;
+            if (equipaggiamento == null) equipaggiamento = GetComponent<Equipaggiamento>();
+            return equipaggiamento != null && equipaggiamento.Bastone == null && equipaggiamento.Arma != null;
+        }
+    }
+    Equipaggiamento equipaggiamento;
+    // Lo Stregone usa gli incantesimi (non quando combatte con un'arma improvvisata).
+    bool UsaMagia => Stregone && magia != null && !StregoneCorpoACorpo;
+    bool eraCorpoACorpo;
+    public MagiaStregone Magia => magia;
     public float Mana { get; private set; }
-    public float ManaMassimo => manaMassimo;
+    // Mana massimo vero: quello dell'Inspector più libro, veste e amuleto (vedi Statistiche).
+    // Le pozioni (Infuso di lunaria) lo alzano per qualche minuto: EffettiPozioni.
+    public float ManaMassimo => (statistiche != null
+        ? Mathf.Max(1f, (manaMassimo + statistiche.ManaMassimo) * (1f + statistiche.ManaMassimoPercento / 100f))
+        : manaMassimo) * (effettiPozioni != null ? effettiPozioni.MoltiplicatoreMana : 1f);
+    EffettiPozioni effettiPozioni;
+    // Danni ricevuti dopo le pozioni (Tonico di cardo: -10% per 3 minuti, cumulabile).
+    float DopoPozioni(float danno)
+    {
+        if (effettiPozioni == null) effettiPozioni = GetComponent<EffettiPozioni>();
+        return effettiPozioni != null ? danno * effettiPozioni.MoltiplicatoreDanni : danno;
+    }
     public bool AttaccoMagico => attaccoMagico;
     public float DurataPreparazioneIncantesimo => preparazioneIncantesimo;
     public float DurataRecuperoIncantesimo => recuperoIncantesimo;
@@ -179,9 +237,23 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     float inizioGestoFodero = -10f;
     InputAction comandoMuovi, comandoSchiva, comandoAttacca, comandoPara, comandoSprint, comandoArma1, comandoArma2, comandoAbilita;
     bool staSprintando;
+    float ultimoColpoRicevuto = -100f;
+    float prossimoControlloNemici;
+    bool nemiciVicini;
 
     ArmaImpugnata arma = ArmaImpugnata.Spada;
     bool haBastone;
+    float ultimoLancio = -10f;  // per la pausa prima della ricarica del mana
+    float manaPerUccisione;     // amuleto arcano
+    float rubaManaPercento;     // amuleto arcano
+    // Stregone
+    MagiaStregone magia;
+    bool eraStregone;
+    float preparazioneSferaBase, recuperoSferaBase;   // numeri della sfera del bastone della chiesetta
+    float manaPersoPerDannoPercento, manaPerSchivata; // vesti dello Stregone
+    // Passo d'ombra: invisibile e più veloce; lanciando un incantesimo finisce e si rallenta un attimo.
+    float passoInizio, passoFino, passoVelocita, passoMoltiplicatore, passoRallentamento, passoDurataRallentamento;
+    float rallentatoMagiaFino, rallentamentoMagia;
     bool attaccoMagico;      // l'attacco in corso è un lancio di sfera (bastone), non un colpo di spada
     bool sferaLanciata;
     Bersaglio bersaglioSfera;
@@ -235,6 +307,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
 
     bool SchivataRichiesta => Time.time <= schivataPrenotataFino;
     bool AttaccoRichiesto => Time.time <= attaccoPrenotatoFino;
+    TiroConLArco tiroArco;
+    // Il Ladro ha l'arco in mano (tasto 2): il tasto di attacco tende l'arco invece di colpire.
+    public bool ArcoInMano => tiroArco != null && tiroArco.ArcoInMano;
 
     void Awake()
     {
@@ -249,9 +324,15 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         statistiche = Statistiche.Di(this);
         valoriSenzaArma = new[] { dannoAttacco, costoAttacco, preparazioneAttacco, colpoAttivo, recuperoAttacco,
             portataColpo, raggioColpo, arcoAttacco, velocitaAffondo, dannoAssorbitoInParata, costoColpoParato, arcoParata };
+        preparazioneSferaBase = preparazioneIncantesimo;
+        recuperoSferaBase = recuperoIncantesimo;
+        Mana = ManaMassimo;
         if (GetComponent<Equipaggiamento>() == null) gameObject.AddComponent<Equipaggiamento>();
         passaggio = GetComponent<PassaggioStretto>();
         if (passaggio == null) passaggio = gameObject.AddComponent<PassaggioStretto>();
+        if (GetComponent<RianimaAlleato>() == null) gameObject.AddComponent<RianimaAlleato>();   // co-op: rialzare gli alleati
+        tiroArco = GetComponent<TiroConLArco>();
+        if (tiroArco == null) tiroArco = gameObject.AddComponent<TiroConLArco>();   // il tiro con l'arco del Ladro
         raggioNormale = controller.radius;
         Vita = VitaMassima;
         puntoRinascita = transform.position;
@@ -335,6 +416,17 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         comandoAbilita = new InputAction("Abilita", InputActionType.Button);
         comandoAbilita.AddBinding("<Keyboard>/q");
         comandoAbilita.AddBinding("<Gamepad>/dpad/up");
+
+        // Tasti scelti dal giocatore in Opzioni > Comandi (vedi Comandi.cs): sostituiscono quelli scritti sopra.
+        Comandi.Collega(comandoMuovi, Azione.Avanti, this);
+        Comandi.Collega(comandoMuovi, Azione.Indietro, this);
+        Comandi.Collega(comandoMuovi, Azione.Sinistra, this);
+        Comandi.Collega(comandoMuovi, Azione.Destra, this);
+        Comandi.Collega(comandoSchiva, Azione.Schiva, this);
+        Comandi.Collega(comandoAttacca, Azione.Attacca, this);
+        Comandi.Collega(comandoPara, Azione.Para, this);
+        Comandi.Collega(comandoSprint, Azione.Corsa, this);
+        Comandi.Collega(comandoAbilita, Azione.Abilita, this);
     }
 
     void Update()
@@ -343,21 +435,29 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         tempoNelloStato += dt;
 
         // Caduto nel vuoto: muore subito (e rinasce al checkpoint).
-        if (stato != Stato.Morto && transform.position.y < quotaVuoto) PerdiVita(Vita);
+        if (stato != Stato.Morto && transform.position.y < quotaVuoto) PerdiVita(Vita, true);
+        AggiornaCaduta();
+        ControllaGruppo();
 
-        if (comandoSchiva.WasPressedThisFrame()) schivataPrenotataFino = Time.time + memoriaComandi;
-        if (comandoAttacca.WasPressedThisFrame()) attaccoPrenotatoFino = Time.time + memoriaComandi;
-        if (comandoAbilita.WasPressedThisFrame()) SvanisciNellOmbra();
+        if (comandoSchiva.WasPressedThisFrame() && !Dialogo.InCorso) schivataPrenotataFino = Time.time + memoriaComandi;
+        if (comandoAttacca.WasPressedThisFrame() && !Dialogo.InCorso) attaccoPrenotatoFino = Time.time + memoriaComandi;
+        if (comandoAbilita.WasPressedThisFrame() && !Dialogo.InCorso) SvanisciNellOmbra();
         AggiornaOmbra();
+        RicaricaMana(dt);
+        if (effettiPozioni == null) effettiPozioni = GetComponent<EffettiPozioni>();
+        if (Mana > ManaMassimo) Mana = ManaMassimo;   // finito l'effetto di una pozione, il mana in più si perde
+        AggiornaClasse();
 
         // Cambio arma, non durante un attacco, non da morti e non con l'arma nel fodero.
-        if (stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
+        // Lo Stregone non cambia arma: i tasti numerici scelgono gli incantesimi (vedi MagiaStregone).
+        if (!Stregone && stato != Stato.Morto && stato != Stato.Attacco && !armaNelFodero && !GestoFoderoInCorso)
         {
             if (comandoArma1.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Spada);
             if (comandoArma2.WasPressedThisFrame()) ImpugnaArma(ArmaImpugnata.Bastone);
         }
 
-        Vector3 direzioneInput = DirezioneDaInput(comandoMuovi.ReadValue<Vector2>());
+        // Mentre si parla (vedi Dialogo) il personaggio sta fermo.
+        Vector3 direzioneInput = DirezioneDaInput(Dialogo.InCorso ? Vector2.zero : comandoMuovi.ReadValue<Vector2>());
         Vector3 movimento = Vector3.zero;
         AggiornaStrettoia(direzioneInput, dt);
 
@@ -389,14 +489,17 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
                 break;
         }
 
+        // Passo d'ombra (più veloce) o rallentato dopo averlo interrotto.
+        if (stato == Stato.Libero || stato == Stato.Parata) movimento *= MoltiplicatoreVelocitaMagia;
+
         // Nell'acqua bassa si va più piano (vedi AcquaBassa), con un passaggio graduale entrando e uscendo.
         float fattoreAcqua = AcquaBassa.FattoreVelocita(transform.position + Vector3.down * 0.9f);
         velocitaAcqua = Mathf.MoveTowards(velocitaAcqua, fattoreAcqua, 3f * dt);
         if (stato != Stato.Esecuzione) movimento *= velocitaAcqua;
 
         // Per l'avviso a schermo: c'è un nemico ignaro da giustiziare qui davanti?
-        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada ? CercaVittima() : null;
-        if (vittimaPossibile != null) HudGioco.MostraAzione(Lingua.T("hud.tasto_attacco"), Lingua.T("hud.esecuzione"));
+        vittimaPossibile = stato == Stato.Libero && arma == ArmaImpugnata.Spada && !ArcoInMano ? CercaVittima() : null;
+        if (vittimaPossibile != null) HudGioco.MostraAzione(Comandi.NomeTasto(Azione.Attacca), Lingua.T("hud.esecuzione"));
 
         resistenza.InPausaRecupero = stato == Stato.Parata;
 
@@ -432,7 +535,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             return Vector3.zero;
         }
 
-        bool vuoleParare = comandoPara.IsPressed();
+        bool vuoleParare = comandoPara.IsPressed() && !Dialogo.InCorso;
         if (vuoleParare && stato == Stato.Libero) CambiaStato(Stato.Parata);
         else if (!vuoleParare && stato == Stato.Parata) CambiaStato(Stato.Libero);
 
@@ -454,7 +557,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         {
             velocita = velocitaSprint;
             // Spendere resistenza ogni frame ferma anche la ricarica, come per le altre azioni.
-            resistenza.Spendi(costoSprintAlSecondo * dt);
+            // Esplorando (nessun nemico vicino) lo sprint non costa niente e la barra si ricarica.
+            if (!sprintGratisEsplorando || InCombattimento) resistenza.Spendi(costoSprintAlSecondo * dt);
         }
         // Spazio che si stringe ma non ancora strettoia vera: si rallenta già un po'.
         return direzioneInput * velocita * velocitaArmatura * Mathf.Lerp(1f, velocitaInStrettoia, Strettoia);
@@ -488,11 +592,54 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         }
     }
 
+    // ---------- In combattimento o in esplorazione ----------
+
+    // Vero se c'è un nemico vivo vicino (sveglio o no), uno che ti insegue da più lontano,
+    // o se hai ricevuto un colpo da poco. Lo usa lo sprint per decidere se consumare resistenza.
+    public bool InCombattimento
+    {
+        get
+        {
+            if (Time.time - ultimoColpoRicevuto < durataCombattimento) return true;
+            // Cercare i nemici a ogni fotogramma non serve: basta 4 volte al secondo.
+            if (Time.time >= prossimoControlloNemici)
+            {
+                prossimoControlloNemici = Time.time + 0.25f;
+                nemiciVicini = CercaNemiciVicini();
+            }
+            return nemiciVicini;
+        }
+    }
+
+    bool CercaNemiciVicini()
+    {
+        Vector3 qui = transform.position;
+        float vicini2 = raggioNemiciVicini * raggioNemiciVicini;
+        float inseguono2 = raggioNemiciInseguono * raggioNemiciInseguono;
+        foreach (var nemico in RegistroNemici.Tutti)
+        {
+            if (nemico == null || nemico.Morto || !nemico.isActiveAndEnabled) continue;
+            float distanza2 = (nemico.transform.position - qui).sqrMagnitude;
+            if (distanza2 > inseguono2 || !NemicoVero(nemico)) continue;
+            if (distanza2 <= vicini2) return true;
+            if (Time.time - nemico.UltimoInseguimento < 1f) return true;   // ti (o vi) sta inseguendo
+        }
+        return false;
+    }
+
+    // Un nemico vero insegue o balza (InseguimentoNemico, RattoGigante) oppure attacca da solo.
+    // Manichini e sagome dell'allenamento non attaccano e non contano.
+    static bool NemicoVero(Bersaglio b)
+    {
+        return b.attaccaIlGiocatore || b.GetComponent<InseguimentoNemico>() != null || b.GetComponent<RattoGigante>() != null
+            || b.GetComponent<ScheletroVivente>() != null;
+    }
+
     // Decide se lo sprint è attivo: serve Shift premuto, il personaggio libero e in movimento.
     // Parte solo con un po' di resistenza e si ferma quando la barra è vuota.
     void AggiornaSprint(bool inMovimento)
     {
-        bool vuoleSprint = comandoSprint.IsPressed() && inMovimento && stato == Stato.Libero;
+        bool vuoleSprint = comandoSprint.IsPressed() && !Dialogo.InCorso && inMovimento && stato == Stato.Libero;
 
         if (!vuoleSprint) staSprintando = false;
         else if (!staSprintando && resistenza.Attuale >= resistenzaMinimaSprint) staSprintando = true;
@@ -538,6 +685,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     void IniziaSchivata(Vector3 direzioneInput)
     {
         resistenza.Spendi(costoSchivata + schivataExtraArmatura);
+        if (manaPerSchivata > 0f) Mana = Mathf.Max(0f, Mana - manaPerSchivata);   // Manto di cenere
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.7f);
         schivataPrenotataFino = -1f;
 
@@ -558,6 +706,18 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Con la spada serve resistenza; con il bastone serve abbastanza mana (altrimenti avvisa).
     bool PuoAttaccare()
     {
+        // Con l'arco in mano il tasto di attacco tende l'arco (TiroConLArco): niente colpi corpo a corpo.
+        if (ArcoInMano)
+        {
+            attaccoPrenotatoFino = -1f;
+            return false;
+        }
+        if (UsaMagia)
+        {
+            if (magia.PuoLanciare()) return true;
+            attaccoPrenotatoFino = -1f;
+            return false;
+        }
         if (arma == ArmaImpugnata.Spada) return resistenza.HaResistenza;
         if (Mana >= costoSfera) return true;
 
@@ -574,15 +734,40 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // concatenato = attacco fatto durante il recupero del precedente: passa al colpo dopo della combo (1, 2, poi di nuovo 0).
     void IniziaAttacco(bool concatenato = false)
     {
+        // Lanciare durante il Passo d'ombra: questo incantesimo fa il danno moltiplicato, poi l'effetto finisce
+        // e per un attimo si va più piano (se invece il Passo finisce da solo, nessun rallentamento).
+        float moltiplicatoreDaPasso = 1f;
+        if (UsaMagia && PassoAttivo)
+        {
+            moltiplicatoreDaPasso = passoMoltiplicatore;
+            passoFino = Time.time;
+            rallentamentoMagia = passoRallentamento;
+            rallentatoMagiaFino = Time.time + passoDurataRallentamento;
+        }
         RompiOmbra(); // attaccare (anche con il bastone o con l'esecuzione furtiva) fa tornare visibili
-        attaccoMagico = arma == ArmaImpugnata.Bastone;
+        attaccoMagico = UsaMagia || (!StregoneCorpoACorpo && arma == ArmaImpugnata.Bastone);
         if (attaccoMagico)
         {
             // Bastone: la sfera parte alla fine della carica, verso il nemico scelto adesso.
             colpoCombo = 0;
             sferaLanciata = false;
-            Mana -= costoSfera;
-            bersaglioSfera = ScegliBersaglioSfera();
+            if (UsaMagia)
+            {
+                // Stregone: l'incantesimo della casella scelta, con i suoi tempi e il suo costo.
+                magia.IniziaLancio(moltiplicatoreDaPasso, out float costo, out float carica, out float recupero);
+                preparazioneIncantesimo = carica;
+                recuperoIncantesimo = recupero;
+                Mana = Mathf.Max(0f, Mana - costo);
+                bersaglioSfera = magia.ScegliBersaglio(magia.PortataScelta);
+            }
+            else
+            {
+                preparazioneIncantesimo = preparazioneSferaBase;
+                recuperoIncantesimo = recuperoSferaBase;
+                Mana -= costoSfera;
+                bersaglioSfera = ScegliBersaglioSfera();
+            }
+            ultimoLancio = Time.time;
             if (bersaglioSfera != null)
             {
                 Vector3 verso = bersaglioSfera.transform.position - transform.position;
@@ -640,7 +825,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             ? (obiettivo.transform.position + Vector3.up * 0.3f - partenza).normalized
             : transform.forward;
 
-        SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, dannoSfera, transform);
+        float danno = dannoSfera;
+        if (UsaMagia)
+        {
+            magia.Lancia(obiettivo, partenza, direzione);
+            return;
+        }
+        SferaMagica.Lancia(partenza, direzione, obiettivo, velocitaSfera, danno, transform);
         Suoni.Suona(Suono.SferaLancio, partenza, 0.9f);
         MondoRete.InviaSfera(partenza, direzione, obiettivo, velocitaSfera); // gli altri giocatori la vedono partire
     }
@@ -668,7 +859,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     void ImpugnaArma(ArmaImpugnata nuova)
     {
         if (nuova == arma) return;
-        if (nuova == ArmaImpugnata.Bastone && !haBastone) return;
+        if (nuova == ArmaImpugnata.Bastone && !HaBastone) return;
 
         arma = nuova;
         AspettoUmanoide.MostraArma(gameObject, arma == ArmaImpugnata.Bastone ? AspettoUmanoide.Arma.Bastone : AspettoUmanoide.Arma.Spada);
@@ -682,7 +873,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // - La parata la decide lo scudo; senza scudo si para con l'arma (peggio); senza niente, l'Inspector.
     // - Scudo e armatura pesano: schivata più cara e corsa più lenta.
     // - Gli amuleti arcani danno il loro effetto speciale.
-    public void AggiornaEquipaggiamento(DatiArma armaNuova, DatiScudo scudo, DatiArmatura armatura, DatiAmuleto amuleto)
+    public void AggiornaEquipaggiamento(DatiArma armaNuova, DatiScudo scudo, DatiArmatura armatura, DatiAmuleto amuleto, DatiLibro libro = null)
     {
         if (valoriSenzaArma == null) return;
         float[] v = valoriSenzaArma;
@@ -702,6 +893,10 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         dannoAlleSpalle = a ? armaNuova.moltiplicatoreAlleSpalle : 1f;
         // In mano resta la spada provvisoria: il modello vero dell'arma arriverà con Nazar (DatiOggetto.modello).
 
+        // Vesti dello Stregone: mana perso a ogni danno ricevuto (Tunica stracciata) o a ogni schivata (Manto di cenere).
+        manaPersoPerDannoPercento = armatura != null ? armatura.manaPersoPerDannoPercento : 0f;
+        manaPerSchivata = armatura != null ? armatura.manaPerSchivata : 0f;
+
         if (scudo != null)
         {
             dannoAssorbitoInParata = scudo.dannoAssorbito;
@@ -719,18 +914,28 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             finestraParataPerfetta = 0f;
         }
 
-        schivataExtraArmatura = (armatura != null ? armatura.costoSchivataExtra : 0f) + (scudo != null ? scudo.costoSchivataExtra : 0f);
-        velocitaArmatura = (armatura != null ? armatura.moltiplicatoreVelocita : 1f) * (scudo != null ? scudo.moltiplicatoreVelocita : 1f);
+        schivataExtraArmatura = (armatura != null ? armatura.costoSchivataExtra : 0f) + (scudo != null ? scudo.costoSchivataExtra : 0f)
+            + (libro != null ? libro.costoSchivataExtra : 0f);
+        velocitaArmatura = (armatura != null ? armatura.moltiplicatoreVelocita : 1f) * (scudo != null ? scudo.moltiplicatoreVelocita : 1f)
+            * (libro != null ? libro.moltiplicatoreVelocita : 1f);
 
         vitaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.VitaPerUccisione) : 0f;
         rubaVitaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaVita) : 0f;
         durataOmbra = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.SvanireNellOmbra) : 0f;
         ricaricaOmbra = durataOmbra > 0f ? amuleto.ricarica : 0f;
+        manaPerUccisione = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.ManaPerUccisione) : 0f;
+        rubaManaPercento = amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RubaMana) : 0f;
+        // Se il mana massimo scende (amuleto, libro tolto), il mana attuale non può restare sopra.
+        Mana = Mathf.Min(Mana, ManaMassimo);
         // Se la vita massima scende (amuleto), la vita attuale non può restare sopra.
         Vita = Mathf.Min(Vita, VitaMassima);
 
         if (resistenza != null)
+        {
             resistenza.MoltiplicatoreRecupero = 1f + (amuleto != null ? amuleto.ValoreEffetto(DatiAmuleto.Effetto.RecuperoResistenza) : 0f) / 100f;
+            // Resistenza massima delle Statistiche (amuleti: -10 = il 10% in meno).
+            resistenza.MoltiplicatoreMassimo = 1f + statistiche.ResistenzaMassimaPercento / 100f;
+        }
     }
 
     // Tempo per alzare lo scudo, rallentato o velocizzato dalle Statistiche (-5 = il 5% più lento).
@@ -751,8 +956,13 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         invisibileFino = Time.time + durataOmbra;
         ombraProntaDa = Time.time + ricaricaOmbra;
         Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.8f, 0.55f);
+        Ombreggia();
+    }
 
-        // Il personaggio diventa scuro, quasi un'ombra (il giocatore deve comunque vedersi).
+    // Il personaggio diventa scuro, quasi un'ombra (il giocatore deve comunque vedersi).
+    void Ombreggia()
+    {
+        if (partiInOmbra.Count > 0) return;   // già in ombra
         partiInOmbra.Clear();
         coloriPrimaDellOmbra.Clear();
         foreach (Renderer parte in GetComponentsInChildren<Renderer>())
@@ -783,10 +993,18 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         coloriPrimaDellOmbra.Clear();
     }
 
-    void Cura(float quantita)
+    // Ridà vita (amuleti, pozioni: UsoConsumabili), senza superare il massimo. Da morti non fa niente.
+    public void Cura(float quantita)
     {
         if (quantita <= 0f || stato == Stato.Morto) return;
         Vita = Mathf.Min(VitaMassima, Vita + quantita);
+    }
+
+    // Ridà mana (pozioni: UsoConsumabili), senza superare il massimo. Senza bastone il mana non serve e non cambia.
+    public void RidaiMana(float quantita)
+    {
+        if (quantita <= 0f || stato == Stato.Morto || !HaBastone) return;
+        Mana = Mathf.Min(ManaMassimo, Mana + quantita);
     }
 
     // Chiamato dal Baule della chiesetta: il giocatore ottiene il bastone, con il mana pieno, e lo impugna.
@@ -794,7 +1012,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     {
         if (haBastone) return;
         haBastone = true;
-        Mana = manaMassimo;
+        Mana = ManaMassimo;
         AspettoUmanoide.AggiungiBastone(gameObject);
         ImpugnaArma(ArmaImpugnata.Bastone);
     }
@@ -802,9 +1020,99 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Chiamato da un nemico quando muore: con il bastone si recupera un po' di mana.
     public void NemicoSconfitto()
     {
-        Cura(vitaPerUccisione); // amuleto arcano
-        if (!haBastone) return;
-        Mana = Mathf.Min(manaMassimo, Mana + manaMassimo * manaPerUccisionePercento / 100f);
+        Cura(vitaPerUccisione + statistiche.VitaPerUccisione); // amuleti
+        if (!HaBastone) return;
+        // Lo Stregone recupera mana solo con la ricarica e con gli amuleti; il bastone della chiesetta anche così.
+        float percento = Stregone ? 0f : manaPerUccisionePercento;
+        Mana = Mathf.Min(ManaMassimo, Mana + ManaMassimo * percento / 100f + manaPerUccisione);
+    }
+
+    // Chiamato da SferaMagica quando la sfera colpisce un nemico: con l'amuleto Cuore del lago nero
+    // una parte del danno torna come mana.
+    public void IncantesimoASegno(float danno)
+    {
+        if (rubaManaPercento <= 0f || danno <= 0f) return;
+        Mana = Mathf.Min(ManaMassimo, Mana + danno * rubaManaPercento / 100f);
+    }
+
+    // Il mana si ricarica da solo 2 s dopo l'ultimo incantesimo, 100 punti in 17 s (Docs/incantesimi-stregone.md):
+    // la velocità non cresce con il mana massimo. Libri, vesti e amuleti con "Recupero Mana" la cambiano.
+    // Da morti non si ricarica.
+    void RicaricaMana(float dt)
+    {
+        if (!HaBastone || stato == Stato.Morto || Mana >= ManaMassimo) return;
+        if (Time.time - ultimoLancio < pausaRicaricaMana) return;
+        float alSecondo = 100f / Mathf.Max(0.1f, secondiPerCentoMana) * Mathf.Max(0f, 1f + statistiche.RecuperoMana / 100f);
+        Mana = Mathf.Min(ManaMassimo, Mana + alSecondo * dt);
+    }
+
+    // ---------- Stregone ----------
+
+    // La classe si sceglie nel menu (o con il menu di prova dell'editor): se diventa Stregone serve la magia
+    // e il bastone in mano; se smette di esserlo torna la spada.
+    void AggiornaClasse()
+    {
+        // Stregone che prende o lascia un'arma improvvisata: in mano la spada provvisoria (con la forma dell'arma) o il bastone.
+        bool corpoACorpo = StregoneCorpoACorpo;
+        if (Stregone && magia != null && corpoACorpo != eraCorpoACorpo && stato != Stato.Attacco)
+        {
+            eraCorpoACorpo = corpoACorpo;
+            ImpugnaArma(corpoACorpo ? ArmaImpugnata.Spada : ArmaImpugnata.Bastone);
+        }
+        bool ora = Stregone;
+        if (ora == eraStregone && (!ora || magia != null)) return;
+        eraStregone = ora;
+        if (ora)
+        {
+            if (magia == null) magia = GetComponent<MagiaStregone>();
+            if (magia == null) magia = gameObject.AddComponent<MagiaStregone>();
+            magia.enabled = true;
+            AspettoUmanoide.AggiungiBastone(gameObject);
+            ImpugnaArma(ArmaImpugnata.Bastone);
+            Mana = ManaMassimo;
+        }
+        else
+        {
+            if (magia != null) magia.enabled = false;
+            if (!haBastone) ImpugnaArma(ArmaImpugnata.Spada);
+        }
+    }
+
+    // Passo d'ombra (vedi MagiaStregone): invisibile per "durata" secondi, più veloce del "velocitaInPiu" per cento.
+    // Il primo incantesimo lanciato in quel tempo fa "moltiplicatore" volte il danno e fa finire l'effetto; dopo,
+    // per "durataRallentamento" secondi si va il "rallentamento" per cento più piano.
+    public void AttivaPassoOmbra(float durata, float velocitaInPiu, float moltiplicatore, float rallentamento, float durataRallentamento)
+    {
+        if (stato == Stato.Morto) return;
+        passoInizio = Time.time;
+        passoFino = Time.time + durata;
+        passoVelocita = velocitaInPiu;
+        passoMoltiplicatore = moltiplicatore;
+        passoRallentamento = rallentamento;
+        passoDurataRallentamento = durataRallentamento;
+        invisibileFino = passoFino;
+        Ombreggia();
+        Suoni.Suona(Suono.Schivata, transform.position + Vector3.up, 0.8f, 0.55f);
+    }
+
+    public bool PassoAttivo => Time.time < passoFino && Invisibile;
+
+    // +40% di velocità già dal primo istante, poi resta; nell'ultimo mezzo secondo scende piano alla normale.
+    // Dopo aver interrotto il Passo lanciando, per un attimo si va più piano.
+    float MoltiplicatoreVelocitaMagia
+    {
+        get
+        {
+            float m = 1f;
+            if (PassoAttivo)
+            {
+                float salita = Mathf.Clamp01((Time.time - passoInizio) / 0.15f);
+                float discesa = Mathf.Clamp01((passoFino - Time.time) / 0.6f);
+                m *= 1f + passoVelocita / 100f * Mathf.Min(salita, discesa);
+            }
+            if (Time.time < rallentatoMagiaFino) m *= Mathf.Clamp01(1f - rallentamentoMagia / 100f);
+            return m;
+        }
     }
 
     bool SonoAgganciato => aggancio != null && aggancio.Agganciato;
@@ -840,6 +1148,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         {
             InseguimentoNemico nemico = c.GetComponentInParent<InseguimentoNemico>();
             if (nemico == null || !nemico.Ignaro) continue;
+            // Boss e miniboss non si possono uccidere di nascosto (Docs/oggetti-guerriero.md).
+            if (nemico.TryGetComponent(out Bersaglio corpoNemico) && corpoNemico.Boss) continue;
 
             Vector3 dalNemico = transform.position - nemico.transform.position;
             dalNemico.y = 0f;
@@ -930,7 +1240,150 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // ---------- Nemici (vedi ObiettiviNemici) ----------
 
     public Transform Corpo => transform;
-    public bool Abbattuto => stato == Stato.Morto;
+    public bool Abbattuto => stato == Stato.Morto;   // morto, a terra o spettatore: i nemici lo lasciano stare
+
+    // ---------- A terra e spettatore (co-op) ----------
+
+    public enum Caduta { Nessuna, ATerra, Spettatore }
+    // Con lo stato Morto: Nessuna = morto e rinasce da solo; ATerra = aspetta un alleato; Spettatore = guarda lo scontro.
+    public Caduta StatoCaduta { get; private set; } = Caduta.Nessuna;
+    [Header("Co-op: a terra e rianimazione")]
+    [Tooltip("Vita con cui si torna in piedi quando un alleato ti rialza, in percentuale della vita massima.")]
+    [SerializeField, Range(1f, 100f)] float vitaDopoRianimazione = 30f;
+    [Tooltip("Secondi senza danni subito dopo essere stati rialzati.")]
+    [SerializeField] float protezioneDopoRianimazione = 1.5f;
+    int atterramentiBoss;          // quante volte si è andati a terra nello scontro con il boss di adesso
+    float protettoFino;
+    float gruppoATerraDa = -1f;    // solo sull'host: da quando tutto il gruppo è a terra
+    float prossimoControlloBoss;
+    CameraTerzaPersona cameraSeguita;
+
+    static bool InCoop => Rete.Attiva && DifficoltaCoop.Giocatori > 1;
+
+    // La vita è finita: da soli si muore e si rinasce; in co-op si va a terra o, contro un boss la seconda volta, spettatori.
+    void Cadi(bool nelVuoto)
+    {
+        CambiaStato(Stato.Morto);
+        bool scontroBoss = CombattimentoBoss.Vicino(transform.position) != null;
+        if (!InCoop || nelVuoto)
+        {
+            // Da soli tutto il "gruppo" è morto: il boss ricomincia da capo.
+            if (scontroBoss && !InCoop) CombattimentoBoss.Ripristina();
+            StatoCaduta = Caduta.Nessuna;
+            Invoke(nameof(Rinasci), secondiPerRinascere);
+            return;
+        }
+        if (scontroBoss && atterramentiBoss >= 1)
+        {
+            StatoCaduta = Caduta.Spettatore;
+            Seguilo(AlleatoInPiedi());
+            MessaggiSchermo.Mostra(Lingua.T("hud.spettatore"), 4f);
+            return;
+        }
+        if (scontroBoss) atterramentiBoss++;
+        StatoCaduta = Caduta.ATerra;
+        MessaggiSchermo.Mostra(Lingua.T("hud.a_terra_aiuto"), 4f);
+    }
+
+    // Un alleato ti ha rialzato (arriva da GiocatoreRete.ChiediRialza).
+    public void Rialza()
+    {
+        if (stato != Stato.Morto || StatoCaduta != Caduta.ATerra) return;
+        StatoCaduta = Caduta.Nessuna;
+        velocitaVerticale = 0f;
+        Vita = Mathf.Max(1f, VitaMassima * vitaDopoRianimazione / 100f);
+        resistenza.Ripristina();
+        protettoFino = Time.time + protezioneDopoRianimazione;
+        CambiaStato(Stato.Libero);
+        Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f, 1.2f);
+    }
+
+    // Tutto il gruppo è andato a terra (arriva dall'host, vedi MondoRete.InviaGruppoSconfitto): si rinasce al checkpoint.
+    public void RinasciDopoSconfitta()
+    {
+        if (stato != Stato.Morto) return;
+        CancelInvoke(nameof(Rinasci));
+        TornaInGioco(puntoRinascita, rotazioneRinascita);
+        MessaggiSchermo.Mostra(Lingua.T("hud.gruppo_sconfitto"), 4f);
+    }
+
+    // Spettatore e A terra: controlli fatti a ogni fotogramma.
+    void AggiornaCaduta()
+    {
+        // Gli altri sono usciti e si è rimasti soli a terra: nessuno può rialzarti, si rinasce al checkpoint.
+        if (StatoCaduta != Caduta.Nessuna && !InCoop) { TornaInGioco(puntoRinascita, rotazioneRinascita); return; }
+        if (StatoCaduta == Caduta.Spettatore)
+        {
+            // La camera segue un alleato ancora in piedi; finito lo scontro si torna in gioco accanto a lui.
+            var alleato = AlleatoInPiedi();
+            if (cameraSeguita != null && alleato != null && cameraSeguita.bersaglio != alleato.transform) Seguilo(alleato);
+            Vector3 dove = cameraSeguita != null && cameraSeguita.bersaglio != null ? cameraSeguita.bersaglio.position : transform.position;
+            if (CombattimentoBoss.Vicino(dove) == null && CombattimentoBoss.Vicino(transform.position) == null)
+            {
+                if (alleato != null) TornaInGioco(alleato.transform.position - alleato.transform.forward * 1.5f, alleato.transform.rotation);
+                else TornaInGioco(puntoRinascita, rotazioneRinascita);
+            }
+            return;
+        }
+        if (stato == Stato.Morto || Time.time < prossimoControlloBoss) return;
+        // In piedi e lontano da ogni boss: lo scontro è finito, il conto degli atterramenti ricomincia.
+        prossimoControlloBoss = Time.time + 1f;
+        if (atterramentiBoss > 0 && CombattimentoBoss.Vicino(transform.position) == null) atterramentiBoss = 0;
+    }
+
+    // Solo sull'host in co-op: se tutti sono a terra (o spettatori) da 1,5 s, il gruppo è sconfitto.
+    void ControllaGruppo()
+    {
+        if (!InCoop || !Rete.ComandaIlMondo) { gruppoATerraDa = -1f; return; }
+        bool tutti = stato == Stato.Morto && StatoCaduta != Caduta.Nessuna;
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && !(altro.ATerra || altro.Spettatore)) tutti = false;
+        if (!tutti) { gruppoATerraDa = -1f; return; }
+        if (gruppoATerraDa < 0f) { gruppoATerraDa = Time.time; return; }
+        if (Time.time - gruppoATerraDa < 1.5f) return;
+        gruppoATerraDa = -1f;
+        CombattimentoBoss.Ripristina();
+        MondoRete.InviaGruppoSconfitto();
+    }
+
+    // Il primo alleato in piedi (la sua figura su questo PC), o null.
+    static GiocatoreRete AlleatoInPiedi()
+    {
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && altro.IsSpawned && !altro.Abbattuto && !altro.Spettatore) return altro;
+        return null;
+    }
+
+    // Spettatore: la camera segue l'alleato e la propria figura sparisce.
+    void Seguilo(GiocatoreRete alleato)
+    {
+        if (cameraSeguita == null && Camera.main != null) cameraSeguita = Camera.main.GetComponent<CameraTerzaPersona>();
+        if (cameraSeguita != null && alleato != null) cameraSeguita.bersaglio = alleato.transform;
+        MostraFigura(false);
+    }
+
+    void MostraFigura(bool mostra)
+    {
+        foreach (Renderer parte in GetComponentsInChildren<Renderer>(true))
+            parte.forceRenderingOff = !mostra;   // non tocca "enabled": la capsula nascosta da AspettoUmanoide resta nascosta
+    }
+
+    // Di nuovo in piedi in un punto, con la vita piena (fine dello scontro o gruppo sconfitto).
+    void TornaInGioco(Vector3 dove, Quaternion rotazione)
+    {
+        if (cameraSeguita != null) cameraSeguita.bersaglio = transform;
+        MostraFigura(true);
+        StatoCaduta = Caduta.Nessuna;
+        atterramentiBoss = 0;
+        puntoTemporaneo = dove;
+        rotazioneTemporanea = rotazione;
+        usaPuntoTemporaneo = true;
+        Rinasci();
+    }
+
+    Vector3 puntoTemporaneo;
+    Quaternion rotazioneTemporanea;
+    bool usaPuntoTemporaneo;
     public float Furtivita => statistiche != null ? statistiche.Furtivita : 0f;
 
     // Il colpo di un nemico arriva (anche da un nemico dell'host, in co-op): il danno si calcola qui,
@@ -957,7 +1410,9 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // niente danno, niente resistenza persa, e il nemico (attaccante) resta sbilanciato.
     public void RiceviColpo(float danno, Vector3 origineColpo, bool critico = false, Bersaglio attaccante = null)
     {
-        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
+        ultimoColpoRicevuto = Time.time;   // anche se lo schivi o lo pari, sei in combattimento
+        danno = DopoPozioni(danno);
 
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
@@ -1002,23 +1457,28 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         }
     }
 
-    void PerdiVita(float quantita)
+    void PerdiVita(float quantita, bool nelVuoto = false)
     {
+        // Tunica stracciata: ogni danno ricevuto, anche di 1 punto, toglie una parte del mana massimo.
+        if (quantita > 0f && manaPersoPerDannoPercento > 0f) Mana = Mathf.Max(0f, Mana - ManaMassimo * manaPersoPerDannoPercento / 100f);
         Vita = Mathf.Max(0f, Vita - quantita);
         if (Vita > 0f) return;
 
         Debug.Log("Sei morto.");
         Suoni.Suona(Suono.Morte, transform.position + Vector3.up);
-        CambiaStato(Stato.Morto);
-        Invoke(nameof(Rinasci), secondiPerRinascere);
+        Cadi(nelVuoto);
     }
 
     void Rinasci()
     {
+        if (effettiPozioni != null) effettiPozioni.Azzera();   // morendo finiscono gli effetti delle pozioni
         // Il CharacterController va spento per un attimo, altrimenti non lascia spostare il personaggio di colpo.
         controller.enabled = false;
-        transform.SetPositionAndRotation(puntoRinascita, rotazioneRinascita);
+        if (usaPuntoTemporaneo) transform.SetPositionAndRotation(puntoTemporaneo, rotazioneTemporanea);
+        else transform.SetPositionAndRotation(puntoRinascita, rotazioneRinascita);
+        usaPuntoTemporaneo = false;
         controller.enabled = true;
+        StatoCaduta = Caduta.Nessuna;
 
         velocitaVerticale = 0f;
         armaNelFodero = false;   // si rinasce con l'arma in mano
@@ -1027,6 +1487,28 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
         resistenza.Ripristina();
         CambiaStato(Stato.Libero);
         Suoni.Suona(Suono.Rinascita, transform.position + Vector3.up, 0.8f);
+    }
+
+    // Sposta il giocatore di colpo in un altro punto (passaggi fra zone, per esempio l'ingresso della cripta),
+    // fermo e senza cadere. Lo usa CaricamentoZona.
+    public void Teletrasporta(Vector3 dove, Quaternion rotazione)
+    {
+        controller.enabled = false;
+        transform.SetPositionAndRotation(dove, rotazione);
+        controller.enabled = true;
+        velocitaVerticale = 0f;
+        var camera = cameraSeguita != null ? cameraSeguita : Camera.main != null ? Camera.main.GetComponent<CameraTerzaPersona>() : null;
+        if (camera != null) camera.AllineaDietro();
+    }
+
+    // Il punto in cui si rinasce adesso, e come cambiarlo (le zone come la cripta lo spostano all'ingresso e,
+    // uscendo, rimettono quello di prima).
+    public Vector3 PuntoRinascita => puntoRinascita;
+    public Quaternion RotazioneRinascita => rotazioneRinascita;
+    public void ImpostaRinascita(Vector3 posizione, Quaternion rotazione)
+    {
+        puntoRinascita = posizione;
+        rotazioneRinascita = rotazione;
     }
 
     // Chiamato da un Checkpoint quando il giocatore lo raggiunge: da ora si rinasce lì.
@@ -1042,7 +1524,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
     // Danno dall'ambiente (trappole, fuoco...): non si può parare, ma la schivata fatta al momento giusto lo evita.
     public void RiceviDannoAmbiente(float danno)
     {
-        if (stato == Stato.Morto || stato == Stato.Esecuzione) return;
+        if (stato == Stato.Morto || stato == Stato.Esecuzione || Time.time < protettoFino) return;
+        danno = DopoPozioni(danno);
         if (stato == Stato.Schivata && tempoNelloStato < invulnerabilitaSchivata)
         {
             Debug.Log("Schivato!");
@@ -1110,7 +1593,7 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             // Con il bastone in mano il pannello si allunga per la terza barra, quella del mana.
             bool conBastone = arma == ArmaImpugnata.Bastone;
             GUI.Box(new Rect(10, 10, 540, conBastone ? 152 : 112), GUIContent.none);
-            string armaTesto = haBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
+            string armaTesto = HaBastone ? (conBastone ? "   Arma: Bastone (1 spada)" : "   Arma: Spada (2 bastone)") : "";
             GUI.Label(new Rect(20, 14, 520, 20), "Stato: " + stato + armaTesto + (SonoAgganciato ? "   Agganciato a " + aggancio.Attuale.name : ""));
             GUI.Label(new Rect(20, 32, 280, 20), "Vita " + Mathf.CeilToInt(Vita) + " / " + Mathf.CeilToInt(VitaMassima));
             DisegnaBarra(new Rect(20, 52, 450, 12), Vita / VitaMassima, new Color(0.8f, 0.15f, 0.15f));
@@ -1121,8 +1604,8 @@ public class GiocatoreControllo : MonoBehaviour, IObiettivoNemico, IPersonaggioA
             GUI.Label(new Rect(20, 98, 520, 20), "WASD muovi, Shift sprint, Spazio schiva, Sx attacca, Dx para, rotellina aggancia");
             if (conBastone)
             {
-                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana) + " / " + Mathf.CeilToInt(manaMassimo));
-                DisegnaBarra(new Rect(20, 136, 450, 10), Mana / manaMassimo, new Color(0.25f, 0.45f, 0.95f));
+                GUI.Label(new Rect(20, 116, 280, 20), "Mana " + Mathf.FloorToInt(Mana + 0.01f) + " / " + Mathf.CeilToInt(ManaMassimo));
+                DisegnaBarra(new Rect(20, 136, 450, 10), Mana / ManaMassimo, new Color(0.25f, 0.45f, 0.95f));
             }
         }
 

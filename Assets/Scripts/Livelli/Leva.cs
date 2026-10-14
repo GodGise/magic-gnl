@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 // Leva che apre (e, se vuoi, richiude) una o più porte.
@@ -22,6 +23,8 @@ public class Leva : MonoBehaviour, IOggettoCondiviso
     [SerializeField] bool unaVoltaSola = true;
     [Tooltip("Secondi che impiega il manico ad abbassarsi o alzarsi.")]
     [SerializeField] float durataMovimento = 0.4f;
+    [Tooltip("Cosa succede quando la leva viene abbassata (per esempio cambiare l'obiettivo della quest).")]
+    [SerializeField] UnityEvent quandoAbbassata;
 
     const float DistanzaMassimaPortaVicina = 30f;
 
@@ -39,6 +42,7 @@ public class Leva : MonoBehaviour, IOggettoCondiviso
         comandoInteragisci = new InputAction("Interagisci", InputActionType.Button);
         comandoInteragisci.AddBinding("<Keyboard>/e");
         comandoInteragisci.AddBinding("<Gamepad>/buttonSouth");
+        Comandi.Collega(comandoInteragisci, Azione.Interagisci, this);   // tasto scelto in Opzioni > Comandi
     }
 
     void OnEnable() => comandoInteragisci.Enable();
@@ -104,6 +108,7 @@ public class Leva : MonoBehaviour, IOggettoCondiviso
         }
         MondoRete.InviaEvento(this, Rete.MioId, abbassata ? 1 : 0);
         Debug.Log(name + (abbassata ? ": leva abbassata" : ": leva alzata"));
+        if (abbassata) quandoAbbassata?.Invoke();
     }
 
     // ---------- co-op (IOggettoCondiviso) ----------

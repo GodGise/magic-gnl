@@ -57,7 +57,9 @@ public class ElencoMenu
 
     // ---------- comandi ----------
 
-    public ComandiMenu LeggiComandi()
+    // soloFrecce: per le schermate dove si scrive (il nome): lettere, Spazio e Backspace servono al testo,
+    // quindi si muove solo con le frecce, si conferma solo con Invio e si torna indietro solo con Esc.
+    public ComandiMenu LeggiComandi(bool soloFrecce = false)
     {
         var c = new ComandiMenu();
         var tastiera = Keyboard.current;
@@ -65,12 +67,13 @@ public class ElencoMenu
 
         if (tastiera != null)
         {
-            if (tastiera.upArrowKey.wasPressedThisFrame || tastiera.wKey.wasPressedThisFrame) c.verticale = -1;
-            if (tastiera.downArrowKey.wasPressedThisFrame || tastiera.sKey.wasPressedThisFrame) c.verticale = 1;
-            if (tastiera.leftArrowKey.wasPressedThisFrame || tastiera.aKey.wasPressedThisFrame) c.orizzontale = -1;
-            if (tastiera.rightArrowKey.wasPressedThisFrame || tastiera.dKey.wasPressedThisFrame) c.orizzontale = 1;
-            c.conferma |= tastiera.enterKey.wasPressedThisFrame || tastiera.numpadEnterKey.wasPressedThisFrame || tastiera.spaceKey.wasPressedThisFrame;
-            c.indietro |= tastiera.escapeKey.wasPressedThisFrame || tastiera.backspaceKey.wasPressedThisFrame;
+            bool lettere = !soloFrecce;
+            if (tastiera.upArrowKey.wasPressedThisFrame || (lettere && tastiera.wKey.wasPressedThisFrame)) c.verticale = -1;
+            if (tastiera.downArrowKey.wasPressedThisFrame || (lettere && tastiera.sKey.wasPressedThisFrame)) c.verticale = 1;
+            if (tastiera.leftArrowKey.wasPressedThisFrame || (lettere && tastiera.aKey.wasPressedThisFrame)) c.orizzontale = -1;
+            if (tastiera.rightArrowKey.wasPressedThisFrame || (lettere && tastiera.dKey.wasPressedThisFrame)) c.orizzontale = 1;
+            c.conferma |= tastiera.enterKey.wasPressedThisFrame || tastiera.numpadEnterKey.wasPressedThisFrame || (lettere && tastiera.spaceKey.wasPressedThisFrame);
+            c.indietro |= tastiera.escapeKey.wasPressedThisFrame || (lettere && tastiera.backspaceKey.wasPressedThisFrame);
         }
         if (pad != null)
         {

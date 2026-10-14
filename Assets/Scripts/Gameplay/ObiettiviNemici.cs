@@ -18,6 +18,12 @@ public interface IObiettivoNemico
     void NemicoSconfitto();
 }
 
+// Un obiettivo che attira i nemici vicini anche se non lo vedono (la Bambola di ossa dello Stregone).
+public interface IEscaNemici : IObiettivoNemico
+{
+    float RaggioAttrazione { get; }
+}
+
 public static class ObiettiviNemici
 {
     static readonly List<IObiettivoNemico> tutti = new List<IObiettivoNemico>();
@@ -46,9 +52,37 @@ public static class ObiettiviNemici
     // Un componente distrutto non è "null" per C# ma lo è per Unity: qui si controllano tutti e due.
     public static bool Esiste(IObiettivoNemico chi) => chi != null && !(chi is Object u && u == null);
 
-    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno).
-    public static IObiettivoNemico PiuVicino(Vector3 da)
+    // L'esca (Bambola di ossa) più vicina che attira chi sta in "da", se c'è. A pari distanza ne sceglie una sola.
+    public static IObiettivoNemico Esca(Vector3 da)
     {
+        IObiettivoNemico migliore = null;
+        float minima = float.MaxValue;
+        for (int i = tutti.Count - 1; i >= 0; i--)
+        {
+            if (!(tutti[i] is IEscaNemici esca) || !Valido(esca)) continue;
+            float d = (esca.Corpo.position - da).sqrMagnitude;
+            if (d > esca.RaggioAttrazione * esca.RaggioAttrazione || d >= minima) continue;
+            minima = d;
+            migliore = esca;
+        }
+        return migliore;
+    }
+
+    // Il giocatore con quel numero di rete, come obiettivo dei nemici (sul PC che ospita, o da soli). null se non c'è.
+    public static IObiettivoNemico DiGiocatore(ulong id)
+    {
+        if (id == Rete.MioId) return Locale;
+        foreach (var altro in GiocatoreRete.Altri)
+            if (altro != null && altro.IsSpawned && altro.OwnerClientId == id) return altro;
+        return null;
+    }
+
+    // Il più vicino a "da" fra quelli validi (o null se non ce n'è nessuno). Un'esca vicina viene prima di tutti,
+    // tranne per i boss (ancheEsche = false): i boss ignorano le Bambole di ossa.
+    public static IObiettivoNemico PiuVicino(Vector3 da, bool ancheEsche = true)
+    {
+        var esca = ancheEsche ? Esca(da) : null;
+        if (esca != null) return esca;
         IObiettivoNemico migliore = null;
         float minima = float.MaxValue;
         for (int i = tutti.Count - 1; i >= 0; i--)

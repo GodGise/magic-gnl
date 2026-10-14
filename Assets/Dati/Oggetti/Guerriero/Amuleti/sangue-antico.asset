@@ -40,4 +40,4 @@ MonoBehaviour:
     velocitaAttacco: 0
     vitaMassimaPercento: -15
   effetto: 3
-  valore: 10
+  valore: 6

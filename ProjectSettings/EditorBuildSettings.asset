@@ -9,7 +9,13 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu.unity
     guid: 8b14072256a6dfa4cbcad0f97ac0eed4
   - enabled: 1
+    path: Assets/Scenes/VillaggioLagoNero.unity
+    guid: a9fe8d77641ce6d4fbbcf045dc8cfa66
+  - enabled: 1
     path: Assets/Scenes/ZonaProva.unity
     guid: 78a301e5eb3146049a9a5dd3147dc6ab
+  - enabled: 1
+    path: Assets/Scenes/Cripta.unity
+    guid: f8902114ce9b271489c5429cfe1ca42f
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -18,12 +18,20 @@ public abstract class DatiOggetto : ScriptableObject
     public string chiaveDescrizione = "";
     [Tooltip("Classe che può usare l'oggetto.")]
     public ClasseGiocatore classe = ClasseGiocatore.Guerriero;
+    [Tooltip("Lo possono usare tutte le classi, senza distinzioni (per esempio le armi improvvisate della gattabuia). La classe sopra allora non conta.")]
+    public bool tutteLeClassi;
 
     [Header("Aspetto (da collegare quando Nazar avrà fatto il modello)")]
     [Tooltip("Immagine dell'oggetto per l'inventario.")]
     public Sprite icona;
-    [Tooltip("Modello 3D dell'oggetto (prefab con l'FBX di Nazar). Vuoto = si usa la forma provvisoria.")]
+    [Tooltip("Modello 3D dell'oggetto (prefab o FBX di Nazar). Vuoto = si usa la forma provvisoria (FormeOggetti).")]
     public GameObject modello;
+    [Tooltip("Materiale da mettere sul modello (con le texture di Nazar). Vuoto = quello che arriva con l'FBX.")]
+    public Material materialeModello;
+    [Tooltip("Correzioni se il modello in mano è storto o fuori misura. Le armi vanno fatte con l'impugnatura nel punto zero e la lama verso l'alto (come la spada di Nazar): il gioco le gira da solo nella mano.")]
+    public Vector3 rotazioneModello;
+    public Vector3 posizioneModello;
+    public float scalaModello = 1f;
 
     // Nome da mostrare al giocatore, nella lingua scelta.
     public string Nome

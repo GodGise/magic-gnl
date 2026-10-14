@@ -1,4 +1,6 @@
-# Oggetti dello Stregone: proposta da rivedere con Lorenzo
+# Oggetti dello Stregone
+
+**Stato (9 ottobre 2026):** i 19 oggetti esistono in Unity (menu *magic-gnl → Crea oggetti dello Stregone*, file in `Assets/Dati/Oggetti/Stregone/`), con nomi e descrizioni nelle 8 lingue, il Libro nella seconda casella dell'inventario e la ricarica del mana. I numeri sono quelli qui sotto: vanno provati e ritoccati oggetto per oggetto, come per Guerriero e Ladro (poi menu *Aggiorna oggetti dello Stregone*).
 
 Proposta del 7 ottobre 2026, scritta sullo stesso schema di `Docs/oggetti-guerriero.md` e `Docs/oggetti-ladro.md` (stesse categorie, stesse colonne, stesso riferimento). **Tutti i numeri sono valori di partenza**: vanno rivisti con Lorenzo oggetto per oggetto, come per le altre due classi, e tenuti modificabili dall'Inspector.
 La regola del mana (si ricarica da solo, lo Stregone più in fretta delle altre classi, deve uccidere quanto Guerriero e Ladro) è in `Docs/mana.md`.
@@ -16,13 +18,16 @@ Lo Stregone uccide **a distanza, con la magia**, ed è fragile: poca armatura e 
 
 Ogni oggetto è unico, con un nome suo (niente livelli di rarità). Totale: **19 oggetti** (5 armi, 5 libri, 3 vesti, 6 amuleti), come il Ladro.
 
-## Meccaniche nuove (da fare)
+## Meccaniche nuove (fatte il 9 ottobre, tranne le evocazioni)
 
 - **Lancio base dell'arma**: ogni colpo del bastone è un incantesimo che **costa mana** invece di resistenza. Il danno, la carica e il recupero funzionano come per le armi del Guerriero; in più c'è la portata in metri, come per le armi a distanza del Ladro.
 - **Mana massimo e ricarica**: il mana pieno base è 100; libri, vesti e amuleti lo aumentano. La ricarica parte dopo una breve pausa dall'ultimo lancio (regola in `Docs/mana.md`).
 - **Ignora armatura**: la magia scavalca in parte l'armatura. La colonna esiste già per le mazze del Guerriero.
 - **Libro**: nuovo tipo di oggetto (`DatiLibro`) nella casella dello Scudo, come il Ladro usa la stessa casella per l'arma a distanza. Con il bastone del lago (due mani) il libro si toglie.
 - **Statistiche nuove**: *Mana Massimo*, *Recupero Mana*, *Potenza Incantesimi* (percentuale di danno in più) e *Durata Evocazioni*. Le evocazioni e gli incantesimi forti non esistono ancora: i numeri sono pronti per quando si faranno.
+- **Come è fatto nel codice**: bastoni e verga sono `DatiArma` di tipo *Bastone* o *Verga* (campi *Costo Mana* e *Velocità Incantesimo*; *Portata* è la distanza a cui la sfera cerca il nemico). Equipaggiandoli il bastone si impugna da solo e la sfera usa i loro numeri. Il libro è `DatiLibro`; le vesti sono `DatiArmatura` con il campo *Mana Massimo*. Amuleti arcani nuovi: *Mana Per Uccisione* e *Ruba Mana*.
+- **Ricarica del mana**: in Giocatore Controllo, *Pausa Ricarica Mana* (0,8 s dopo l'ultimo lancio) e *Secondi Ricarica Mana* (12,5 s per la barra intera). Resta anche il 15% di mana per ogni nemico sconfitto che c'era già col bastone della chiesetta: se lo Stregone risulta troppo forte, è il primo numero da abbassare.
+- **Velocità della sfera** (non era nella tabella): 16 m/s per i bastoni, 20 per la verga, 13 per il bastone del lago.
 
 ## Oggetti
 
@@ -83,7 +88,5 @@ Parata senza scudo: tutti i bastoni e la verga 10% (costo 30), bastone del lago 
 
 ## Per Giuseppe
 
-- Chiavi da aggiungere in `Lingua.cs`: `oggetto.<chiave>.nome` e `.descrizione` per bastone_vecchia_vita, bastone_quercia_nera, bastone_ossidiana, verga_osso, bastone_lago, libro_vecchia_vita, libro_sussurri, libro_braci, libro_evocatore, libro_lago_nero, tunica_stracciata, veste_evocatore, manto_cenere, osso_inciso, cristallo_opaco, cenere_benedetta, sigillo_focolare, occhio_lago, cuore_lago_nero.
-- Inventario (`Docs/interfaccia.md`, 4 caselle): per lo Stregone la casella dello **Scudo** ospita il **Libro**, così le caselle restano 4 e i tasti 1 e 2 diventano bastone e libro.
-- Una **icona** (256x256, sfondo trasparente) per ognuno dei 19 oggetti va a Nazar.
-- File degli oggetti: un menu *magic-gnl → Crea oggetti dello Stregone* come per le altre due classi, in `Assets/Dati/Oggetti/Stregone/`, da fare con il Claude di Lorenzo.
+- Fatti (ramo `lorenzoc/oggetti-stregone`): nomi e descrizioni dei 19 oggetti in `Lingua.cs`, casella **Libro** al posto dello Scudo per lo Stregone (inventario e barra in basso), scheda *Scudi* che per lo Stregone diventa *Libri*, menu *Crea oggetti dello Stregone*.
+- Ancora da fare: una **icona** (256x256, sfondo trasparente) per ognuno dei 19 oggetti, da Nazar.

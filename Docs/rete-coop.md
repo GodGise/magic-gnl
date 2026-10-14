@@ -57,6 +57,36 @@ Ordine proposto (stato all'8 ottobre):
 - **Oggetti delle zone condivisi** (8 ottobre, ramo `giuseppec/livelli-coop`, deciso da Giuseppe): porte, leve, bauli, chiavi, muri crepati e oggetti da raccogliere sono uguali per tutti. Chi li usa, se non ospita, lo chiede all'host (`MondoRete.ChiediUso`); l'host li usa e lo dice a tutti (`MondoRete.InviaEvento`); chi entra dopo riceve il loro stato. Regole: il contenuto di un baule e un oggetto raccolto vanno a chi li prende; una chiave raccolta vale per tutto il gruppo. Le **trappole** scattano per chiunque ci passi sopra, ma ogni PC dà il danno solo al suo giocatore. I **checkpoint** restano personali (ognuno rinasce dove ha acceso il suo).
 - **Nuovi oggetti delle zone**: se qualcosa cambia lo stato del mondo (si apre, si rompe, sparisce), deve implementare `IOggettoCondiviso` (in `Assets/Scripts/Rete/Rete.cs`) come fanno `Porta` e `Leva`. La figura degli altri giocatori è ancora quella provvisoria a blocchi.
 
+## Classi e difficoltà in co-op (decise da Giuseppe il 10 ottobre)
+
+- **Classi libere.** Ogni giocatore sceglie la classe che vuole, anche uguale a quella degli altri: si può giocare in 3 Stregoni o in 3 Guerrieri. La proposta "una classe per giocatore" è respinta.
+- I blocchi a catena sui boss restano gestiti dalla regola già scritta in `Docs/incantesimi-stregone.md`: i boss non si bloccano e non si stordiscono, i rallentamenti su di loro valgono la metà.
+- **La difficoltà cresce con i giocatori.** In 2 il gioco deve essere **molto più difficile** che da soli, in 3 ancora di più, per bilanciare il fatto di essere in più.
+- Cosa cresce (i numeri li decide Lorenzo, che fa il bilanciamento): vita dei nemici e dei boss, danno dei nemici, numero di nemici per gruppo. Va scelto anche se cambia l'aggressività (per esempio più nemici che attaccano insieme).
+- Il conto si fa con i giocatori **collegati in quel momento**: se uno entra o esce a metà partita, la difficoltà si adatta (i nemici già feriti tengono la stessa percentuale di vita).
+- Lo calcola l'host, come tutto quello che riguarda i nemici.
+- **Fatto (10 ottobre, ramo `giuseppec/difficolta-coop`)**: `Assets/Scripts/Rete/DifficoltaCoop.cs`. Cambia quattro numeri, uno per giocatore in più, tutti regolabili dall'Inspector: vita dei nemici, vita dei boss, danno dei nemici e frequenza degli attacchi (il preavviso rosso resta uguale). `Bersaglio` li legge in `VitaMassima`, `DannoAttacco` e negli intervalli. L'host manda il numero di giocatori e le vite nuove a tutti (`MondoRete.InviaDifficolta`), così le barre sono uguali su ogni PC.
+- **Valori di partenza** (da Lorenzo): 1 giocatore = tutto x1; 2 giocatori = vita x2,5, danno x1,25, attacchi x1,25; 3 giocatori = vita x4, danno x1,5, attacchi x1,5. Il danno che ricevono i giocatori è stato abbassato da Lorenzo l'11 ottobre (prima x1,5 e x2).
+- **Per cambiare i numeri in modo permanente**: metti il componente `DifficoltaCoop` su un oggetto vuoto della scena e modifica le tre tabelle. Se non c'è, il gioco ne crea uno con i valori di partenza.
+- **Non fatto**: il numero di nemici per gruppo. I gruppi sono messi a mano nelle scene, quindi servirebbe un'idea di Lorenzo (per esempio nemici in più che compaiono solo in co-op).
+
+## Combinazioni troppo forti in co-op (decise da Lorenzo il 10 ottobre)
+
+- **Controlli e Stregoni:** per ogni Stregone nel gruppo, rallentamenti, blocchi e stordimenti sui nemici durano il 30% in meno (si moltiplica: 1 Stregone ×0,7, 2 ×0,49, 3 ×0,34). Da soli non cambia niente. Numero nell'Inspector di `DifficoltaCoop`.
+- **Chi fa più danno si prende i colpi:** ogni 7 s un nemico passa al giocatore che gli fa più danno, se è entro 25 m (`Bersaglio`, "Cambio Bersaglio Ogni" e "Raggio Cambio Bersaglio").
+- **A terra e rianimazione:** in co-op chi arriva a zero vita va a terra; un alleato lo rialza tenendo premuto E per 3 s e torna con il 30% della vita (`RianimaAlleato`, `GiocatoreControllo`). Cadendo nel vuoto si rinasce al checkpoint.
+- **Boss:** in uno scontro con un boss si va a terra una volta sola; la seconda si diventa spettatori (la camera segue un alleato) e si torna in gioco accanto a lui a fine scontro. Se tutto il gruppo è a terra, tutti rinascono al checkpoint e il boss torna al suo posto con la vita piena (`CombattimentoBoss`). Da soli, morendo contro un boss, il boss ricomincia da capo.
+- **Bambole di ossa:** i boss le ignorano.
+- **Fuochi fatui:** in co-op al massimo 2 per Stregone (da soli 3).
+- **Esecuzioni furtive:** chi vede un'esecuzione entro 8 m va in allerta per 15 s (non è ignaro).
+- Rete: la classe di ogni giocatore e lo stato "a terra / spettatore" viaggiano con `GiocatoreRete`; "gruppo sconfitto" lo manda l'host con `MondoRete.InviaGruppoSconfitto`.
+
+## Personaggi e nome in co-op (decisi da Giuseppe il 10 ottobre)
+
+- Ogni giocatore ha i suoi 5 slot sul proprio PC (`Salvataggio.cs`). Prima di ospitare o entrare sceglie (o crea) il personaggio: slot, nome, classe.
+- Il nome è una `NetworkVariable<FixedString64Bytes>` scritta dal proprietario in `GiocatoreRete`; sopra la testa si vede il nome, altrimenti "Giocatore N".
+- Chi entra in una partita usa classe e nome del proprio personaggio. Il salvataggio del mondo (chi ospita) è ancora da fare.
+
 ## Fonti
 
 - Netcode for GameObjects, manuale: https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@2.8/manual/index.html
@@ -70,3 +100,11 @@ Ordine proposto (stato all'8 ottobre):
 - Prezzi Unity Relay: https://support.unity.com/hc/en-us/articles/4410136449812-How-is-the-Relay-Service-Priced
 - Confronto 2026 degli stack di rete per Unity: https://dev.to/gamedevtoollab/choosing-the-right-real-time-networking-stack-for-unity-in-2026-29f4
 - Discussione sull'App ID 480: https://forum.godotengine.org/t/if-i-want-to-test-the-online-multiplayer-functionality-using-steam-do-i-need-to-register-a-game-or-will-using-the-480-app-be-sufficient/131625
+
+## Il co-op si apre dopo il prologo (deciso il 12 ottobre)
+
+- Il prologo (giorno al villaggio, razzia, boss, risveglio in gattabuia) si gioca **da soli**. Da lì in poi si può giocare in co-op.
+- Nel menu "Multigiocatore" (Ospita e Entra) si possono scegliere solo i personaggi con `prologoFinito` (campo di `DatiSlot`); gli slot vuoti e i personaggi che non hanno finito il prologo sono spenti, con la scritta "prologo da finire" e un avviso se non ce n'è nessuno.
+- Per segnarlo: `Salvataggio.SegnaPrologoFinito()`, da chiamare al **risveglio in gattabuia** (la scena è di Lorenzo, da fare).
+- Nell'editor di Unity e nelle build di sviluppo (`Salvataggio.CoopLiberoNelleProve`) il co-op è sempre libero, per poterlo provare senza rifare il prologo. Nella build per i giocatori no.
+- Un amico non può entrare con un personaggio nuovo: deve aver già finito il prologo (risposta di Giuseppe alla domanda di Lorenzo).

@@ -20,9 +20,9 @@ MonoBehaviour:
   modello: {fileID: 0}
   tipo: 2
   dueMani: 0
-  danno: 42
+  danno: 38
   costoAttacco: 30
-  preparazione: 0.42
+  preparazione: 0.5
   colpoAttivo: 0.15
   recupero: 0.52
   portata: 1.9

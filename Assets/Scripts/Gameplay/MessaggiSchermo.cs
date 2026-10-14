@@ -29,7 +29,7 @@ public class MessaggiSchermo : MonoBehaviour
         GUI.depth = 5;
         GraficaMenu.PreparaStili();
         float larghezza = GraficaMenu.FoglioIntero();
-        var stile = new GUIStyle(GraficaMenu.TestoSinistra) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
+        var stile = new GUIStyle(GraficaMenu.TestoGioco) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
         float w = Mathf.Clamp(stile.CalcSize(new GUIContent(testo)).x + 90f, 420f, 1100f);
         var r = new Rect(larghezza * 0.5f - w * 0.5f, 170f, w, 60f);
         GraficaMenu.Cornice(r, 0.95f * trasparenza, false);

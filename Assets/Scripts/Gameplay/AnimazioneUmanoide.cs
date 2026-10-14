@@ -188,6 +188,71 @@ public class AnimazioneUmanoide : MonoBehaviour
     // Fodero sulla schiena (solo giocatore): dove va l'arma nelle strettoie.
     Transform mano, fodero, armaNelFodero;
 
+    // ---------- Gesti chiesti da fuori ----------
+    // Per i nemici che fanno qualcosa mentre non combattono (gli orchi della razzia, vedi RazziatoreOrco): colpire una
+    // parete, sfondare una porta, calciare, appiccare il fuoco con la torcia. Vale per il fotogramma in cui è chiesto:
+    // si chiama in ogni Update finché serve. "t" va da 0 a 1 lungo un gesto (poi ricomincia).
+    public enum Gesto { Nessuno, ColpoAlto, ColpoLato, Calcio, Torcia }
+    Gesto gesto;
+    float tempoGesto;
+    int fotogrammaGesto = -10;
+
+    public void FaiGesto(Gesto quale, float t)
+    {
+        gesto = quale;
+        tempoGesto = Mathf.Repeat(t, 1f);
+        fotogrammaGesto = Time.frameCount;
+    }
+
+    static readonly Posa PosaCalcioCarica = new Posa
+    {
+        braccioDestro = new Vector3(-30f, 0f, 40f), braccioSinistro = new Vector3(-30f, 0f, -40f),
+        gambaDestra = new Vector3(35f, 0f, 0f), gambaSinistra = new Vector3(-5f, 0f, 0f),
+        corpo = new Vector3(-8f, 0f, 0f), abbassamento = 0.08f
+    };
+    static readonly Posa PosaCalcio = new Posa
+    {
+        braccioDestro = new Vector3(-20f, 0f, 55f), braccioSinistro = new Vector3(-20f, 0f, -55f),
+        gambaDestra = new Vector3(-85f, 0f, 0f), gambaSinistra = new Vector3(8f, 0f, 0f),
+        corpo = new Vector3(-18f, 0f, 0f), abbassamento = 0.04f
+    };
+    static readonly Posa PosaTorcia = new Posa
+    {
+        braccioDestro = new Vector3(-20f, 0f, 15f), braccioSinistro = new Vector3(-115f, 0f, -10f),
+        gambaDestra = new Vector3(18f, 0f, 0f), gambaSinistra = new Vector3(-18f, 0f, 0f),
+        corpo = new Vector3(10f, -12f, 0f), abbassamento = 0.06f
+    };
+
+    Posa PosaGesto()
+    {
+        float t = tempoGesto;
+        switch (gesto)
+        {
+            case Gesto.ColpoAlto:
+            case Gesto.ColpoLato:
+            {
+                int i = gesto == Gesto.ColpoAlto ? 2 : 0;
+                // carica piano (60%), colpo secco (10%), torna (30%)
+                if (t < 0.6f) return Posa.Mescola(Neutra, Cariche[i], Mathf.SmoothStep(0f, 1f, t / 0.6f));
+                if (t < 0.7f) return Posa.Mescola(Cariche[i], Colpi[i], (t - 0.6f) / 0.1f);
+                return Posa.Mescola(Colpi[i], Neutra, Mathf.SmoothStep(0f, 1f, (t - 0.7f) / 0.3f));
+            }
+            case Gesto.Calcio:
+                if (t < 0.5f) return Posa.Mescola(Neutra, PosaCalcioCarica, Mathf.SmoothStep(0f, 1f, t / 0.5f));
+                if (t < 0.62f) return Posa.Mescola(PosaCalcioCarica, PosaCalcio, (t - 0.5f) / 0.12f);
+                return Posa.Mescola(PosaCalcio, Neutra, Mathf.SmoothStep(0f, 1f, (t - 0.62f) / 0.38f));
+            case Gesto.Torcia:
+            {
+                // la torcia avanti, mossa su e giù contro il legno
+                var p = PosaTorcia;
+                p.braccioSinistro.x += Mathf.Sin(t * Mathf.PI * 4f) * 18f;
+                p.braccioSinistro.z += Mathf.Sin(t * Mathf.PI * 2f) * 12f;
+                return p;
+            }
+        }
+        return Neutra;
+    }
+
     // Chiamato da AspettoUmanoide: la figura e i quattro perni (anche e spalle) da far muovere.
     public void Imposta(Transform figura, Transform gambaSinistra, Transform gambaDestra, Transform braccioSinistro, Transform braccioDestro)
     {
@@ -406,6 +471,9 @@ public class AnimazioneUmanoide : MonoBehaviour
             if (s < 0.3f) return Posa.Mescola(Cariche[movimentoNemico], Colpi[movimentoNemico], s / 0.3f);
             return Posa.Mescola(Colpi[movimentoNemico], Neutra, Mathf.SmoothStep(0f, 1f, (s - 0.3f) / 0.7f));
         }
+
+        // un gesto chiesto da fuori in questo fotogramma (per esempio un orco che sfonda una porta)
+        if (gesto != Gesto.Nessuno && Time.frameCount - fotogrammaGesto <= 1) return PosaGesto();
 
         peso = 0f;
         return Neutra;

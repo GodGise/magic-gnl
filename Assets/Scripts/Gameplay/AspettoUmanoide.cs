@@ -14,7 +14,7 @@ public static class AspettoUmanoide
     const string NomeFigura = "Aspetto umanoide";
 
     // Arma provvisoria tenuta nella mano destra: fa capire meglio i movimenti d'attacco.
-    public enum Arma { Nessuna, Spada, Mazza, Bastone }
+    public enum Arma { Nessuna, Spada, Mazza, Bastone, Ascia }   // Ascia: l'ascia orchesca degli orchi corazzati
 
     // Crea la figura come figlia di "chi" e nasconde la forma originale.
     // coloreViso: colore della fascia sul viso (scura per il giocatore, rosso cupo per i nemici).
@@ -90,6 +90,16 @@ public static class AspettoUmanoide
         else if (arma == Arma.Bastone)
         {
             CreaBastone(gruppo, materialeBase);
+        }
+        else if (arma == Arma.Ascia)
+        {
+            // ascia orchesca: manico lungo, lama larga e storta di ferro scuro, con un dente dall'altra parte
+            Material legno = new Material(materialeBase) { color = new Color(0.25f, 0.17f, 0.1f) };
+            Material ferro = new Material(materialeBase) { color = new Color(0.32f, 0.32f, 0.34f) };
+            Parte(gruppo, "Manico ascia", PrimitiveType.Cube, new Vector3(0f, -0.4f, 0f), new Vector3(0.07f, 0.85f, 0.07f), legno);
+            Parte(gruppo, "Lama ascia", PrimitiveType.Cube, new Vector3(0f, -0.72f, 0.16f), new Vector3(0.05f, 0.34f, 0.3f), ferro);
+            Parte(gruppo, "Filo ascia", PrimitiveType.Cube, new Vector3(0f, -0.72f, 0.32f), new Vector3(0.03f, 0.42f, 0.06f), ferro);
+            Parte(gruppo, "Dente ascia", PrimitiveType.Cube, new Vector3(0f, -0.74f, -0.1f), new Vector3(0.04f, 0.1f, 0.14f), ferro);
         }
     }
 

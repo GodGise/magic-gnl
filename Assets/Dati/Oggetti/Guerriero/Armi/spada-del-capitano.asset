@@ -17,7 +17,11 @@ MonoBehaviour:
   chiaveDescrizione: oggetto.spada_capitano.descrizione
   classe: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 919132149155446097, guid: bd897e74646eeac44b4a3bb67bd3fb9b, type: 3}
+  materialeModello: {fileID: 2100000, guid: 688441520bc6a9746bb1de6d2f1dd10c, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 0
   dueMani: 0
   danno: 30

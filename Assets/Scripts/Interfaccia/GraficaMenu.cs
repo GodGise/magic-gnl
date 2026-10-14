@@ -83,7 +83,7 @@ public static class GraficaMenu
     // ---------- caratteri e stili ----------
 
     static bool caratteriCaricati;
-    static Font cinzel, cinzelGrassetto, fell, fellCorsivo, forum, cormorant, cormorantCorsivo, xiaowei;
+    static Font cinzel, cinzelGrassetto, fell, fellCorsivo, forum, cormorant, cormorantCorsivo, xiaowei, alegreya, alegreyaGrassetto;
 
     static void CaricaCaratteri()
     {
@@ -97,12 +97,16 @@ public static class GraficaMenu
         cormorant = Resources.Load<Font>("Caratteri/CormorantGaramond-Medium");
         cormorantCorsivo = Resources.Load<Font>("Caratteri/CormorantGaramond-MediumItalic");
         xiaowei = Resources.Load<Font>("Caratteri/ZCOOLXiaoWei-Regular");
+        alegreya = Resources.Load<Font>("Caratteri/AlegreyaSans-Medium");
+        alegreyaGrassetto = Resources.Load<Font>("Caratteri/AlegreyaSans-Bold");
     }
 
     public static GUIStyle Titolo, Emblema, Intestazione, NomeClasse, Sottotitolo, Voce, VoceSinistra, Descrizione, Piccolo;
     // Crediti: lettere dritte e grandi, per leggerli bene mentre scorrono.
     public static GUIStyle CreditiRuolo, CreditiNomi, CreditiIntestazione;
     public static GUIStyle Didascalia, Etichetta, Valore, TestoSinistra, Iniziale;
+    // Testi letti durante la partita (dialoghi, messaggi, azioni, obiettivi): carattere semplice e grande, più leggibile dei menu.
+    public static GUIStyle TestoGioco, NomeGioco, EtichettaGioco;
     static int linguaStili = -1;
 
     // Da chiamare all'inizio di OnGUI: prepara gli stili e li rifà quando cambia la lingua.
@@ -152,6 +156,15 @@ public static class GraficaMenu
         TestoSinistra.alignment = TextAnchor.MiddleLeft;
         TestoSinistra.wordWrap = true;
         Iniziale = Stile(44, forte, true);
+        // Cinese: il suo carattere (non ha corsivo né grassetto). Altrimenti Alegreya Sans, che ha anche il cirillico.
+        Font gioco = lingua == 7 ? xiaowei : alegreya;
+        Font giocoForte = lingua == 7 ? xiaowei : alegreyaGrassetto;
+        TestoGioco = Stile(31, gioco, false);
+        TestoGioco.alignment = TextAnchor.MiddleLeft;
+        TestoGioco.wordWrap = true;
+        NomeGioco = Stile(34, giocoForte, true);
+        NomeGioco.alignment = TextAnchor.MiddleLeft;
+        EtichettaGioco = Stile(27, gioco, false);
         CreditiRuolo = Stile(40, voce, false);
         CreditiNomi = Stile(58, forte, true);
         CreditiIntestazione = Stile(64, forte, true);
@@ -191,7 +204,8 @@ public static class GraficaMenu
         return Screen.width / s;
     }
 
-    // Icona di un oggetto: l'immagine fatta da Nazar se c'è, altrimenti l'iniziale del nome.
+    // Icona di un oggetto: l'immagine fatta da Nazar se c'è; altrimenti la sagoma provvisoria del suo tipo
+    // (IconeProvvisorie: spada, scudo, armatura, boccetta...) o, per i tipi senza sagoma, l'iniziale del nome.
     public static void Icona(Rect r, DatiOggetto oggetto, float alfa)
     {
         if (oggetto == null) return;
@@ -204,6 +218,7 @@ public static class GraficaMenu
             GUI.color = Color.white;
             return;
         }
+        if (IconeProvvisorie.Disegna(r, oggetto, alfa)) return;   // sagoma provvisoria del tipo di oggetto
         string nome = oggetto.Nome;
         string iniziale = string.IsNullOrEmpty(nome) ? "?" : nome.Substring(0, 1).ToUpperInvariant();
         Scritta(r, iniziale, Iniziale, Testo, alfa);

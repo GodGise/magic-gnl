@@ -34,7 +34,7 @@ public static class CreaOggettiGuerriero
         riscrivi = false;
     }
 
-    static void Crea()
+    internal static void Crea()
     {
         int creati = 0;
 
@@ -76,8 +76,8 @@ public static class CreaOggettiGuerriero
         creati += Arma("ascia-del-boia", "Ascia del boia", "ascia_boia", a =>
         {
             a.tipo = DatiArma.Tipo.Ascia;
-            a.danno = 42f; a.costoAttacco = 30f;
-            a.preparazione = 0.42f; a.colpoAttivo = 0.15f; a.recupero = 0.52f;
+            a.danno = 38f; a.costoAttacco = 30f;
+            a.preparazione = 0.5f; a.colpoAttivo = 0.15f; a.recupero = 0.52f;
             a.portata = 1.9f; a.raggio = 1.4f; a.arco = 150f; a.affondo = 2.5f;
             // Critico totale ×2: il giocatore parte da ×1,75, quindi l'ascia aggiunge 0,25.
             a.probabilitaCritico = 10f; a.moltiplicatoreCritico = 0.25f;
@@ -91,7 +91,7 @@ public static class CreaOggettiGuerriero
             a.danno = 28f; a.costoAttacco = 25f;
             a.preparazione = 0.36f; a.colpoAttivo = 0.15f; a.recupero = 0.45f;
             a.portata = 1.6f; a.raggio = 1.2f; a.arco = 100f; a.affondo = 2.5f;
-            a.penetrazioneArmatura = 0.3f;
+            a.penetrazioneArmatura = 0.45f;
             a.dannoAssorbitoSenzaScudo = 0.3f; a.costoParataSenzaScudo = 26f;
         });
         creati += Arma("martello-di-ossa", "Martello di ossa", "martello_ossa", a =>
@@ -134,7 +134,7 @@ public static class CreaOggettiGuerriero
         {
             s.taglia = DatiScudo.Taglia.Piccolo;
             s.dannoAssorbito = 0.3f; s.costoColpoParato = 25f; s.arcoParata = 100f;
-            s.finestraParataPerfetta = 0.2f; s.sbilanciamento = 0.8f; s.moltiplicatoreDannoSbilanciato = 1.5f;
+            s.finestraParataPerfetta = 0.15f; s.sbilanciamento = 0.8f; s.moltiplicatoreDannoSbilanciato = 1.5f;
             s.costoSchivataExtra = 3f; s.moltiplicatoreVelocita = 0.98f;
         });
 
@@ -155,6 +155,13 @@ public static class CreaOggettiGuerriero
             b.peso = DatiArmatura.Peso.Pesante;
             b.armatura = 45f; b.costoSchivataExtra = 12f; b.moltiplicatoreVelocita = 0.88f;
         });
+        // Bottino fisso del Carceriere (Docs/gattabuia.md): le catene che lo stringevano, avvolte come un'armatura.
+        // Media: un po' più armatura della cotta di maglia rattoppata, ma più pesante (schivata e passo). Cosa forte assicurata.
+        creati += Armatura("catena-del-carceriere", "Catena del carceriere", "catena_carceriere", b =>
+        {
+            b.peso = DatiArmatura.Peso.Media;
+            b.armatura = 31f; b.costoSchivataExtra = 9f; b.moltiplicatoreVelocita = 0.93f;
+        });
 
         // ---------- Amuleti ----------
 
@@ -163,12 +170,12 @@ public static class CreaOggettiGuerriero
         creati += Amuleto("zanna-di-lupo", "Zanna di lupo", "zanna_lupo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.bonusDanno = 10f;
-            m.malus.velocitaParata = -5f; // lo scudo si alza il 5% più lento
+            m.malus.resistenzaMassimaPercento = -10f; // resistenza massima -10%
         });
         creati += Amuleto("occhio-di-corvo", "Occhio di corvo", "occhio_corvo", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Magico; m.bonus.probabilitaCritico = 10f;
-            m.malus.velocitaParata = -5f; // come la Zanna di lupo: lo scudo si alza il 5% più lento
+            m.malus.vitaMassimaPercento = -7f; // vita massima -7%
         });
         creati += Amuleto("pietra-del-focolare", "Pietra del focolare", "pietra_focolare", m =>
         {
@@ -179,17 +186,17 @@ public static class CreaOggettiGuerriero
         // Arcani: effetti speciali.
         creati += Amuleto("cuore-di-brace", "Cuore di brace", "cuore_brace", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 12f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.VitaPerUccisione; m.valore = 9f;
             m.malus.bonusDanno = -5f; // danno -5%
         });
         creati += Amuleto("respiro-del-lago", "Respiro del lago", "respiro_lago", m =>
         {
             m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RecuperoResistenza; m.valore = 30f;
-            m.malus.armaturaPercento = -20f; // armatura totale -20%
+            m.malus.armatura = -8f; m.malus.vitaMassimaPercento = -7f; // -8 armatura e vita massima -7%
         });
         creati += Amuleto("sangue-antico", "Sangue antico", "sangue_antico", m =>
         {
-            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 10f;
+            m.tipo = DatiAmuleto.Tipo.Arcano; m.effetto = DatiAmuleto.Effetto.RubaVita; m.valore = 6f;
             m.malus.vitaMassimaPercento = -15f; // vita massima -15%
         });
 

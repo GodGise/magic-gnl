@@ -36,8 +36,8 @@ MonoBehaviour:
     bonusDanno: 0
     probabilitaCritico: 0
     moltiplicatoreCritico: 0
-    velocitaParata: -5
+    velocitaParata: 0
     velocitaAttacco: 0
-    vitaMassimaPercento: 0
+    vitaMassimaPercento: -7
   effetto: 0
   valore: 0

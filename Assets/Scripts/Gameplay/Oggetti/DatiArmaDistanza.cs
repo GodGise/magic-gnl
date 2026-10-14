@@ -7,8 +7,7 @@ using UnityEngine;
 // - Arco corto: veloce, poco danno, buono anche in mischia.
 // - Arco lungo: carica lunga, portata e danno alti.
 // - Balestra: danno altissimo e armatura ignorata, ma ricarica lentissima.
-// ATTENZIONE: il tiro con l'arco non esiste ancora nel gioco. Questi oggetti sono già pronti con i loro numeri;
-// la meccanica (mirare, tendere, frecce) si farà dopo e li userà così come sono.
+// Il tiro lo fa TiroConLArco: tasto 2 per prendere l'arco in mano, tenere premuto Attacco per tendere, lasciare per tirare.
 // Come si crea: pannello Project, tasto destro > Create > magic-gnl > Oggetti > Arma a distanza.
 [CreateAssetMenu(fileName = "nuova-arma-distanza", menuName = "magic-gnl/Oggetti/Arma a distanza")]
 public class DatiArmaDistanza : DatiOggetto

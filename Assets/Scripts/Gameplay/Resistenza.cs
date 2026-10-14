@@ -2,7 +2,8 @@ using UnityEngine;
 
 // Resistenza (stamina) del personaggio.
 // A cosa serve: schivata, attacco, sprint e colpi parati consumano resistenza; si ricarica da sola
-// dopo una breve pausa, ma non mentre si tiene la parata.
+// dopo una breve pausa, ma non mentre si tiene la parata. Le pozioni possono ridarne un po' (Recupera) o farla
+// ricaricare più in fretta per qualche secondo (Potenzia).
 // Come montarlo: aggiungilo allo stesso oggetto del GiocatoreControllo (lo richiede da solo).
 public class Resistenza : MonoBehaviour
 {
@@ -12,13 +13,37 @@ public class Resistenza : MonoBehaviour
     [SerializeField] float ritardoRecupero = 0.8f;
 
     public float Attuale { get; private set; }
-    public float Massimo => massimo;
+    // Massimo vero: quello dell'Inspector cambiato dalle Statistiche (amuleti: 0,9 = il 10% in meno).
+    public float Massimo => massimo * MoltiplicatoreMassimo;
+
+    // Resistenza massima in più o in meno (1 = normale, 0,9 = -10%): la cambiano gli amuleti (vedi Statistiche).
+    public float MoltiplicatoreMassimo
+    {
+        get => moltiplicatoreMassimo;
+        set { moltiplicatoreMassimo = Mathf.Max(0.1f, value); Attuale = Mathf.Min(Attuale, Massimo); }
+    }
+    float moltiplicatoreMassimo = 1f;
 
     // Come in Elden Ring: si può agire finché la barra non è vuota, anche se l'azione la manda a zero.
     public bool HaResistenza => Attuale > 0.01f;
 
     // Ricarica più veloce o più lenta (1 = normale, 1,3 = +30%): lo cambiano gli amuleti arcani.
     public float MoltiplicatoreRecupero { get; set; } = 1f;
+
+    // Ricarica più veloce per un po' (pozioni, per esempio il Tonico di cardo): 0,5 = +50%. Non tocca quella degli amuleti.
+    float potenziamento, potenziamentoFino;
+    public void Potenzia(float percento, float secondi)
+    {
+        potenziamento = Mathf.Max(0f, percento) / 100f;
+        potenziamentoFino = Time.time + secondi;
+    }
+    public bool Potenziata => Time.time < potenziamentoFino;
+
+    // Ridà subito un po' di resistenza (pozioni), senza superare il massimo.
+    public void Recupera(float quantita)
+    {
+        if (quantita > 0f) Attuale = Mathf.Min(Massimo, Attuale + quantita);
+    }
 
     // Messo a true dal giocatore mentre tiene la parata.
     public bool InPausaRecupero { get; set; }
@@ -33,7 +58,8 @@ public class Resistenza : MonoBehaviour
     void Update()
     {
         if (InPausaRecupero || Time.time < prossimoRecupero) return;
-        Attuale = Mathf.Min(massimo, Attuale + recuperoAlSecondo * MoltiplicatoreRecupero * Time.deltaTime);
+        float extra = Potenziata ? 1f + potenziamento : 1f;
+        Attuale = Mathf.Min(Massimo, Attuale + recuperoAlSecondo * MoltiplicatoreRecupero * extra * Time.deltaTime);
     }
 
     public void Spendi(float costo)
@@ -44,6 +70,6 @@ public class Resistenza : MonoBehaviour
 
     public void Ripristina()
     {
-        Attuale = massimo;
+        Attuale = Massimo;
     }
 }

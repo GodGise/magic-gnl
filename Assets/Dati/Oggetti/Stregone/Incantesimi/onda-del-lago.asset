@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb1f4b55875eeda45a661713ae705174, type: 3}
+  m_Name: onda-del-lago
+  m_EditorClassIdentifier: Assembly-CSharp::DatiIncantesimo
+  nomeDiLavoro: Onda del lago
+  chiaveNome: oggetto.onda_lago.nome
+  chiaveDescrizione: oggetto.onda_lago.descrizione
+  classe: 2
+  tutteLeClassi: 0
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  scuola: 1
+  effetto: 3
+  costoMana: 20
+  carica: 0.5
+  recupero: 0.6
+  attesa: 10
+  danno: 20
+  dannoAlSecondo: 0
+  moltiplicatoreIgnaro: 1
+  velocita: 18
+  portata: 22
+  grandezza: 1
+  colore: {r: 0.55, g: 0.85, b: 1, a: 1}
+  raggio: 4
+  lunghezza: 6
+  durata: 0
+  rallentamento: 30
+  durataRallentamento: 2
+  blocco: 0
+  stordimento: 1.5
+  spinta: 5
+  altezza: 4
+  rallentamentoDopo: 0
+  durataRallentamentoDopo: 0
+  velocitaInPiu: 0
+  moltiplicatoreSuccessivo: 1
+  rallentamentoInterruzione: 0
+  durataRallentamentoInterruzione: 0
+  massimoInsieme: 1
+  vitaEvocazione: 0
+  dannoEvocazione: 0
+  intervalloColpi: 1.5
+  vitaPerUccisione: 0
+  lunghezzaScia: 0
+  raggioAttrazione: 0
+  tempoTrasformazione: 0
+  vitaScheletro: 0
+  dannoScheletro: 0
+  intervalloScheletro: 1.6
+  durataScheletro: 0
