@@ -32,11 +32,23 @@ public static class CreaOggettiComuni
         riscrivi = false;
     }
 
-    static void Crea()
+    internal static void Crea()
     {
         int creati = 0;
         // Riferimento: la Spada della vecchia vita fa 25 di danno, costa 20 di resistenza e un colpo dura 0,75 s
         // (circa 33 di danno al secondo). Le armi improvvisate devono essere chiaramente peggiori delle armi vere.
+
+        // Sbarra arrugginita: la sbarra della cella, forzata e staccata (la prima arma della gattabuia, 14 ottobre).
+        // Lenta e pesante, poco danno, buona portata. Para poco. Circa 15 di danno al secondo: peggio di tutto il resto.
+        creati += Arma("sbarra-arrugginita", "Sbarra arrugginita", "sbarra_arrugginita", a =>
+        {
+            a.tipo = DatiArma.Tipo.Mazza;
+            a.danno = 15f; a.costoAttacco = 18f;
+            a.preparazione = 0.36f; a.colpoAttivo = 0.18f; a.recupero = 0.5f;
+            a.portata = 2f; a.raggio = 1.1f; a.arco = 120f; a.affondo = 2.5f;
+            a.penetrazioneArmatura = 0.1f;
+            a.dannoAssorbitoSenzaScudo = 0.2f; a.costoParataSenzaScudo = 26f;
+        });
 
         // Osso lungo: un femore raccolto fra i cadaveri. Corto e leggero, colpi rapidi ma deboli; si para male.
         // Circa 23 di danno al secondo, costa poca resistenza. Un po' di penetrazione perché è una botta, non un taglio.
