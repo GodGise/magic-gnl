@@ -82,6 +82,12 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 14 ottobre: quest in sequenza controllate, scene del prologo salvate (serve un'occhiata di Giuseppe)
+Ramo `lorenzoc/fix-cripta`. Nella scena su `main` Edric aveva due dialoghi "la leggenda" e la fine della quest 4 accendeva quello vecchio: si parlava con Edric ma la cripta non si apriva e la bussola restava su di lui. Corretto il comando della quest 5 (toglie tutti i doppioni e collega quello giusto) e caricata la scena buona, con la quest 6, la taverna e la razzia.
+- Nuovo comando **"Prologo: controlla la sequenza delle quest"**: controlla collegamenti rotti, dialoghi doppi e che ogni quest dia l'obiettivo della successiva fino alla razzia. Sulla scena caricata: tutto a posto.
+- Nuove prove **"Prova prologo > Salta alla quest 2-6"**: fanno partire le fini vere delle quest precedenti e portano dove indica la bussola.
+- Provato in Unity (Guerriero): quest 4 -> Edric -> cripta -> leva -> baule -> uscita -> Edric -> "Raggiungi la taverna"; taverna e razzia provate il 13 ottobre.
+
 ### 13 ottobre, notte: segnalini delle pozioni, taverna a parte e razzia in due ondate (serve un'occhiata di Giuseppe)
 Richiesta di Lorenzo, ramo `lorenzoc/razzia`, pull request #91. **Provato da Lorenzo in Unity: tutto ok.** Corretto anche il passaggio dalla quest 5 alla 6 (l'obiettivo "Raggiungi la taverna" veniva cancellato subito). Giuseppe: prima di unire, lancia "Prologo: prepara la quest 6 e la razzia" nel villaggio, salva e carica la scena e `Taverna.unity` sul ramo (istruzioni nella pull request).
 - **Pozioni:** niente più conto alla rovescia. Accanto alla barra della vita un segnalino per ogni effetto (scudo viola = danni subiti in meno, goccia blu = mana massimo in più); i puntini sopra dicono quante pozioni sono sommate, la riga sotto si svuota col tempo, negli ultimi 20 s lampeggia (`HudGioco.cs`, `EffettiPozioni.ParteRimasta`).
