@@ -17,6 +17,8 @@ using UnityEngine;
 // "Corazzato": elmo, spallacci e piastra sul petto di ferro scuro (gli orchi della seconda ondata con l'ascia).
 // Le pose sono provvisorie (figura a blocchi, AnimazioneUmanoide.FaiGesto): le animazioni vere sono nella lista
 // per Nazar (Docs/lista-modelli-nazar.txt).
+// Senza casa ma con un "Punto Di Lavoro" (per esempio il tavolo dei macellai della gattabuia) fa lo stesso gesto verso
+// quel punto, senza rompere niente: un orco occupato e distratto.
 // Come montarlo: su un orco (Bersaglio + InseguimentoNemico), con "Casa" e "Azione". Lo mette da solo il comando
 // "magic-gnl > Prologo: prepara la quest 6 e la razzia".
 [RequireComponent(typeof(InseguimentoNemico))]
@@ -26,6 +28,8 @@ public class RazziatoreOrco : MonoBehaviour
 
     [SerializeField] Azione azione = Azione.ColpireParete;
     [SerializeField] CasaInRovina casa;
+    [Tooltip("Senza casa: il punto verso cui lavora (tavolo dei macellai, catene...). Fa il gesto senza rompere niente.")]
+    [SerializeField] Transform puntoDiLavoro;
     [Tooltip("Secondi di un gesto (un colpo, un calcio).")]
     [SerializeField, Min(0.4f)] float secondiPerGesto = 1.5f;
     [Tooltip("Danno alla casa a ogni colpo.")]
@@ -97,7 +101,12 @@ public class RazziatoreOrco : MonoBehaviour
         if (insegue && !inseguivaPrima) Suoni.Suona(Suono.UrloOrco, transform.position + Vector3.up, 0.9f, Random.Range(0.9f, 1.1f));
         inseguivaPrima = insegue;
         Ascolta();
-        if (!vista.AlPosto || !vista.Ignaro || casa == null) return;
+        if (!vista.AlPosto || !vista.Ignaro) return;
+        if (casa == null)
+        {
+            if (puntoDiLavoro != null) Lavora();
+            return;
+        }
 
         if (casa.Attuale == CasaInRovina.Stato.Distrutta || (azione == Azione.DareFuoco && casa.Attuale >= CasaInRovina.Stato.InFiamme))
         {
@@ -136,6 +145,28 @@ public class RazziatoreOrco : MonoBehaviour
         {
             prossimoRinghio = Time.time + Random.Range(6f, 14f);
             Suoni.Suona(Suono.UrloOrco, transform.position + Vector3.up, 0.45f, Random.Range(0.8f, 1.05f));
+        }
+    }
+
+    // Lavoro senza casa: gesto verso il punto, con un colpo sordo a ogni gesto (macellai della gattabuia).
+    void Lavora()
+    {
+        Vector3 verso = puntoDiLavoro.position - transform.position;
+        verso.y = 0f;
+        if (verso.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(verso), 240f * Time.deltaTime);
+        fase += Time.deltaTime / secondiPerGesto;
+        if (fase >= 1f) { fase -= 1f; colpoFatto = false; }
+        if (animazione != null) animazione.FaiGesto(azione == Azione.Calciare ? AnimazioneUmanoide.Gesto.Calcio : AnimazioneUmanoide.Gesto.ColpoAlto, fase);
+        if (!colpoFatto && fase >= 0.66f)
+        {
+            colpoFatto = true;
+            Suoni.Suona(Suono.ImpattoColpo, puntoDiLavoro.position, 0.6f, Random.Range(0.7f, 0.9f));
+        }
+        if (Time.time >= prossimoRinghio)
+        {
+            prossimoRinghio = Time.time + Random.Range(7f, 15f);
+            Suoni.Suona(Suono.UrloOrco, transform.position + Vector3.up, 0.35f, Random.Range(0.75f, 0.95f));
         }
     }
 
