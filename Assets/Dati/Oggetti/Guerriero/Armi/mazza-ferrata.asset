@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.mazza_ferrata.nome
   chiaveDescrizione: oggetto.mazza_ferrata.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 8320061800236446499, guid: b72828e8df1774244a096e8139d5d974, type: 3}
+  materialeModello: {fileID: 2100000, guid: 1f44d3fcf0c2033479589604f6031861, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 3
   dueMani: 0
   danno: 28
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 100
   affondo: 2.5
   penetrazioneArmatura: 0.45
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 0
   moltiplicatoreCritico: 0
   dannoAssorbitoSenzaScudo: 0.3

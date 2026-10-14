@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.martello_ossa.nome
   chiaveDescrizione: oggetto.martello_ossa.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 8603088883338641617, guid: 8603c8c8aa0fd234f8f0724f8cebb8d7, type: 3}
+  materialeModello: {fileID: 2100000, guid: 275f685e2e97bf84b8ecdc9bb9af5e5a, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 3
   dueMani: 0
   danno: 34
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 100
   affondo: 2.5
   penetrazioneArmatura: 0.45
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 1.5
   moltiplicatoreCritico: 0
   dannoAssorbitoSenzaScudo: 0.3

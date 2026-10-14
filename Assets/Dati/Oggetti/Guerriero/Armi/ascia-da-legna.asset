@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.ascia_legna.nome
   chiaveDescrizione: oggetto.ascia_legna.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 7658011961891271748, guid: 13b1a2d4b003a294c83c1ff9e06a78f7, type: 3}
+  materialeModello: {fileID: 2100000, guid: 9503aef4927369a458be2460f101a559, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 2
   dueMani: 0
   danno: 34
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 150
   affondo: 2.5
   penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 5
   moltiplicatoreCritico: -0.05
   dannoAssorbitoSenzaScudo: 0.25

@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.spadone_cavaliere.nome
   chiaveDescrizione: oggetto.spadone_cavaliere.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 233420578591418118, guid: a4726ca437dca7b4bb99c036f2f64ccb, type: 3}
+  materialeModello: {fileID: 2100000, guid: dd4e302bab1c18e4ba8cbc7c1ea4973f, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 1
   dueMani: 1
   danno: 46
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 160
   affondo: 2
   penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 5
   moltiplicatoreCritico: 0
   dannoAssorbitoSenzaScudo: 0.3

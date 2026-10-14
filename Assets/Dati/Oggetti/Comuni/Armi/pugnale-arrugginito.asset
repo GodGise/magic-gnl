@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d45caab4391fd43991d2d38c7be590, type: 3}
+  m_Name: pugnale-arrugginito
+  m_EditorClassIdentifier: Assembly-CSharp::DatiArma
+  nomeDiLavoro: Pugnale arrugginito
+  chiaveNome: oggetto.pugnale_arrugginito.nome
+  chiaveDescrizione: oggetto.pugnale_arrugginito.descrizione
+  classe: 0
+  tutteLeClassi: 1
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  tipo: 4
+  dueMani: 0
+  danno: 9
+  costoAttacco: 9
+  preparazione: 0.12
+  colpoAttivo: 0.08
+  recupero: 0.2
+  portata: 1.1
+  raggio: 0.8
+  arco: 70
+  affondo: 3
+  penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
+  probabilitaCritico: 0
+  moltiplicatoreCritico: 0
+  dannoAssorbitoSenzaScudo: 0.1
+  costoParataSenzaScudo: 25
