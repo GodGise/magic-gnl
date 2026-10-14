@@ -178,6 +178,27 @@ public static class ProvaPrologo
         Debug.Log(quanti > 0 ? "Prova prologo: feriti " + quanti + " ratti." : "Prova prologo: nessun ratto vivo (parla prima con Hobb).");
     }
 
+    // Il giocatore cade come se l'orco enorme lo avesse colpito (per provare la sconfitta e il passaggio alla gattabuia).
+    [MenuItem(Cartella + "Razzia: fai cadere il giocatore")]
+    static void FaiCadere()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var g = Object.FindFirstObjectByType<GiocatoreControllo>();
+        if (g != null) g.RiceviColpo(g.Vita + 1f, g.transform.position - g.transform.forward);
+    }
+
+    // Toglie il 30% della vita all'orco enorme (per provare in fretta quando diventa invulnerabile).
+    [MenuItem(Cartella + "Razzia: ferisci l'orco enorme (-30%)")]
+    static void FerisciOrcoEnorme()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var scontro = Object.FindFirstObjectByType<ScontroOrcoEnorme>();
+        var b = scontro != null ? scontro.GetComponent<Bersaglio>() : null;
+        if (b == null || b.Morto) { Debug.LogWarning("Prova prologo: l'orco enorme non è ancora arrivato."); return; }
+        b.RiceviColpo(b.VitaMassima * 0.3f, b.transform.position + Vector3.up);
+        Debug.Log("Prova prologo: orco enorme ferito, vita " + b.Vita + (b.Invulnerabile ? " (invulnerabile)." : "."));
+    }
+
     [MenuItem(Cartella + "Salta alla quest 2")] static void Salta2() => SaltaAllaQuest(2);
     [MenuItem(Cartella + "Salta alla quest 3")] static void Salta3() => SaltaAllaQuest(3);
     [MenuItem(Cartella + "Salta alla quest 4")] static void Salta4() => SaltaAllaQuest(4);

@@ -59,7 +59,7 @@ public class EffettiNemico : MonoBehaviour
 
     public void ApplicaQui(Tipo tipo, float valore, float durata, Vector3 punto)
     {
-        if (bersaglio == null || bersaglio.Morto || durata <= 0f && tipo != Tipo.Spingi) return;
+        if (bersaglio == null || bersaglio.Morto || bersaglio.Invulnerabile || durata <= 0f && tipo != Tipo.Spingi) return;
         bool boss = bersaglio.Boss;
         float ora = Time.time;
         if (tipo != Tipo.Spingi) durata *= DifficoltaCoop.MoltiplicatoreControlli;

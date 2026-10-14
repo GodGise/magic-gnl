@@ -20,5 +20,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Taverna.unity
     guid: 4789a350666f24e4d80dea37dc674d87
+  - enabled: 1
+    path: Assets/Scenes/Gattabuia.unity
+    guid: 2ecc9b31c9fe1644093fd75e8793da74
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
