@@ -82,6 +82,17 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 14 ottobre, sera: dialoghi bozza 3 e quattro rami nuovi (da provare e approvare)
+**Dialoghi, bozza 3** (ramo `lorenzoc/dialoghi-bozza-3`): `Docs/dialoghi-capitolo-1.md`. La bozza 2 è in `Docs/archivio/`. Il protagonista è il sindaco (nome **[Nome]** e titolo "sindaco" provvisori: **decidili tu**), un solo filo (voci all'alba, il villaggio si prepara, tamburi la sera), forgiatura nella quest 2 (punti di inserimento segnati), allenamento più lungo con un motivo per classe che torna nelle quest 4 e 6, Maren e Tobin in quasi tutte le quest. Per ogni quest c'è una riga "Per il codice". **Non tradotto, `Lingua.cs` e scene non toccati.** Da decidere: nome e titolo, i motivi di classe proposti (Passo Grigio, Wren a Corvagrigia, la sorella Liane), se il protagonista parla.
+
+**Rami di codice, nell'ordine in cui unirli** (nessuno è ancora provato in Unity):
+1. `lorenzoc/armi-guerriero`: menu "Armi: collega i modelli del Guerriero di Nazar" (prefab orientati da `Warrior.fbx`, collegati alle 7 armi).
+2. `lorenzoc/razzia-udito`: gli orchi della razzia **sentono** chi corre o schiva (camminando restano ignari); **abitanti in fuga** (5 alla volta, con ricambio, non contano per le ondate, salvabili); l'orco enorme diventa **invulnerabile** dopo 3 minuti o sotto il 25% di vita, e la sconfitta porta alla gattabuia.
+3. `lorenzoc/cripta-tracce`: tunnel con tracce, vicolo cieco con spuntoni, Edric commenta le tracce. Rifare la scena con "Cripta: crea la scena della cripta", poi "Prologo: prepara la quest 5".
+4. `lorenzoc/gattabuia` (parte da `razzia-udito`): prima versione "in grigio" con il menu **"Gattabuia: crea la scena della gattabuia"** (`Assets/Scenes/Gattabuia.unity`): risveglio (chiama `SegnaPrologoFinito`), sbarra della cella da forzare, macellai, rastrelliere vuote, baule con l'equipaggiamento di classe, fossa comune, orco di pattuglia, grotte con parassiti, Carceriere (2 fasi, bottino con la chiave), portone e fine del capitolo.
+
+**File toccati fuori dalla mia area** (piccole aggiunte, niente cambiato di quello che c'era): `Bersaglio.cs` (`Invulnerabile`), `EffettiNemico.cs`, `InseguimentoNemico.cs` (`Senti`), `Interlocutore.cs` (righe alternative), `Suoni.cs` (`Grido`), `CreaOggettiComuni.cs` (sbarra arrugginita).
+
 ### 14 ottobre: quest in sequenza controllate, scene del prologo salvate (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/fix-cripta`. Nella scena su `main` Edric aveva due dialoghi "la leggenda" e la fine della quest 4 accendeva quello vecchio: si parlava con Edric ma la cripta non si apriva e la bussola restava su di lui. Corretto il comando della quest 5 (toglie tutti i doppioni e collega quello giusto) e caricata la scena buona, con la quest 6, la taverna e la razzia.
 - Nuovo comando **"Prologo: controlla la sequenza delle quest"**: controlla collegamenti rotti, dialoghi doppi e che ogni quest dia l'obiettivo della successiva fino alla razzia. Sulla scena caricata: tutto a posto.
