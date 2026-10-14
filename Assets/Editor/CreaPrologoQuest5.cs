@@ -67,16 +67,7 @@ public static class CreaPrologoQuest5
         // Rifacendo la quest: via i dialoghi della quest 5 rimasti su Edric dalla volta prima. Stanno su Edric e non nel
         // gruppo, quindi non sparivano con il gruppo: due "Edric (la leggenda)" rispondevano insieme al tasto e quello
         // vecchio (collegato a un ingresso che non c'era più) non faceva partire niente (Lorenzo, 13 ottobre).
-        var fineIlseEvento = Evento(fineIlse.GetComponent<DialogoAutomatico>(), "alTermine");
-        foreach (Transform figlio in edric.GetComponentsInChildren<Transform>(true))
-        {
-            if (figlio == null || figlio == edric.transform) continue;
-            if (figlio.name != "Edric (la leggenda)" && figlio.name != "Edric (il medaglione)") continue;
-            var dialogoVecchio = figlio.GetComponent<Interlocutore>();
-            for (int i = fineIlseEvento.GetPersistentEventCount() - 1; i >= 0; i--)
-                if (dialogoVecchio != null && fineIlseEvento.GetPersistentTarget(i) == dialogoVecchio) UnityEventTools.RemovePersistentListener(fineIlseEvento, i);
-            Undo.DestroyObjectImmediate(figlio.gameObject);
-        }
+        TogliDialoghiVecchi(scena, fineIlse);
 
         var missioni = missioniOggetto.GetComponent<Missioni>();
         var gruppo = new GameObject(NomeGruppo).transform;
@@ -169,10 +160,21 @@ public static class CreaPrologoQuest5
         var fineIlse = Trova(scena, "Dialogo: Ilse dopo la pozione");
         var missioniOggetto = Trova(scena, "Missioni");
         var edric = TrovaInterlocutore(scena, "Edric");
-        var leggendaOggetto = Trova(scena, "Edric (la leggenda)");
-        if (gruppo == null || fineIlse == null || missioniOggetto == null || edric == null || leggendaOggetto == null) return;
+        if (gruppo == null || fineIlse == null || missioniOggetto == null || edric == null) return;
         var missioni = missioniOggetto.GetComponent<Missioni>();
-        var leggenda = leggendaOggetto.GetComponent<Interlocutore>();
+        // la leggenda giusta è quella che apre l'ingresso della cripta (se per sbaglio ce ne sono due, non quella vecchia)
+        Interlocutore leggenda = null;
+        var tutte = new System.Collections.Generic.List<Interlocutore>();
+        foreach (var radice in scena.GetRootGameObjects())
+            foreach (var i in radice.GetComponentsInChildren<Interlocutore>(true))
+                if (i.gameObject.name == "Edric (la leggenda)") tutte.Add(i);
+        foreach (var i in tutte)
+        {
+            var ev = Evento(i, "alTermine");
+            for (int k = 0; k < ev.GetPersistentEventCount(); k++)
+                if (ev.GetPersistentTarget(k) is PassaggioScena) leggenda = i;
+        }
+        if (leggenda == null) return;
         var dialogo = fineIlse.GetComponent<DialogoAutomatico>();
         var e = Evento(dialogo, "alTermine");
         // via i collegamenti vecchi della quest 5 (rifacendo)
@@ -180,7 +182,8 @@ public static class CreaPrologoQuest5
         {
             var bersaglio = e.GetPersistentTarget(i);
             string metodo = e.GetPersistentMethodName(i);
-            if (bersaglio == null || (metodo == "ImpostaObiettivo" && bersaglio == missioni) || bersaglio == leggenda || bersaglio == edric
+            if (bersaglio == null || (metodo == "ImpostaObiettivo" && bersaglio == missioni) || bersaglio == edric
+                || (bersaglio is Interlocutore altro && altro.gameObject.name == "Edric (la leggenda)")
                 || (metodo == "Attiva" && bersaglio is MetaObiettivo))
                 UnityEventTools.RemovePersistentListener(e, i);
         }
@@ -189,6 +192,27 @@ public static class CreaPrologoQuest5
         Su(e, Abilita(leggenda), true);
         Meta(e, edric.gameObject);
         EditorUtility.SetDirty(dialogo);
+    }
+
+    // Via TUTTI i dialoghi della quest 5 rimasti nella scena (ovunque siano, anche doppi) e i loro collegamenti dalla
+    // fine della quest 4. Stanno su Edric e non nel gruppo, quindi rifacendo la quest non sparivano con il gruppo:
+    // c'erano due "Edric (la leggenda)" e la fine della quest 4 accendeva quello vecchio, collegato a un ingresso che
+    // non c'era più: Edric parlava ma la cripta non si apriva e la bussola restava su di lui (Lorenzo, 13 e 14 ottobre).
+    static void TogliDialoghiVecchi(Scene scena, GameObject fineIlse)
+    {
+        var fineIlseEvento = Evento(fineIlse.GetComponent<DialogoAutomatico>(), "alTermine");
+        var vecchi = new System.Collections.Generic.List<GameObject>();
+        foreach (var radice in scena.GetRootGameObjects())
+            foreach (var t in radice.GetComponentsInChildren<Transform>(true))
+                if (t.name == "Edric (la leggenda)" || t.name == "Edric (il medaglione)") vecchi.Add(t.gameObject);
+        foreach (var o in vecchi)
+        {
+            var dialogo = o.GetComponent<Interlocutore>();
+            for (int i = fineIlseEvento.GetPersistentEventCount() - 1; i >= 0; i--)
+                if (dialogo != null && fineIlseEvento.GetPersistentTarget(i) == dialogo) UnityEventTools.RemovePersistentListener(fineIlseEvento, i);
+            Undo.DestroyObjectImmediate(o);
+        }
+        if (vecchi.Count > 0) Debug.Log("Prologo: tolti " + vecchi.Count + " dialoghi vecchi della quest 5.");
     }
 
     // L'Interlocutore di un personaggio (l'oggetto con quel nome che ce l'ha).
