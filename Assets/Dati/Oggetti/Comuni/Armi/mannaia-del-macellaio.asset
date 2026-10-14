@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d45caab4391fd43991d2d38c7be590, type: 3}
+  m_Name: mannaia-del-macellaio
+  m_EditorClassIdentifier: Assembly-CSharp::DatiArma
+  nomeDiLavoro: Mannaia del macellaio
+  chiaveNome: oggetto.mannaia_macellaio.nome
+  chiaveDescrizione: oggetto.mannaia_macellaio.descrizione
+  classe: 0
+  tutteLeClassi: 1
+  icona: {fileID: 0}
+  modello: {fileID: 0}
+  materialeModello: {fileID: 0}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
+  tipo: 2
+  dueMani: 0
+  danno: 23
+  costoAttacco: 18
+  preparazione: 0.3
+  colpoAttivo: 0.15
+  recupero: 0.42
+  portata: 1.6
+  raggio: 1
+  arco: 110
+  affondo: 2
+  penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
+  probabilitaCritico: 0
+  moltiplicatoreCritico: 0
+  dannoAssorbitoSenzaScudo: 0.25
+  costoParataSenzaScudo: 22
