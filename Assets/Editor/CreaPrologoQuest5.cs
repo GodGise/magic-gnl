@@ -19,6 +19,7 @@ using static AiutiPrologo;
 //       -> segnale q5.medaglione (dalla cripta) -> Edric ha le battute del ritorno
 //       -> uscendo dalla cripta (segnale uscita.Cripta) -> "Porta il medaglione a Edric", la bussola indica Edric
 //       -> Edric (dlg.q5.04-05) -> quest 5 finita (il sole avanza); da lì Edric ringrazia (dlg.dopo.edric5).
+//          Se il giocatore è entrato nel tunnel delle tracce (segnale q5.tracce) Edric ne parla (dlg.q5.06-07).
 //   - Edric esce dal cortile di studio (che c'è solo per lo Stregone), così c'è per tutte le classi; il suo dialogo della
 //     quest 2 resta solo per lo Stregone (ComponentiPerClasse);
 //   - mentre la quest è in corso, l'Interlocutore di Edric della quest 2 (i ringraziamenti) si spegne, così non ci sono
@@ -125,6 +126,8 @@ public static class CreaPrologoQuest5
         Imposta(ritorno, "unaVoltaSola", true);
         Imposta(ritorno, "righe", new[] { Riga("pg.edric", "dlg.q5.04"), Riga("pg.edric", "dlg.q5.05") });
         Imposta(ritorno, "righeDopoLaQuest", new[] { Riga("pg.edric", "dlg.dopo.edric5") });
+        // se il giocatore è entrato nel tunnel delle tracce, Edric ne parla (non sa, o fa finta di non sapere)
+        Imposta(ritorno, "righeAlternative", new[] { Riga("pg.edric", "dlg.q5.04"), Riga("pg.edric", "dlg.q5.06"), Riga("pg.edric", "dlg.q5.07"), Riga("pg.edric", "dlg.q5.05") });
         var fine = Evento(ritorno, "alTermine");
         Su(fine, missioni.QuestFinita, 5);
         Su(fine, missioni.TogliObiettivo);
@@ -138,6 +141,10 @@ public static class CreaPrologoQuest5
         Su(allUscita, missioni.ImpostaObiettivo, "ob.q5.torna");
         Meta(allUscita, edric.gameObject);
         uscito.gameObject.SetActive(false);
+
+        var tracce = Undo.AddComponent<AscoltaSegnale>(Vuoto("Attesa: tracce viste nella cripta", gruppo));
+        Imposta(tracce, "parola", "q5.tracce");
+        Su(Evento(tracce, "quandoArriva"), ritorno.UsaRigheAlternative);
 
         var medaglione = Undo.AddComponent<AscoltaSegnale>(Vuoto("Attesa: medaglione preso", gruppo));
         Imposta(medaglione, "parola", "q5.medaglione");

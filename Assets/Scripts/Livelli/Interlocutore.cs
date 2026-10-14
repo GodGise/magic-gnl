@@ -31,6 +31,15 @@ public class Interlocutore : MonoBehaviour
     [SerializeField] UnityEvent alTermine;
     [Tooltip("Cosa dice quando la sua quest è finita (dopo QuestCompiuta). Se vuoto, continua come prima.")]
     [SerializeField] RigaDialogo[] righeDopoLaQuest;
+    [Tooltip("Righe da usare al posto di \"Righe\" dopo UsaRigheAlternative (per esempio se il giocatore ha visto qualcosa).")]
+    [SerializeField] RigaDialogo[] righeAlternative;
+
+    // Da un evento: d'ora in poi il primo dialogo è "Righe Alternative" (per esempio Edric che parla delle tracce
+    // nella cripta, solo se il giocatore le ha viste). Se non è ancora stato detto.
+    public void UsaRigheAlternative()
+    {
+        if (righeAlternative != null && righeAlternative.Length > 0 && !parlatoUnaVolta) righe = righeAlternative;
+    }
 
     GiocatoreControllo giocatore;
     InputAction comandoParla;
