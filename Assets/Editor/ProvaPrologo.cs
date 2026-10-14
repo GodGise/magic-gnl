@@ -179,6 +179,15 @@ public static class ProvaPrologo
         Debug.Log(quanti > 0 ? "Prova prologo: feriti " + quanti + " ratti." : "Prova prologo: nessun ratto vivo (parla prima con Hobb).");
     }
 
+    // Il giocatore cade come se l'orco enorme lo avesse colpito (per provare la sconfitta e il passaggio alla gattabuia).
+    [MenuItem(Cartella + "Razzia: fai cadere il giocatore")]
+    static void FaiCadere()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var g = Object.FindFirstObjectByType<GiocatoreControllo>();
+        if (g != null) g.RiceviColpo(g.Vita + 1f, g.transform.position - g.transform.forward);
+    }
+
     // Toglie il 30% della vita all'orco enorme (per provare in fretta quando diventa invulnerabile).
     [MenuItem(Cartella + "Razzia: ferisci l'orco enorme (-30%)")]
     static void FerisciOrcoEnorme()
