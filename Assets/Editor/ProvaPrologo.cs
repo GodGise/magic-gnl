@@ -88,6 +88,7 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Cripta: vai alla leva")] static void CriptaLeva() => Vai("Leva del cancello");
     [MenuItem(Cartella + "Cripta: vai al baule")] static void CriptaBaule() => Vai("Baule della prima guardia");
     [MenuItem(Cartella + "Cripta: vai all'uscita")] static void CriptaUscita() => Vai("Scala dell'uscita");
+    [MenuItem(Cartella + "Cripta: vai al tunnel delle tracce")] static void CriptaTracce() => Vai("Nel tunnel delle tracce");
 
     // Toglie 20 di vita a ogni scheletro vivo (per provare in fretta la cripta).
     [MenuItem(Cartella + "Ferisci gli scheletri della cripta (-20)")]
