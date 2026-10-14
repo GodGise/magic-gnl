@@ -10,6 +10,8 @@ using UnityEngine.SceneManagement;
 // "Togli 50 di vita al giocatore" serve a provare le pozioni (tasto F).
 // Bottega e monete: "Apri la bottega di Ilse" porta da Ilse e apre il negozio anche prima della quest 4;
 // "Dai 100 monete" e "Dai 3 fiori di ogni tipo" servono a provare acquisti, vendite e baratto.
+// "Salta alla quest N": fa partire, in ordine, le fini vere delle quest prima di N (gli stessi eventi del gioco:
+// obiettivi, personaggi accesi e spenti, ora che avanza) e porta il giocatore dove indica la bussola.
 public static class ProvaPrologo
 {
     const string Cartella = "magic-gnl/Prova prologo/";
@@ -174,6 +176,64 @@ public static class ProvaPrologo
             quanti++;
         }
         Debug.Log(quanti > 0 ? "Prova prologo: feriti " + quanti + " ratti." : "Prova prologo: nessun ratto vivo (parla prima con Hobb).");
+    }
+
+    [MenuItem(Cartella + "Salta alla quest 2")] static void Salta2() => SaltaAllaQuest(2);
+    [MenuItem(Cartella + "Salta alla quest 3")] static void Salta3() => SaltaAllaQuest(3);
+    [MenuItem(Cartella + "Salta alla quest 4")] static void Salta4() => SaltaAllaQuest(4);
+    [MenuItem(Cartella + "Salta alla quest 5")] static void Salta5() => SaltaAllaQuest(5);
+    [MenuItem(Cartella + "Salta alla quest 6")] static void Salta6() => SaltaAllaQuest(6);
+
+    static void SaltaAllaQuest(int quest)
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var giocatore = Object.FindFirstObjectByType<GiocatoreControllo>();
+        for (int q = 1; q < quest; q++)
+        {
+            var fini = FiniDellaQuest(q);
+            if (fini.Count == 0) { Debug.LogWarning("Prova prologo: non trovo la fine della quest " + q + "."); return; }
+            // quest 2: due fini (Guerriero e Ladro dal fabbro, Stregone da Edric): si usa quella della classe
+            UnityEngine.Events.UnityEvent scelta = fini[0].evento;
+            foreach (var f in fini)
+                if ((SceltaPartita.Classe == ClasseGiocatore.Stregone) == f.nome.Contains("Edric")) scelta = f.evento;
+            scelta.Invoke();
+        }
+        var missioni = Missioni.Istanza;
+        if (missioni != null && missioni.Meta != null && giocatore != null)
+        {
+            Vector3 punto = missioni.Meta.position + Vector3.back * 1.8f + Vector3.up * 1.2f;
+            giocatore.Teletrasporta(punto, Quaternion.LookRotation(Vector3.forward));
+        }
+        Debug.Log("Prova prologo: quest 1-" + (quest - 1) + " finite. Obiettivo: " + (missioni != null ? missioni.Obiettivo : "?"));
+    }
+
+    struct Fine { public string nome; public UnityEngine.Events.UnityEvent evento; }
+
+    // Gli eventi che chiamano Missioni > QuestFinita con quel numero.
+    static System.Collections.Generic.List<Fine> FiniDellaQuest(int quest)
+    {
+        var elenco = new System.Collections.Generic.List<Fine>();
+        var scena = SceneManager.GetActiveScene();
+        foreach (var radice in scena.GetRootGameObjects())
+            foreach (var c in radice.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (c == null) continue;
+                foreach (var f in c.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))
+                {
+                    if (f.FieldType != typeof(UnityEngine.Events.UnityEvent) || !(f.GetValue(c) is UnityEngine.Events.UnityEvent e)) continue;
+                    var chiamate = new SerializedObject(c).FindProperty(f.Name + ".m_PersistentCalls.m_Calls");
+                    if (chiamate == null) continue;
+                    for (int i = 0; i < chiamate.arraySize; i++)
+                    {
+                        var ch = chiamate.GetArrayElementAtIndex(i);
+                        if (ch.FindPropertyRelative("m_MethodName").stringValue != "QuestFinita") continue;
+                        if (ch.FindPropertyRelative("m_Arguments.m_IntArgument").intValue != quest) continue;
+                        elenco.Add(new Fine { nome = c.gameObject.name, evento = e });
+                        break;
+                    }
+                }
+            }
+        return elenco;
     }
 
     static void Vai(string nome)
