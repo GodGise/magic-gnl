@@ -137,7 +137,7 @@ public static class CollegaArmiGuerriero
     static Transform Cerca(Transform t, string nome)
     {
         foreach (var figlio in t.GetComponentsInChildren<Transform>(true))
-            if (figlio.name == nome) return figlio;
+            if (figlio.name.Trim() == nome) return figlio;   // nel file di Nazar "Axe_Wood " ha uno spazio in fondo
         return null;
     }
 
