@@ -88,6 +88,7 @@ public static class ProvaPrologo
     [MenuItem(Cartella + "Cripta: vai alla leva")] static void CriptaLeva() => Vai("Leva del cancello");
     [MenuItem(Cartella + "Cripta: vai al baule")] static void CriptaBaule() => Vai("Baule della prima guardia");
     [MenuItem(Cartella + "Cripta: vai all'uscita")] static void CriptaUscita() => Vai("Scala dell'uscita");
+    [MenuItem(Cartella + "Cripta: vai al tunnel delle tracce")] static void CriptaTracce() => Vai("Nel tunnel delle tracce");
 
     // Toglie 20 di vita a ogni scheletro vivo (per provare in fretta la cripta).
     [MenuItem(Cartella + "Ferisci gli scheletri della cripta (-20)")]
@@ -176,6 +177,18 @@ public static class ProvaPrologo
             quanti++;
         }
         Debug.Log(quanti > 0 ? "Prova prologo: feriti " + quanti + " ratti." : "Prova prologo: nessun ratto vivo (parla prima con Hobb).");
+    }
+
+    // Toglie il 30% della vita all'orco enorme (per provare in fretta quando diventa invulnerabile).
+    [MenuItem(Cartella + "Razzia: ferisci l'orco enorme (-30%)")]
+    static void FerisciOrcoEnorme()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("Prova prologo: funziona solo durante il Play."); return; }
+        var scontro = Object.FindFirstObjectByType<ScontroOrcoEnorme>();
+        var b = scontro != null ? scontro.GetComponent<Bersaglio>() : null;
+        if (b == null || b.Morto) { Debug.LogWarning("Prova prologo: l'orco enorme non è ancora arrivato."); return; }
+        b.RiceviColpo(b.VitaMassima * 0.3f, b.transform.position + Vector3.up);
+        Debug.Log("Prova prologo: orco enorme ferito, vita " + b.Vita + (b.Invulnerabile ? " (invulnerabile)." : "."));
     }
 
     [MenuItem(Cartella + "Salta alla quest 2")] static void Salta2() => SaltaAllaQuest(2);
