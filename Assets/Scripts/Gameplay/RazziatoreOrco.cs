@@ -10,6 +10,10 @@ using UnityEngine;
 // Appena vede il giocatore (campo visivo di InseguimentoNemico) smette, grida e lo attacca; se lo perde torna al
 // suo posto e riprende. Mentre spacca è "ignaro": lo si può giustiziare alle spalle con l'esecuzione furtiva.
 // Ogni tanto ringhia (Suono UrloOrco).
+// Udito (Giuseppe, 14 ottobre): sente chi CORRE (sprint) o fa la SCHIVATA entro "Raggio Udito Corsa", anche alle
+// spalle e senza vederlo, e lo insegue; chi si avvicina camminando viene sentito solo quasi addosso ("Raggio Udito
+// Passo"), quindi si può arrivare alle spalle e fare l'esecuzione furtiva. Se poi non lo vede, dopo "Secondi Allerta"
+// si calma e torna a distruggere. In co-op basta un giocatore che corre. Tutti i numeri si regolano dall'Inspector.
 // "Corazzato": elmo, spallacci e piastra sul petto di ferro scuro (gli orchi della seconda ondata con l'ascia).
 // Le pose sono provvisorie (figura a blocchi, AnimazioneUmanoide.FaiGesto): le animazioni vere sono nella lista
 // per Nazar (Docs/lista-modelli-nazar.txt).
@@ -33,6 +37,19 @@ public class RazziatoreOrco : MonoBehaviour
     [Tooltip("Quando la casa è finita, cerca un'altra casa entro questi metri.")]
     [SerializeField] float raggioProssimaCasa = 30f;
     [SerializeField] bool corazzato;
+
+    [Header("Udito")]
+    [Tooltip("Chi corre (sprint) o schiva entro questi metri viene sentito, anche alle spalle.")]
+    [SerializeField, Min(0f)] float raggioUditoCorsa = 12f;
+    [Tooltip("Chi cammina viene sentito solo entro questi metri (quasi addosso).")]
+    [SerializeField, Min(0f)] float raggioUditoPasso = 1.8f;
+    [Tooltip("Sopra questa velocità (metri al secondo) i passi fanno rumore: lo sprint è 8, la corsa normale 5, la schivata circa 9.")]
+    [SerializeField, Min(0f)] float velocitaRumorosa = 6.2f;
+    [Tooltip("Secondi in cui insegue chi ha sentito anche senza vederlo; poi si calma e torna al suo posto.")]
+    [SerializeField, Min(0f)] float secondiAllerta = 6f;
+
+    readonly System.Collections.Generic.Dictionary<IObiettivoNemico, (Vector3 posizione, float velocita)> passi =
+        new System.Collections.Generic.Dictionary<IObiettivoNemico, (Vector3, float)>();
 
     Bersaglio bersaglio;
     InseguimentoNemico vista;
@@ -79,6 +96,7 @@ public class RazziatoreOrco : MonoBehaviour
         bool insegue = vista.StaInseguendo;
         if (insegue && !inseguivaPrima) Suoni.Suona(Suono.UrloOrco, transform.position + Vector3.up, 0.9f, Random.Range(0.9f, 1.1f));
         inseguivaPrima = insegue;
+        Ascolta();
         if (!vista.AlPosto || !vista.Ignaro || casa == null) return;
 
         if (casa.Attuale == CasaInRovina.Stato.Distrutta || (azione == Azione.DareFuoco && casa.Attuale >= CasaInRovina.Stato.InFiamme))
@@ -118,6 +136,35 @@ public class RazziatoreOrco : MonoBehaviour
         {
             prossimoRinghio = Time.time + Random.Range(6f, 14f);
             Suoni.Suona(Suono.UrloOrco, transform.position + Vector3.up, 0.45f, Random.Range(0.8f, 1.05f));
+        }
+    }
+
+    // Ascolta i passi dei giocatori: chi fa rumore abbastanza vicino viene inseguito (solo chi decide il mondo).
+    void Ascolta()
+    {
+        if (Rete.Ospite || vista.StaInseguendo || vista.InRitirata || Time.deltaTime <= 0f) return;
+        foreach (var chi in ObiettiviNemici.Tutti)
+        {
+            if (chi is IEscaNemici || !ObiettiviNemici.Valido(chi)) continue;
+            Vector3 p = chi.Corpo.position;
+            float velocita = 0f;
+            if (passi.TryGetValue(chi, out var prima))
+            {
+                Vector3 d = p - prima.posizione;
+                d.y = 0f;
+                // media morbida: un passo solo non basta, serve correre davvero (o la schivata)
+                velocita = Mathf.Lerp(prima.velocita, d.magnitude / Time.deltaTime, 1f - Mathf.Exp(-12f * Time.deltaTime));
+                if (d.magnitude > 3f) velocita = 0f;   // teletrasporto (rinascita, zone): non è un passo
+            }
+            passi[chi] = (p, velocita);
+            Vector3 verso = p - transform.position;
+            verso.y = 0f;
+            float raggio = velocita >= velocitaRumorosa ? raggioUditoCorsa : velocita > 0.5f ? raggioUditoPasso : 0f;
+            if (raggio > 0f && verso.magnitude <= raggio)
+            {
+                vista.Senti(chi, secondiAllerta);
+                return;
+            }
         }
     }
 

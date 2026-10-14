@@ -15,7 +15,12 @@ using UnityEngine.Events;
 //   4. Arriva la seconda ondata: circa 16 orchi, alcuni corazzati con l'ascia orchesca. Entrano correndo da fuori vista
 //      e vanno ai loro posti (dove riprendono a distruggere); chi vede il giocatore lo attacca.
 //   5. Abbattuto il 70% della seconda ondata, appena il giocatore è ad almeno 20 metri dalla piazza la terra trema
-//      (camera che trema, rombo) e l'orco enorme salta giù in piazza: lo scontro scritto per essere perso.
+//      (camera che trema, rombo) e l'orco enorme salta giù in piazza: lo scontro scritto per essere perso
+//      (ScontroOrcoEnorme: invulnerabile dopo 3 minuti). Quando il giocatore muore, tutto diventa nero e ci si
+//      risveglia nella gattabuia (scena "Scena Gattabuia", se è nelle Build Settings).
+// Abitanti in fuga (Giuseppe, 14 ottobre): durante le ondate ci sono sempre alcuni abitanti (AbitanteInFuga) che
+// scappano per il villaggio, inseguiti dagli orchi vicini; compaiono fuori dalla vista del giocatore e, morti o
+// salvati, vengono sostituiti. Non contano per le percentuali delle ondate.
 // Ogni passaggio ha un evento ("All'Inizio", "Alla Ritirata", "Alla Seconda Ondata", "All'Orco Enorme") per altre cose.
 // Percentuali, secondi e distanze si regolano dall'Inspector.
 // Come montarlo: su un oggetto vuoto della scena del villaggio, con le due ondate (oggetti con gli orchi dentro, spenti)
@@ -50,11 +55,22 @@ public class RazziaVillaggio : MonoBehaviour
     [Tooltip("Gli orchi della seconda ondata partono da questa distanza dal loro posto, fuori dalla vista del giocatore.")]
     [SerializeField, Min(4f)] float distanzaEntrata = 16f;
 
+    [Header("Abitanti in fuga")]
+    [Tooltip("Quanti abitanti scappano per il villaggio nello stesso momento (0 = nessuno).")]
+    [SerializeField, Min(0)] int abitantiInScena = 5;
+    [Tooltip("Secondi fra un abitante nuovo e il successivo, quando ne manca qualcuno.")]
+    [SerializeField, Min(0.5f)] float secondiRicambio = 6f;
+    [Tooltip("Gli abitanti nuovi compaiono fra queste distanze dal giocatore (in metri), fuori dalla sua vista.")]
+    [SerializeField] Vector2 distanzaAbitanti = new Vector2(18f, 50f);
+
     [Header("Eventi")]
     [SerializeField] UnityEvent allInizio;
     [SerializeField] UnityEvent allaRitirata;
     [SerializeField] UnityEvent allaSecondaOndata;
     [SerializeField] UnityEvent allOrcoEnorme;
+
+    [Tooltip("La scena dove ci si risveglia dopo lo scontro perso con l'orco enorme.")]
+    [SerializeField] string scenaGattabuia = "Gattabuia";
 
     [Tooltip("Materiale della polvere quando atterra l'orco enorme (lo mette il comando).")]
     [SerializeField] Material materialePolvere;
@@ -68,6 +84,8 @@ public class RazziaVillaggio : MonoBehaviour
     readonly List<(InseguimentoNemico orco, float da)> inFuga = new List<(InseguimentoNemico, float)>();
     GiocatoreControllo giocatore;
     float prossimaMeta;
+    readonly List<AbitanteInFuga> abitanti = new List<AbitanteInFuga>();
+    float prossimoAbitante;
     int ultimoNumero = -1;
 
     void Awake() => Istanza = this;
@@ -109,6 +127,7 @@ public class RazziaVillaggio : MonoBehaviour
         if (fase == Fase.Attesa) return;
         if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
         AggiornaFuga();
+        AggiornaAbitanti();
         switch (fase)
         {
             case Fase.PrimaOndata:
@@ -124,11 +143,70 @@ public class RazziaVillaggio : MonoBehaviour
                     Missioni.Istanza?.TogliMeta();
                 }
                 break;
+            case Fase.OrcoEnorme:
+                if (!sconfitto && giocatore != null && giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) StartCoroutine(Sconfitta());
+                break;
             case Fase.Lontano:
                 if (giocatore != null && piazza != null && Orizzontale(giocatore.transform.position, piazza.position) >= distanzaDallaPiazza)
                     StartCoroutine(Terremoto());
                 break;
         }
+    }
+
+    // ---------- abitanti in fuga ----------
+
+    void AggiornaAbitanti()
+    {
+        for (int i = abitanti.Count - 1; i >= 0; i--)
+            if (abitanti[i] == null || abitanti[i].Finito)
+            {
+                if (abitanti[i] != null) Destroy(abitanti[i].gameObject);
+                abitanti.RemoveAt(i);
+            }
+        bool durante = fase == Fase.PrimaOndata || fase == Fase.Tamburi || fase == Fase.SecondaOndata || fase == Fase.Lontano;
+        if (!durante || Rete.Ospite || giocatore == null) return;
+        int vivi = 0;
+        foreach (var a in abitanti) if (!a.Morto) vivi++;
+        if (vivi >= abitantiInScena || Time.time < prossimoAbitante) return;
+        prossimoAbitante = Time.time + secondiRicambio;
+        if (TrovaPostoAbitante(out Vector3 dove)) abitanti.Add(CreaAbitante(dove));
+    }
+
+    // Davanti a una casa a caso, abbastanza lontano dal giocatore e fuori dalla sua vista.
+    bool TrovaPostoAbitante(out Vector3 dove)
+    {
+        dove = Vector3.zero;
+        var case_ = CasaInRovina.Tutte;
+        if (case_.Count == 0) return false;
+        Vector3 occhi = giocatore.transform.position + Vector3.up * 0.8f;
+        for (int prova = 0; prova < 12; prova++)
+        {
+            var c = case_[Random.Range(0, case_.Count)];
+            if (c == null) continue;
+            Vector3 p = c.Davanti + c.Fuori * 2.2f + Vector3.up * 0.9f;
+            float d = Orizzontale(p, giocatore.transform.position);
+            if (d < distanzaAbitanti.x || d > distanzaAbitanti.y) continue;
+            if (Physics.CheckCapsule(p + Vector3.up * -0.3f, p + Vector3.up * 0.6f, 0.4f, ~0, QueryTriggerInteraction.Ignore)) continue;
+            if (!Physics.Linecast(occhi, p + Vector3.up * 0.5f, ~0, QueryTriggerInteraction.Ignore)) continue;   // il giocatore lo vedrebbe comparire
+            dove = p;
+            return true;
+        }
+        return false;
+    }
+
+    AbitanteInFuga CreaAbitante(Vector3 dove)
+    {
+        var o = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        o.name = "Abitante in fuga";
+        o.transform.SetParent(transform, true);
+        o.transform.position = dove;
+        o.transform.localScale = new Vector3(0.85f, 0.85f, 0.85f);   // alto 1,7 metri
+        var a = o.AddComponent<AbitanteInFuga>();
+        Vector3 uscita = puntiRitirata != null && puntiRitirata.Length > 0 && puntiRitirata[0] != null
+            ? puntiRitirata[Random.Range(0, puntiRitirata.Length)].position + Vector3.up * 0.85f
+            : dove + Random.onUnitSphere * 40f;
+        a.Prepara(uscita);
+        return a;
     }
 
     // "Respingi gli orchi (3 da abbattere)" e la bussola sull'orco vivo più vicino.
@@ -331,12 +409,53 @@ public class RazziaVillaggio : MonoBehaviour
         Suoni.SuonaOvunque(Suono.UrloOrco, 1f);
         if (bersaglio != null) bersaglio.enabled = true;
         if (vista != null) vista.enabled = true;
+        if (orcoEnorme.GetComponent<ScontroOrcoEnorme>() == null) orcoEnorme.AddComponent<ScontroOrcoEnorme>();
 
         fase = Fase.OrcoEnorme;
         MessaggiSchermo.Mostra(Lingua.T("msg.razzia.enorme"), 4f);
         Missioni.Istanza?.ImpostaObiettivo("ob.razzia.enorme");
         Missioni.Istanza?.ImpostaMeta(orcoEnorme.transform);
         allOrcoEnorme.Invoke();
+    }
+
+    // ---------- sconfitta: risveglio nella gattabuia ----------
+
+    bool sconfitto;
+    float nero;
+    string scrittaNero;
+
+    System.Collections.IEnumerator Sconfitta()
+    {
+        sconfitto = true;
+        yield return new WaitForSeconds(1.2f);
+        scrittaNero = Lingua.T("msg.razzia.buio");
+        for (float t = 0f; t < 1.5f; t += Time.unscaledDeltaTime) { nero = t / 1.5f; yield return null; }
+        nero = 1f;
+        yield return new WaitForSecondsRealtime(2.5f);
+        if (Application.CanStreamedLevelBeLoaded(scenaGattabuia))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(scenaGattabuia);
+            yield break;
+        }
+        // la gattabuia non c'è ancora: si torna al villaggio
+        Debug.LogWarning("RazziaVillaggio: la scena " + scenaGattabuia + " non è nelle Build Settings.");
+        scrittaNero = null;
+        for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime) { nero = 1f - t; yield return null; }
+        nero = 0f;
+        sconfitto = false;
+    }
+
+    void OnGUI()
+    {
+        if (nero <= 0.001f) return;
+        GUI.depth = -80;
+        GUI.color = new Color(0f, 0f, 0f, nero);
+        GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+        if (string.IsNullOrEmpty(scrittaNero) || nero < 0.9f) return;
+        GraficaMenu.PreparaStili();
+        float L = GraficaMenu.FoglioIntero();
+        GraficaMenu.Scritta(new Rect(0f, 500f, L, 80f), scrittaNero, GraficaMenu.Voce, GraficaMenu.Spento, nero);
     }
 
     static float AltezzaCentro(GameObject o) => o.transform.lossyScale.y;   // cilindro di Unity: alto 2 x scala, centro a metà

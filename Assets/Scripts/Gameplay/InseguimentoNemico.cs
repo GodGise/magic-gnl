@@ -110,6 +110,25 @@ public class InseguimentoNemico : MonoBehaviour
         giocatore = null;
     }
 
+    // Ha sentito "chi" (per esempio passi di corsa, vedi RazziatoreOrco): si accorge di lui e lo insegue anche senza
+    // vederlo, per almeno "secondi"; poi, se non lo vede, si calma e torna al suo posto.
+    float sentitoFino;
+    public void Senti(IObiettivoNemico chi, float secondi)
+    {
+        if (Rete.Ospite || bersaglio.Morto || inEsecuzione || inRitirata || !ObiettiviNemici.Valido(chi)) return;
+        giocatore = chi;
+        bersaglio.Obiettivo = chi;
+        if (stato != Stato.Insegue)
+        {
+            MostraAllarme();
+            MondoRete.InviaAllarme(bersaglio);
+        }
+        stato = Stato.Insegue;
+        ultimaVolta = Time.time;
+        sentitoFino = Mathf.Max(sentitoFino, Time.time + secondi);
+        bersaglio.attaccaIlGiocatore = true;
+    }
+
     // Quanto si gira a guardarsi intorno da fermo (0 = guarda sempre dritto, per esempio mentre spacca una porta).
     public void ImpostaSguardo(float gradi) => guardaIntorno = Mathf.Max(0f, gradi);
     // Fin dove vede e quanto è largo il campo visivo.
@@ -419,7 +438,7 @@ public class InseguimentoNemico : MonoBehaviour
             giocatore = bersaglio.Obiettivo;
             ultimaVolta = Time.time;
         }
-        if (VedeGiocatore() || giocatore is IEscaNemici) ultimaVolta = Time.time;
+        if (VedeGiocatore() || giocatore is IEscaNemici || Time.time < sentitoFino) ultimaVolta = Time.time;
         bool troppoLontano = Vector3.Distance(transform.position, posto) > distanzaMassimaDalPosto;
         if (Time.time - ultimaVolta > secondiPerPerderlo || troppoLontano)
         {
