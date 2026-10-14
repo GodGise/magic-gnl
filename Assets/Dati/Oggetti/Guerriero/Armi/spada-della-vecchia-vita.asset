@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.spada_vecchia_vita.nome
   chiaveDescrizione: oggetto.spada_vecchia_vita.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 5338966919457316212, guid: 5b2c094fad802b846bc0a16bf6725732, type: 3}
+  materialeModello: {fileID: 2100000, guid: e034e2fd845b8fc49a7005a58e8760d4, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 0
   dueMani: 0
   danno: 25
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 120
   affondo: 3
   penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 0
   moltiplicatoreCritico: 0
   dannoAssorbitoSenzaScudo: 0.4

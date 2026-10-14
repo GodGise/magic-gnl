@@ -16,8 +16,13 @@ MonoBehaviour:
   chiaveNome: oggetto.ascia_boia.nome
   chiaveDescrizione: oggetto.ascia_boia.descrizione
   classe: 0
+  tutteLeClassi: 0
   icona: {fileID: 0}
-  modello: {fileID: 0}
+  modello: {fileID: 3892101982888805281, guid: 1c23b53c8080e5747ae1dd89e0c2f1f5, type: 3}
+  materialeModello: {fileID: 2100000, guid: 5f0129b5284979d4594f2eee7042726b, type: 2}
+  rotazioneModello: {x: 0, y: 0, z: 0}
+  posizioneModello: {x: 0, y: 0, z: 0}
+  scalaModello: 1
   tipo: 2
   dueMani: 0
   danno: 38
@@ -30,6 +35,7 @@ MonoBehaviour:
   arco: 150
   affondo: 2.5
   penetrazioneArmatura: 0
+  moltiplicatoreAlleSpalle: 1
   probabilitaCritico: 10
   moltiplicatoreCritico: 0.25
   dannoAssorbitoSenzaScudo: 0.35
