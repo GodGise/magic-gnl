@@ -25,6 +25,7 @@ public class ScontroOrcoEnorme : MonoBehaviour
     {
         bersaglio = GetComponent<Bersaglio>();
         vista = GetComponent<InseguimentoNemico>();
+        bersaglio.VitaNonSotto = 1f;   // anche un colpo fortissimo lo lascia vivo: questo scontro si perde
     }
 
     void Update()

@@ -87,6 +87,8 @@ public class Bersaglio : MonoBehaviour
     // Non prende danni né effetti degli incantesimi (l'orco enorme della piazza dopo 3 minuti, vedi ScontroOrcoEnorme):
     // i colpi rimbalzano con il suono della parata e un lampo grigio.
     public bool Invulnerabile { get; set; }
+    // Se è più di zero, i colpi non portano la vita sotto questo valore (l'orco enorme non deve morire mai).
+    public float VitaNonSotto { get; set; }
     public bool Boss => boss;
     public float VitaMassima => vitaMassima * DifficoltaCoop.VitaNemici(boss);
     // Avvisa chi è interessato (per esempio InseguimentoNemico) che il nemico è stato colpito.
@@ -314,6 +316,7 @@ public class Bersaglio : MonoBehaviour
 
         if (Sbilanciato) danno *= dannoDaSbilanciato;
         vita -= danno;
+        if (VitaNonSotto > 0f && vita < VitaNonSotto) vita = VitaNonSotto;
         Debug.Log(name + (critico ? " colpito con un CRITICO: -" : " colpito: -") + danno.ToString("0.#") + ", vita " + Mathf.Max(0f, vita).ToString("0.#"));
         Colpito?.Invoke();
 
