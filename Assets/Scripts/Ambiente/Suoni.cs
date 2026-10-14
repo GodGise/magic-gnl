@@ -10,7 +10,8 @@ public enum Suono
     Raccolta, Serratura, BauleAperto, CambioArma, SferaLancio, SferaImpatto, Negato,
     PassoAcqua,
     // razzia degli orchi (Lorenzo, 13 ottobre)
-    Tamburo, UrloOrco, Rombo, LegnoRotto, Crepitio
+    Tamburo, UrloOrco, Rombo, LegnoRotto, Crepitio,
+    Grido   // abitante che scappa o muore
 }
 
 // Suoni provvisori creati direttamente dal codice, senza file audio.
@@ -111,6 +112,7 @@ public static class Suoni
             case Suono.ImpattoColpo:
             case Suono.UrloOrco:
             case Suono.LegnoRotto:
+            case Suono.Grido:
                 return 3;
             case Suono.Tamburo:
             case Suono.Crepitio:
@@ -172,6 +174,7 @@ public static class Suoni
             case Suono.Rombo: return Rombo(caso);
             case Suono.LegnoRotto: return LegnoRotto(caso);
             case Suono.Crepitio: return Crepitio(caso);
+            case Suono.Grido: return Grido(caso);
         }
         return Vuoto(0.1f);
     }
@@ -662,6 +665,27 @@ public static class Suoni
             filtro += 0.18f * (voce - filtro);
             float busta = Mathf.Clamp01(t / 0.12f) * Mathf.Clamp01((durata - t) / 0.35f);
             d[i] = filtro * busta;
+        }
+        return d;
+    }
+
+    // Grido di paura: una voce acuta che sale di colpo e si spezza, con il fiato sopra.
+    static float[] Grido(System.Random caso)
+    {
+        float durata = 0.7f + (float)caso.NextDouble() * 0.3f;
+        float[] d = Vuoto(durata);
+        float fase = 0f, basso = 0f, filtro = 0f;
+        float tono = 330f + (float)caso.NextDouble() * 120f;
+        for (int i = 0; i < d.Length; i++)
+        {
+            float t = T(i);
+            float s = t / durata;
+            float f = tono * (1f + 0.35f * Mathf.Sin(Mathf.Min(1f, s * 2.5f) * Mathf.PI * 0.5f) - 0.25f * s) * (1f + 0.03f * Mathf.Sin(t * 45f));
+            fase += f / Frequenza;
+            float onda = Mathf.Sin(2f * Mathf.PI * fase) * 0.6f + Mathf.Sin(4f * Mathf.PI * fase) * 0.25f + Mathf.Sin(6f * Mathf.PI * fase) * 0.1f;
+            basso += 0.4f * (Rumore(caso) - basso);
+            filtro += 0.5f * (onda + basso * 0.25f - filtro);
+            d[i] = filtro * Mathf.Clamp01(t / 0.05f) * Mathf.Clamp01((durata - t) / 0.25f);
         }
         return d;
     }
