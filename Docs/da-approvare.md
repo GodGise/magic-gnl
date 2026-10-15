@@ -82,6 +82,10 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 15 ottobre: finestra del baule, gli oggetti si trascinano (ramo `lorenzoc/baule-trascina`)
+Richiesta di Lorenzo: aprendo un baule non si raccoglie più tutto in automatico. Si apre una finestra con il contenuto del baule a sinistra e lo zaino a destra; gli oggetti si trascinano da una parte all'altra (anche per lasciarne nel baule), doppio clic sposta, "Prendi tutto" (R). Le pozioni rispettano il limite di 3; gli oggetti delle missioni non si lasciano nel baule. Il baule si può riaprire ("Guarda nel baule").
+- Nuovo `Assets/Scripts/Interfaccia/FinestraBaule.cs`. Toccati `Baule.cs` (lista di oggetti, "Quando Aperto" parte quando il baule viene svuotato), `DonaOggetti.cs` (`PrendiLista`: su un baule la lista della classe va dentro il baule) e **due righe di `InventarioGioco.cs`** (area di Giuseppe: `Aperto` vale anche per la finestra del baule, e Tab non apre l'inventario sopra il baule).
+- Non ancora provato in Unity (il PC era occupato). Da provare: cripta (medaglione) e baule delle armi della gattabuia.
 ### 14 ottobre, sera: dialoghi bozza 3 e quattro rami nuovi (da provare e approvare)
 **Dialoghi, bozza 3** (ramo `lorenzoc/dialoghi-bozza-3`): `Docs/dialoghi-capitolo-1.md`. La bozza 2 è in `Docs/archivio/`. Il protagonista è il sindaco (nome **[Nome]** e titolo "sindaco" provvisori: **decidili tu**), un solo filo (voci all'alba, il villaggio si prepara, tamburi la sera), forgiatura nella quest 2 (punti di inserimento segnati), allenamento più lungo con un motivo per classe che torna nelle quest 4 e 6, Maren e Tobin in quasi tutte le quest. Per ogni quest c'è una riga "Per il codice". **Non tradotto, `Lingua.cs` e scene non toccati.** Da decidere: nome e titolo, i motivi di classe proposti (Passo Grigio, Wren a Corvagrigia, la sorella Liane), se il protagonista parla.
 
