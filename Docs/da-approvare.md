@@ -82,6 +82,11 @@ Giuseppe ha deciso di non aspettare e il suo Claude ha reso co-op gli script di 
 
 ## Risposte di Lorenzo
 
+### 15 ottobre: finestra del baule, gli oggetti si trascinano (ramo `lorenzoc/baule-trascina`)
+Richiesta di Lorenzo: aprendo un baule non si raccoglie più tutto in automatico. Si apre una finestra con il contenuto del baule a sinistra e lo zaino a destra; gli oggetti si trascinano da una parte all'altra (anche per lasciarne nel baule), doppio clic sposta, "Prendi tutto" (R). Le pozioni rispettano il limite di 3; gli oggetti delle missioni non si lasciano nel baule. Il baule si può riaprire ("Guarda nel baule").
+- Nuovo `Assets/Scripts/Interfaccia/FinestraBaule.cs`. Toccati `Baule.cs` (lista di oggetti, "Quando Aperto" parte quando il baule viene svuotato), `DonaOggetti.cs` (`PrendiLista`: su un baule la lista della classe va dentro il baule) e **due righe di `InventarioGioco.cs`** (area di Giuseppe: `Aperto` vale anche per la finestra del baule, e Tab non apre l'inventario sopra il baule).
+- Non ancora provato in Unity (il PC era occupato). Da provare: cripta (medaglione) e baule delle armi della gattabuia.
+
 ### 14 ottobre: quest in sequenza controllate, scene del prologo salvate (serve un'occhiata di Giuseppe)
 Ramo `lorenzoc/fix-cripta`. Nella scena su `main` Edric aveva due dialoghi "la leggenda" e la fine della quest 4 accendeva quello vecchio: si parlava con Edric ma la cripta non si apriva e la bussola restava su di lui. Corretto il comando della quest 5 (toglie tutti i doppioni e collega quello giusto) e caricata la scena buona, con la quest 6, la taverna e la razzia.
 - Nuovo comando **"Prologo: controlla la sequenza delle quest"**: controlla collegamenti rotti, dialoghi doppi e che ogni quest dia l'obiettivo della successiva fino alla razzia. Sulla scena caricata: tutto a posto.
