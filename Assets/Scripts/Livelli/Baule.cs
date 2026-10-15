@@ -1,28 +1,36 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-// Baule da aprire con E, con un oggetto dentro.
+// Baule da aprire con E, con degli oggetti dentro.
 // A cosa serve: quando il giocatore è vicino compare "E  Apri il baule"; premendo E il coperchio si
-// alza, dal baule esce una luce dorata e il giocatore riceve il contenuto: il bastone magico della chiesetta, oppure
-// un oggetto qualsiasi (Contenuto = Oggetto, campo "Oggetto": finisce nello zaino, per esempio il medaglione della
-// cripta). "Quando Aperto" parte dopo aver dato il contenuto (per esempio per cambiare l'obiettivo).
-// Si apre una volta sola.
+// alza e dal baule esce una luce dorata. Con Contenuto = BastoneMagico il giocatore riceve subito il bastone della
+// chiesetta. Con Contenuto = Oggetto si apre la finestra del baule (FinestraBaule, richiesta di Lorenzo del
+// 15 ottobre): a sinistra cosa c'è dentro, a destra lo zaino, e gli oggetti si trascinano da una parte all'altra
+// (niente raccolta automatica). Dentro ci sono "Oggetto", gli "Altri Oggetti" e, se sullo stesso oggetto c'è un
+// DonaOggetti, la lista della classe del giocatore (per esempio il baule delle armi della gattabuia).
+// Dopo la prima apertura il baule resta aperto: con E ("Guarda nel baule") si riapre la finestra, anche per
+// lasciarci qualcosa.
+// "Quando Aperto" parte quando il baule viene svuotato la prima volta (per esempio per cambiare l'obiettivo dopo aver
+// preso il medaglione); se il baule è vuoto fin dall'inizio, parte subito.
 // Come montarlo:
 //   1. GameObject > Create Empty, mettilo a terra e giralo (Rotation Y) con il davanti verso chi arriva.
 //   2. Add Component > Baule e scegli il Contenuto.
 //   L'aspetto del baule (legno, fasce di ferro, coperchio) si crea da solo quando parte il gioco;
 //   nella vista Scene è segnato da un riquadro marrone.
-// Co-op: il baule si apre per tutti, ma il contenuto lo riceve solo chi l'ha aperto.
+// Co-op: il baule si apre per tutti, ma il contenuto lo vede e lo prende solo chi l'ha aperto.
 public class Baule : MonoBehaviour, IOggettoCondiviso
 {
     public enum Contenuto { BastoneMagico, Oggetto }
 
     [SerializeField] Contenuto contenuto = Contenuto.BastoneMagico;
-    [Tooltip("Con Contenuto = Oggetto: l'oggetto che finisce nello zaino.")]
+    [Tooltip("Con Contenuto = Oggetto: un oggetto che sta nel baule.")]
     [SerializeField] DatiOggetto oggetto;
-    [Tooltip("Cosa succede quando chi l'ha aperto ha ricevuto il contenuto.")]
+    [Tooltip("Con Contenuto = Oggetto: altri oggetti nel baule.")]
+    [SerializeField] DatiOggetto[] altriOggetti;
+    [Tooltip("Cosa succede quando chi l'ha aperto ha svuotato il baule la prima volta (subito, se è vuoto).")]
     [SerializeField] UnityEvent quandoAperto;
     [Tooltip("Distanza (in orizzontale) entro cui si può aprire.")]
     [SerializeField] float raggioInterazione = 2f;
@@ -33,6 +41,9 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
     InputAction comandoInteragisci;
     Transform coperchio;
     bool aperto;
+    readonly List<DatiOggetto> dentro = new List<DatiOggetto>();
+    bool mio;          // l'ho aperto io: posso guardarci dentro
+    bool svuotato;     // "Quando Aperto" è già partito
 
     public int NumeroRete { get; private set; }
     float richiestoFino;     // co-op: richiesta mandata all'host, si aspetta la risposta (poi si può riprovare)
@@ -64,6 +75,15 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
 
     void Update()
     {
+        if (aperto && mio && contenuto == Contenuto.Oggetto)
+        {
+            // già aperto: si può riguardare dentro (e lasciarci qualcosa)
+            if (giocatore == null || FinestraBaule.Aperto || MenuPausa.InPausa || InventarioGioco.Aperto || Dialogo.InCorso || !Vicino(giocatore)) return;
+            if (giocatore.StatoAttuale != GiocatoreControllo.Stato.Libero) return;
+            HudGioco.MostraAzione("E", Lingua.T("hud.baule_guarda"));
+            if (comandoInteragisci.WasPressedThisFrame()) FinestraBaule.Apri(this, dentro, giocatore);
+            return;
+        }
         if (!PuoAprire()) return;
         HudGioco.MostraAzione("E", Lingua.T("hud.baule"));
         if (!comandoInteragisci.WasPressedThisFrame() || MenuPausa.InPausa || InventarioGioco.Aperto) return;
@@ -96,10 +116,27 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
     bool PuoAprire()
     {
         if (aperto || Time.time < richiestoFino || giocatore == null || giocatore.StatoAttuale == GiocatoreControllo.Stato.Morto) return false;
-        Vector3 distanza = giocatore.transform.position - transform.position;
-        distanza.y = 0f;
-        return distanza.magnitude <= raggioInterazione;
+        return Vicino(giocatore);
     }
+
+    // Il giocatore è abbastanza vicino per usare il baule (la finestra si chiude se si allontana).
+    public bool Vicino(GiocatoreControllo g)
+    {
+        if (g == null) return false;
+        Vector3 distanza = g.transform.position - transform.position;
+        distanza.y = 0f;
+        return distanza.magnitude <= raggioInterazione + 0.5f;
+    }
+
+    // La finestra ha spostato degli oggetti: al primo svuotamento parte "Quando Aperto".
+    public void ContenutoCambiato()
+    {
+        if (svuotato || dentro.Count > 0) return;
+        svuotato = true;
+        quandoAperto?.Invoke();
+    }
+
+    public void FinestraChiusa() { }
 
     // "chi" ha aperto il baule: solo lui riceve il contenuto (da soli sei sempre tu).
     IEnumerator Apri(ulong chi)
@@ -145,15 +182,25 @@ public class Baule : MonoBehaviour, IOggettoCondiviso
                 break;
             case Contenuto.Oggetto:
                 if (giocatore == null) giocatore = FindFirstObjectByType<GiocatoreControllo>();
-                if (giocatore != null && oggetto != null)
-                {
-                    Zaino.Di(giocatore).Aggiungi(oggetto);
-                    MessaggiSchermo.Mostra(Lingua.T("hud.raccolto") + ": " + oggetto.Nome, 5f);
-                    Suoni.Suona(Suono.Raccolta, giocatore.transform.position + Vector3.up, 0.8f);
-                }
-                break;
+                RiempiDentro();
+                mio = true;
+                if (dentro.Count == 0) { ContenutoCambiato(); return; }
+                if (giocatore != null) FinestraBaule.Apri(this, dentro, giocatore);
+                return;
         }
         quandoAperto?.Invoke();
+    }
+
+    // Cosa c'è nel baule: Oggetto, Altri Oggetti e la lista della classe di un DonaOggetti sullo stesso oggetto.
+    void RiempiDentro()
+    {
+        dentro.Clear();
+        if (oggetto != null) dentro.Add(oggetto);
+        if (altriOggetti != null)
+            foreach (var o in altriOggetti) if (o != null) dentro.Add(o);
+        var dona = GetComponent<DonaOggetti>();
+        if (dona != null)
+            foreach (var o in dona.PrendiLista()) if (o != null) dentro.Add(o);
     }
 
     // Baule a blocchi: cassa di legno con fasce di ferro e coperchio incernierato dietro.

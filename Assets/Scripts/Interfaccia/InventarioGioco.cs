@@ -33,9 +33,9 @@ using UnityEngine.SceneManagement;
 // Si crea da solo all'avvio del gioco e funziona in ogni scena con un giocatore: non va messo nelle scene.
 public class InventarioGioco : MonoBehaviour
 {
-    // Vero quando è aperto l'inventario oppure la finestra di un negozio (Negozio): per gli altri script vuol dire
+    // Vero quando è aperto l'inventario oppure la finestra di un negozio (Negozio) o di un baule (FinestraBaule): per gli altri script vuol dire
     // "c'è una finestra aperta in partita, ignora i tasti". L'inventario stesso guarda solo il suo stato (inventarioAperto).
-    public static bool Aperto => inventarioAperto || Negozio.Aperto;
+    public static bool Aperto => inventarioAperto || Negozio.Aperto || FinestraBaule.Aperto;
     static bool inventarioAperto;
     // Fotogramma in cui l'inventario si è chiuso: il menu di pausa non deve aprirsi con lo stesso Esc.
     // Anche il negozio lo segna quando si chiude.
@@ -420,7 +420,7 @@ public class InventarioGioco : MonoBehaviour
         // il tasto dell'inventario si sceglie in Opzioni > Comandi (Tab all'inizio)
         bool tasto = Comandi.PremutoOra(Azione.Inventario) || (pad != null && pad.selectButton.wasPressedThisFrame);
 
-        if (Negozio.Aperto) return;   // con la bottega aperta il tasto dell'inventario non fa niente
+        if (Negozio.Aperto || FinestraBaule.Aperto) return;   // con la bottega o un baule aperti il tasto dell'inventario non fa niente
         if (!inventarioAperto)
         {
             // si apre solo da fermi o camminando: non a metà di un attacco, una schivata o una parata
