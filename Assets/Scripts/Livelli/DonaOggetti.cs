@@ -8,6 +8,7 @@ using UnityEngine;
 // oggetti, per esempio da Assets/Dati/Oggetti/Guerriero/Armi).
 // Come montarlo: su un oggetto qualsiasi (di solito il personaggio che dona). Da un evento si sceglie
 // DonaOggetti > Dona. Dona una volta sola.
+// Su un Baule (stesso oggetto): la lista della classe finisce dentro il baule e si prende dalla finestra del baule.
 public class DonaOggetti : MonoBehaviour
 {
     [SerializeField] DatiOggetto[] perGuerriero;
@@ -17,6 +18,16 @@ public class DonaOggetti : MonoBehaviour
     [SerializeField] float secondiScritta = 2.5f;
 
     bool donato;
+
+    // La lista della classe del giocatore, senza donarla: la usa il Baule sullo stesso oggetto, che la mette dentro
+    // il baule (si prende trascinandola nello zaino). Dopo, Dona non fa più niente.
+    public DatiOggetto[] PrendiLista()
+    {
+        donato = true;
+        DatiOggetto[] lista = SceltaPartita.Classe == ClasseGiocatore.Guerriero ? perGuerriero
+            : SceltaPartita.Classe == ClasseGiocatore.Ladro ? perLadro : perStregone;
+        return lista ?? new DatiOggetto[0];
+    }
 
     public void Dona()
     {
